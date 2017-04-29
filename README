@@ -4,5 +4,10 @@ https://github.com/rodrigocfd/winlamb
 
 A modern C++11 object-oriented library to write native Windows programs.
 
+
+This library is explained in depth in this article:
+https://www.codeproject.com/Articles/1184175/WinLamb-using-Cplusplus-lambdas-to-handle-Win-mess
+
+
 --
 Licensed under MIT license, see license.txt for details.
