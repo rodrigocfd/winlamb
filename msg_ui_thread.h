@@ -32,7 +32,7 @@ protected:
 		});
 	}
 
-	void on_ui_thread(ui_thread_funcT func) const {
+	void run_ui_thread(ui_thread_funcT func) const {
 		// This method is analog to SendMessage (synchronous), but intended to be called from another
 		// thread, so a callback function can, tunelled by wndproc, run in the original thread of the
 		// window, thus allowing GUI updates. This avoids the user to deal with a custom WM_ message.
