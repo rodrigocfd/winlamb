@@ -13,7 +13,7 @@
 
 namespace wl {
 
-// Adds on_ui_thread() method to execute methods in original UI thread.
+// Adds run_ui_thread() method to execute code in original UI thread.
 class msg_ui_thread : private base::msgs {
 public:
 	using ui_thread_funcT = std::function<void()>;
