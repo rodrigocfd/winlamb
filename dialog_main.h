@@ -36,11 +36,11 @@ protected:
 	setup_vars setup;
 
 	explicit dialog_main(size_t msgsReserve = 0) : dialog(msgsReserve + 2) {
-		this->on_message(WM_CLOSE, [&](const params&)->INT_PTR {
+		this->on_message(WM_CLOSE, [&](params)->INT_PTR {
 			DestroyWindow(this->hwnd());
 			return TRUE;
 		});
-		this->on_message(WM_NCDESTROY, [](const params&)->INT_PTR {
+		this->on_message(WM_NCDESTROY, [](params)->INT_PTR {
 			PostQuitMessage(0);
 			return TRUE;
 		});

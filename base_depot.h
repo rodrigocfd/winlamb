@@ -15,7 +15,7 @@ namespace base {
 	template<typename idT>
 	class depot final {
 	public:
-		using funcT = std::function<LONG_PTR(params&)>; // works for both LRESULT and LONG_PTR
+		using funcT = std::function<LONG_PTR(params)>; // works for both LRESULT and LONG_PTR
 	private:
 		std::vector<std::pair<idT, funcT>> _msgUnits;
 
@@ -43,7 +43,7 @@ namespace base {
 			size_t funcIdx = this->_msgUnits.size() - 1;
 			for (size_t i = 1; i < ids.size(); ++i) {
 				if (pIds[i] != pIds[0]) { // avoid overwriting
-					this->add(pIds[i], [this, funcIdx](params& p)->LONG_PTR {
+					this->add(pIds[i], [this, funcIdx](params p)->LONG_PTR {
 						return this->_msgUnits[funcIdx].second(p); // store light wrapper to 1st func
 					});
 				}

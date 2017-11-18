@@ -49,10 +49,10 @@ namespace base {
 		explicit dialog(size_t msgsReserve) {
 			this->inventory::_msgDepot.reserve(msgsReserve);
 
-			this->inventory::_procHandled = [](const params&)->INT_PTR {
+			this->inventory::_procHandled = [](params)->INT_PTR {
 				return TRUE;
 			};
-			this->inventory::_procUnhandled = [](const params&)->INT_PTR {
+			this->inventory::_procUnhandled = [](params)->INT_PTR {
 				return FALSE;
 			};
 		}

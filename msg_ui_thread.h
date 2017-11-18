@@ -26,7 +26,7 @@ private:
 
 protected:
 	msg_ui_thread() {
-		this->on_message(WM_THREAD_MESSAGE, [&](params& p)->LONG_PTR {
+		this->on_message(WM_THREAD_MESSAGE, [&](params p)->LONG_PTR {
 			this->_process_threaded(p);
 			return this->msgs::_proc_handled(p);
 		});

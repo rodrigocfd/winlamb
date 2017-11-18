@@ -50,7 +50,7 @@ protected:
 		// WS_MINIMIZEBOX adds minimize button
 		// WS_EX_ACCEPTFILES accepts dropped files (extended style, add on exStyle)
 
-		this->on_message(WM_NCDESTROY, [](const params&)->LRESULT {
+		this->on_message(WM_NCDESTROY, [](params)->LRESULT {
 			PostQuitMessage(0);
 			return 0;
 		});

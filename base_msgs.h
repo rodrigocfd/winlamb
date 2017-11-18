@@ -18,11 +18,11 @@ namespace base {
 	protected:
 		msgs() = default;
 
-		LONG_PTR _proc_handled(params& p) {
+		LONG_PTR _proc_handled(params p) {
 			return this->inventory::_procHandled(p);
 		}
 
-		LONG_PTR _proc_unhandled(params& p) {
+		LONG_PTR _proc_unhandled(params p) {
 			return this->inventory::_procUnhandled(p);
 		}
 	};

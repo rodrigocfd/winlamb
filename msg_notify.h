@@ -23,7 +23,7 @@ private:
 
 protected:
 	explicit msg_notify(size_t msgsReserve = 0) : _nfyDepot(msgsReserve) {
-		this->on_message(WM_NOTIFY, [&](params& p)->LONG_PTR {
+		this->on_message(WM_NOTIFY, [&](params p)->LONG_PTR {
 			notify_funcT* pFunc = this->_nfyDepot.find({
 				reinterpret_cast<NMHDR*>(p.lParam)->idFrom,
 				reinterpret_cast<NMHDR*>(p.lParam)->code
@@ -50,7 +50,7 @@ namespace wm {
 
 #define WINLAMB_NOTIFYWM(sname, oname) \
 	struct sname : public notify { \
-		sname(const params& p) : notify(p) { } \
+		sname(params p) : notify(p) { } \
 		oname& nmhdr() const { return *reinterpret_cast<oname*>(this->lParam); } \
 	};
 

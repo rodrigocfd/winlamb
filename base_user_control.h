@@ -20,7 +20,7 @@ namespace base {
 	class user_control : virtual public inventory {
 	protected:
 		user_control() {
-			this->on_message(WM_NCPAINT, [&](params& p)->LONG_PTR {
+			this->on_message(WM_NCPAINT, [&](params p)->LONG_PTR {
 				this->_paint_themed_borders(p);
 				return this->inventory::_procHandled(p);
 			});

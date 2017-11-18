@@ -22,7 +22,7 @@ private:
 
 protected:
 	explicit msg_command(size_t msgsReserve = 0) : _cmdDepot(msgsReserve) {
-		this->on_message(WM_COMMAND, [&](params& p)->LONG_PTR {
+		this->on_message(WM_COMMAND, [&](params p)->LONG_PTR {
 			command_funcT* pFunc = this->_cmdDepot.find(LOWORD(p.wParam));
 			return pFunc ? (*pFunc)(p) : this->msgs::_proc_unhandled(p);
 		});

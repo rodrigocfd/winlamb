@@ -44,10 +44,10 @@ namespace base {
 		explicit window(size_t msgsReserve) {
 			this->inventory::_msgDepot.reserve(msgsReserve);
 
-			this->inventory::_procHandled = [](const params&)->LRESULT {
+			this->inventory::_procHandled = [](params)->LRESULT {
 				return 0;
 			};
-			this->inventory::_procUnhandled = [&](const params& p)->LRESULT {
+			this->inventory::_procUnhandled = [&](params p)->LRESULT {
 				return DefWindowProcW(this->hwnd(), p.message, p.wParam, p.lParam);
 			};
 		}

@@ -22,7 +22,7 @@ protected:
 	base::dialog::setup_vars setup;
 
 	explicit dialog_modal(size_t msgsReserve = 0) : dialog(msgsReserve + 1) {
-		this->on_message(WM_CLOSE, [&](const params&)->INT_PTR {
+		this->on_message(WM_CLOSE, [&](params)->INT_PTR {
 			EndDialog(this->hwnd(), IDOK);
 			return TRUE;
 		});
