@@ -16,6 +16,8 @@ WinLamb by no means covers the whole Win32 API, simply because it's too huge. It
 
 WinLamb is a header-only library. You can clone the repository or simply download the files; once referenced in your source code, it should work right away.
 
+It has been tested with Visual C++ 2017.
+
 ### Example
 
 This is a simple Win32 program written with WinLamb. Each window has a class, and messages are handled with C++11 lambdas. There's no need to write a message loop or window registering.
