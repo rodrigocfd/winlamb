@@ -1,34 +1,42 @@
 /**
  * Part of WinLamb - Win32 API Lambda Library
- * @author Rodrigo Cesar de Freitas Dias
- * @see https://github.com/rodrigocfd/winlamb
+ * https://github.com/rodrigocfd/winlamb
+ * Copyright 2017-present Rodrigo Cesar de Freitas Dias
+ * This library is released under the MIT License
  */
 
 #pragma once
-#include <utility>
+#include <system_error>
 #include <Windows.h>
 
 namespace wl {
 
-// Wrapper to HFONT.
+// Wrapper to HFONT handle.
 class font final {
 private:
-	HFONT _hFont;
+	HFONT _hFont = nullptr;
+
 public:
 	enum class deco { NONE, BOLD, ITALIC, BOLD_ITALIC };
 
-	~font()        { this->release(); }
-	font()         : _hFont(nullptr)  { }
-	font(font&& f) : _hFont(f._hFont) { f._hFont = nullptr; }
+	~font() {
+		this->destroy();
+	}
 
-	HFONT hfont() const { return this->_hFont; }
+	font() = default;
+	font(font&& other) { this->operator=(std::move(other)); }
 
-	font& operator=(font&& f) {
-		std::swap(this->_hFont, f._hFont);
+	HFONT hfont() const {
+		return this->_hFont;
+	}
+
+	font& operator=(font&& other) {
+		this->destroy();
+		std::swap(this->_hFont, other._hFont);
 		return *this;
 	}
 
-	font& release() {
+	font& destroy() {
 		if (this->_hFont) {
 			DeleteObject(this->_hFont);
 			this->_hFont = nullptr;
@@ -37,14 +45,18 @@ public:
 	}
 
 	font& create(const LOGFONT& lf) {
-		this->release();
+		this->destroy();
 		this->_hFont = CreateFontIndirectW(&lf);
+		if (!this->_hFont) {
+			throw std::system_error(GetLastError(), std::system_category(),
+				"CreateFontIndirect failed");
+		}
 		return *this;
 	}
 
 	font& create(const wchar_t* fontName, int size, deco style = deco::NONE) {
-		this->release();
-		LOGFONT lf = { 0 };
+		this->destroy();
+		LOGFONT lf{};
 		lstrcpyW(lf.lfFaceName, fontName);
 		lf.lfHeight = -(size + 3);
 		lf.lfWeight = style == deco::BOLD || style == deco::BOLD_ITALIC ? FW_BOLD : FW_DONTCARE;
@@ -53,7 +65,7 @@ public:
 	}
 
 	font& create_ui() {
-		OSVERSIONINFO ovi = { 0 };
+		OSVERSIONINFO ovi{};
 		ovi.dwOSVersionInfoSize = sizeof(ovi);
 
 		#pragma warning (disable: 4996)
@@ -61,7 +73,7 @@ public:
 		GetVersionExW(&ovi);
 		#pragma warning (default: 4996)
 
-		NONCLIENTMETRICS ncm = { 0 };
+		NONCLIENTMETRICS ncm{};
 		ncm.cbSize = sizeof(ncm);
 		if (ovi.dwMajorVersion < 6) { // below Vista
 			ncm.cbSize -= sizeof(ncm.iBorderWidth);
@@ -89,6 +101,10 @@ public:
 		// http://cboard.cprogramming.com/windows-programming/90066-how-determine-if-font-support-unicode.html
 		bool isInstalled = false;
 		HDC hdc = GetDC(nullptr);
+		if (!hdc) {
+			throw std::system_error(GetLastError(), std::system_category(),
+				"GetDC failed when checking if font exists");
+		}
 		EnumFontFamiliesW(hdc, fontName,
 			[](const LOGFONT* lpelf, const TEXTMETRIC* lpntm, DWORD fontType, LPARAM lp)->int {
 				bool* pIsInstalled = reinterpret_cast<bool*>(lp);

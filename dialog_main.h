@@ -1,42 +1,52 @@
 /**
  * Part of WinLamb - Win32 API Lambda Library
- * @author Rodrigo Cesar de Freitas Dias
- * @see https://github.com/rodrigocfd/winlamb
+ * https://github.com/rodrigocfd/winlamb
+ * Copyright 2017-present Rodrigo Cesar de Freitas Dias
+ * This library is released under the MIT License
  */
 
 #pragma once
-#include "base_dialog.h"
-#include "base_loop.h"
-#include "base_run.h"
+#include "internals/dialog.h"
+#include "internals/ui_thread.h"
+#include "internals/loop.h"
+#include "internals/has_text.h"
+#include "internals/run.h"
 
 /**
- *                                <-------- base_msgs <-- msg_[any] <------+
- *             +-- base_inventory <--+                                     |
- *             |                     +-- base_dialog <--+                  +-- [user]
- * base_wnd <--+---- base_wheel <----+                  |                  |
- *             |                                        +-- dialog_main <--+
- *             +-------------- base_loop <--------------+
+ * hwnd_wrapper
+ *  inventory
+ *   ui_thread
+ *    dialog
+ *     has_text
+ *      dialog_main
  */
 
 namespace wl {
+namespace wli {
+class dialog_modeless;
+}//namespace wli
 
-// Inherit from this class to have a dialog as the main window of your application.
+// Inherit from this class to have a dialog as the main window for your application.
 class dialog_main :
-	public    base::dialog,
-	protected base::loop
+	public wli::has_text<
+		dialog_main, wli::dialog<wli::ui_thread>>
 {
-public:
-	struct setup_vars final : public base::dialog::setup_vars {
-		int iconId;
-		int accelTableId;
-		setup_vars() : iconId(0), accelTableId(0) { }
+	friend class dialog_modeless;
+
+protected:
+	struct setup_vars final : public wli::dialog<wli::ui_thread>::setup_vars {
+		int iconId = 0;
+		int accelTableId = 0;
 	};
+
+private:
+	wli::loop _loop;
 
 protected:
 	setup_vars setup;
 
-	explicit dialog_main(size_t msgsReserve = 0) : dialog(msgsReserve + 2) {
-		this->on_message(WM_CLOSE, [&](params)->INT_PTR {
+	dialog_main() {
+		this->on_message(WM_CLOSE, [this](params)->INT_PTR {
 			DestroyWindow(this->hwnd());
 			return TRUE;
 		});
@@ -47,25 +57,29 @@ protected:
 	}
 
 public:
-	int run(HINSTANCE hInst, int cmdShow) {
+	int winmain_run(HINSTANCE hInst, int cmdShow) {
 		InitCommonControls();
-		if (!this->dialog::_basic_initial_checks(this->setup)) return -1;
+		this->_basic_initial_checks(this->setup);
 
-		HWND hwndRet = CreateDialogParamW(hInst, MAKEINTRESOURCEW(this->setup.dialogId),
-			nullptr, base::dialog::_dialog_proc, reinterpret_cast<LPARAM>(this));
-		if (!hwndRet) {
-			OutputDebugStringW(L"ERROR: main dialog not created, CreateDialogParam failed.\n");
-			return -1;
+		if (!CreateDialogParamW(hInst, MAKEINTRESOURCEW(this->setup.dialogId),
+			nullptr, _dialog_proc, reinterpret_cast<LPARAM>(this)) )
+		{
+			throw std::system_error(GetLastError(), std::system_category(),
+				"CreateDialogParam failed for main dialog");
 		}
 
 		HACCEL hAccel = nullptr;
 		if (this->setup.accelTableId) {
 			hAccel = LoadAcceleratorsW(hInst, MAKEINTRESOURCEW(this->setup.accelTableId));
+			if (!hAccel) {
+				throw std::system_error(GetLastError(), std::system_category(),
+					"LoadAccelerators failed for main dialog");
+			}
 		}
 
 		this->_set_icon(hInst);
 		ShowWindow(this->hwnd(), cmdShow);
-		return this->loop::_msg_loop(hAccel); // this can be used as program return value
+		return this->_loop.run_loop(this->hwnd(), hAccel); // can be used as program return value
 	}
 
 private:

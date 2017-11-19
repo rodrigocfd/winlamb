@@ -1,60 +1,77 @@
 /**
  * Part of WinLamb - Win32 API Lambda Library
- * @author Rodrigo Cesar de Freitas Dias
- * @see https://github.com/rodrigocfd/winlamb
+ * https://github.com/rodrigocfd/winlamb
+ * Copyright 2017-present Rodrigo Cesar de Freitas Dias
+ * This library is released under the MIT License
  */
 
 #pragma once
-#include "base_dialog.h"
-#include "base_loop.h"
+#include "internals/dialog.h"
+#include "internals/ui_thread.h"
+#include "internals/loop.h"
+#include "internals/has_text.h"
 
 /**
- *                                <-------- base_msgs <-- msg_[any] <-------+
- *             +-- base_inventory <--+                                      +-- [user]
- * base_wnd <--+                     +-- base_dialog <-- dialog_modeless <--+
- *             +---- base_wheel <----+
+ * hwnd_wrapper
+ *  inventory
+ *   ui_thread
+ *    dialog
+ *     has_text
+ *      dialog_modeless
  */
 
 namespace wl {
 
 // Inherit from this class to have a dialog modeless popup.
-class dialog_modeless : public base::dialog {
-private:
-	base::loop* _parent;
+class dialog_modeless :
+	public wli::has_text<
+		dialog_modeless, wli::dialog<wli::ui_thread>>
+{
 protected:
-	base::dialog::setup_vars setup;
+	struct setup_vars final : public wli::dialog<wli::ui_thread>::setup_vars { };
 
-	explicit dialog_modeless(size_t msgsReserve = 0) : dialog(msgsReserve + 2) {
-		this->on_message(WM_CLOSE, [&](params)->INT_PTR {
+private:
+	wli::loop* _pLoop = nullptr; // pointer to parent's loop instance
+
+protected:
+	setup_vars setup;
+
+	dialog_modeless() {
+		this->on_message(WM_CLOSE, [this](params)->INT_PTR {
 			DestroyWindow(this->hwnd());
 			return TRUE;
 		});
-		this->on_message(WM_NCDESTROY, [&](params)->INT_PTR {
-			this->_parent->_remove_modeless(this->hwnd());
+		this->on_message(WM_NCDESTROY, [this](params)->INT_PTR {
+			if (this->_pLoop) {
+				this->_pLoop->remove_modeless(this->hwnd());
+			}
 			return TRUE;
 		});
 	}
 
 public:
-	void show(base::loop* parent) {
-		if (!this->dialog::_basic_initial_checks(this->setup)) return;
+	template<typename has_loopT>
+	void show(has_loopT* parent) {
+		this->_basic_initial_checks(this->setup);
+
 		this->_parent = parent;
 		HINSTANCE hInst = reinterpret_cast<HINSTANCE>(
 			GetWindowLongPtrW(parent->hwnd(), GWLP_HINSTANCE));
 
 		if (!CreateDialogParamW(hInst, MAKEINTRESOURCEW(this->setup.dialogId),
-			parent->hwnd(), base::dialog::_dialog_proc,
-			reinterpret_cast<LPARAM>(this)) )
+			parent->hwnd(), _dialog_proc, reinterpret_cast<LPARAM>(this)) )
 		{
-			OutputDebugStringW(L"ERROR: modeless dialog not created, CreateDialogParam failed.\n");
-			return;
+			throw std::system_error(GetLastError(), std::system_category(),
+				"CreateDialogParam failed for modeless dialog");
 		}
 
-		parent->_add_modeless(this->hwnd());
+		this->_pLoop = parent->_loop; // keep parent's loop instance
+		this->_pLoop->add_modeless(this->hwnd());
 		ShowWindow(this->hwnd(), SW_SHOW);
 	}
 
-	void show(base::loop* parent, POINT clientPos) {
+	template<typename has_loopT>
+	void show(has_loopT* parent, POINT clientPos) {
 		this->show(parent);
 		POINT parentPos = clientPos;
 		ClientToScreen(parent->hwnd(), &parentPos); // now relative to parent

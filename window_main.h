@@ -1,43 +1,51 @@
 /**
  * Part of WinLamb - Win32 API Lambda Library
- * @author Rodrigo Cesar de Freitas Dias
- * @see https://github.com/rodrigocfd/winlamb
+ * https://github.com/rodrigocfd/winlamb
+ * Copyright 2017-present Rodrigo Cesar de Freitas Dias
+ * This library is released under the MIT License
  */
 
 #pragma once
-#include "base_window.h"
-#include "base_loop.h"
-#include "base_wheel.h"
-#include "base_run.h"
+#include "internals/window.h"
+#include "internals/ui_thread.h"
+#include "internals/hover_scroll.h"
+#include "internals/loop.h"
+#include "internals/has_text.h"
+#include "internals/run.h"
 
 /**
- *                                   +----- base_msgs <-- msg_[any] <------+
- *             +-- base_inventory <--+                                     |
- *             |                     +-- base_window <--+                  +-- [user]
- *             |                                        |                  |
- * base_wnd <--+-------------- base_loop <--------------+                  |
- *             |                                        +-- window_main <--+
- *             +-------------- base_wheel <-------------+
+ * hwnd_wrapper
+ *  inventory
+ *   ui_thread
+ *    window
+ *     has_text
+ *      window_main
  */
 
 namespace wl {
+namespace wli {
+class dialog_modeless;
+}//namespace wli
 
-// Inherit from this class to have the main window of your application.
+// Inherit from this class to have an ordinary main window for your application.
 class window_main :
-	public    base::window,
-	protected base::loop,
-	protected base::wheel
+	public wli::has_text<
+		window_main, wli::window<wli::ui_thread>>
 {
-public:
-	struct setup_vars final : public base::window::setup_vars {
-		HACCEL accelTable;
-		setup_vars() : accelTable(nullptr) { }
+	friend class dialog_modeless;
+
+protected:
+	struct setup_vars final : public wli::window<wli::ui_thread>::setup_vars {
+		HACCEL accelTable = nullptr;
 	};
+
+private:
+	wli::loop _loop;
 
 protected:
 	setup_vars setup;
 
-	explicit window_main(size_t msgsReserve = 0) : window(msgsReserve + 1) {
+	window_main() {
 		this->setup.wndClassEx.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
 		this->setup.wndClassEx.style = CS_DBLCLKS;
 		this->setup.position = { CW_USEDEFAULT, CW_USEDEFAULT };
@@ -57,14 +65,16 @@ protected:
 	}
 
 public:
-	int run(HINSTANCE hInst, int cmdShow) {
+	int winmain_run(HINSTANCE hInst, int cmdShow) {
 		InitCommonControls();
-		if (!this->window::_register_create(this->setup, nullptr, hInst)) return -1;
-
+		this->_register_create(this->setup, nullptr, hInst);
 		ShowWindow(this->hwnd(), cmdShow);
-		UpdateWindow(this->hwnd());
-		this->wheel::_apply_wheel_hover_behavior();
-		return this->loop::_msg_loop(this->setup.accelTable); // this can be used as program return value
+		if (!UpdateWindow(this->hwnd())) {
+			throw std::system_error(GetLastError(), std::system_category(),
+				"UpdateWindow failed");
+		}
+		wli::hover_scroll::apply_behavior(this->hwnd());
+		return this->_loop.run_loop(this->hwnd(), this->setup.accelTable); // can be used as program return value
 	}
 };
 

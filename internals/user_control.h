@@ -1,0 +1,67 @@
+/**
+ * Part of WinLamb - Win32 API Lambda Library
+ * https://github.com/rodrigocfd/winlamb
+ * Copyright 2017-present Rodrigo Cesar de Freitas Dias
+ * This library is released under the MIT License
+ */
+
+#pragma once
+#include "ui_thread.h"
+#include <VsStyle.h>
+#include <Uxtheme.h>
+#pragma comment(lib, "UxTheme.lib")
+
+/**
+ * hwnd_wrapper
+ *  inventory
+ *   ui_thread
+ *    user_control
+ */
+
+namespace wl {
+namespace wli {
+
+class user_control : public ui_thread {
+protected:
+	user_control(LONG_PTR procRetVal) : ui_thread(procRetVal) {
+		this->on_message(WM_NCPAINT, [this, procRetVal](params p)->LONG_PTR {
+			this->_paint_themed_borders(p);
+			return procRetVal; // 0 for windows, TRUE for dialogs
+		});
+	}
+
+private:
+	LONG_PTR _paint_themed_borders(params p) const {
+		LONG_PTR defRet = DefWindowProcW(this->hwnd(), WM_NCPAINT, p.wParam, p.lParam); // will make system draw the scrollbar for us
+
+		if ((GetWindowLongPtrW(this->hwnd(), GWL_EXSTYLE) & WS_EX_CLIENTEDGE) && IsThemeActive() && IsAppThemed()) {
+			RECT rc{};
+			GetWindowRect(this->hwnd(), &rc); // window outmost coordinates, including margins
+			ScreenToClient(this->hwnd(), reinterpret_cast<POINT*>(&rc));
+			ScreenToClient(this->hwnd(), reinterpret_cast<POINT*>(&rc.right));
+			rc.left += 2; rc.top += 2; rc.right += 2; rc.bottom += 2; // because it comes up anchored at -2,-2
+
+			RECT rc2{}; // clipping region; will draw only within this rectangle
+			HDC hdc = GetWindowDC(this->hwnd());
+			HTHEME hTheme = OpenThemeData(this->hwnd(), L"LISTVIEW"); // borrow style from listview
+
+			SetRect(&rc2, rc.left, rc.top, rc.left + 2, rc.bottom); // draw only the borders to avoid flickering
+			DrawThemeBackground(hTheme, hdc, LVP_LISTGROUP, 0, &rc, &rc2); // draw themed left border
+			SetRect(&rc2, rc.left, rc.top, rc.right, rc.top + 2);
+			DrawThemeBackground(hTheme, hdc, LVP_LISTGROUP, 0, &rc, &rc2); // draw themed top border
+			SetRect(&rc2, rc.right - 2, rc.top, rc.right, rc.bottom);
+			DrawThemeBackground(hTheme, hdc, LVP_LISTGROUP, 0, &rc, &rc2); // draw themed right border
+			SetRect(&rc2, rc.left, rc.bottom - 2, rc.right, rc.bottom);
+			DrawThemeBackground(hTheme, hdc, LVP_LISTGROUP, 0, &rc, &rc2); // draw themed bottom border
+
+			CloseThemeData(hTheme);
+			ReleaseDC(this->hwnd(), hdc);
+			return 0;
+		}
+
+		return defRet;
+	}
+};
+
+}//namespace wli
+}//namespace wl

@@ -1,36 +1,34 @@
 /**
  * Part of WinLamb - Win32 API Lambda Library
- * @author Rodrigo Cesar de Freitas Dias
- * @see https://github.com/rodrigocfd/winlamb
+ * https://github.com/rodrigocfd/winlamb
+ * Copyright 2017-present Rodrigo Cesar de Freitas Dias
+ * This library is released under the MIT License
  */
 
 #pragma once
-#include "base_dialog.h"
-#include "base_user_control.h"
+#include "internals/dialog.h"
+#include "internals/user_control.h"
 
 /**
- *                                   +----------- base_msgs <-- msg_[any] <----------+
- *                                <--+                                               +-- [user]
- *             +-- base_inventory <------ base_user_control <--+                     |
- *             |                  <--+                         +-- dialog_control <--+
- * base_wnd <--+                     +------ base_dialog <-----+
- *             +---- base_wheel <----+
+ * hwnd_wrapper
+ *  inventory
+ *   ui_thread
+ *    user_control
+ *     dialog
+ *      dialog_control
  */
 
 namespace wl {
 
 // Inherit from this class to have a dialog to be used as a control within a parent window.
-class dialog_control :
-	public base::dialog,
-	public base::user_control
-{
+class dialog_control : public wli::dialog<wli::user_control> {
 protected:
-	base::dialog::setup_vars setup;
+	struct setup_vars final : public wli::dialog<wli::user_control>::setup_vars { };
 
-	explicit dialog_control(size_t msgsReserve = 0) : dialog(msgsReserve) { }
+	setup_vars setup;
 
 public:
-	bool create(HWND hParent, int controlId, POINT position, SIZE size) {
+	void create(HWND hParent, int ctrlId, POINT position, SIZE size) {
 		// Dialog styles to be set on the resource editor:
 		// - Border: none
 		// - Control: true
@@ -38,37 +36,37 @@ public:
 		// - Visible: true (otherwise will start invisible)
 		// - Client Edge: true (if you want a border, will add WS_EX_CLIENTEDGE)
 
-		if (!this->dialog::_basic_initial_checks(this->setup)) return false;
+		this->_basic_initial_checks(this->setup);
 
 		if (!CreateDialogParamW(
 			reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hParent, GWLP_HINSTANCE)),
-			MAKEINTRESOURCEW(setup.dialogId), hParent, base::dialog::_dialog_proc,
+			MAKEINTRESOURCEW(setup.dialogId), hParent, _dialog_proc,
 			reinterpret_cast<LPARAM>(this) ))
 		{
-			OutputDebugStringW(L"ERROR: control dialog not created, CreateDialogParam failed.\n");
-			return false;
+			throw std::system_error(GetLastError(), std::system_category(),
+				"CreateDialogParam failed for control dialog");
 		}
 
 		this->_check_bad_styles();
-		SetWindowLongPtrW(this->hwnd(), GWLP_ID, controlId);
+		SetWindowLongPtrW(this->hwnd(), GWLP_ID, ctrlId);
 		SetWindowPos(this->hwnd(), nullptr,
 			position.x, position.y,
 			size.cx, size.cy, SWP_NOZORDER);
-		return true;
 	}
 
-	bool create(const base::wnd* parent, int controlId, POINT position, SIZE size) {
-		return this->create(parent->hwnd(), controlId, position, size);
+	void create(const wli::hwnd_wrapper* parent, int ctrlId, POINT position, SIZE size) {
+		this->create(parent->hwnd(), ctrlId, position, size);
 	}
 
 private:
-	void _check_bad_styles() {
+	void _check_bad_styles() const {
 		DWORD style = static_cast<DWORD>(GetWindowLongPtrW(this->hwnd(), GWL_STYLE));
 		if (!(style & DS_CONTROL)) {
-			OutputDebugStringW(L"ERROR: control template doesn't have DS_CONTROL style.\n");
+			// https://blogs.msdn.microsoft.com/oldnewthing/20040730-00/?p=38293
+			throw std::logic_error("Control dialog template doesn't have DS_CONTROL style.");
 		}
 		if (!(style & WS_CHILD)) {
-			OutputDebugStringW(L"ERROR: control template doesn't have WS_CHILD style.\n");
+			throw std::logic_error("Control dialog template doesn't have WS_CHILD style.");
 		}
 	}
 };
