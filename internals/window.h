@@ -6,6 +6,8 @@
  */
 
 #pragma once
+#include "internals/ui_thread.h"
+#include "internals/user_control.h"
 #include "styler.h"
 
 /**
@@ -17,8 +19,9 @@
  */
 
 namespace wl {
-class window_control;
+class window_control; // friend forward declarations
 class window_main;
+
 namespace wli {
 
 template<typename baseT>
@@ -55,7 +58,7 @@ public:
 protected:
 	_styler style{this};
 
-	window() : baseT(0) { }
+	window() = default;
 
 private:
 	void _basic_initial_checks(const setup_vars& setup) const {
@@ -140,6 +143,9 @@ private:
 		return DefWindowProcW(hWnd, msg, wp, lp); // message was not processed
 	}
 };
+
+using window_ui_thread = window<ui_thread<LRESULT, 0>>;
+using window_user_control = window<user_control<LRESULT, 0>>;
 
 }//namespace wli
 }//namespace wl

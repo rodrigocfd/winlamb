@@ -13,10 +13,11 @@
 namespace wl {
 namespace wli {
 
-template<typename idT>
+template<typename idT, typename retT>
 class store final {
 public:
-	using funcT = std::function<LONG_PTR(params)>; // LONG_PTR works for both LRESULT and INT_PTR
+	using funcT = std::function<retT(params)>; // retT is LRESULT or INT_PTR
+
 private:
 	std::vector<std::pair<idT, funcT>> _msgUnits;
 
@@ -44,7 +45,7 @@ public:
 		size_t funcIdx = this->_msgUnits.size() - 1;
 		for (size_t i = 1; i < ids.size(); ++i) {
 			if (pIds[i] != pIds[0]) { // avoid overwriting
-				this->add(pIds[i], [this, funcIdx](params p)->LONG_PTR {
+				this->add(pIds[i], [this, funcIdx](params p)->retT {
 					return this->_msgUnits[funcIdx].second(p); // store light wrapper to 1st func
 				});
 			}

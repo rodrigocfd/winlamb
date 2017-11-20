@@ -9,9 +9,10 @@
 #include <Windows.h>
 
 namespace wl {
-class subclass;
+class subclass; // friend forward declaration
+
 namespace wli {
-template<typename baseT> class dialog;
+template<typename baseT> class dialog; // friend forward declarations
 template<typename baseT> class native_control;
 template<typename baseT> class window;
 

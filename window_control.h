@@ -7,7 +7,7 @@
 
 #pragma once
 #include "internals/window.h"
-#include "internals/user_control.h"
+
 
 /**
  * hwnd_wrapper
@@ -21,9 +21,9 @@
 namespace wl {
 
 // Inherit from this class to have an user-custom window control.
-class window_control : public wli::window<wli::user_control> {
+class window_control : public wli::window_user_control {
 protected:
-	struct setup_vars final : public wli::window<wli::user_control>::setup_vars { };
+	struct setup_vars final : public wli::window_user_control::setup_vars { };
 
 	setup_vars setup;
 

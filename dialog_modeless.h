@@ -7,7 +7,6 @@
 
 #pragma once
 #include "internals/dialog.h"
-#include "internals/ui_thread.h"
 #include "internals/loop.h"
 #include "internals/has_text.h"
 
@@ -25,10 +24,10 @@ namespace wl {
 // Inherit from this class to have a dialog modeless popup.
 class dialog_modeless :
 	public wli::has_text<
-		dialog_modeless, wli::dialog<wli::ui_thread>>
+		dialog_modeless, wli::dialog_ui_thread>
 {
 protected:
-	struct setup_vars final : public wli::dialog<wli::ui_thread>::setup_vars { };
+	struct setup_vars final : public wli::dialog_ui_thread::setup_vars { };
 
 private:
 	wli::loop* _pLoop = nullptr; // pointer to parent's loop instance

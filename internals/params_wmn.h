@@ -7,6 +7,7 @@
 
 #pragma once
 #include "params_wm.h"
+#include <CommCtrl.h>
 
 namespace wl {
 

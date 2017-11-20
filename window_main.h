@@ -7,7 +7,6 @@
 
 #pragma once
 #include "internals/window.h"
-#include "internals/ui_thread.h"
 #include "internals/hover_scroll.h"
 #include "internals/loop.h"
 #include "internals/has_text.h"
@@ -23,19 +22,17 @@
  */
 
 namespace wl {
-namespace wli {
-class dialog_modeless;
-}//namespace wli
+namespace wli { class dialog_modeless; } // friend forward declaration
 
 // Inherit from this class to have an ordinary main window for your application.
 class window_main :
 	public wli::has_text<
-		window_main, wli::window<wli::ui_thread>>
+		window_main, wli::window_ui_thread>
 {
 	friend class dialog_modeless;
 
 protected:
-	struct setup_vars final : public wli::window<wli::ui_thread>::setup_vars {
+	struct setup_vars final : public wli::window_ui_thread::setup_vars {
 		HACCEL accelTable = nullptr;
 	};
 
@@ -48,8 +45,8 @@ protected:
 	window_main() {
 		this->setup.wndClassEx.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
 		this->setup.wndClassEx.style = CS_DBLCLKS;
-		this->setup.position = { CW_USEDEFAULT, CW_USEDEFAULT };
-		this->setup.size = { CW_USEDEFAULT, CW_USEDEFAULT };
+		this->setup.position = {CW_USEDEFAULT, CW_USEDEFAULT};
+		this->setup.size = {CW_USEDEFAULT, CW_USEDEFAULT};
 		this->setup.style = WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_BORDER;
 
 		// Useful styles to add:

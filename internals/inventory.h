@@ -18,11 +18,13 @@
  */
 
 namespace wl {
-class subclass;
+class subclass; // friend forward declaration
+
 namespace wli {
-template<typename baseT> class dialog;
+template<typename baseT> class dialog; // friend forward declarations
 template<typename baseT> class window;
 
+template<typename retT>
 class inventory : public hwnd_wrapper {
 	friend class subclass;
 	template<typename baseT> friend class dialog;
@@ -30,22 +32,22 @@ class inventory : public hwnd_wrapper {
 
 public:
 	using ntfT = std::pair<UINT_PTR, UINT>; // idFrom, code
-	using funcT = std::function<LONG_PTR(params)>; // same of store<>::funcT
+	using funcT = std::function<retT(params)>; // same of store<>::funcT
 
 private:
-	store<UINT> _msgs;
-	store<WORD> _cmds;
-	store<ntfT> _ntfs;
+	store<UINT, retT> _msgs;
+	store<WORD, retT> _cmds;
+	store<ntfT, retT> _ntfs;
 
 protected:
 	inventory() = default;
 
 private:
-	std::pair<bool, LONG_PTR> _process_msg(params p) {
+	std::pair<bool, retT> _process_msg(params p) {
 		// WM_COMMAND and WM_NOTIFY messages could have been orthogonally inserted into
 		// store_msgT just like any other messages, however they'd be at the bottom of
 		// the linear search, while still having their own internal linear searches
-		// afterwards. Keeping them outside store_msgT eliminates the whole first search.
+		// afterwards. Keeping them outside store<> eliminates the whole first search.
 
 		funcT* pFunc = nullptr; // user lambda
 
@@ -74,33 +76,13 @@ private:
 	}
 
 public:
-	void on_message(UINT msg, funcT func) {
-		this->_msgs.add(msg, std::move(func));
-	}
-
-	void on_message(std::initializer_list<UINT> msgs, funcT func) {
-		this->_msgs.add(msgs, std::move(func));
-	}
-
-	void on_command(WORD cmd, funcT func) {
-		this->_cmds.add(cmd, std::move(func));
-	}
-
-	void on_command(std::initializer_list<WORD> cmds, funcT func) {
-		this->_cmds.add(cmds, std::move(func));
-	}
-
-	void on_notify(UINT_PTR idFrom, UINT code, funcT func) {
-		this->_ntfs.add({idFrom, code}, std::move(func));
-	}
-
-	void on_notify(ntfT idFromAndCode, funcT func) {
-		this->_ntfs.add(idFromAndCode, std::move(func));
-	}
-
-	void on_notify(std::initializer_list<ntfT> idFromAndCodes, funcT func) {
-		this->_ntfs.add(idFromAndCodes, std::move(func));
-	}
+	void on_message(UINT msg, funcT func)                                  { this->_msgs.add(msg, std::move(func)); }
+	void on_message(std::initializer_list<UINT> msgs, funcT func)          { this->_msgs.add(msgs, std::move(func)); }
+	void on_command(WORD cmd, funcT func)                                  { this->_cmds.add(cmd, std::move(func)); }
+	void on_command(std::initializer_list<WORD> cmds, funcT func)          { this->_cmds.add(cmds, std::move(func)); }
+	void on_notify(UINT_PTR idFrom, UINT code, funcT func)                 { this->_ntfs.add({idFrom, code}, std::move(func)); }
+	void on_notify(ntfT idFromAndCode, funcT func)                         { this->_ntfs.add(idFromAndCode, std::move(func)); }
+	void on_notify(std::initializer_list<ntfT> idFromAndCodes, funcT func) { this->_ntfs.add(idFromAndCodes, std::move(func)); }
 };
 
 }//namespace wli

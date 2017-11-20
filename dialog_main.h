@@ -7,7 +7,6 @@
 
 #pragma once
 #include "internals/dialog.h"
-#include "internals/ui_thread.h"
 #include "internals/loop.h"
 #include "internals/has_text.h"
 #include "internals/run.h"
@@ -22,19 +21,17 @@
  */
 
 namespace wl {
-namespace wli {
-class dialog_modeless;
-}//namespace wli
+namespace wli { class dialog_modeless; } // friend forward declaration
 
 // Inherit from this class to have a dialog as the main window for your application.
 class dialog_main :
 	public wli::has_text<
-		dialog_main, wli::dialog<wli::ui_thread>>
+		dialog_main, wli::dialog_ui_thread>
 {
 	friend class dialog_modeless;
 
 protected:
-	struct setup_vars final : public wli::dialog<wli::ui_thread>::setup_vars {
+	struct setup_vars final : public wli::dialog_ui_thread::setup_vars {
 		int iconId = 0;
 		int accelTableId = 0;
 	};

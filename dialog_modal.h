@@ -7,7 +7,6 @@
 
 #pragma once
 #include "internals/dialog.h"
-#include "internals/ui_thread.h"
 #include "internals/has_text.h"
 
 /**
@@ -24,10 +23,10 @@ namespace wl {
 // Inherit from this class to have a modal dialog popup.
 class dialog_modal :
 	public wli::has_text<
-		dialog_modal, wli::dialog<wli::ui_thread>>
+		dialog_modal, wli::dialog_ui_thread>
 {
 protected:
-	struct setup_vars final : public wli::dialog<wli::ui_thread>::setup_vars { };
+	struct setup_vars final : public wli::dialog_ui_thread::setup_vars { };
 
 	setup_vars setup;
 

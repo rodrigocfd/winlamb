@@ -6,6 +6,8 @@
  */
 
 #pragma once
+#include "internals/ui_thread.h"
+#include "internals/user_control.h"
 #include "hover_scroll.h"
 #include "styler.h"
 #include "../font.h"
@@ -19,10 +21,11 @@
  */
 
 namespace wl {
-class dialog_control;
+class dialog_control; // friend forward declarations
 class dialog_main;
 class dialog_modal;
 class dialog_modeless;
+
 namespace wli {
 
 template<typename baseT>
@@ -56,7 +59,7 @@ public:
 protected:
 	_styler style{this};
 
-	dialog() : baseT(TRUE) { }
+	dialog() = default;
 
 private:
 	void _basic_initial_checks(const setup_vars& setup) const {
@@ -100,6 +103,9 @@ private:
 		return ret;
 	}
 };
+
+using dialog_ui_thread = dialog<ui_thread<INT_PTR, TRUE>>;
+using dialog_user_control = dialog<user_control<INT_PTR, TRUE>>;
 
 }//namespace wli
 }//namespace wl

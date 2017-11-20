@@ -34,11 +34,11 @@ public:
 	}
 
 	static bool has_extension(const std::wstring& filePath, const wchar_t* extension) {
-		if (extension[0] == L'.') {
+		if (extension[0] == L'.') { // extension starts with dot, compare right away
 			return str::ends_withi(filePath, extension);
 		}
 
-		wchar_t dotExtension[32]{L'.'}; // arbitrary buffer length
+		wchar_t dotExtension[32] = L"."; // arbitrary buffer length
 		lstrcatW(dotExtension, extension);
 		return str::ends_withi(filePath, dotExtension);
 	}
@@ -58,9 +58,9 @@ public:
 
 	static std::wstring& change_extension(std::wstring& filePath, const wchar_t* newExtension) {
 		size_t dotIdx = filePath.find_last_of(L'.');
-		if (dotIdx != std::wstring::npos) {
+		if (dotIdx != std::wstring::npos) { // filePath already have an extension
 			filePath.resize(dotIdx + 1); // truncate after the dot
-		} else {
+		} else { // filePath doesn't have an extension
 			filePath.append(1, L'.');
 		}
 		filePath.append(newExtension[0] == L'.' ? newExtension + 1 : newExtension);

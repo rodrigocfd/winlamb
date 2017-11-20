@@ -17,7 +17,8 @@
 namespace wl {
 namespace wli {
 
-class ui_thread : public inventory {
+template<typename retT, retT RET_VAL>
+class ui_thread : public inventory<retT> {
 private:
 	struct _callback_pack final {
 		std::function<void()> func;
@@ -26,10 +27,10 @@ private:
 	static const UINT WM_THREAD_MESSAGE = WM_APP + 0x3FFF;
 
 protected:
-	ui_thread(LONG_PTR procRetVal) {
-		this->on_message(WM_THREAD_MESSAGE, [this, procRetVal](params p)->LONG_PTR {
+	ui_thread() {
+		this->on_message(WM_THREAD_MESSAGE, [this](params p)->retT {
 			this->_process_threaded(p);
-			return procRetVal; // 0 for windows, TRUE for dialogs
+			return RET_VAL; // 0 for windows, TRUE for dialogs
 		});
 	}
 

@@ -7,7 +7,6 @@
 
 #pragma once
 #include "internals/dialog.h"
-#include "internals/user_control.h"
 
 /**
  * hwnd_wrapper
@@ -21,9 +20,9 @@
 namespace wl {
 
 // Inherit from this class to have a dialog to be used as a control within a parent window.
-class dialog_control : public wli::dialog<wli::user_control> {
+class dialog_control : public wli::dialog_user_control {
 protected:
-	struct setup_vars final : public wli::dialog<wli::user_control>::setup_vars { };
+	struct setup_vars final : public wli::dialog_user_control::setup_vars { };
 
 	setup_vars setup;
 
