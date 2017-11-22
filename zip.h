@@ -19,10 +19,10 @@ private:
 
 public:
 	static void extract_all(const std::wstring& zipFile, const std::wstring& destFolder) {
-		if (!file::exists(zipFile)) {
+		if (!file::util::exists(zipFile)) {
 			throw std::invalid_argument("File doesn't exist.");
 		}
-		if (!file::exists(destFolder)) {
+		if (!file::util::exists(destFolder)) {
 			throw std::invalid_argument("Output directory doesn't exist.");
 		}
 

@@ -78,7 +78,7 @@ private:
 		if (msg == WM_INITDIALOG) {
 			pSelf = reinterpret_cast<dialog*>(lp);
 			SetWindowLongPtrW(hDlg, DWLP_USER, reinterpret_cast<LONG_PTR>(pSelf));
-			font::set_ui_on_children(hDlg); // if user creates controls manually, font must be set manually on them
+			font::util::set_ui_on_children(hDlg); // if user creates controls manually, font must be set manually on them
 			pSelf->_hWnd = hDlg; // store HWND
 		} else {
 			pSelf = reinterpret_cast<dialog*>(GetWindowLongPtrW(hDlg, DWLP_USER));

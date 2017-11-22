@@ -64,6 +64,7 @@ public:
 		return this->create(lf);
 	}
 
+	// Create the same exact font used by UI, like Tahoma or Segoe UI.
 	font& create_ui() {
 		OSVERSIONINFO ovi{};
 		ovi.dwOSVersionInfoSize = sizeof(ovi);
@@ -82,38 +83,47 @@ public:
 		return this->create(ncm.lfMenuFont); // Tahoma/Segoe
 	}
 
-	static void set_ui_on_children(HWND hParent) {
-		static font oneFont; // keep one single font instance for all windows
-		if (!oneFont._hFont) oneFont.create_ui();
+public:
+	class util final {
+	private:
+		util() = delete;
 
-		SendMessageW(hParent, WM_SETFONT,
-			reinterpret_cast<WPARAM>(oneFont._hFont),
-			MAKELPARAM(FALSE, 0));
-		EnumChildWindows(hParent, [](HWND hWnd, LPARAM lp)->BOOL {
-			SendMessageW(hWnd, WM_SETFONT,
-				reinterpret_cast<WPARAM>(reinterpret_cast<HFONT>(lp)),
-				MAKELPARAM(FALSE, 0)); // will run on each child
-			return TRUE;
-		}, reinterpret_cast<LPARAM>(oneFont._hFont));
-	}
+	public:
+		// Apply default UI font on all children of the window.
+		static void set_ui_on_children(HWND hParent) {
+			static font oneFont; // keep one single font instance for all windows
+			if (!oneFont._hFont) oneFont.create_ui();
 
-	static bool exists(const wchar_t* fontName) {
-		// http://cboard.cprogramming.com/windows-programming/90066-how-determine-if-font-support-unicode.html
-		bool isInstalled = false;
-		HDC hdc = GetDC(nullptr);
-		if (!hdc) {
-			throw std::system_error(GetLastError(), std::system_category(),
-				"GetDC failed when checking if font exists");
+			SendMessageW(hParent, WM_SETFONT,
+				reinterpret_cast<WPARAM>(oneFont._hFont),
+				MAKELPARAM(FALSE, 0));
+			EnumChildWindows(hParent, [](HWND hWnd, LPARAM lp)->BOOL {
+				SendMessageW(hWnd, WM_SETFONT,
+					reinterpret_cast<WPARAM>(reinterpret_cast<HFONT>(lp)),
+					MAKELPARAM(FALSE, 0)); // will run on each child
+				return TRUE;
+			}, reinterpret_cast<LPARAM>(oneFont._hFont));
 		}
-		EnumFontFamiliesW(hdc, fontName,
-			[](const LOGFONT* lpelf, const TEXTMETRIC* lpntm, DWORD fontType, LPARAM lp)->int {
-				bool* pIsInstalled = reinterpret_cast<bool*>(lp);
-				*pIsInstalled = true; // if we're here, font does exist
-				return 0;
-			}, reinterpret_cast<LPARAM>(&isInstalled));
-		ReleaseDC(nullptr, hdc);
-		return isInstalled;
-	}
+
+		// Checks if the font is currently installed.
+		static bool exists(const wchar_t* fontName) {
+			// http://cboard.cprogramming.com/windows-programming/90066-how-determine-if-font-support-unicode.html
+			bool isInstalled = false;
+			HDC hdc = GetDC(nullptr);
+			if (!hdc) {
+				throw std::system_error(GetLastError(), std::system_category(),
+					"GetDC failed when checking if font exists");
+			}
+			EnumFontFamiliesW(hdc, fontName,
+				[](const LOGFONT* lpelf, const TEXTMETRIC* lpntm, DWORD fontType, LPARAM lp)->int {
+					bool* pIsInstalled = reinterpret_cast<bool*>(lp);
+					*pIsInstalled = true; // if we're here, font does exist
+					return 0;
+				}, reinterpret_cast<LPARAM>(&isInstalled));
+			ReleaseDC(nullptr, hdc);
+			return isInstalled;
+		}
+	};
 };
 
 }//namespace wl

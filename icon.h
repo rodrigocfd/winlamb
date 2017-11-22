@@ -76,7 +76,7 @@ public:
 		lstrcpyW(extens, (fileExtension[0] == L'.') ? L"*" : L"*."); // prepend dot if it doesn't have
 		lstrcatW(extens, fileExtension);
 
-		com::lib comLib(com::lib::init::NOW);
+		com::lib comLib{com::lib::init::NOW};
 		SHFILEINFO shfi{};
 
 		if (resolution == res::SMALL16 || resolution == res::LARGE32) { // http://stackoverflow.com/a/28015423
@@ -149,16 +149,23 @@ public:
 	}
 
 	res resolution_type() const {
-		return resolution_resolve_type(this->resolution());
+		return util::resolve_resolution_type(this->resolution());
 	}
 
-	static res resolution_resolve_type(SIZE sz) {
-		if (sz.cx == 16 && sz.cy == 16) return res::SMALL16;
-		else if (sz.cx == 32 && sz.cy == 32) return res::LARGE32;
-		else if (sz.cx == 48 && sz.cy == 48) return res::EXTRALARGE48;
-		else if (sz.cx == 256 && sz.cy == 256) return res::JUMBO256;
-		return res::OTHER;
-	}
+public:
+	class util final {
+	private:
+		util() = delete;
+
+	public:
+		static res resolve_resolution_type(SIZE sz) {
+			if (sz.cx == 16 && sz.cy == 16) return res::SMALL16;
+			else if (sz.cx == 32 && sz.cy == 32) return res::LARGE32;
+			else if (sz.cx == 48 && sz.cy == 48) return res::EXTRALARGE48;
+			else if (sz.cx == 256 && sz.cy == 256) return res::JUMBO256;
+			return res::OTHER;
+		}
+	};
 };
 
 }//namespace wl

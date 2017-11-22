@@ -38,6 +38,7 @@ protected:
 	}
 
 public:
+	// Shows the modal dialog, returning only after the modal is closed.
 	int show(HWND hParent) {
 		this->_basic_initial_checks(this->setup);
 
@@ -60,6 +61,7 @@ public:
 	}
 
 protected:
+	// Centers the modal dialog onto its parent.
 	void center_on_parent() const {
 		RECT rc{}, rcParent{};
 		GetWindowRect(this->hwnd(), &rc);

@@ -144,20 +144,26 @@ public:
 	}
 
 public:
-	static void quick_read_to_buffer(const wchar_t* filePath, std::vector<BYTE>& buf) {
-		file_mapped fin;
-		fin.open(filePath, file::access::READONLY);
-		fin.read_to_buffer(buf);
-	}
+	class util final {
+	private:
+		util() = delete;
 
-	static std::vector<BYTE> quick_read(const wchar_t* filePath) {
-		std::vector<BYTE> buf;
-		quick_read_to_buffer(filePath, buf);
-		return buf;
-	}
+	public:
+		static void read_to_buffer(const wchar_t* filePath, std::vector<BYTE>& buf) {
+			file_mapped fin;
+			fin.open(filePath, file::access::READONLY);
+			fin.read_to_buffer(buf);
+		}
 
-	static void              quick_read_to_buffer(const std::wstring& filePath, std::vector<BYTE>& buf) { quick_read_to_buffer(filePath.c_str(), buf); }
-	static std::vector<BYTE> quick_read(const std::wstring& filePath)                                   { return quick_read(filePath.c_str()); }
+		static std::vector<BYTE> read(const wchar_t* filePath) {
+			std::vector<BYTE> buf;
+			read_to_buffer(filePath, buf);
+			return buf;
+		}
+
+		static void              read_to_buffer(const std::wstring& filePath, std::vector<BYTE>& buf) { read_to_buffer(filePath.c_str(), buf); }
+		static std::vector<BYTE> read(const std::wstring& filePath)                                   { return read(filePath.c_str()); }
+	};
 };
 
 }//namespace wl

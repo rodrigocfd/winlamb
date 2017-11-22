@@ -61,16 +61,19 @@ public:
 		return *this;
 	}
 
+	// Defines a lambda to be called once, right after the download starts.
 	download& on_start(std::function<void()> callback) {
 		this->_startCallback = std::move(callback);
 		return *this;
 	}
 
+	// Defines a lambda do be called each time a chunk of bytes is received.
 	download& on_progress(std::function<void()> callback) {
 		this->_progressCallback = std::move(callback);
 		return *this;
 	}
 
+	// Effectively starts the download, returning only after it completes.
 	download& start() {
 		if (this->_hConnect) {
 			throw std::logic_error("A download is already in progress.");
@@ -107,9 +110,10 @@ public:
 	size_t                                      get_content_length() const   { return this->_contentLength; }
 	size_t                                      get_total_downloaded() const { return this->_totalGot; }
 
+	// If server informed content length, returns a value between 0 and 100.
 	float get_percent() const {
 		return this->_contentLength ?
-			(static_cast<float>(this->_totalGot) / this->_contentLength) * 100 : // 0 to 100
+			(static_cast<float>(this->_totalGot) / this->_contentLength) * 100 :
 			0;
 	}
 

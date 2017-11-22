@@ -50,6 +50,7 @@ public:
 		return this->_hFile;
 	}
 
+	// Tells if the file was opened as read/write or read-only.
 	access access_type() const {
 		return this->_access;
 	}
@@ -64,6 +65,7 @@ public:
 		return *this;
 	}
 
+	// Retrieve the file size in bytes.
 	size_t size() {
 		if (this->_sz == -1) {
 			this->_sz = GetFileSize(this->_hFile, nullptr); // cache
@@ -98,8 +100,9 @@ private:
 	}
 
 public:
+	// Opens a file, throwing an exception if it doesn't exist.
 	file& open_existing(const wchar_t* filePath, access accessType) {
-		if (!file::exists(filePath)) {
+		if (!util::exists(filePath)) {
 			throw std::invalid_argument("File doesn't exist.");
 		}
 		return this->_raw_open(filePath,
@@ -108,15 +111,17 @@ public:
 			OPEN_EXISTING); // fails if file doesn't exist
 	}
 
+	// Opens a file, throwing an exception if it doesn't exist.
 	file& open_existing(const std::wstring& filePath, access accessType) {
 		return this->open_existing(filePath.c_str(), accessType);
 	}
 
+	// Opens a file as read/write, creates if it doesn't exist.
 	file& open_or_create(const wchar_t* filePath) {
-		// Intended to be called when you want to save a file, so it's always READWRITE.
 		return this->_raw_open(filePath, GENERIC_READ | GENERIC_WRITE, 0, OPEN_ALWAYS);
 	}
 
+	// Opens a file as read/write, creates if it doesn't exist.
 	file& open_or_create(const std::wstring& filePath) {
 		return this->open_or_create(filePath.c_str());
 	}
@@ -135,19 +140,18 @@ private:
 	}
 
 public:
-	file& set_new_size(size_t newSize) {
-		// This method will truncate or expand the file, according to the new size.
-		// Size zero will empty the file.
+	// Truncates or expands the file, according to the new size; zero will empty the file.
+	file& set_new_size(size_t numBytes) {
 		this->_check_file_opened();
 		this->_check_file_read_only();
-		if (this->size() == newSize) return *this; // nothing to do
+		if (this->size() == numBytes) return *this; // nothing to do
 
 		auto tooBad = [this](DWORD err, const char* msg)->void {
 			this->close();
 			throw std::system_error(err, std::system_category(), msg);
 		};
 
-		DWORD r = SetFilePointer(this->_hFile, static_cast<LONG>(newSize), nullptr, FILE_BEGIN);
+		DWORD r = SetFilePointer(this->_hFile, static_cast<LONG>(numBytes), nullptr, FILE_BEGIN);
 		if (r == INVALID_SET_FILE_POINTER) {
 			tooBad(GetLastError(), "SetFilePointer failed when setting new file size");
 		}
@@ -161,10 +165,11 @@ public:
 			tooBad(GetLastError(), "SetFilePointer failed to rewind the file pointer when setting new file size");
 		}
 
-		this->_sz = newSize; // update
+		this->_sz = numBytes; // update
 		return *this;
 	}
 
+	// Calls SetFilePointer to set internal pointer to begin of the file.
 	file& rewind() {
 		this->_check_file_opened();
 		if (SetFilePointer(this->_hFile, 0, nullptr, FILE_BEGIN) == INVALID_SET_FILE_POINTER) {
@@ -174,6 +179,7 @@ public:
 		return *this;
 	}
 
+	// Reads all file content at once into a buffer.
 	file& read_to_buffer(std::vector<BYTE>& buf) {
 		this->_check_file_opened();
 		buf.resize(this->size());
@@ -185,6 +191,7 @@ public:
 		return *this;
 	}
 
+	// Retrieves all file content at once.
 	std::vector<BYTE> read() {
 		std::vector<BYTE> buf;
 		this->read_to_buffer(buf);
@@ -209,6 +216,7 @@ public:
 		return this->write(&data[0], data.size());
 	}
 
+	// Gets creation, last access and last write dates.
 	dates get_dates() const {
 		this->_check_file_opened();
 		FILETIME ftCreation{}, ftLastAccess{}, ftLastWrite{};
@@ -220,117 +228,123 @@ public:
 	}
 
 public:
-	static void quick_read_to_buffer(const wchar_t* filePath, std::vector<BYTE>& buf) {
-		file fin;
-		fin.open_existing(filePath, access::READONLY);
-		fin.read_to_buffer(buf);
-	}
+	class util final {
+	private:
+		util() = delete;
 
-	static std::vector<BYTE> quick_read(const wchar_t* filePath) {
-		std::vector<BYTE> buf;
-		quick_read_to_buffer(filePath, buf);
-		return buf;
-	}
-
-	static void              quick_read_to_buffer(const std::wstring& filePath, std::vector<BYTE>& buf) { quick_read_to_buffer(filePath.c_str(), buf); }
-	static std::vector<BYTE> quick_read(const std::wstring& filePath)                                   { return quick_read(filePath.c_str()); }
-
-	static void quick_write(const wchar_t* filePath, const BYTE* pData, size_t sz) {
-		file fout;
-		fout.open_or_create(filePath);
-		fout.set_new_size(sz);
-		fout.write(pData, sz);
-	}
-
-	static void quick_write(const std::wstring& filePath, const BYTE* pData, size_t sz)  { quick_write(filePath.c_str(), pData, sz); }
-	static void quick_write(const wchar_t* filePath, const std::vector<BYTE>& data)      { quick_write(filePath, &data[0], data.size()); }
-	static void quick_write(const std::wstring& filePath, const std::vector<BYTE>& data) { quick_write(filePath.c_str(), &data[0], data.size()); }
-
-	static bool exists(const wchar_t* fileOrFolder) {
-		return GetFileAttributesW(fileOrFolder) != INVALID_FILE_ATTRIBUTES;
-	}
-
-	static bool is_dir(const wchar_t* thePath) {
-		return (GetFileAttributesW(thePath) & FILE_ATTRIBUTE_DIRECTORY) != 0;
-	}
-
-	static bool is_hidden(const wchar_t* thePath) {
-		return (GetFileAttributesW(thePath) & FILE_ATTRIBUTE_HIDDEN) != 0;
-	}
-
-	static bool exists(const std::wstring& fileOrFolder) { return exists(fileOrFolder.c_str()); }
-	static bool is_dir(const std::wstring& thePath)      { return is_dir(thePath.c_str()); }
-	static bool is_hidden(const std::wstring& thePath)   { return is_hidden(thePath.c_str()); }
-
-	static void del(const std::wstring& fileOrFolder) {
-		if (is_dir(fileOrFolder)) {
-			// http://stackoverflow.com/q/1468774/6923555
-			wchar_t szDir[MAX_PATH + 1]{}; // +1 for the double null terminate
-			lstrcpyW(szDir, fileOrFolder.c_str());
-
-			SHFILEOPSTRUCTW fos{};
-			fos.wFunc  = FO_DELETE;
-			fos.pFrom  = szDir;
-			fos.fFlags = FOF_NO_UI;
-
-			if (SHFileOperationW(&fos)) {
-				throw std::system_error(ERROR_INVALID_FUNCTION, std::system_category(), // arbitrary error code
-					"SHFileOperation failed to recursively delete directory, can't specify error");
-			}
-		} else {
-			if (!DeleteFileW(fileOrFolder.c_str())) {
-				throw std::system_error(GetLastError(), std::system_category(),
-					"DeleteFile failed");
-			}
+	public:
+		static void read_to_buffer(const wchar_t* filePath, std::vector<BYTE>& buf) {
+			file fin;
+			fin.open_existing(filePath, access::READONLY);
+			fin.read_to_buffer(buf);
 		}
-	}
 
-	static void create_dir(const wchar_t* thePath) {
-		if (!CreateDirectoryW(thePath, nullptr)) {
-			throw std::system_error(GetLastError(), std::system_category(),
-				"CreateDirectory failed");
+		static std::vector<BYTE> read(const wchar_t* filePath) {
+			std::vector<BYTE> buf;
+			read_to_buffer(filePath, buf);
+			return buf;
 		}
-	}
 
-	static void create_dir(const std::wstring& thePath) {
-		create_dir(thePath.c_str());
-	}
+		static void              read_to_buffer(const std::wstring& filePath, std::vector<BYTE>& buf) { read_to_buffer(filePath.c_str(), buf); }
+		static std::vector<BYTE> read(const std::wstring& filePath)                                   { return read(filePath.c_str()); }
 
-	static std::vector<std::wstring> list_dir(const std::wstring& pathAndPattern) {
-		// Entry example: "C:\\myfolder\\*.mp3"
-		std::vector<std::wstring> files;
+		static void write(const wchar_t* filePath, const BYTE* pData, size_t sz) {
+			file fout;
+			fout.open_or_create(filePath);
+			fout.set_new_size(sz);
+			fout.write(pData, sz);
+		}
 
-		WIN32_FIND_DATA wfd{};
-		HANDLE hFind = FindFirstFileW(pathAndPattern.c_str(), &wfd);
-		if (hFind == INVALID_HANDLE_VALUE) {
-			DWORD err = GetLastError();
-			if (err == ERROR_FILE_NOT_FOUND) {
-				return files;
+		static void write(const std::wstring& filePath, const BYTE* pData, size_t sz)  { write(filePath.c_str(), pData, sz); }
+		static void write(const wchar_t* filePath, const std::vector<BYTE>& data)      { write(filePath, &data[0], data.size()); }
+		static void write(const std::wstring& filePath, const std::vector<BYTE>& data) { write(filePath.c_str(), &data[0], data.size()); }
+
+		static bool exists(const wchar_t* fileOrFolder) {
+			return GetFileAttributesW(fileOrFolder) != INVALID_FILE_ATTRIBUTES;
+		}
+
+		static bool is_dir(const wchar_t* thePath) {
+			return (GetFileAttributesW(thePath) & FILE_ATTRIBUTE_DIRECTORY) != 0;
+		}
+
+		static bool is_hidden(const wchar_t* thePath) {
+			return (GetFileAttributesW(thePath) & FILE_ATTRIBUTE_HIDDEN) != 0;
+		}
+
+		static bool exists(const std::wstring& fileOrFolder) { return exists(fileOrFolder.c_str()); }
+		static bool is_dir(const std::wstring& thePath)      { return is_dir(thePath.c_str()); }
+		static bool is_hidden(const std::wstring& thePath)   { return is_hidden(thePath.c_str()); }
+
+		static void del(const std::wstring& fileOrFolder) {
+			if (is_dir(fileOrFolder)) {
+				// http://stackoverflow.com/q/1468774/6923555
+				wchar_t szDir[MAX_PATH + 1]{}; // +1 for the double null terminate
+				lstrcpyW(szDir, fileOrFolder.c_str());
+
+				SHFILEOPSTRUCTW fos{};
+				fos.wFunc  = FO_DELETE;
+				fos.pFrom  = szDir;
+				fos.fFlags = FOF_NO_UI;
+
+				if (SHFileOperationW(&fos)) {
+					throw std::system_error(ERROR_INVALID_FUNCTION, std::system_category(), // arbitrary error code
+						"SHFileOperation failed to recursively delete directory, can't specify error");
+				}
 			} else {
-				throw std::system_error(err, std::system_category(),
-					"FindFirstFile failed");
+				if (!DeleteFileW(fileOrFolder.c_str())) {
+					throw std::system_error(GetLastError(), std::system_category(),
+						"DeleteFile failed");
+				}
 			}
 		}
 
-		std::wstring pathPat = pathAndPattern.substr(0,
-			pathAndPattern.find_last_of(L'\\')); // no trailing backslash
-		do {
-			if (*wfd.cFileName) {
-				files.emplace_back(pathPat);
-				files.back().append(L"\\").append(wfd.cFileName);
+		static void create_dir(const wchar_t* thePath) {
+			if (!CreateDirectoryW(thePath, nullptr)) {
+				throw std::system_error(GetLastError(), std::system_category(),
+					"CreateDirectory failed");
 			}
-		} while (FindNextFileW(hFind, &wfd));
+		}
 
-		FindClose(hFind);
-		return files;
-	}
+		static void create_dir(const std::wstring& thePath) {
+			create_dir(thePath.c_str());
+		}
 
-	static std::vector<std::wstring> list_dir(const std::wstring& dirPath, const std::wstring& pattern) {
+		static std::vector<std::wstring> list_dir(const std::wstring& pathAndPattern) {
+			// Entry example: "C:\\myfolder\\*.mp3"
+			std::vector<std::wstring> files;
+
+			WIN32_FIND_DATA wfd{};
+			HANDLE hFind = FindFirstFileW(pathAndPattern.c_str(), &wfd);
+			if (hFind == INVALID_HANDLE_VALUE) {
+				DWORD err = GetLastError();
+				if (err == ERROR_FILE_NOT_FOUND) {
+					return files;
+				} else {
+					throw std::system_error(err, std::system_category(),
+						"FindFirstFile failed");
+				}
+			}
+
+			std::wstring pathPat = pathAndPattern.substr(0,
+				pathAndPattern.find_last_of(L'\\')); // no trailing backslash
+			do {
+				if (*wfd.cFileName) {
+					files.emplace_back(pathPat);
+					files.back().append(L"\\").append(wfd.cFileName);
+				}
+			} while (FindNextFileW(hFind, &wfd));
+
+			FindClose(hFind);
+			return files;
+		}
+
+		static std::vector<std::wstring> list_dir(const std::wstring& dirPath, const std::wstring& pattern) {
 		std::wstring pathAndPattern = dirPath;
 		if (pathAndPattern.back() != L'\\') pathAndPattern.append(L"\\");
 		pathAndPattern.append(pattern);
 		return list_dir(pathAndPattern);
 	}
+	};
 };
 
 }//namespace wl

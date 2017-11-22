@@ -183,7 +183,7 @@ public:
 	}
 
 	static bool choose_folder(HWND hParent, std::wstring& buf) {
-		com::lib comLib(com::lib::init::NOW);
+		com::lib comLib{com::lib::init::NOW};
 		//LPITEMIDLIST pidlRoot = 0;
 		//if (defFolder) SHParseDisplayName(defFolder, nullptr, &pidlRoot, 0, nullptr);
 

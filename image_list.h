@@ -92,7 +92,7 @@ public:
 	}
 
 	image_list& load_from_shell(const wchar_t* fileExtension) {
-		icon::res iRes = icon::resolution_resolve_type(this->resolution());
+		icon::res iRes = icon::util::resolve_resolution_type(this->resolution());
 		if (iRes == icon::res::OTHER) {
 			throw std::logic_error("Trying to load icon from shell with unsupported resolution.");
 		}
