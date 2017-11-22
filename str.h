@@ -51,6 +51,7 @@ public:
 		return s;
 	}
 
+	// Removes any padding zeroes after the string, making size correct.
 	static std::wstring& trim_nulls(std::wstring& s) {
 		// When a std::wstring is initialized with any length, possibly to be used as a buffer,
 		// the string length may not match the size() method, after the operation.
@@ -97,10 +98,12 @@ public:
 		return _raw_format(strFormat.length(), strFormat.c_str(), std::forward<const argsT&>(args)...);
 	}
 
+	// Compares two strings, case insensitive.
 	static bool eqi(const std::wstring& s, const wchar_t* what) {
-		return !lstrcmpiW(s.c_str(), what); // eq() is just operator==()
+		return !lstrcmpiW(s.c_str(), what); // eq() would be just operator==()
 	}
 
+	// Compares two strings, case insensitive.
 	static bool eqi(const std::wstring& s, const std::wstring& what) {
 		return eqi(s.c_str(), what.c_str());
 	}
@@ -161,8 +164,8 @@ public:
 		return ret;
 	}
 
+	// Simple diacritics removal.
 	static std::wstring& remove_diacritics(std::wstring& s) {
-		// Simple diacritics removal.
 		const wchar_t* diacritics   = L"ÁáÀàÃãÂâÄäÉéÈèÊêËëÍíÌìÎîÏïÓóÒòÕõÔôÖöÚúÙùÛûÜüÇçÅåĞğÑñØøİı";
 		const wchar_t* replacements = L"AaAaAaAaAaEeEeEeEeIiIiIiIiOoOoOoOoOoUuUuUuUuCcAaDdNnOoYy";
 		for (wchar_t& ch : s) {
@@ -177,6 +180,7 @@ public:
 		return s;
 	}
 
+	// Finds index of substring within string, case insensitive.
 	static size_t findi(const std::wstring& s, const wchar_t* what, size_t offset = 0) {
 		std::wstring s2 = upper(s);
 		std::wstring what2(what);
@@ -184,6 +188,7 @@ public:
 		return s2.find(what2, offset);
 	}
 
+	// Finds index of substring within string, case insensitive, reverse search.
 	static size_t rfindi(const std::wstring& s, const wchar_t* what, size_t offset = 0) {
 		std::wstring s2 = upper(s);
 		std::wstring what2(what);
@@ -238,6 +243,7 @@ public:
 		return haystack;
 	}
 
+	// Does the string represent a signed int?
 	static bool is_int(const std::wstring& s) {
 		if (s.empty()) return false;
 		if (s[0] != L'-' && !iswdigit(s[0]) && !iswblank(s[0])) return false;
@@ -247,6 +253,7 @@ public:
 		return true;
 	}
 
+	// Does the string represent an unsigned int?
 	static bool is_uint(const std::wstring& s) {
 		if (s.empty()) return false;
 		for (wchar_t ch : s) {
@@ -255,6 +262,7 @@ public:
 		return true;
 	}
 
+	// Does the string represent a hexadecimal int?
 	static bool is_hex(const std::wstring& s) {
 		if (s.empty()) return false;
 		for (wchar_t ch : s) {
@@ -263,6 +271,7 @@ public:
 		return true;
 	}
 
+	// Does the string represent a float?
 	static bool is_float(const std::wstring& s) {
 		if (s.empty()) return false;
 		if (s[0] != L'-' && s[0] != L'.' && !iswdigit(s[0]) && !iswblank(s[0])) return false;
@@ -282,9 +291,10 @@ public:
 		return true;
 	}
 
+	// Converts int to string, adding thousand separator.
 	static std::wstring parse_int_with_separator(int number, wchar_t separator = L',') {
 		std::wstring ret;
-		ret.reserve(16); // arbitrary
+		ret.reserve(32); // arbitrary
 
 		int abso = abs(number);
 		BYTE blocks = 0;
@@ -322,10 +332,12 @@ public:
 		return ret;
 	}
 
+	// Converts unsigned int to string, adding thousand separator.
 	static std::wstring parse_uint_with_separator(size_t number, wchar_t separator = L',') {
 		return parse_int_with_separator(static_cast<int>(number), separator);
 	}
 
+	// Splits the string at the given characters.
 	static std::vector<std::wstring> explode(const std::wstring& s, const wchar_t* delimiter) {
 		std::vector<std::wstring> ret;
 		if (s.empty() || !delimiter) return ret;
@@ -346,10 +358,12 @@ public:
 		return ret;
 	}
 
+	// Splits the string at the given characters.
 	static std::vector<std::wstring> explode(const std::wstring& s, const std::wstring& delimiter) {
 		return explode(s, delimiter.c_str());
 	}
 
+	// Splits a zero-delimited multi-string.
 	static std::vector<std::wstring> explode_multi_zero(const wchar_t* s) {
 		// Example multi-zero string:
 		// L"first one\0second one\0third one\0"
@@ -376,6 +390,7 @@ public:
 		return ret;
 	}
 
+	// Splits string into tokens, which may be enclosed in double quotes.
 	static std::vector<std::wstring> explode_quoted(const wchar_t* s) {
 		// Example quoted string:
 		// "First one" NoQuoteSecond "Third one"

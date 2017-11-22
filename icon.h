@@ -70,6 +70,7 @@ public:
 			reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hParent, GWLP_HINSTANCE)));
 	}
 
+	// Loads the icon used by Windows Explorer to represent the given file type.
 	icon& load_from_shell(const wchar_t* fileExtension, res resolution) {
 		this->destroy();
 		wchar_t extens[16]{}; // arbitrary length
@@ -158,6 +159,7 @@ public:
 		util() = delete;
 
 	public:
+		// Converts a SIZE resolution to the equivalent enum value.
 		static res resolve_resolution_type(SIZE sz) {
 			if (sz.cx == 16 && sz.cy == 16) return res::SMALL16;
 			else if (sz.cx == 32 && sz.cy == 32) return res::LARGE32;

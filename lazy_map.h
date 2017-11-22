@@ -49,6 +49,7 @@ public:
 		return ite->value;
 	}
 
+	// Returns pointer to value, if key doesn't exist returns nullptr.
 	const valueT* get_if_exists(const keyT& key) const {
 		// Saves time, instead of calling has() and operator[]().
 		std::vector<entry>::const_iterator ite = this->_find(key);
@@ -56,12 +57,14 @@ public:
 			nullptr : &ite->value;
 	}
 
+	// Returns pointer to value, if key doesn't exist returns nullptr.
 	valueT* get_if_exists(const keyT& key) {
 		std::vector<entry>::iterator ite = this->_find(key);
 		return (ite == this->_entries.end()) ?
 			nullptr : &ite->value;
 	}
 
+	// Does the key exist?
 	bool has(const keyT& key) const {
 		return this->_find(key) != this->_entries.cend();
 	}

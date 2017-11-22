@@ -204,6 +204,7 @@ public:
 			(numChars == std::wstring::npos) ? text.length() : numChars);
 	}
 
+	// Gets box size according to GetTextExtentPoint32 function.
 	SIZE get_text_extent(const wchar_t* text, size_t numChars = std::wstring::npos) const {
 		SIZE sz{};
 		GetTextExtentPoint32W(this->_hDC, text,
@@ -274,7 +275,7 @@ protected:
 
 public:
 	~device_context_simple() {
-		EndPaint(this->device_context::_hWnd, &this->_ps);
+		EndPaint(this->_hWnd, &this->_ps);
 	}
 
 	explicit device_context_simple(HWND hWnd) :
@@ -294,26 +295,24 @@ public:
 	~device_context_buffered() {
 		BITMAP bm{}; // http://www.ureader.com/msg/14721900.aspx
 		GetObjectW(this->_hBmp, sizeof(bm), &bm);
-		BitBlt(this->device_context_simple::_ps.hdc, 0, 0, bm.bmWidth, bm.bmHeight,
-			this->device_context::_hDC, 0, 0, SRCCOPY);
-		DeleteObject(SelectObject(this->device_context::_hDC, this->_hBmpOld));
+		BitBlt(this->_ps.hdc, 0, 0, bm.bmWidth, bm.bmHeight,
+			this->_hDC, 0, 0, SRCCOPY);
+		DeleteObject(SelectObject(this->_hDC, this->_hBmpOld));
 		DeleteObject(this->_hBmp);
-		DeleteDC(this->device_context::_hDC);
+		DeleteDC(this->_hDC);
 		// ~device_context_simple() kicks in
 	}
 
 	explicit device_context_buffered(HWND hWnd) : device_context_simple(hWnd) {
 		// In order to make the double-buffer work, you must
 		// return zero on WM_ERASEBKGND message handling.
-		this->device_context::_hDC = CreateCompatibleDC(this->device_context_simple::_ps.hdc); // overwrite our painting HDC
-		this->_hBmp = CreateCompatibleBitmap(this->device_context_simple::_ps.hdc,
-			this->device_context::_sz.cx, this->device_context::_sz.cy);
-		this->_hBmpOld = reinterpret_cast<HBITMAP>(
-			SelectObject(this->device_context::_hDC, this->_hBmp));
+		this->_hDC = CreateCompatibleDC(this->_ps.hdc); // overwrite our painting HDC
+		this->_hBmp = CreateCompatibleBitmap(this->_ps.hdc, this->_sz.cx, this->_sz.cy);
+		this->_hBmpOld = reinterpret_cast<HBITMAP>(SelectObject(this->_hDC, this->_hBmp));
 
-		RECT rcClient = {0, 0, this->device_context::_sz.cx, this->device_context::_sz.cy};
-		FillRect(this->device_context::_hDC, &rcClient,
-			reinterpret_cast<HBRUSH>(GetClassLongPtrW(this->device_context::_hWnd, GCLP_HBRBACKGROUND)) );
+		RECT rcClient = {0, 0, this->_sz.cx, this->_sz.cy};
+		FillRect(this->_hDC, &rcClient,
+			reinterpret_cast<HBRUSH>(GetClassLongPtrW(this->_hWnd, GCLP_HBRBACKGROUND)) );
 	}
 
 	explicit device_context_buffered(const wli::hwnd_wrapper* wnd)

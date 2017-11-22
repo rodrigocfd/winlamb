@@ -81,39 +81,41 @@ public:
 		return *this;
 	}
 
+	// Updates controls, intended to be called with parent's WM_SIZE processing.
 	void arrange(const params& p) const {
-		// Intended to be called with parent's WM_SIZE processing.
 		int state = static_cast<int>(p.wParam);
 		int cx    = LOWORD(p.lParam);
 		int cy    = HIWORD(p.lParam);
 
-		if (this->_ctrls.size() && state != SIZE_MINIMIZED) { // only if created() was called; if minimized, no need to resize
-			HDWP hdwp = BeginDeferWindowPos(static_cast<int>(this->_ctrls.size()));
-			for (const _ctrl& control : this->_ctrls) {
-				UINT uFlags = SWP_NOZORDER;
-				if (control.modeHorz == go::REPOS && control.modeVert == go::REPOS) { // reposition both vert & horz
-					uFlags |= SWP_NOSIZE;
-				} else if (control.modeHorz == go::RESIZE && control.modeVert == go::RESIZE) { // resize both vert & horz
-					uFlags |= SWP_NOMOVE;
-				}
-
-				DeferWindowPos(hdwp, control.hChild, nullptr,
-					control.modeHorz == go::REPOS ?
-					cx - this->_szOrig.cx + control.rcOrig.left :
-					control.rcOrig.left, // keep original pos
-					control.modeVert == go::REPOS ?
-					cy - this->_szOrig.cy + control.rcOrig.top :
-					control.rcOrig.top, // keep original pos
-					control.modeHorz == go::RESIZE ?
-					cx - this->_szOrig.cx + control.rcOrig.right - control.rcOrig.left :
-					control.rcOrig.right - control.rcOrig.left, // keep original width
-					control.modeVert == go::RESIZE ?
-					cy - this->_szOrig.cy + control.rcOrig.bottom - control.rcOrig.top :
-					control.rcOrig.bottom - control.rcOrig.top, // keep original height
-					uFlags);
-			}
-			EndDeferWindowPos(hdwp);
+		if (this->_ctrls.empty() || state == SIZE_MINIMIZED) {
+			return; // only if created() was called; if minimized, no need to resize
 		}
+
+		HDWP hdwp = BeginDeferWindowPos(static_cast<int>(this->_ctrls.size()));
+		for (const _ctrl& control : this->_ctrls) {
+			UINT uFlags = SWP_NOZORDER;
+			if (control.modeHorz == go::REPOS && control.modeVert == go::REPOS) { // reposition both vert & horz
+				uFlags |= SWP_NOSIZE;
+			} else if (control.modeHorz == go::RESIZE && control.modeVert == go::RESIZE) { // resize both vert & horz
+				uFlags |= SWP_NOMOVE;
+			}
+
+			DeferWindowPos(hdwp, control.hChild, nullptr,
+				control.modeHorz == go::REPOS ?
+				cx - this->_szOrig.cx + control.rcOrig.left :
+				control.rcOrig.left, // keep original pos
+				control.modeVert == go::REPOS ?
+				cy - this->_szOrig.cy + control.rcOrig.top :
+				control.rcOrig.top, // keep original pos
+				control.modeHorz == go::RESIZE ?
+				cx - this->_szOrig.cx + control.rcOrig.right - control.rcOrig.left :
+				control.rcOrig.right - control.rcOrig.left, // keep original width
+				control.modeVert == go::RESIZE ?
+				cy - this->_szOrig.cy + control.rcOrig.bottom - control.rcOrig.top :
+				control.rcOrig.bottom - control.rcOrig.top, // keep original height
+				uFlags);
+		}
+		EndDeferWindowPos(hdwp);
 	}
 
 private:

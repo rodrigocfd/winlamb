@@ -275,6 +275,7 @@ public:
 		static bool is_dir(const std::wstring& thePath)      { return is_dir(thePath.c_str()); }
 		static bool is_hidden(const std::wstring& thePath)   { return is_hidden(thePath.c_str()); }
 
+		// Deletes a file, or a directory recursively.
 		static void del(const std::wstring& fileOrFolder) {
 			if (is_dir(fileOrFolder)) {
 				// http://stackoverflow.com/q/1468774/6923555
@@ -309,6 +310,7 @@ public:
 			create_dir(thePath.c_str());
 		}
 
+		// List files within a directory according to a pattern, like "C:\\files\\*.txt".
 		static std::vector<std::wstring> list_dir(const std::wstring& pathAndPattern) {
 			// Entry example: "C:\\myfolder\\*.mp3"
 			std::vector<std::wstring> files;
@@ -338,12 +340,13 @@ public:
 			return files;
 		}
 
+		// List files within a directory according to a pattern, like "C:\\files\\*.txt".
 		static std::vector<std::wstring> list_dir(const std::wstring& dirPath, const std::wstring& pattern) {
-		std::wstring pathAndPattern = dirPath;
-		if (pathAndPattern.back() != L'\\') pathAndPattern.append(L"\\");
-		pathAndPattern.append(pattern);
-		return list_dir(pathAndPattern);
-	}
+			std::wstring pathAndPattern = dirPath;
+			if (pathAndPattern.back() != L'\\') pathAndPattern.append(L"\\");
+			pathAndPattern.append(pattern);
+			return list_dir(pathAndPattern);
+		}
 	};
 };
 

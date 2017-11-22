@@ -19,7 +19,7 @@ public:
 
 	version() = default;
 	explicit version(UINT major, UINT minor = 0, UINT build = 0, UINT revision = 0)
-		: num({major, minor, build, revision}) { }
+		: num{major, minor, build, revision} { }
 	version(const version&) = default;
 
 	version& operator=(const version&) = default;
@@ -63,15 +63,16 @@ public:
 		return true;
 	}
 
-	bool read(const std::wstring& exeOrDll) {
-		DWORD szVer = GetFileVersionInfoSizeW(exeOrDll.c_str(), nullptr);
+	// Reads version of an executable or DLL file.
+	bool read(const wchar_t* exeOrDll) {
+		DWORD szVer = GetFileVersionInfoSizeW(exeOrDll, nullptr);
 		if (!szVer) {
 			throw std::system_error(GetLastError(), std::system_category(),
 				"GetFileVersionInfoSize failed");
 		}
 
 		std::vector<wchar_t> infoBlock(szVer, L'\0');
-		if (!GetFileVersionInfoW(exeOrDll.c_str(), 0, szVer, &infoBlock[0])) {
+		if (!GetFileVersionInfoW(exeOrDll, 0, szVer, &infoBlock[0])) {
 			throw std::system_error(GetLastError(), std::system_category(),
 				"GetFileVersionInfo failed");
 		}
@@ -82,6 +83,7 @@ public:
 			reinterpret_cast<void**>(&lpBuf), &blockSize) ||
 			!blockSize)
 		{
+			this->num = {0, 0, 0, 0};
 			return false; // no information available, not an error
 		}
 
@@ -94,6 +96,18 @@ public:
 		};
 
 		return true;
+	}
+
+	// Reads version of an executable or DLL file.
+	bool read(const std::wstring& exeOrDll) {
+		return this->read(exeOrDll.c_str());
+	}
+
+	// Reads version of current executable or DLL file itself.
+	bool read_current_exe() {
+		wchar_t buf[MAX_PATH + 1]{};
+		GetModuleFileNameW(nullptr, buf, ARRAYSIZE(buf));
+		return this->read(buf);
 	}
 };
 

@@ -91,6 +91,7 @@ public:
 			reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hParent, GWLP_HINSTANCE)));
 	}
 
+	// Loads the icon used by Windows Explorer to represent the given file type.
 	image_list& load_from_shell(const wchar_t* fileExtension) {
 		icon::res iRes = icon::util::resolve_resolution_type(this->resolution());
 		if (iRes == icon::res::OTHER) {
@@ -101,6 +102,7 @@ public:
 		return this->load(tmpIco);
 	}
 
+	// Loads the icon used by Windows Explorer to represent the given file type.
 	image_list& load_from_shell(std::initializer_list<const wchar_t*> fileExtensions) {
 		for (const wchar_t* ext : fileExtensions) {
 			this->load_from_shell(ext);

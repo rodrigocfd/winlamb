@@ -89,7 +89,7 @@ public:
 		util() = delete;
 
 	public:
-		// Apply default UI font on all children of the window.
+		// Applies default UI font on all children of the window.
 		static void set_ui_on_children(HWND hParent) {
 			static font oneFont; // keep one single font instance for all windows
 			if (!oneFont._hFont) oneFont.create_ui();
