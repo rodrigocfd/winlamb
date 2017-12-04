@@ -19,7 +19,14 @@ public:
 	using funcT = std::function<retT(params)>; // retT is LRESULT or INT_PTR
 
 private:
-	std::vector<std::pair<idT, funcT>> _msgUnits;
+	struct _msg_unit final {
+		idT   id;
+		funcT func;
+		_msg_unit() = default;
+		_msg_unit(idT id, funcT&& func) noexcept : id(id), func(std::move(func)) { }
+	};
+
+	std::vector<_msg_unit> _msgUnits;
 
 public:
 	explicit store(size_t msgsReserve = 0) noexcept {
@@ -46,18 +53,18 @@ public:
 		for (size_t i = 1; i < ids.size(); ++i) {
 			if (pIds[i] != pIds[0]) { // avoid overwriting
 				this->add(pIds[i], [this, funcIdx](params p)->retT {
-					return this->_msgUnits[funcIdx].second(p); // store light wrapper to 1st func
+					return this->_msgUnits[funcIdx].func(p); // store light wrapper to 1st func
 				});
 			}
 		}
 	}
 
 	funcT* find(idT id) noexcept {
-		this->_msgUnits[0].first = id; // sentinel for reverse linear search
-		std::pair<idT, funcT>* revRunner = &this->_msgUnits.back(); // pointer to last element
-		while (revRunner->first != id) --revRunner;
+		this->_msgUnits[0].id = id; // sentinel for reverse linear search
+		_msg_unit* revRunner = &this->_msgUnits.back(); // pointer to last element
+		while (revRunner->id != id) --revRunner;
 		return revRunner == &this->_msgUnits[0] ? // if we stopped only at 1st element, id wasn't found
-			nullptr : &revRunner->second;
+			nullptr : &revRunner->func;
 	}
 };
 

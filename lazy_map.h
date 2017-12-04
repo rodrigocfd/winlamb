@@ -17,6 +17,8 @@ public:
 	struct entry final {
 		keyT   key;
 		valueT value;
+		entry() = default;
+		explicit entry(const keyT& key) noexcept : key(key) { }
 	};
 
 private:
@@ -43,7 +45,7 @@ public:
 	valueT& operator[](const keyT& key) noexcept {
 		std::vector<entry>::iterator ite = this->_find(key);
 		if (ite == this->_entries.end()) {
-			this->_entries.push_back({key, {}}); // inexistent, so add
+			this->_entries.emplace_back(key); // inexistent, so add
 			return this->_entries.back().value;
 		}
 		return ite->value;
