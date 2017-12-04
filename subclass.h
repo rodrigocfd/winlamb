@@ -32,7 +32,7 @@ public:
 	subclass(const subclass&) = delete;
 	subclass& operator=(const subclass&) = delete; // non-copyable, non-movable
 
-	void remove_subclass() {
+	void remove_subclass() noexcept {
 		if (this->hwnd()) {
 			RemoveWindowSubclass(this->hwnd(), _subclass_proc, this->_subclassId);
 			this->_hWnd = nullptr; // clear HWND
@@ -60,13 +60,13 @@ public:
 
 private:
 	static LRESULT CALLBACK _subclass_proc(HWND hWnd, UINT msg,
-		WPARAM wp, LPARAM lp, UINT_PTR idSubclass, DWORD_PTR refData)
+		WPARAM wp, LPARAM lp, UINT_PTR idSubclass, DWORD_PTR refData) noexcept
 	{
 		subclass* pSelf = reinterpret_cast<subclass*>(refData);
 
 		if (pSelf) {
 			if (pSelf->hwnd()) {
-				std::pair<bool, LRESULT> procRet = pSelf->_process_msg(params{msg, wp, lp});
+				std::pair<bool, LRESULT> procRet = pSelf->_process_msg(params{msg, wp, lp}); // catches all message exceptions internally
 				if (msg == WM_NCDESTROY) {
 					pSelf->remove_subclass();
 				}
@@ -83,7 +83,7 @@ private:
 		return DefSubclassProc(hWnd, msg, wp, lp); // message was not processed
 	}
 
-	static UINT _next_id() {
+	static UINT _next_id() noexcept {
 		static UINT firstId = 0;
 		return firstId++;
 	}

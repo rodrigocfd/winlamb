@@ -33,7 +33,7 @@ class checkbox final :
 private:
 	class _styler final : public wli::styler<checkbox> {
 	public:
-		explicit _styler(checkbox* pCheckbox) : styler(pCheckbox) { }
+		explicit _styler(checkbox* pCheckbox) noexcept : styler(pCheckbox) { }
 	};
 
 public:
@@ -52,17 +52,17 @@ public:
 		return this->create(parent->hwnd(), ctrlId, caption, pos, size);
 	}
 
-	bool is_checked() const {
+	bool is_checked() const noexcept {
 		return SendMessageW(this->hwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED;
 	}
 
-	checkbox& set_check(bool checked) {
+	checkbox& set_check(bool checked) noexcept {
 		SendMessageW(this->hwnd(), BM_SETCHECK,
 			checked ? BST_CHECKED : BST_UNCHECKED, 0);
 		return *this;
 	}
 
-	checkbox& set_check_and_trigger(bool checked) {
+	checkbox& set_check_and_trigger(bool checked) noexcept {
 		this->set_check(checked);
 		SendMessageW(GetParent(this->hwnd()), WM_COMMAND,
 			MAKEWPARAM(GetDlgCtrlID(this->hwnd()), 0),

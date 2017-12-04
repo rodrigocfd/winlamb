@@ -19,24 +19,24 @@ protected:
 
 public:
 	menu() = default;
-	menu(HMENU hMenu)   : _hMenu(hMenu) { }
-	menu(const menu& m) : _hMenu(m._hMenu) { }
+	menu(HMENU hMenu) noexcept   : _hMenu(hMenu) { }
+	menu(const menu& m) noexcept : _hMenu(m._hMenu) { }
 
-	HMENU hmenu() const {
+	HMENU hmenu() const noexcept {
 		return this->_hMenu;
 	}
 
-	menu& operator=(HMENU hMenu) {
+	menu& operator=(HMENU hMenu) noexcept {
 		this->_hMenu = hMenu;
 		return *this;
 	}
 
-	menu& operator=(const menu& m) {
+	menu& operator=(const menu& m) noexcept {
 		this->_hMenu = m._hMenu;
 		return *this;
 	}
 
-	void destroy() {
+	void destroy() noexcept {
 		// Since HMENU resource can be shared, destroy() won't be called on destructor.
 		if (this->_hMenu) {
 			DestroyMenu(this->_hMenu);
@@ -70,18 +70,17 @@ public:
 			reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hOwner, GWLP_HINSTANCE)));
 	}
 
-	menu get_submenu(size_t pos) const {
+	menu get_submenu(size_t pos) const noexcept {
 		return menu(GetSubMenu(this->_hMenu, static_cast<int>(pos)));
 	}
 
-	WORD get_command_id(size_t pos) const {
+	WORD get_command_id(size_t pos) const noexcept {
 		return GetMenuItemID(this->_hMenu, static_cast<int>(pos));
 	}
 
-	std::wstring get_caption(WORD commandId) const {
+	std::wstring get_caption(WORD commandId) const noexcept {
 		wchar_t captionBuf[64]{}; // arbitrary buffer length
 		MENUITEMINFO mii{};
-
 		mii.cbSize     = sizeof(mii);
 		mii.cch        = ARRAYSIZE(captionBuf);
 		mii.dwTypeData = captionBuf;
@@ -91,11 +90,11 @@ public:
 		return captionBuf;
 	}
 
-	size_t get_item_count() const {
+	size_t get_item_count() const noexcept {
 		return static_cast<size_t>(GetMenuItemCount(this->_hMenu));
 	}
 
-	menu& add_separator(WORD insertBeforeCmdId = 0) {
+	menu& add_separator(WORD insertBeforeCmdId = 0) noexcept {
 		if (insertBeforeCmdId) { // insert before the specified command ID
 			InsertMenuW(this->_hMenu, insertBeforeCmdId, MF_BYCOMMAND | MF_SEPARATOR, 0, nullptr);
 		} else { // just append
@@ -104,7 +103,7 @@ public:
 		return *this;
 	}
 
-	menu& add_item(WORD commandId, const wchar_t* caption, WORD insertBeforeCmdId = 0) {
+	menu& add_item(WORD commandId, const wchar_t* caption, WORD insertBeforeCmdId = 0) noexcept {
 		if (insertBeforeCmdId) { // insert before the specified command ID
 			InsertMenuW(this->_hMenu, insertBeforeCmdId, MF_BYCOMMAND | MF_STRING, commandId, caption);
 		} else { // just append
@@ -113,46 +112,46 @@ public:
 		return *this;
 	}
 
-	menu& add_item(WORD commandId, const std::wstring& caption, WORD insertBeforeCmdId = 0) {
+	menu& add_item(WORD commandId, const std::wstring& caption, WORD insertBeforeCmdId = 0) noexcept {
 		return this->add_item(commandId, caption.c_str(), insertBeforeCmdId);
 	}
 
-	menu& enable_item(WORD commandId, bool doEnable) {
+	menu& enable_item(WORD commandId, bool doEnable) noexcept {
 		EnableMenuItem(this->_hMenu, commandId,
 			MF_BYCOMMAND | ((doEnable) ? MF_ENABLED : MF_GRAYED));
 		return *this;
 	}
 
-	menu& enable_item(std::initializer_list<WORD> commandIds, bool doEnable) {
+	menu& enable_item(std::initializer_list<WORD> commandIds, bool doEnable) noexcept {
 		for (const WORD& cmdId : commandIds) {
 			this->enable_item(cmdId, doEnable);
 		}
 		return *this;
 	}
 
-	menu& set_default_item(WORD commandId) {
+	menu& set_default_item(WORD commandId) noexcept {
 		SetMenuDefaultItem(this->_hMenu, commandId, MF_BYCOMMAND);
 		return *this;
 	}
 
-	menu& delete_item_by_pos(size_t pos) {
+	menu& delete_item_by_pos(size_t pos) noexcept {
 		DeleteMenu(this->_hMenu, static_cast<UINT>(pos), MF_BYPOSITION);
 		return *this;
 	}
 
-	menu& delete_item_by_id(WORD commandId) {
+	menu& delete_item_by_id(WORD commandId) noexcept {
 		DeleteMenu(this->_hMenu, commandId, MF_BYCOMMAND);
 		return *this;
 	}
 
-	menu& delete_all_items() {
+	menu& delete_all_items() noexcept {
 		for (size_t i = this->get_item_count(); i-- > 0; ) {
 			this->delete_item_by_pos(i);
 		}
 		return *this;
 	}
 
-	menu add_submenu(const wchar_t* caption, WORD insertBeforeCmdId = 0) const {
+	menu add_submenu(const wchar_t* caption, WORD insertBeforeCmdId = 0) const noexcept {
 		menu sub;
 		sub._hMenu = CreatePopupMenu();
 
@@ -166,11 +165,11 @@ public:
 		return sub; // return new submenu, so it can be edited
 	}
 
-	menu add_submenu(const std::wstring& caption, WORD insertBeforeCmdId = 0) const {
+	menu add_submenu(const std::wstring& caption, WORD insertBeforeCmdId = 0) const noexcept {
 		return this->add_submenu(caption.c_str(), insertBeforeCmdId);
 	}
 
-	menu& show_at_point(HWND hParent, POINT pt, HWND hWndCoordsRelativeTo) {
+	menu& show_at_point(HWND hParent, POINT pt, HWND hWndCoordsRelativeTo) noexcept {
 		// Shows a popup context menu, anchored at the given coordinates.
 		// The passed coordinates can be relative to any window.
 		POINT ptParent = pt; // receives coordinates relative to hParent

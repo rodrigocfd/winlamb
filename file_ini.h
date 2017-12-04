@@ -21,7 +21,7 @@ public:
 		return this->sections.operator[](sectionName);
 	}
 
-	lazy_map<std::wstring, std::wstring>& operator[](const std::wstring& sectionName) {
+	lazy_map<std::wstring, std::wstring>& operator[](const std::wstring& sectionName) noexcept {
 		return this->sections.operator[](sectionName);
 	}
 
@@ -62,7 +62,7 @@ public:
 	file_ini& save_to_file(const std::wstring& filePath) const { return this->save_to_file(filePath.c_str()); }
 
 	// Returns the INI contents as a string, ready to be written to a file.
-	std::wstring serialize() const {
+	std::wstring serialize() const noexcept {
 		std::wstring out;
 		bool isFirst = true;
 

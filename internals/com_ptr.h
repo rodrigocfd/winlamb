@@ -25,20 +25,20 @@ public:
 	}
 
 	com_ptr() = default;
-	com_ptr(com_ptr&& other) { this->operator=(std::move(other)); }
+	com_ptr(com_ptr&& other) noexcept { this->operator=(std::move(other)); }
 
-	bool   empty() const { return this->_ptr == nullptr; }
-	ptrT*  operator->()  { return this->_ptr; }
-	ptrT*  ptr() const   { return this->_ptr; }
-	ptrT** pptr()        { return &this->_ptr; }
+	bool   empty() const noexcept { return this->_ptr == nullptr; }
+	ptrT*  operator->() noexcept  { return this->_ptr; }
+	ptrT*  ptr() const noexcept   { return this->_ptr; }
+	ptrT** pptr() noexcept        { return &this->_ptr; }
 
-	com_ptr& operator=(com_ptr&& other) {
+	com_ptr& operator=(com_ptr&& other) noexcept {
 		this->release();
 		std::swap(this->_ptr, other._ptr);
 		return *this;
 	}
 
-	void release() {
+	void release() noexcept {
 		if (this->_ptr) {
 			this->_ptr->Release();
 			this->_ptr = nullptr;

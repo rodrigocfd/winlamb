@@ -22,21 +22,21 @@ private:
 	image_list            _imageList;
 
 public:
-	member_image_list(controlT* pOwner, WORD resolution)
+	member_image_list(controlT* pOwner, WORD resolution) noexcept
 		: _owner(*pOwner), _resolution({resolution, resolution}) { }
 
 	member_image_list(const member_image_list&) = delete;
 	member_image_list& operator=(const member_image_list&) = delete; // non-copyable, non-movable
 
-	HIMAGELIST himagelist() const {
+	HIMAGELIST himagelist() const noexcept {
 		return this->_imageList.himagelist();
 	}
 
-	size_t size() const {
+	size_t size() const noexcept {
 		return this->_imageList.size();
 	}
 
-	controlT& on_create(std::function<void()> func) {
+	controlT& on_create(std::function<void()> func) noexcept {
 		this->_onCreate = std::move(func);
 		return this->_owner;
 	}

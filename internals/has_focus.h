@@ -17,7 +17,7 @@ protected:
 	has_focus() = default;
 
 public:
-	derivedT& set_focus() {
+	derivedT& set_focus() noexcept {
 		SetFocus(this->hwnd());
 		return *static_cast<derivedT*>(this);
 	}

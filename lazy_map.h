@@ -24,13 +24,13 @@ private:
 
 public:
 	lazy_map() = default;
-	lazy_map(std::initializer_list<entry> entries) : _entries{entries} { }
+	lazy_map(std::initializer_list<entry> entries) noexcept : _entries{entries} { }
 
-	const std::vector<entry>& entries() const            { return this->_entries; }
-	size_t                    size() const               { return this->_entries.size(); }
-	bool                      empty() const              { return this->_entries.empty(); }
-	lazy_map&                 clear()                    { this->_entries.clear(); return *this; }
-	lazy_map&                 reserve(size_t numEntries) { this->_entries.reserve(numEntries); return *this; }
+	const std::vector<entry>& entries() const noexcept            { return this->_entries; }
+	size_t                    size() const noexcept               { return this->_entries.size(); }
+	bool                      empty() const noexcept              { return this->_entries.empty(); }
+	lazy_map&                 clear() noexcept                    { this->_entries.clear(); return *this; }
+	lazy_map&                 reserve(size_t numEntries) noexcept { this->_entries.reserve(numEntries); return *this; }
 
 	const valueT& operator[](const keyT& key) const {
 		std::vector<entry>::const_iterator ite = this->_find(key);
@@ -40,7 +40,7 @@ public:
 		return ite->value;
 	}
 
-	valueT& operator[](const keyT& key) {
+	valueT& operator[](const keyT& key) noexcept {
 		std::vector<entry>::iterator ite = this->_find(key);
 		if (ite == this->_entries.end()) {
 			this->_entries.push_back({key, {}}); // inexistent, so add
@@ -50,7 +50,7 @@ public:
 	}
 
 	// Returns pointer to value, if key doesn't exist returns nullptr.
-	const valueT* get_if_exists(const keyT& key) const {
+	const valueT* get_if_exists(const keyT& key) const noexcept {
 		// Saves time, instead of calling has() and operator[]().
 		std::vector<entry>::const_iterator ite = this->_find(key);
 		return (ite == this->_entries.cend()) ?
@@ -58,18 +58,18 @@ public:
 	}
 
 	// Returns pointer to value, if key doesn't exist returns nullptr.
-	valueT* get_if_exists(const keyT& key) {
+	valueT* get_if_exists(const keyT& key) noexcept {
 		std::vector<entry>::iterator ite = this->_find(key);
 		return (ite == this->_entries.end()) ?
 			nullptr : &ite->value;
 	}
 
 	// Does the key exist?
-	bool has(const keyT& key) const {
+	bool has(const keyT& key) const noexcept {
 		return this->_find(key) != this->_entries.cend();
 	}
 
-	lazy_map& remove(const keyT& key) {
+	lazy_map& remove(const keyT& key) noexcept {
 		std::vector<entry>::iterator ite = this->_find(key);
 		if (ite != this->_entries.end()) { // won't fail if inexistent
 			this->_entries.erase(ite);
@@ -78,7 +78,7 @@ public:
 	}
 
 private:
-	typename std::vector<entry>::const_iterator _find(const keyT& key) const {
+	typename std::vector<entry>::const_iterator _find(const keyT& key) const noexcept {
 		for (std::vector<entry>::const_iterator ite = this->_entries.cbegin();
 			ite != this->_entries.cend(); ++ite)
 		{
@@ -87,7 +87,7 @@ private:
 		return this->_entries.cend();
 	}
 
-	typename std::vector<entry>::iterator _find(const keyT& key) {
+	typename std::vector<entry>::iterator _find(const keyT& key) noexcept {
 		for (std::vector<entry>::iterator ite = this->_entries.begin();
 			ite != this->_entries.end(); ++ite)
 		{

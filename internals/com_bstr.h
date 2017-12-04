@@ -23,28 +23,28 @@ public:
 		this->free();
 	}
 
-	com_bstr()                      = default;
-	com_bstr(com_bstr&& other)      { this->operator=(std::move(other)); }
-	com_bstr(const wchar_t* s)      { this->operator=(s); }
-	com_bstr(const std::wstring& s) { this->operator=(s); }
+	com_bstr() = default;
+	com_bstr(com_bstr&& other) noexcept      { this->operator=(std::move(other)); }
+	com_bstr(const wchar_t* s) noexcept      { this->operator=(s); }
+	com_bstr(const std::wstring& s) noexcept { this->operator=(s); }
 
-	com_bstr& operator=(com_bstr&& other) {
+	com_bstr& operator=(com_bstr&& other) noexcept {
 		this->free();
 		std::swap(this->_bstr, other._bstr);
 		return *this;
 	}
 	
-	com_bstr& operator=(const wchar_t* s) {
+	com_bstr& operator=(const wchar_t* s) noexcept {
 		this->free();
 		this->_bstr = SysAllocString(s);
 		return *this;
 	}
 
-	com_bstr& operator=(const std::wstring& s) {
+	com_bstr& operator=(const std::wstring& s) noexcept {
 		return this->operator=(s.c_str());
 	}
 
-	com_bstr& free() {
+	com_bstr& free() noexcept {
 		if (this->_bstr) {
 			SysFreeString(this->_bstr);
 			this->_bstr = nullptr;
@@ -52,9 +52,9 @@ public:
 		return *this;
 	}
 
-	BSTR           bstr() const  { return this->_bstr; }
-	BSTR*          ptr()         { return &this->_bstr; }
-	const wchar_t* c_str() const { return static_cast<wchar_t*>(this->_bstr); }
+	BSTR           bstr() const noexcept  { return this->_bstr; }
+	BSTR*          ptr() noexcept         { return &this->_bstr; }
+	const wchar_t* c_str() const noexcept { return static_cast<wchar_t*>(this->_bstr); }
 };
 
 }//namespace wli

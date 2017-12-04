@@ -23,9 +23,9 @@ public:
 	}
 
 	file_mapped() = default;
-	file_mapped(file_mapped&& other) { this->operator=(std::move(other)); }
+	file_mapped(file_mapped&& other) noexcept { this->operator=(std::move(other)); }
 
-	file_mapped& operator=(file_mapped&& other) {
+	file_mapped& operator=(file_mapped&& other) noexcept {
 		this->close();
 		std::swap(this->_file, other._file);
 		std::swap(this->_hMap, other._hMap);
@@ -33,12 +33,12 @@ public:
 		return *this;
 	}
 
-	file::access access_type() const { return this->_file.access_type(); }
-	size_t       size()              { return this->_file.size(); }
-	BYTE*        p_mem() const       { return reinterpret_cast<BYTE*>(this->_pMem); }
-	BYTE*        p_past_mem()        { return p_mem() + this->size(); }
+	file::access access_type() const noexcept { return this->_file.access_type(); }
+	size_t       size() noexcept              { return this->_file.size(); }
+	BYTE*        p_mem() const noexcept       { return reinterpret_cast<BYTE*>(this->_pMem); }
+	BYTE*        p_past_mem() noexcept        { return p_mem() + this->size(); }
 
-	file_mapped& close() {
+	file_mapped& close() noexcept {
 		if (this->_pMem) {
 			UnmapViewOfFile(this->_pMem);
 			this->_pMem = nullptr;

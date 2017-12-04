@@ -25,14 +25,14 @@ public:
 		std::unordered_map<std::wstring, std::wstring> attrs;
 		std::vector<node> children;
 
-		void clear() {
+		void clear() noexcept {
 			this->name.clear();
 			this->value.clear();
 			this->attrs.clear();
 			this->children.clear();
 		}
 
-		std::vector<node*> children_by_name(const wchar_t* elemName) {
+		std::vector<node*> children_by_name(const wchar_t* elemName) noexcept {
 			std::vector<node*> nodeBuf;
 			for (node& node : this->children) {
 				if (!lstrcmpiW(node.name.c_str(), elemName)) { // case-insensitive match
@@ -42,11 +42,11 @@ public:
 			return nodeBuf;
 		}
 
-		std::vector<node*> children_by_name(const std::wstring& elemName) {
+		std::vector<node*> children_by_name(const std::wstring& elemName) noexcept {
 			return this->children_by_name(elemName.c_str());
 		}
 
-		node* first_child_by_name(const wchar_t* elemName) {
+		node* first_child_by_name(const wchar_t* elemName) noexcept {
 			for (node& node : this->children) {
 				if (!lstrcmpiW(node.name.c_str(), elemName)) { // case-insensitive match
 					return &node;
@@ -55,7 +55,7 @@ public:
 			return nullptr; // not found
 		}
 
-		node* first_child_by_name(const std::wstring& elemName) {
+		node* first_child_by_name(const std::wstring& elemName) noexcept {
 			return this->first_child_by_name(elemName.c_str());
 		}
 	};
@@ -67,11 +67,11 @@ public:
 	node root;
 
 	xml() = default;
-	xml(xml&& other)             { this->operator=(std::move(other)); }
+	xml(xml&& other) noexcept    { this->operator=(std::move(other)); }
 	xml(const wchar_t* str)      { this->parse(str); }
 	xml(const std::wstring& str) : xml(str.c_str()) { }
 
-	xml& operator=(xml&& other) {
+	xml& operator=(xml&& other) noexcept {
 		this->root.clear();
 		this->root = std::move(other.root);
 		return *this;
@@ -88,11 +88,19 @@ public:
 
 		// Parse the XML string.
 		VARIANT_BOOL vb = FALSE;
-		doc->loadXML(static_cast<BSTR>(const_cast<wchar_t*>(str)), &vb);
+		HRESULT hr = doc->loadXML(static_cast<BSTR>(const_cast<wchar_t*>(str)), &vb);
+		if (FAILED(hr)) {
+			throw std::system_error(hr, std::system_category(),
+				"IXMLDOMDocument::loadXML failed");
+		}
 
 		// Get document element and root node from XML.
 		com::ptr<IXMLDOMElement> docElem;
-		doc->get_documentElement(docElem.pptr());
+		hr = doc->get_documentElement(docElem.pptr());
+		if (FAILED(hr)) {
+			throw std::system_error(hr, std::system_category(),
+				"IXMLDOMDocument::get_documentElement failed");
+		}
 
 		com::ptr<IXMLDOMNode> rootNode;
 		docElem.query_interface(IID_IXMLDOMNode, rootNode);
@@ -105,7 +113,7 @@ public:
 	}
 
 private:
-	static void _build_node(com::ptr<IXMLDOMNode>& xmlnode, xml::node& nodebuf) {
+	static void _build_node(com::ptr<IXMLDOMNode>& xmlnode, xml::node& nodebuf) noexcept {
 		// Get node name.
 		com::bstr bstrName;
 		xmlnode->get_nodeName(bstrName.ptr());
@@ -151,7 +159,9 @@ private:
 		}
 	}
 
-	static void _read_attrs(com::ptr<IXMLDOMNode>& xmlnode, std::unordered_map<std::wstring, std::wstring>& attrbuf) {
+	static void _read_attrs(com::ptr<IXMLDOMNode>& xmlnode,
+		std::unordered_map<std::wstring, std::wstring>& attrbuf) noexcept
+	{
 		// Read attribute collection.
 		com::ptr<IXMLDOMNamedNodeMap> attrs;
 		xmlnode->get_attributes(attrs.pptr());
@@ -177,7 +187,7 @@ private:
 		}
 	}
 
-	static int _count_child_nodes(com::ptr<IXMLDOMNodeList>& nodeList) {
+	static int _count_child_nodes(com::ptr<IXMLDOMNodeList>& nodeList) noexcept {
 		int childCount = 0;
 		long totalCount = 0;
 		nodeList->get_length(&totalCount); // includes text and actual element nodes

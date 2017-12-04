@@ -9,100 +9,23 @@
 #include <string>
 #include <vector>
 #include "internals/hwnd_wrapper.h"
+#include "internals/device_context_objects.h"
 
 namespace wl {
 
 // Wrapper to HDC.
 class device_context {
 public:
-	class pen final {
-	public:
-		enum class style : int {
-			SOLID      = PS_SOLID,
-			DASH       = PS_DASH,
-			DOT        = PS_DOT,
-			DASHDOT    = PS_DASHDOT,
-			DASHDOTDOT = PS_DASHDOTDOT
-		};
-
-	private:
-		HPEN _hPen;
-
-	public:
-		~pen() {
-			this->release();
-		}
-
-		pen(style styleType, int width, COLORREF color) :
-			_hPen(CreatePen(static_cast<int>(styleType), width, color)) { }
-
-		HPEN hpen() const {
-			return this->_hPen;
-		}
-
-		void release() {
-			if (this->_hPen) {
-				DeleteObject(this->_hPen);
-				this->_hPen = nullptr;
-			}
-		}
-	};
-
-	class brush final {
-	public:
-		enum class pattern : int {
-			BDIAGONAL  = HS_BDIAGONAL,
-			CROSS      = HS_CROSS,
-			DIAGCROSS  = HS_DIAGCROSS,
-			FDIAGONAL  = HS_FDIAGONAL,
-			HORIZONTAL = HS_HORIZONTAL,
-			VERTICAL   = HS_VERTICAL
-		};
-
-		enum class color : int {
-			BTNFACE      = COLOR_BTNFACE,
-			DESKTOP      = COLOR_DESKTOP,
-			BTNTEXT      = COLOR_BTNTEXT,
-			WINDOW       = COLOR_WINDOW,
-			APPWORKSPACE = COLOR_APPWORKSPACE
-		};
-
-	private:
-		HBRUSH _hBrush;
-
-	public:
-		~brush() {
-			this->release();
-		}
-
-		brush(COLORREF color) :
-			_hBrush(CreateSolidBrush(color)) { }
-
-		brush(pattern hatch, COLORREF color) :
-			_hBrush(CreateHatchBrush(static_cast<int>(hatch), color)) { }
-
-		brush(color sysColor) :
-			_hBrush(GetSysColorBrush(static_cast<int>(sysColor))) { }
-
-		HBRUSH hbrush() const {
-			return this->_hBrush;
-		}
-
-		void release() {
-			if (this->_hBrush) {
-				DeleteObject(this->_hBrush);
-				this->_hBrush = nullptr;
-			}
-		}
-	};
-
+	using brush = wli::brush;
+	using pen = wli::pen;
+	
 protected:
 	HWND _hWnd;
 	HDC  _hDC;
 	SIZE _sz;
 
 public:
-	explicit device_context(HWND hWnd, HDC hDC = nullptr)
+	explicit device_context(HWND hWnd, HDC hDC = nullptr) noexcept
 		: _hWnd(hWnd), _hDC(hDC)
 	{
 		RECT rcClient{};
@@ -111,55 +34,55 @@ public:
 		this->_sz.cy = rcClient.bottom;
 	}
 
-	explicit device_context(const wli::hwnd_wrapper* wnd, HDC hDC = nullptr)
+	explicit device_context(const wli::hwnd_wrapper* wnd, HDC hDC = nullptr) noexcept
 		: device_context(wnd->hwnd(), hDC) { }
 
-	HDC     hdc() const                { return this->_hDC; }
-	HWND    hwnd() const               { return this->_hWnd; }
-	SIZE    size() const               { return this->_sz; }
-	HGDIOBJ select_object(HGDIOBJ obj) { return SelectObject(this->_hDC, obj); }
-	HGDIOBJ select_stock_font()        { return select_object(GetStockObject(SYSTEM_FONT)); }
-	HGDIOBJ select_stock_pen()         { return select_object(GetStockObject(BLACK_PEN)); }
-	HGDIOBJ select_stock_brush()       { return select_object(GetStockObject(WHITE_BRUSH)); }
+	HDC     hdc() const noexcept                { return this->_hDC; }
+	HWND    hwnd() const noexcept               { return this->_hWnd; }
+	SIZE    size() const noexcept               { return this->_sz; }
+	HGDIOBJ select_object(HGDIOBJ obj) noexcept { return SelectObject(this->_hDC, obj); }
+	HGDIOBJ select_stock_font() noexcept        { return select_object(GetStockObject(SYSTEM_FONT)); }
+	HGDIOBJ select_stock_pen() noexcept         { return select_object(GetStockObject(BLACK_PEN)); }
+	HGDIOBJ select_stock_brush() noexcept       { return select_object(GetStockObject(WHITE_BRUSH)); }
 
-	device_context& delete_object(HGDIOBJ obj) {
+	device_context& delete_object(HGDIOBJ obj) noexcept {
 		DeleteObject(obj);
 		return *this;
 	}
 
-	device_context& move_to(int x, int y) {
+	device_context& move_to(int x, int y) noexcept {
 		MoveToEx(this->_hDC, x, y, nullptr);
 		return *this;
 	}
 
-	device_context& line_to(int x, int y) {
+	device_context& line_to(int x, int y) noexcept {
 		LineTo(this->_hDC, x, y);
 		return *this;
 	}
 
-	device_context& line_rect(int left, int top, int right, int bottom) {
+	device_context& line_rect(int left, int top, int right, int bottom) noexcept {
 		return this->move_to(left, top)
 			.line_to(right, top)
 			.line_to(right, bottom)
 			.line_to(left, bottom);
 	}
 
-	device_context& line_rect(RECT rc) {
+	device_context& line_rect(RECT rc) noexcept {
 		return this->line_rect(rc.left, rc.top, rc.right, rc.bottom);
 	}
 
-	device_context& set_bk_transparent(bool yes) {
+	device_context& set_bk_transparent(bool yes) noexcept {
 		SetBkMode(this->_hDC, yes ? TRANSPARENT : OPAQUE);
 		return *this;
 	}
 
-	device_context& set_bk_color(COLORREF color = -1) {
+	device_context& set_bk_color(COLORREF color = -1) noexcept {
 		SetBkColor(this->_hDC, (color == -1) ? // default?
 			this->get_bk_brush_color() : color);
 		return *this;
 	}
 
-	COLORREF get_bk_brush_color() const {
+	COLORREF get_bk_brush_color() const noexcept {
 		ULONG_PTR hbrBg = GetClassLongPtrW(this->_hWnd, GCLP_HBRBACKGROUND);
 		if (hbrBg > 100) {
 			// The hbrBackground is a brush handle, not a system color constant.
@@ -171,24 +94,28 @@ public:
 		return GetSysColor(static_cast<int>(hbrBg - 1));
 	}
 
-	device_context& set_text_color(COLORREF color) {
+	device_context& set_text_color(COLORREF color) noexcept {
 		SetTextColor(this->_hDC, color);
 		return *this;
 	}
 
-	device_context& text_out(int x, int y, const wchar_t* text, size_t numChars = std::wstring::npos) {
+	device_context& text_out(int x, int y, const wchar_t* text,
+		size_t numChars = std::wstring::npos) noexcept
+	{
 		TextOutW(this->_hDC, x, y, text,
 			(numChars == std::wstring::npos) ? lstrlenW(text) : static_cast<int>(numChars));
 		return *this;
 	}
 
-	device_context& text_out(int x, int y, const std::wstring& text, size_t numChars = std::wstring::npos) {
+	device_context& text_out(int x, int y, const std::wstring& text,
+		size_t numChars = std::wstring::npos) noexcept
+	{
 		return this->text_out(x, y, text.c_str(),
 			(numChars == std::wstring::npos) ? text.length() : numChars);
 	}
 
 	device_context& draw_text(int x, int y, int cx, int cy, const wchar_t* text,
-		UINT fmtFlags = 0, size_t numChars = std::wstring::npos)
+		UINT fmtFlags = 0, size_t numChars = std::wstring::npos) noexcept
 	{
 		RECT rc{x, y, x + cx, y + cy};
 		DrawTextW(this->_hDC, text,
@@ -198,14 +125,14 @@ public:
 	}
 
 	device_context& draw_text(int x, int y, int cx, int cy, const std::wstring& text,
-		UINT fmtFlags = 0, size_t numChars = std::wstring::npos)
+		UINT fmtFlags = 0, size_t numChars = std::wstring::npos) noexcept
 	{
 		return this->draw_text(x, y, cx, cy, text.c_str(), fmtFlags,
 			(numChars == std::wstring::npos) ? text.length() : numChars);
 	}
 
 	// Gets box size according to GetTextExtentPoint32 function.
-	SIZE get_text_extent(const wchar_t* text, size_t numChars = std::wstring::npos) const {
+	SIZE get_text_extent(const wchar_t* text, size_t numChars = std::wstring::npos) const noexcept {
 		SIZE sz{};
 		GetTextExtentPoint32W(this->_hDC, text,
 			(numChars == std::wstring::npos) ? lstrlenW(text) : static_cast<int>(numChars),
@@ -213,40 +140,40 @@ public:
 		return sz;
 	}
 
-	SIZE get_text_extent(const std::wstring& text, size_t numChars = std::wstring::npos) const {
+	SIZE get_text_extent(const std::wstring& text, size_t numChars = std::wstring::npos) const noexcept {
 		return this->get_text_extent(text.c_str(),
 			(numChars == std::wstring::npos) ? text.length() : numChars);
 	}
 
-	device_context& fill_rect(int left, int top, int right, int bottom, HBRUSH hBrush) {
+	device_context& fill_rect(int left, int top, int right, int bottom, HBRUSH hBrush) noexcept {
 		RECT rc{left, top, right, bottom};
 		FillRect(this->_hDC, &rc, hBrush);
 		return *this;
 	}
 
-	device_context& fill_rect(int left, int top, int right, int bottom, const brush& brush) {
+	device_context& fill_rect(int left, int top, int right, int bottom, const brush& brush) noexcept {
 		return this->fill_rect(left, top, right, bottom, brush.hbrush());
 	}
 
-	device_context& fill_rgn(HRGN hrgn, HBRUSH hBrush) {
+	device_context& fill_rgn(HRGN hrgn, HBRUSH hBrush) noexcept {
 		FillRgn(this->_hDC, hrgn, hBrush);
 		return *this;
 	}
 
-	device_context& fill_rgn(HRGN hrgn, const brush& brush) {
+	device_context& fill_rgn(HRGN hrgn, const brush& brush) noexcept {
 		return this->fill_rgn(hrgn, brush.hbrush());
 	}
 
-	device_context& polygon(const POINT* points, size_t numPoints) {
+	device_context& polygon(const POINT* points, size_t numPoints) noexcept {
 		Polygon(this->_hDC, points, static_cast<int>(numPoints));
 		return *this;
 	}
 
-	device_context& polygon(const std::vector<POINT>& points) {
+	device_context& polygon(const std::vector<POINT>& points) noexcept {
 		return this->polygon(&points[0], points.size());
 	}
 
-	device_context& polygon(int left, int top, int right, int bottom) {
+	device_context& polygon(int left, int top, int right, int bottom) noexcept {
 		POINT pts[] = {
 			{left, top},
 			{left, bottom},
@@ -256,12 +183,14 @@ public:
 		return this->polygon(pts, 4);
 	}
 
-	device_context& draw_edge(RECT rc, int edgeType, int flags) {
+	device_context& draw_edge(RECT rc, int edgeType, int flags) noexcept {
 		DrawEdge(this->_hDC, &rc, edgeType, flags);
 		return *this;
 	}
 
-	device_context& draw_edge(int left, int top, int right, int bottom, int edgeType, int flags) {
+	device_context& draw_edge(int left, int top, int right, int bottom,
+		int edgeType, int flags) noexcept
+	{
 		RECT rc{left, top, right, bottom};
 		return this->draw_edge(std::move(rc), edgeType, flags);
 	}
@@ -278,10 +207,10 @@ public:
 		EndPaint(this->_hWnd, &this->_ps);
 	}
 
-	explicit device_context_simple(HWND hWnd) :
-		device_context(hWnd, BeginPaint(hWnd, &this->_ps)) { }
+	explicit device_context_simple(HWND hWnd) noexcept
+		: device_context(hWnd, BeginPaint(hWnd, &this->_ps)) { }
 
-	explicit device_context_simple(const wli::hwnd_wrapper* wnd)
+	explicit device_context_simple(const wli::hwnd_wrapper* wnd) noexcept
 		: device_context_simple(wnd->hwnd()) { }
 };
 
@@ -303,7 +232,7 @@ public:
 		// ~device_context_simple() kicks in
 	}
 
-	explicit device_context_buffered(HWND hWnd) : device_context_simple(hWnd) {
+	explicit device_context_buffered(HWND hWnd) noexcept : device_context_simple(hWnd) {
 		// In order to make the double-buffer work, you must
 		// return zero on WM_ERASEBKGND message handling.
 		this->_hDC = CreateCompatibleDC(this->_ps.hdc); // overwrite our painting HDC
@@ -315,7 +244,7 @@ public:
 			reinterpret_cast<HBRUSH>(GetClassLongPtrW(this->_hWnd, GCLP_HBRBACKGROUND)) );
 	}
 
-	explicit device_context_buffered(const wli::hwnd_wrapper* wnd)
+	explicit device_context_buffered(const wli::hwnd_wrapper* wnd) noexcept
 		: device_context_buffered(wnd->hwnd()) { }
 };
 

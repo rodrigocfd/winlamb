@@ -41,20 +41,20 @@ public:
 		return this->init(owner->hwnd());
 	}
 
-	progress_taskbar& set_pos(size_t percent, size_t total) {
+	progress_taskbar& set_pos(size_t percent, size_t total) noexcept {
 		this->_bar->SetProgressValue(this->_hWnd, static_cast<ULONGLONG>(percent),
 			static_cast<ULONGLONG>(total));
 		return *this;
 	}
 
-	progress_taskbar& set_pos(double percent)     { return this->set_pos(static_cast<size_t>(percent + 0.5), 100); }
-	progress_taskbar& set_waiting(bool isWaiting) { return this->_set_state(isWaiting ? TBPF_INDETERMINATE : TBPF_NORMAL); }
-	progress_taskbar& set_pause(bool isPaused)    { return this->_set_state(isPaused ? TBPF_PAUSED : TBPF_NORMAL); }
-	progress_taskbar& set_error(bool hasError)    { return this->_set_state(hasError ? TBPF_ERROR : TBPF_NORMAL); }
-	progress_taskbar& clear()                     { return this->_set_state(TBPF_NOPROGRESS); }
+	progress_taskbar& set_pos(double percent) noexcept     { return this->set_pos(static_cast<size_t>(percent + 0.5), 100); }
+	progress_taskbar& set_waiting(bool isWaiting) noexcept { return this->_set_state(isWaiting ? TBPF_INDETERMINATE : TBPF_NORMAL); }
+	progress_taskbar& set_pause(bool isPaused) noexcept    { return this->_set_state(isPaused ? TBPF_PAUSED : TBPF_NORMAL); }
+	progress_taskbar& set_error(bool hasError) noexcept    { return this->_set_state(hasError ? TBPF_ERROR : TBPF_NORMAL); }
+	progress_taskbar& clear() noexcept                     { return this->_set_state(TBPF_NOPROGRESS); }
 
 private:
-	progress_taskbar& _set_state(TBPFLAG state) {
+	progress_taskbar& _set_state(TBPFLAG state) noexcept {
 		this->_bar->SetProgressState(this->_hWnd, state);
 		return *this;
 	}

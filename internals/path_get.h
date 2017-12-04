@@ -30,7 +30,10 @@ public:
 
 	static std::wstring temp() {
 		wchar_t buf[MAX_PATH + 1]{};
-		GetTempPathW(ARRAYSIZE(buf), buf); // will have trailing backslash
+		if (!GetTempPathW(ARRAYSIZE(buf), buf)) { // will have trailing backslash
+			throw std::system_error(GetLastError(), std::system_category(),
+				"GetTempPath failed");
+		}
 		std::wstring ret = buf;
 		ret.resize(ret.length() - 1); // remove trailing backslash
 		return ret;
@@ -38,7 +41,10 @@ public:
 
 	static std::wstring exe_itself() {
 		wchar_t buf[MAX_PATH + 1]{};
-		GetModuleFileNameW(nullptr, buf, ARRAYSIZE(buf)); // full path name
+		if (!GetModuleFileNameW(nullptr, buf, ARRAYSIZE(buf))) { // full path name
+			throw std::system_error(GetLastError(), std::system_category(),
+				"GetModuleFileName failed");
+		}
 		std::wstring ret = buf;
 		ret.resize(ret.find_last_of(L'\\')); // truncate removing EXE filename and trailing backslash
 #ifdef _DEBUG
@@ -53,7 +59,11 @@ public:
 private:
 	static std::wstring _get_shell_folder(int clsId) {
 		wchar_t buf[MAX_PATH + 1]{};
-		SHGetFolderPathW(nullptr, clsId, nullptr, 0, buf); // won't have trailing backslash
+		HRESULT hr = SHGetFolderPathW(nullptr, clsId, nullptr, 0, buf); // won't have trailing backslash
+		if (FAILED(hr)) {
+			throw std::system_error(hr, std::system_category(),
+				"SHGetFolderPath failed");
+		}
 		return buf;
 	}
 };

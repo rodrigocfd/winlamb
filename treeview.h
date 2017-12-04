@@ -32,22 +32,22 @@ class treeview final :
 private:
 	class _styler final : public wli::styler<treeview> {
 	public:
-		explicit _styler(treeview* pTree) : styler(pTree) { }
+		explicit _styler(treeview* pTree) noexcept : styler(pTree) { }
 
-		treeview& always_show_sel(bool doSet) {
+		treeview& always_show_sel(bool doSet) noexcept {
 			return this->set_style(doSet, TVS_SHOWSELALWAYS);
 		}
 
-		treeview& lines_and_buttons(bool doSet) {
+		treeview& lines_and_buttons(bool doSet) noexcept {
 			return this->set_style(doSet,
 				TVS_HASLINES | TVS_LINESATROOT | TVS_HASBUTTONS);
 		}
 
-		treeview& single_expand(bool doSet) {
+		treeview& single_expand(bool doSet) noexcept {
 			return this->set_style(doSet, TVS_SINGLEEXPAND);
 		}
 
-		treeview& double_buffer(bool doSet) {
+		treeview& double_buffer(bool doSet) noexcept {
 			TreeView_SetExtendedStyle(this->target().hwnd(),
 				doSet ? TVS_EX_DOUBLEBUFFER : 0, TVS_EX_DOUBLEBUFFER);
 			return this->target();
@@ -64,7 +64,7 @@ public:
 	wli::member_image_list<treeview> imageList16{this, 16};
 
 	treeview() {
-		this->imageList16.on_create([this]()->void {
+		this->imageList16.on_create([this]() noexcept->void {
 			TreeView_SetImageList(this->hwnd(), this->imageList16.himagelist(), TVSIL_NORMAL);
 		});
 	}

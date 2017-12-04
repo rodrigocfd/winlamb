@@ -17,11 +17,11 @@ protected:
 	has_enable() = default;
 
 public:
-	bool is_enabled() const {
+	bool is_enabled() const noexcept {
 		return IsWindowEnabled(this->hwnd());
 	}
 
-	derivedT& set_enable(bool doEnable) {
+	derivedT& set_enable(bool doEnable) noexcept {
 		EnableWindow(this->hwnd(), doEnable);
 		return *static_cast<derivedT*>(this);
 	}

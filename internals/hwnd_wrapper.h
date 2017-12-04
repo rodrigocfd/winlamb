@@ -29,7 +29,7 @@ protected:
 	hwnd_wrapper() = default;
 
 public:
-	HWND hwnd() const {
+	HWND hwnd() const noexcept {
 		return this->_hWnd;
 	}
 };

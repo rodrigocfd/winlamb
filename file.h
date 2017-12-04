@@ -36,9 +36,9 @@ public:
 	}
 
 	file() = default;
-	file(file&& other) { this->operator=(std::move(other)); }
+	file(file&& other) noexcept { this->operator=(std::move(other)); }
 
-	file& operator=(file&& other) {
+	file& operator=(file&& other) noexcept {
 		this->close();
 		std::swap(this->_hFile, other._hFile);
 		std::swap(this->_access, other._access);
@@ -46,16 +46,16 @@ public:
 		return *this;
 	}
 
-	HANDLE hfile() const {
+	HANDLE hfile() const noexcept {
 		return this->_hFile;
 	}
 
 	// Tells if the file was opened as read/write or read-only.
-	access access_type() const {
+	access access_type() const noexcept {
 		return this->_access;
 	}
 
-	file& close() {
+	file& close() noexcept {
 		if (this->_hFile) {
 			CloseHandle(this->_hFile);
 			this->_hFile = nullptr;
@@ -66,7 +66,7 @@ public:
 	}
 
 	// Retrieve the file size in bytes.
-	size_t size() {
+	size_t size() noexcept {
 		if (this->_sz == -1) {
 			this->_sz = GetFileSize(this->_hFile, nullptr); // cache
 		}
@@ -259,21 +259,21 @@ public:
 		static void write(const wchar_t* filePath, const std::vector<BYTE>& data)      { write(filePath, &data[0], data.size()); }
 		static void write(const std::wstring& filePath, const std::vector<BYTE>& data) { write(filePath.c_str(), &data[0], data.size()); }
 
-		static bool exists(const wchar_t* fileOrFolder) {
+		static bool exists(const wchar_t* fileOrFolder) noexcept {
 			return GetFileAttributesW(fileOrFolder) != INVALID_FILE_ATTRIBUTES;
 		}
 
-		static bool is_dir(const wchar_t* thePath) {
+		static bool is_dir(const wchar_t* thePath) noexcept {
 			return (GetFileAttributesW(thePath) & FILE_ATTRIBUTE_DIRECTORY) != 0;
 		}
 
-		static bool is_hidden(const wchar_t* thePath) {
+		static bool is_hidden(const wchar_t* thePath) noexcept {
 			return (GetFileAttributesW(thePath) & FILE_ATTRIBUTE_HIDDEN) != 0;
 		}
 
-		static bool exists(const std::wstring& fileOrFolder) { return exists(fileOrFolder.c_str()); }
-		static bool is_dir(const std::wstring& thePath)      { return is_dir(thePath.c_str()); }
-		static bool is_hidden(const std::wstring& thePath)   { return is_hidden(thePath.c_str()); }
+		static bool exists(const std::wstring& fileOrFolder) noexcept { return exists(fileOrFolder.c_str()); }
+		static bool is_dir(const std::wstring& thePath) noexcept      { return is_dir(thePath.c_str()); }
+		static bool is_hidden(const std::wstring& thePath) noexcept   { return is_hidden(thePath.c_str()); }
 
 		// Deletes a file, or a directory recursively.
 		static void del(const std::wstring& fileOrFolder) {

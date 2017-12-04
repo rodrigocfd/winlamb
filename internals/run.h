@@ -18,7 +18,7 @@
 	"language='*'\"")
 
 template<typename wnd_mainT>
-int _winlamb_run_main(HINSTANCE hInst, int cmdShow) {
+int _winlamb_run_main(HINSTANCE hInst, int cmdShow) noexcept {
 	int ret = 0;
 	try { // any exception which was not caught, except those from within message lambdas
 		wnd_mainT wndMain;

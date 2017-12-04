@@ -32,9 +32,9 @@ class datetime_picker final :
 private:
 	class _styler final : public wli::styler<datetime_picker> {
 	public:
-		explicit _styler(datetime_picker* pDtp) : styler(pDtp) { }
+		explicit _styler(datetime_picker* pDtp) noexcept : styler(pDtp) { }
 
-		datetime_picker& up_down_control(bool doSet) {
+		datetime_picker& up_down_control(bool doSet) noexcept {
 			return this->set_style(doSet, DTS_UPDOWN);
 		}
 	};
@@ -51,13 +51,13 @@ public:
 		return this->create(parent->hwnd(), ctrlId, pos, width);
 	}
 
-	datetime get_time() const {
+	datetime get_time() const noexcept {
 		SYSTEMTIME st{};
 		DateTime_GetSystemtime(this->hwnd(), &st);
 		return st;
 	}
 
-	datetime_picker& set_time(const datetime& dt) {
+	datetime_picker& set_time(const datetime& dt) noexcept {
 		DateTime_SetSystemtime(this->hwnd(), GDT_VALID, &dt.systemtime());
 		return *this;
 	}

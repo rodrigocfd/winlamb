@@ -27,19 +27,19 @@ public:
 		}
 	}
 
-	explicit com_lib(init when) {
+	explicit com_lib(init when) noexcept {
 		if (when == init::NOW) {
 			this->initialize();
 		}
 	}
 
-	void initialize() {
+	void initialize() noexcept {
 		if (FAILED(this->_hr)) { // so that initialize() can be called multiple times
 			this->_hr = CoInitialize(nullptr);
 		}
 	}
 
-	HRESULT hresult() const {
+	HRESULT hresult() const noexcept {
 		return this->_hr;
 	}
 };

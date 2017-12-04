@@ -25,14 +25,14 @@ private:
 public:
 	const size_t& index;
 
-	listview_item(size_t itemIndex, listviewT& list)
+	listview_item(size_t itemIndex, listviewT& list) noexcept
 		: _index(itemIndex), _list(list), index(_index) { }
 
-	void remove() const {
+	void remove() const noexcept {
 		ListView_DeleteItem(this->_list.hwnd(), this->_index);
 	}
 
-	void swap_with(size_t itemIndex) {
+	void swap_with(size_t itemIndex) noexcept {
 		this->_list.set_redraw(false);
 
 		item newItem = this->_list.items[itemIndex]; // make a copy
@@ -55,7 +55,7 @@ public:
 		this->_list.set_redraw(true);
 	}
 
-	listview_item& ensure_visible() {
+	listview_item& ensure_visible() noexcept {
 		if (this->_list.get_view() == view::DETAILS) {
 			// In details view, ListView_EnsureVisible() won't center the item vertically.
 			// This new implementation has this behavior.
@@ -85,39 +85,39 @@ public:
 		return *this;
 	}
 
-	bool is_visible() const {
+	bool is_visible() const noexcept {
 		return ListView_IsItemVisible(this->_list.hwnd(), this->_index) == TRUE;
 	}
 
-	listview_item& set_select(bool select) {
+	listview_item& set_select(bool select) noexcept {
 		ListView_SetItemState(this->_list.hwnd(), this->_index,
 			select ? LVIS_SELECTED : 0, LVIS_SELECTED);
 		return *this;
 	}
 
-	bool is_selected() const {
+	bool is_selected() const noexcept {
 		return (ListView_GetItemState(this->_list.hwnd(),
 			this->_index, LVIS_SELECTED) & LVIS_SELECTED) != 0;
 	}
 
-	listview_item& set_focus() {
+	listview_item& set_focus() noexcept {
 		ListView_SetItemState(this->_list.hwnd(),
 			this->_index, LVIS_FOCUSED, LVIS_FOCUSED);
 		return *this;
 	}
 
-	bool is_focused() const {
+	bool is_focused() const noexcept {
 		return (ListView_GetItemState(this->_list.hwnd(),
 			this->_index, LVIS_FOCUSED) & LVIS_FOCUSED) != 0;
 	}
 
-	RECT get_rect() const {
+	RECT get_rect() const noexcept {
 		RECT rc{};
 		ListView_GetItemRect(this->_list.hwnd(), this->_index, &rc, LVIR_BOUNDS);
 		return rc;
 	}
 
-	std::wstring get_text(size_t columnIndex = 0) const {
+	std::wstring get_text(size_t columnIndex = 0) const noexcept {
 		// http://forums.codeguru.com/showthread.php?351972-Getting-listView-item-text-length
 		LVITEMW lvi{};
 		lvi.iItem = static_cast<int>(this->_index);
@@ -144,17 +144,17 @@ public:
 		return buf;
 	}
 
-	listview_item& set_text(const wchar_t* text, size_t columnIndex = 0) {
+	listview_item& set_text(const wchar_t* text, size_t columnIndex = 0) noexcept {
 		ListView_SetItemText(this->_list.hwnd(), this->_index,
 			static_cast<int>(columnIndex), const_cast<wchar_t*>(text));
 		return *this;
 	}
 
-	listview_item& set_text(const std::wstring& text, size_t columnIndex = 0) {
+	listview_item& set_text(const std::wstring& text, size_t columnIndex = 0) noexcept {
 		return this->set_text(text.c_str(), columnIndex);
 	}
 
-	LPARAM get_param() const {
+	LPARAM get_param() const noexcept {
 		LVITEMW lvi{};
 		lvi.iItem = static_cast<int>(this->_index);
 		lvi.mask = LVIF_PARAM;
@@ -163,7 +163,7 @@ public:
 		return lvi.lParam;
 	}
 
-	listview_item& set_param(LPARAM lp) {
+	listview_item& set_param(LPARAM lp) noexcept {
 		LVITEMW lvi{};
 		lvi.iItem = static_cast<int>(this->_index);
 		lvi.mask = LVIF_PARAM;
@@ -173,7 +173,7 @@ public:
 		return *this;
 	}
 
-	int get_icon_index() const {
+	int get_icon_index() const noexcept {
 		LVITEMW lvi{};
 		lvi.iItem = static_cast<int>(this->_index);
 		lvi.mask = LVIF_IMAGE;
@@ -182,7 +182,7 @@ public:
 		return lvi.iImage; // return index of icon within image_list
 	}
 
-	listview_item& set_icon_index(int imagelistIconIndex) {
+	listview_item& set_icon_index(int imagelistIconIndex) noexcept {
 		LVITEMW lvi{};
 		lvi.iItem = static_cast<int>(this->_index);
 		lvi.mask = LVIF_IMAGE;

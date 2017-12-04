@@ -14,8 +14,8 @@ namespace wli {
 
 class hover_scroll final {
 public:
-	static void apply_behavior(HWND hWnd) {
-		EnumChildWindows(hWnd, [](HWND hChild, LPARAM lp)->BOOL {
+	static void apply_behavior(HWND hWnd) noexcept {
+		EnumChildWindows(hWnd, [](HWND hChild, LPARAM lp) noexcept->BOOL {
 			static UINT_PTR uniqueSubclassId = 1;
 			if (GetWindowLongPtrW(hChild, GWL_STYLE) & WS_TABSTOP) {
 				SetWindowSubclass(hChild, _hover_scroll_proc, uniqueSubclassId++,
@@ -27,13 +27,13 @@ public:
 
 private:
 	static LRESULT CALLBACK _hover_scroll_proc(HWND hChild, UINT msg, WPARAM wp, LPARAM lp,
-		UINT_PTR idSubclass, DWORD_PTR refData)
+		UINT_PTR idSubclass, DWORD_PTR refData) noexcept
 	{
 		switch (msg) {
 		case WM_MOUSEWHEEL:
 			if (!(LOWORD(wp) & 0x0800)) { // bitflag not set, this is the first and unprocessed WM_MOUSEWHEEL passage
 				HWND hTopLevelParent = reinterpret_cast<HWND>(refData);
-				POINT pt = { LOWORD(lp), HIWORD(lp) };
+				POINT pt = {LOWORD(lp), HIWORD(lp)};
 				ScreenToClient(hTopLevelParent, &pt); // to client coordinates relative to parent
 				SendMessageW(ChildWindowFromPoint(hTopLevelParent, pt), // window below cursor
 					WM_MOUSEWHEEL,

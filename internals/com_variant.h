@@ -23,56 +23,56 @@ public:
 	}
 
 	com_variant() = default;
-	com_variant(com_variant&& other) { this->operator=(std::move(other)); }
+	com_variant(com_variant&& other) noexcept { this->operator=(std::move(other)); }
 
-	com_variant& operator=(com_variant&& other) {
+	com_variant& operator=(com_variant&& other) noexcept {
 		this->clear();
 		std::swap(this->_variant, other._variant);
 		return *this;
 	}
 
-	com_variant& clear() {
+	com_variant& clear() noexcept {
 		if (this->_variant.vt != VT_EMPTY) {
 			VariantClear(&this->_variant); // will set VT_EMPTY
 		}
 		return *this;
 	}
 
-	VARIANT& variant() {
+	VARIANT& variant() noexcept {
 		return this->_variant; // unsafe method, but some COM functions need it
 	}
 
-	VARIANT* ptr() {
+	VARIANT* ptr() noexcept {
 		return &this->_variant;
 	}
 
-	com_variant& set_str(const wchar_t* s) {
+	com_variant& set_str(const wchar_t* s) noexcept {
 		this->clear();
 		this->_variant.vt = VT_BSTR;
 		this->_variant.bstrVal = SysAllocString(s);
 		return *this;
 	}
 
-	com_variant& set_str(const std::wstring& s) {
+	com_variant& set_str(const std::wstring& s) noexcept {
 		return this->set_str(s.c_str());
 	}
 
-	const wchar_t* get_str() const {
+	const wchar_t* get_str() const noexcept {
 		return static_cast<wchar_t*>(this->_variant.bstrVal);
 	}
 
-	com_variant& set_int4(long n) {
+	com_variant& set_int4(long n) noexcept {
 		this->clear();
 		this->_variant.vt = VT_I4;
 		this->_variant.lVal = n;
 		return *this;
 	}
 
-	long get_int4() const {
+	long get_int4() const noexcept {
 		return this->_variant.lVal;
 	}
 
-	com_variant& set_dispatch(IDispatch* objToQueryFrom) {
+	com_variant& set_dispatch(IDispatch* objToQueryFrom) noexcept {
 		this->clear();
 		this->_variant.vt = VT_DISPATCH;
 		objToQueryFrom->QueryInterface(IID_IDispatch,
@@ -80,7 +80,7 @@ public:
 		return *this;
 	}
 
-	IDispatch* get_dispatch() const {
+	IDispatch* get_dispatch() const noexcept {
 		return this->_variant.pdispVal;
 	}
 };

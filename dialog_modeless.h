@@ -35,12 +35,12 @@ private:
 protected:
 	setup_vars setup;
 
-	dialog_modeless() {
-		this->on_message(WM_CLOSE, [this](params)->INT_PTR {
+	dialog_modeless() noexcept {
+		this->on_message(WM_CLOSE, [this](params) noexcept->INT_PTR {
 			DestroyWindow(this->hwnd());
 			return TRUE;
 		});
-		this->on_message(WM_NCDESTROY, [this](params)->INT_PTR {
+		this->on_message(WM_NCDESTROY, [this](params) noexcept->INT_PTR {
 			if (this->_pLoop) {
 				this->_pLoop->remove_modeless(this->hwnd());
 			}

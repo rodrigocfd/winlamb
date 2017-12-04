@@ -18,18 +18,18 @@ public:
 	std::array<UINT, 4> num;
 
 	version() = default;
-	explicit version(UINT major, UINT minor = 0, UINT build = 0, UINT revision = 0)
+	explicit version(UINT major, UINT minor = 0, UINT build = 0, UINT revision = 0) noexcept
 		: num{major, minor, build, revision} { }
+	
 	version(const version&) = default;
-
 	version& operator=(const version&) = default;
 
-	bool operator==(const version& other) const { return this->num == other.num; }
-	bool operator!=(const version& other) const { return !this->operator==(other); }
-	bool operator>=(const version& other) const { return this->operator>(other) || this->operator==(other); }
-	bool operator<=(const version& other) const { return this->operator<(other) || this->operator==(other); }
-	bool operator<(const version& other)  const { return other > *this; }
-	bool operator>(const version& other)  const {
+	bool operator==(const version& other) const noexcept { return this->num == other.num; }
+	bool operator!=(const version& other) const noexcept { return !this->operator==(other); }
+	bool operator>=(const version& other) const noexcept { return this->operator>(other) || this->operator==(other); }
+	bool operator<=(const version& other) const noexcept { return this->operator<(other) || this->operator==(other); }
+	bool operator<(const version& other)  const noexcept { return other > *this; }
+	bool operator>(const version& other)  const noexcept {
 		for (size_t i = 0; i < 4; ++i) {
 			if (this->num[i] > other.num[i]) {
 				return true;
@@ -40,7 +40,7 @@ public:
 		return false;
 	}
 
-	std::wstring to_string(BYTE numDigits = 4) const {
+	std::wstring to_string(BYTE numDigits = 4) const noexcept {
 		std::wstring ret;
 		if (numDigits) {
 			ret.append(std::to_wstring(this->num[0]));
@@ -52,7 +52,7 @@ public:
 		return ret;
 	}
 
-	bool parse(const std::wstring& text) {
+	bool parse(const std::wstring& text) noexcept {
 		std::vector<std::wstring> fields = str::explode(text, L".");
 		for (size_t i = 0; i < fields.size() && i <= 4; ++i) {
 			if (!str::is_uint(fields[i])) {
@@ -106,7 +106,10 @@ public:
 	// Reads version of current executable or DLL file itself.
 	bool read_current_exe() {
 		wchar_t buf[MAX_PATH + 1]{};
-		GetModuleFileNameW(nullptr, buf, ARRAYSIZE(buf));
+		if (!GetModuleFileNameW(nullptr, buf, ARRAYSIZE(buf))) {
+			throw std::system_error(GetLastError(), std::system_category(),
+				"GetModuleFileName failed for control dialog");
+		}
 		return this->read(buf);
 	}
 };

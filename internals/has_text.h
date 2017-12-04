@@ -18,16 +18,16 @@ protected:
 	has_text() = default;
 
 public:
-	derivedT& set_text(const wchar_t* s) {
+	derivedT& set_text(const wchar_t* s) noexcept {
 		SetWindowTextW(this->hwnd(), s);
 		return *static_cast<derivedT*>(this);
 	}
 
-	derivedT& set_text(const std::wstring& s) {
+	derivedT& set_text(const std::wstring& s) noexcept {
 		return this->set_text(s.c_str());
 	}
 
-	std::wstring get_text() const {
+	std::wstring get_text() const noexcept {
 		std::wstring buf;
 		int len = GetWindowTextLengthW(this->hwnd());
 		if (len) {

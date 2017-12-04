@@ -25,19 +25,19 @@ public:
 	}
 
 	download_session() = default;
-	download_session(download_session&& other) { this->operator=(std::move(other)); }
+	download_session(download_session&& other) noexcept { this->operator=(std::move(other)); }
 
-	HINTERNET hsession() const {
+	HINTERNET hsession() const noexcept {
 		return this->_hSession;
 	}
 
-	download_session& operator=(download_session&& other) {
+	download_session& operator=(download_session&& other) noexcept {
 		this->close();
 		std::swap(this->_hSession, other._hSession);
 		return *this;
 	}
 
-	void close() {
+	void close() noexcept {
 		if (this->_hSession) {
 			WinHttpCloseHandle(this->_hSession);
 			this->_hSession = nullptr;

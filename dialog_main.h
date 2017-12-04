@@ -42,12 +42,12 @@ private:
 protected:
 	setup_vars setup;
 
-	dialog_main() {
-		this->on_message(WM_CLOSE, [this](params)->INT_PTR {
+	dialog_main() noexcept {
+		this->on_message(WM_CLOSE, [this](params) noexcept->INT_PTR {
 			DestroyWindow(this->hwnd());
 			return TRUE;
 		});
-		this->on_message(WM_NCDESTROY, [](params)->INT_PTR {
+		this->on_message(WM_NCDESTROY, [](params) noexcept->INT_PTR {
 			PostQuitMessage(0);
 			return TRUE;
 		});
@@ -80,7 +80,7 @@ public:
 	}
 
 private:
-	void _set_icon(HINSTANCE hInst) const {
+	void _set_icon(HINSTANCE hInst) const noexcept {
 		if (this->setup.iconId) {
 			SendMessageW(this->hwnd(), WM_SETICON, ICON_SMALL,
 				reinterpret_cast<LPARAM>(reinterpret_cast<HICON>(LoadImageW(hInst,

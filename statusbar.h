@@ -25,13 +25,13 @@ class statusbar final : public wli::native_control<statusbar> {
 private:
 	class _styler final : public wli::styler<statusbar> {
 	public:
-		explicit _styler(statusbar* pSb) : styler(pSb) { }
+		explicit _styler(statusbar* pSb) noexcept : styler(pSb) { }
 
-		statusbar& size_grip(bool doSet) {
+		statusbar& size_grip(bool doSet) noexcept {
 			return this->set_style(doSet, SBARS_SIZEGRIP);
 		}
 
-		statusbar& tooltips(bool doSet) {
+		statusbar& tooltips(bool doSet) noexcept {
 			return this->set_style(doSet, SBARS_TOOLTIPS);
 		}
 	};
@@ -63,7 +63,7 @@ public:
 		return this->create(parent->hwnd());
 	}
 
-	void adjust(const params& p) {
+	void adjust(const params& p) noexcept {
 		// Intended to be called with parent's WM_SIZE processing.
 		if (p.wParam != SIZE_MINIMIZED && this->hwnd()) {
 			int cx = LOWORD(p.lParam); // available width
@@ -94,7 +94,7 @@ public:
 		}
 	}
 
-	statusbar& add_fixed_part(UINT sizePixels) {
+	statusbar& add_fixed_part(UINT sizePixels) noexcept {
 		if (this->hwnd()) {
 			this->_parts.push_back({sizePixels, 0});
 			this->_rightEdges.emplace_back(0);
@@ -103,7 +103,7 @@ public:
 		return *this;
 	}
 
-	statusbar& add_resizable_part(UINT resizeWeight) {
+	statusbar& add_resizable_part(UINT resizeWeight) noexcept {
 		// How resizeWeight works:
 		// Suppose you have 3 parts, respectively with weights of 1, 1 and 2.
 		// If available client area is 400px, respective part widths will be 100, 100 and 200px.
@@ -116,17 +116,17 @@ public:
 		return *this;
 	}
 
-	statusbar& set_text(const wchar_t* text, size_t iPart) {
+	statusbar& set_text(const wchar_t* text, size_t iPart) noexcept {
 		SendMessageW(this->hwnd(), SB_SETTEXT, MAKEWPARAM(MAKEWORD(iPart, 0), 0),
 			reinterpret_cast<LPARAM>(text));
 		return *this;
 	}
 
-	statusbar& set_text(const std::wstring& text, size_t iPart) {
+	statusbar& set_text(const std::wstring& text, size_t iPart) noexcept {
 		return this->set_text(text.c_str(), iPart);
 	}
 
-	std::wstring get_text(size_t iPart) const {
+	std::wstring get_text(size_t iPart) const noexcept {
 		std::wstring buf;
 		int len = LOWORD(SendMessageW(this->hwnd(), SB_GETTEXTLENGTH, iPart, 0));
 		if (len) {
@@ -137,18 +137,18 @@ public:
 		return buf;
 	}
 
-	statusbar& set_icon(HICON hIcon, size_t iPart) {
+	statusbar& set_icon(HICON hIcon, size_t iPart) noexcept {
 		// Pass nullptr to clear icon.
 		SendMessageW(this->hwnd(), SB_SETICON, iPart, reinterpret_cast<LPARAM>(hIcon));
 		return *this;
 	}
 
-	statusbar& set_icon(const icon& ico, size_t iPart) {
+	statusbar& set_icon(const icon& ico, size_t iPart) noexcept {
 		return this->set_icon(ico.hicon(), iPart);
 	}
 
 private:
-	int _get_parent_cx() {
+	int _get_parent_cx() noexcept {
 		static int cx = 0; // cache, since parts are intended to be added during window creation only
 		if (!cx && this->hwnd()) {
 			RECT rc{};

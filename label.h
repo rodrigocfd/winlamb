@@ -30,7 +30,7 @@ class label final :
 private:
 	class _styler final : public wli::styler<label> {
 	public:
-		explicit _styler(label* pLabel) : styler(pLabel) { }
+		explicit _styler(label* pLabel) noexcept : styler(pLabel) { }
 	};
 
 public:

@@ -16,8 +16,8 @@ namespace wmn {
 
 #define WINLAMB_NOTIFYWM(sname, oname) \
 	struct sname : public wm::notify { \
-		sname(const params& p) : notify(p) { } \
-		oname& nmhdr() const { return *reinterpret_cast<oname*>(this->lParam); } \
+		sname(const params& p) noexcept : notify(p) { } \
+		oname& nmhdr() const noexcept { return *reinterpret_cast<oname*>(this->lParam); } \
 	};
 
 	// ComboBoxEx notifications.

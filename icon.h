@@ -33,19 +33,19 @@ public:
 	}
 
 	icon() = default;
-	icon(icon&& other) { this->operator=(std::move(other)); }
+	icon(icon&& other) noexcept { this->operator=(std::move(other)); }
 
-	HICON hicon() const {
+	HICON hicon() const noexcept {
 		return this->_hIcon;
 	}
 
-	icon& operator=(icon&& other) {
+	icon& operator=(icon&& other) noexcept {
 		this->destroy();
 		std::swap(this->_hIcon, other._hIcon);
 		return *this;
 	}
 
-	icon& destroy() {
+	icon& destroy() noexcept {
 		if (this->_hIcon) {
 			DestroyIcon(this->_hIcon);
 			this->_hIcon = nullptr;
@@ -87,9 +87,8 @@ public:
 			if (!gfiOk) {
 				throw std::system_error(GetLastError(), std::system_category(),
 					"SHGetFileInfo failed when trying to load icon from shell");
-			} else {
-				this->_hIcon = shfi.hIcon;
 			}
+			this->_hIcon = shfi.hIcon;
 		} else if (resolution != res::OTHER) {
 			IImageList* pImgList = nullptr; // http://stackoverflow.com/a/30496252
 			HRESULT hr = SHGetImageList(static_cast<int>(resolution),
@@ -97,30 +96,28 @@ public:
 			if (FAILED(hr)) {
 				throw std::system_error(hr, std::system_category(),
 					"SHGetImageList failed when trying to load icon from shell");
-			} else {
-				DWORD_PTR gfiOk = SHGetFileInfoW(extens, FILE_ATTRIBUTE_NORMAL, &shfi, sizeof(shfi),
-					SHGFI_USEFILEATTRIBUTES | SHGFI_SYSICONINDEX);
-				if (!gfiOk) {
-					throw std::system_error(GetLastError(), std::system_category(),
-						"SHGetFileInfo failed when trying to load system's image list");
-				} else {
-					this->_hIcon = ImageList_GetIcon(reinterpret_cast<HIMAGELIST>(pImgList),
-						shfi.iIcon, ILD_NORMAL);
-				}
 			}
+			DWORD_PTR gfiOk = SHGetFileInfoW(extens, FILE_ATTRIBUTE_NORMAL, &shfi, sizeof(shfi),
+				SHGFI_USEFILEATTRIBUTES | SHGFI_SYSICONINDEX);
+			if (!gfiOk) {
+				throw std::system_error(GetLastError(), std::system_category(),
+					"SHGetFileInfo failed when trying to load system's image list");
+			}
+			this->_hIcon = ImageList_GetIcon(reinterpret_cast<HIMAGELIST>(pImgList),
+				shfi.iIcon, ILD_NORMAL);
 		}
 
 		return *this;
 	}
 
-	icon& icon_to_label(HWND hStatic) {
+	icon& icon_to_label(HWND hStatic) noexcept {
 		// Loads an icon into a static control; the icon can be safely destroyed then.
 		// On the resource editor, change "Type" property to "Icon".
 		SendMessageW(hStatic, STM_SETIMAGE, IMAGE_ICON, reinterpret_cast<LPARAM>(this->_hIcon));
 		return *this;
 	}
 
-	SIZE resolution() const {
+	SIZE resolution() const noexcept {
 		SIZE sz{}; // http://stackoverflow.com/a/13923853
 		if (this->_hIcon) {
 			BITMAP bmp{};
@@ -149,7 +146,7 @@ public:
 		return sz;
 	}
 
-	res resolution_type() const {
+	res resolution_type() const noexcept {
 		return util::resolve_resolution_type(this->resolution());
 	}
 
@@ -160,7 +157,7 @@ public:
 
 	public:
 		// Converts a SIZE resolution to the equivalent enum value.
-		static res resolve_resolution_type(SIZE sz) {
+		static res resolve_resolution_type(SIZE sz) noexcept {
 			if (sz.cx == 16 && sz.cy == 16) return res::SMALL16;
 			else if (sz.cx == 32 && sz.cy == 32) return res::LARGE32;
 			else if (sz.cx == 48 && sz.cy == 48) return res::EXTRALARGE48;

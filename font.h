@@ -24,19 +24,19 @@ public:
 	}
 
 	font() = default;
-	font(font&& other) { this->operator=(std::move(other)); }
+	font(font&& other) noexcept { this->operator=(std::move(other)); }
 
-	HFONT hfont() const {
+	HFONT hfont() const noexcept {
 		return this->_hFont;
 	}
 
-	font& operator=(font&& other) {
+	font& operator=(font&& other) noexcept {
 		this->destroy();
 		std::swap(this->_hFont, other._hFont);
 		return *this;
 	}
 
-	font& destroy() {
+	font& destroy() noexcept {
 		if (this->_hFont) {
 			DeleteObject(this->_hFont);
 			this->_hFont = nullptr;
@@ -97,7 +97,7 @@ public:
 			SendMessageW(hParent, WM_SETFONT,
 				reinterpret_cast<WPARAM>(oneFont._hFont),
 				MAKELPARAM(FALSE, 0));
-			EnumChildWindows(hParent, [](HWND hWnd, LPARAM lp)->BOOL {
+			EnumChildWindows(hParent, [](HWND hWnd, LPARAM lp) noexcept->BOOL {
 				SendMessageW(hWnd, WM_SETFONT,
 					reinterpret_cast<WPARAM>(reinterpret_cast<HFONT>(lp)),
 					MAKELPARAM(FALSE, 0)); // will run on each child

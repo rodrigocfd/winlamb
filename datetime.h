@@ -16,16 +16,16 @@ private:
 	SYSTEMTIME _st{};
 
 public:
-	datetime()                     { this->set_now(); }
-	datetime(LONGLONG ms)          { this->operator=(ms); }
-	datetime(const SYSTEMTIME& st) { this->operator=(st); }
-	datetime(const FILETIME& ft)   { this->operator=(ft); }
+	datetime() noexcept                     { this->set_now(); }
+	datetime(LONGLONG ms) noexcept          { this->operator=(ms); }
+	datetime(const SYSTEMTIME& st) noexcept { this->operator=(st); }
+	datetime(const FILETIME& ft) noexcept   { this->operator=(ft); }
 
-	const SYSTEMTIME& systemtime() const {
+	const SYSTEMTIME& systemtime() const noexcept {
 		return this->_st;
 	}
 
-	datetime& operator=(LONGLONG ms) {
+	datetime& operator=(LONGLONG ms) noexcept {
 		SecureZeroMemory(&this->_st, sizeof(SYSTEMTIME));
 
 		this->_st.wMilliseconds = ms % 1000;
@@ -39,12 +39,12 @@ public:
 		return *this;
 	}
 
-	datetime& operator=(const SYSTEMTIME& st) {
+	datetime& operator=(const SYSTEMTIME& st) noexcept {
 		memcpy(&this->_st, &st, sizeof(SYSTEMTIME));
 		return *this;
 	}
 
-	datetime& operator=(const FILETIME& ft) {
+	datetime& operator=(const FILETIME& ft) noexcept {
 		SYSTEMTIME st1{};
 		FileTimeToSystemTime(&ft, &st1);
 
@@ -54,7 +54,7 @@ public:
 		return *this;
 	}
 
-	datetime& set_now() {
+	datetime& set_now() noexcept {
 		SYSTEMTIME st1{};
 		GetSystemTime(&st1);
 
@@ -64,17 +64,17 @@ public:
 		return *this;
 	}
 
-	LONGLONG timestamp() const {
+	LONGLONG timestamp() const noexcept {
 		// http://www.frenk.com/2009/12/convert-filetime-to-unix-timestamp/
 		LARGE_INTEGER date, adjust;
 		_st_to_li(this->_st, date);
 		adjust.QuadPart = 11644473600000 * 10000; // 100-nanoseconds = milliseconds * 10000
 		date.QuadPart -= adjust.QuadPart; // removes the diff between 1970 and 1601
-											//return date.QuadPart / 10000000; // converts back from 100-nanoseconds to seconds
+		//return date.QuadPart / 10000000; // converts back from 100-nanoseconds to seconds
 		return date.QuadPart / 10000; // to milliseconds; to printf use %I64u
 	}
 
-	size_t minus(const datetime& other) const {
+	size_t minus(const datetime& other) const noexcept {
 		LARGE_INTEGER liUs, liThem;
 		_st_to_li(this->_st, liUs);
 		_st_to_li(other._st, liThem);
@@ -84,7 +84,7 @@ public:
 		return static_cast<size_t>((liUs.QuadPart - liThem.QuadPart) / 10000);
 	}
 
-	datetime& add_ms(LONGLONG ms) {
+	datetime& add_ms(LONGLONG ms) noexcept {
 		LARGE_INTEGER li;
 		_st_to_li(this->_st, li);
 		li.QuadPart += ms * 10000; // milliseconds to 100-nanoseconds
@@ -92,36 +92,36 @@ public:
 		return *this;
 	}
 
-	datetime& add_sec(LONGLONG sec) { return this->add_ms(sec * 1000); }
-	datetime& add_min(LONGLONG min) { return this->add_sec(min * 60); }
-	datetime& add_hour(LONGLONG h)  { return this->add_min(h * 60); }
-	datetime& add_day(LONGLONG d)   { return this->add_hour(d * 24); }
+	datetime& add_sec(LONGLONG sec) noexcept { return this->add_ms(sec * 1000); }
+	datetime& add_min(LONGLONG min) noexcept { return this->add_sec(min * 60); }
+	datetime& add_hour(LONGLONG h) noexcept  { return this->add_min(h * 60); }
+	datetime& add_day(LONGLONG d) noexcept   { return this->add_hour(d * 24); }
 
-	const wchar_t* name_month() const {
+	const wchar_t* name_month() const noexcept {
 		wchar_t* months[] = { L"January", L"February", L"March", L"April", L"May", L"June",
 			L"July", L"August", L"September", L"October", L"November", L"December" };
 		return months[this->_st.wMonth - 1];
 	}
 
-	const wchar_t* name_month_short() const {
+	const wchar_t* name_month_short() const noexcept {
 		wchar_t* months[] = { L"Jan", L"Feb", L"Mar", L"Apr", L"May", L"Jun",
 			L"Jul", L"Aug", L"Sep", L"Oct", L"Nov", L"Dec" };
 		return months[this->_st.wMonth - 1];
 	}
 
-	const wchar_t* name_weekday() const {
+	const wchar_t* name_weekday() const noexcept {
 		wchar_t* weekday[] = { L"Sunday", L"Monday", L"Tuesday", L"Wednesday",
 			L"Thursday", L"Friday", L"Saturday" };
 		return weekday[this->_st.wDayOfWeek];
 	}
 
-	const wchar_t* name_weekday_short() const {
+	const wchar_t* name_weekday_short() const noexcept {
 		wchar_t* weekday[] = { L"Sun", L"Mon", L"Tue", L"Wed", L"Thu", L"Fri", L"Sat" };
 		return weekday[this->_st.wDayOfWeek];
 	}
 
 private:
-	static void _st_to_li(const SYSTEMTIME& st, LARGE_INTEGER& li) {
+	static void _st_to_li(const SYSTEMTIME& st, LARGE_INTEGER& li) noexcept {
 		FILETIME ft{};
 		SystemTimeToFileTime(&st, &ft);
 
@@ -129,7 +129,7 @@ private:
 		li.LowPart = ft.dwLowDateTime;
 	}
 
-	static void _li_to_st(const LARGE_INTEGER& li, SYSTEMTIME& st) {
+	static void _li_to_st(const LARGE_INTEGER& li, SYSTEMTIME& st) noexcept {
 		FILETIME ft{};
 		ft.dwHighDateTime = li.HighPart;
 		ft.dwLowDateTime = li.LowPart;

@@ -33,15 +33,15 @@ private:
 	SIZE               _szOrig;
 
 public:
-	resizer& add(HWND hCtrl, go modeHorz, go modeVert) {
+	resizer& add(HWND hCtrl, go modeHorz, go modeVert) noexcept {
 		return this->_add_one(hCtrl, modeHorz, modeVert);
 	}
 
-	resizer& add(const wli::hwnd_wrapper& ctrl, go modeHorz, go modeVert) {
+	resizer& add(const wli::hwnd_wrapper& ctrl, go modeHorz, go modeVert) noexcept {
 		return this->add(ctrl.hwnd(), modeHorz, modeVert);
 	}
 
-	resizer& add(std::initializer_list<HWND> hCtrls, go modeHorz, go modeVert) {
+	resizer& add(std::initializer_list<HWND> hCtrls, go modeHorz, go modeVert) noexcept {
 		this->_ctrls.reserve(this->_ctrls.size() + hCtrls.size());
 		for (const HWND hCtrl : hCtrls) {
 			this->_add_one(hCtrl, modeHorz, modeVert);
@@ -49,7 +49,7 @@ public:
 		return *this;
 	}
 
-	resizer& add(std::initializer_list<wli::hwnd_wrapper*> ctrls, go modeHorz, go modeVert) {
+	resizer& add(std::initializer_list<wli::hwnd_wrapper*> ctrls, go modeHorz, go modeVert) noexcept {
 		this->_ctrls.reserve(this->_ctrls.size() + ctrls.size());
 		for (const wli::hwnd_wrapper* pCtrl : ctrls) {
 			this->_add_one(pCtrl->hwnd(), modeHorz, modeVert);
@@ -57,15 +57,15 @@ public:
 		return *this;
 	}
 
-	resizer& add(HWND hParent, int ctrlId, go modeHorz, go modeVert) {
+	resizer& add(HWND hParent, int ctrlId, go modeHorz, go modeVert) noexcept {
 		return this->add(GetDlgItem(hParent, ctrlId), modeHorz, modeVert);
 	}
 
-	resizer& add(const wli::hwnd_wrapper* parent, int ctrlId, go modeHorz, go modeVert) {
+	resizer& add(const wli::hwnd_wrapper* parent, int ctrlId, go modeHorz, go modeVert) noexcept {
 		return this->add(parent->hwnd(), ctrlId, modeHorz, modeVert);
 	}
 
-	resizer& add(HWND hParent, std::initializer_list<int> ctrlIds, go modeHorz, go modeVert) {
+	resizer& add(HWND hParent, std::initializer_list<int> ctrlIds, go modeHorz, go modeVert) noexcept {
 		this->_ctrls.reserve(this->_ctrls.size() + ctrlIds.size());
 		for (int ctrlId : ctrlIds) {
 			this->_add_one(GetDlgItem(hParent, ctrlId), modeHorz, modeVert);
@@ -73,7 +73,7 @@ public:
 		return *this;
 	}
 
-	resizer& add(const wli::hwnd_wrapper* parent, std::initializer_list<int> ctrlIds, go modeHorz, go modeVert) {
+	resizer& add(const wli::hwnd_wrapper* parent, std::initializer_list<int> ctrlIds, go modeHorz, go modeVert) noexcept {
 		this->_ctrls.reserve(this->_ctrls.size() + ctrlIds.size());
 		for (int ctrlId : ctrlIds) {
 			this->_add_one(GetDlgItem(parent->hwnd(), ctrlId), modeHorz, modeVert);
@@ -82,7 +82,7 @@ public:
 	}
 
 	// Updates controls, intended to be called with parent's WM_SIZE processing.
-	void arrange(const params& p) const {
+	void arrange(const params& p) const noexcept {
 		int state = static_cast<int>(p.wParam);
 		int cx    = LOWORD(p.lParam);
 		int cy    = HIWORD(p.lParam);
@@ -119,7 +119,7 @@ public:
 	}
 
 private:
-	resizer& _add_one(HWND hChild, go modeHorz, go modeVert) {
+	resizer& _add_one(HWND hChild, go modeHorz, go modeVert) noexcept {
 		HWND hParent = GetParent(hChild);
 		if (this->_ctrls.empty()) { // first call to _addOne()
 			RECT rcP{};

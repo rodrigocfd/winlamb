@@ -23,13 +23,13 @@ class progressbar final : public wli::native_control<progressbar> {
 private:
 	class _styler final : public wli::styler<progressbar> {
 	public:
-		explicit _styler(progressbar* pPb) : styler(pPb) { }
+		explicit _styler(progressbar* pPb) noexcept : styler(pPb) { }
 
-		progressbar& vertical(bool doSet) {
+		progressbar& vertical(bool doSet) noexcept {
 			return this->set_style(doSet, PBS_VERTICAL);
 		}
 
-		progressbar& smooth_reverse(bool doSet) {
+		progressbar& smooth_reverse(bool doSet) noexcept {
 			return this->set_style(doSet, PBS_SMOOTHREVERSE);
 		}
 	};
@@ -45,29 +45,29 @@ public:
 		return this->create(parent->hwnd(), ctrlId, caption, pos, size);
 	}
 
-	progressbar& set_range(int minVal, int maxVal) {
+	progressbar& set_range(int minVal, int maxVal) noexcept {
 		SendMessageW(this->hwnd(), PBM_SETRANGE, 0, MAKELPARAM(minVal, maxVal));
 		return *this;
 	}
 
-	progressbar& set_range(int minVal, size_t maxVal) {
+	progressbar& set_range(int minVal, size_t maxVal) noexcept {
 		return this->set_range(minVal, static_cast<int>(maxVal));
 	}
 
-	progressbar& set_pos(int pos) {
+	progressbar& set_pos(int pos) noexcept {
 		SendMessageW(this->hwnd(), PBM_SETPOS, pos, 0);
 		return *this;
 	}
 
-	progressbar& set_pos(size_t pos) {
+	progressbar& set_pos(size_t pos) noexcept {
 		return this->set_pos(static_cast<int>(pos));
 	}
 
-	progressbar& set_pos(double pos) {
+	progressbar& set_pos(double pos) noexcept {
 		return this->set_pos(static_cast<int>(pos + 0.5));
 	}
 
-	progressbar& set_waiting(bool isWaiting) {
+	progressbar& set_waiting(bool isWaiting) noexcept {
 		if (isWaiting) {
 			this->style.set_style(true, PBS_MARQUEE); // set this on resource editor won't work
 		}
@@ -79,7 +79,7 @@ public:
 		return *this;
 	}
 
-	int get_pos() {
+	int get_pos() noexcept {
 		return static_cast<int>(SendMessageW(this->hwnd(), PBM_GETPOS, 0, 0));
 	}
 };

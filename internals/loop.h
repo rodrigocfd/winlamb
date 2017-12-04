@@ -35,11 +35,11 @@ public:
 		return static_cast<int>(msg.wParam); // this can be used as program return value
 	}
 
-	void add_modeless(HWND hWnd) {
+	void add_modeless(HWND hWnd) noexcept {
 		this->_modelessChildren.emplace_back(hWnd);
 	}
 
-	void remove_modeless(HWND hWnd) {
+	void remove_modeless(HWND hWnd) noexcept {
 		for (auto it = this->_modelessChildren.begin();
 			it != this->_modelessChildren.end(); ++it)
 		{
@@ -51,7 +51,7 @@ public:
 	}
 
 private:
-	bool _is_modeless_msg(MSG* pMsg) const {
+	bool _is_modeless_msg(MSG* pMsg) const noexcept {
 		for (const HWND hModl : this->_modelessChildren) {
 			if (!hModl || !IsWindow(hModl)) continue; // skip invalid HWND
 			if (IsDialogMessageW(hModl, pMsg)) return true;

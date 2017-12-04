@@ -32,7 +32,7 @@ public:
 	static int msgbox(HWND hParent, const std::wstring& title, const std::wstring& text, UINT uType = 0) {
 		if (hParent) { // the hook will center the messagebox window on parent
 			_hWndParent.val = hParent;
-			_hHookMsgBox.val = SetWindowsHookExW(WH_CBT, [](int code, WPARAM wp, LPARAM lp)->LRESULT {
+			_hHookMsgBox.val = SetWindowsHookExW(WH_CBT, [](int code, WPARAM wp, LPARAM lp) noexcept->LRESULT {
 				// http://www.codeguru.com/cpp/w-p/win32/messagebox/print.php/c4541
 				if (code == HCBT_ACTIVATE) {
 					HWND hMsgbox = reinterpret_cast<HWND>(wp);
@@ -66,6 +66,11 @@ public:
 				}
 				return CallNextHookEx(nullptr, code, wp, lp);
 			}, nullptr, GetCurrentThreadId());
+
+			if (!_hHookMsgBox.val) {
+				throw std::system_error(GetLastError(), std::system_category(),
+					"SetWindowsHookEx failed for message box");
+			}
 		}
 		return MessageBoxW(hParent, text.c_str(), title.c_str(), uType);
 	}
@@ -75,7 +80,7 @@ public:
 	}
 
 private:
-	static std::vector<wchar_t> _format_file_filter(const wchar_t* filterWithPipes) {
+	static std::vector<wchar_t> _format_file_filter(const wchar_t* filterWithPipes) noexcept {
 		// Input filter follows same C# syntax:
 		// L"Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
 		std::vector<wchar_t> ret(lstrlenW(filterWithPipes) + 2, L'\0'); // two terminating nulls
@@ -86,7 +91,7 @@ private:
 	}
 
 public:
-	static bool open_file(HWND hParent, const wchar_t* filterWithPipes, std::wstring& buf) {
+	static bool open_file(HWND hParent, const wchar_t* filterWithPipes, std::wstring& buf) noexcept {
 		OPENFILENAME         ofn{};
 		wchar_t              tmpBuf[MAX_PATH]{};
 		std::vector<wchar_t> zfilter = _format_file_filter(filterWithPipes);
@@ -103,7 +108,7 @@ public:
 		return ret;
 	}
 
-	static bool open_file(const wli::hwnd_wrapper* parent, const wchar_t* filterWithPipes, std::wstring& buf) {
+	static bool open_file(const wli::hwnd_wrapper* parent, const wchar_t* filterWithPipes, std::wstring& buf) noexcept {
 		return open_file(parent->hwnd(), filterWithPipes, buf);
 	}
 
@@ -158,7 +163,7 @@ public:
 		return open_file(parent->hwnd(), filterWithPipes, arrBuf);
 	}
 	
-	static bool save_file(HWND hParent, const wchar_t* filterWithPipes, std::wstring& buf, const std::wstring& defFile) {
+	static bool save_file(HWND hParent, const wchar_t* filterWithPipes, std::wstring& buf, const std::wstring& defFile) noexcept {
 		OPENFILENAME         ofn{};
 		wchar_t              tmpBuf[MAX_PATH]{};
 		std::vector<wchar_t> zfilter = _format_file_filter(filterWithPipes);
@@ -178,7 +183,7 @@ public:
 		return ret;
 	}
 
-	static bool save_file(const wli::hwnd_wrapper* parent, const wchar_t* filterWithPipes, std::wstring& buf, const std::wstring& defFile) {
+	static bool save_file(const wli::hwnd_wrapper* parent, const wchar_t* filterWithPipes, std::wstring& buf, const std::wstring& defFile) noexcept {
 		return save_file(parent->hwnd(), filterWithPipes, buf, defFile);
 	}
 

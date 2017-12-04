@@ -33,9 +33,9 @@ class textbox final :
 private:
 	class _styler final : public wli::styler<textbox> {
 	public:
-		explicit _styler(textbox* pTextbox) : styler(pTextbox) { }
+		explicit _styler(textbox* pTextbox) noexcept : styler(pTextbox) { }
 
-		textbox& password(bool doSet) {
+		textbox& password(bool doSet) noexcept {
 			return this->set_style(doSet, ES_PASSWORD);
 		}
 	};
@@ -70,29 +70,29 @@ public:
 		return this->create(parent->hwnd(), ctrlId, t, pos, width, height);
 	}
 
-	textbox& textbox::selection_set(selection selec) {
+	textbox& textbox::selection_set(selection selec) noexcept {
 		SendMessageW(this->hwnd(), EM_SETSEL, selec.start, selec.start + selec.len);
 		return *this;
 	}
 
-	textbox& selection_set_all() {
+	textbox& selection_set_all() noexcept {
 		return this->selection_set({0, -1});
 	}
 
-	selection selection_get() const {
+	selection selection_get() const noexcept {
 		int p0 = 0, p1 = 0;
 		SendMessageW(this->hwnd(), EM_GETSEL,
 			reinterpret_cast<WPARAM>(&p0), reinterpret_cast<LPARAM>(&p1));
 		return {p0, p1 - p0}; // start, length
 	}
 
-	textbox& selection_replace(const wchar_t* t) {
+	textbox& selection_replace(const wchar_t* t) noexcept {
 		SendMessageW(this->hwnd(), EM_REPLACESEL,
 			TRUE, reinterpret_cast<LPARAM>(t));
 		return *this;
 	}
 
-	textbox& selection_replace(const std::wstring& t) {
+	textbox& selection_replace(const std::wstring& t) noexcept {
 		return this->selection_replace(t.c_str());
 	}
 };

@@ -22,20 +22,20 @@ public:
 	treeview_item_collection(const treeview_item_collection&) = delete;
 	treeview_item_collection& operator=(const treeview_item_collection&) = delete; // non-copyable, non-movable
 
-	explicit treeview_item_collection(treeviewT* ptree)
+	explicit treeview_item_collection(treeviewT* ptree) noexcept
 		: _tree(*ptree) { }
 
-	_itemT get_first_root() const {
+	_itemT get_first_root() const noexcept {
 		return {TreeView_GetRoot(this->_tree.hwnd()),
 			&this->_tree};
 	}
 
-	_itemT get_selected() const {
+	_itemT get_selected() const noexcept {
 		return {TreeView_GetSelection(this->_tree.hwnd()),
 			&this->_tree};
 	}
 
-	std::vector<_itemT> get_roots() const {
+	std::vector<_itemT> get_roots() const noexcept {
 		std::vector<_itemT> roots;
 		_itemT curIt = this->get_first_root();
 		while (curIt.htreeitem()) {
@@ -45,21 +45,21 @@ public:
 		return roots;
 	}
 
-	_itemT get_first_visible() const {
+	_itemT get_first_visible() const noexcept {
 		return {TreeView_GetFirstVisible(this->_tree.hwnd()),
 			&this->_tree};
 	}
 
-	_itemT get_last_visible() const {
+	_itemT get_last_visible() const noexcept {
 		return {TreeView_GetLastVisible(this->_tree.hwnd()),
 			&this->_tree};
 	}
 
-	size_t get_visible_count() const {
+	size_t get_visible_count() const noexcept {
 		return TreeView_GetVisibleCount(this->_tree.hwnd());
 	}
 
-	_itemT add_root(const wchar_t* text, int imagelistIconIndex = -1) {
+	_itemT add_root(const wchar_t* text, int imagelistIconIndex = -1) noexcept {
 		TVINSERTSTRUCTW tvi{};
 		tvi.hParent = TVI_ROOT;
 		tvi.hInsertAfter = TVI_LAST;
@@ -72,7 +72,7 @@ public:
 			&this->_tree}; // return newly added item
 	}
 
-	_itemT add_root(const std::wstring& caption, int imagelistIconIndex = -1) {
+	_itemT add_root(const std::wstring& caption, int imagelistIconIndex = -1) noexcept {
 		return this->add_root(caption.c_str(), imagelistIconIndex);
 	}
 };

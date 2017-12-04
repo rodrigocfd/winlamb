@@ -35,49 +35,49 @@ class listview final :
 private:
 	class _styler final : public wli::styler<listview> {
 	public:
-		explicit _styler(listview* pList) : styler(pList) { }
+		explicit _styler(listview* pList) noexcept : styler(pList) { }
 
-		listview& always_show_sel(bool doSet) {
+		listview& always_show_sel(bool doSet) noexcept {
 			return this->set_style(doSet, LVS_SHOWSELALWAYS);
 		}
 
-		listview& edit_labels(bool doSet) {
+		listview& edit_labels(bool doSet) noexcept {
 			return this->set_style(doSet, LVS_EDITLABELS);
 		}
 
-		listview& multiple_sel(bool doSet) {
+		listview& multiple_sel(bool doSet) noexcept {
 			return this->set_style(!doSet, LVS_SINGLESEL);
 		}
 
-		listview& show_headers(bool doSet) {
+		listview& show_headers(bool doSet) noexcept {
 			return this->set_style(doSet, LVS_NOCOLUMNHEADER);
 		}
 
-		listview& checkboxes(bool doSet) {
+		listview& checkboxes(bool doSet) noexcept {
 			ListView_SetExtendedListViewStyleEx(this->target().hwnd(), LVS_EX_CHECKBOXES,
 				doSet ? LVS_EX_CHECKBOXES : 0);
 			return this->target();
 		}
 
-		listview& double_buffer(bool doSet) {
+		listview& double_buffer(bool doSet) noexcept {
 			ListView_SetExtendedListViewStyleEx(this->target().hwnd(), LVS_EX_DOUBLEBUFFER,
 				doSet ? LVS_EX_DOUBLEBUFFER : 0);
 			return this->target();
 		}
 
-		listview& full_row_select(bool doSet) {
+		listview& full_row_select(bool doSet) noexcept {
 			ListView_SetExtendedListViewStyleEx(this->target().hwnd(), LVS_EX_FULLROWSELECT,
 				doSet ? LVS_EX_FULLROWSELECT : 0);
 			return this->target();
 		}
 
-		listview& grid_lines(bool doSet) {
+		listview& grid_lines(bool doSet) noexcept {
 			ListView_SetExtendedListViewStyleEx(this->target().hwnd(), LVS_EX_GRIDLINES,
 				doSet ? LVS_EX_GRIDLINES : 0);
 			return this->target();
 		}
 
-		listview& reorder_header(bool doSet) {
+		listview& reorder_header(bool doSet) noexcept {
 			ListView_SetExtendedListViewStyleEx(this->target().hwnd(), LVS_EX_HEADERDRAGDROP,
 				doSet ? LVS_EX_HEADERDRAGDROP : 0);
 			return this->target();
@@ -112,14 +112,16 @@ public:
 		this->_contextMenu.destroy();
 	}
 
-	listview() {
-		this->imageList16.on_create([this]()->void {
+	listview() noexcept {
+		this->imageList16.on_create([this]() noexcept->void {
 			ListView_SetImageList(this->hwnd(), this->imageList16.himagelist(), LVSIL_SMALL);
 		});
-		this->imageList32.on_create([this]()->void {
+
+		this->imageList32.on_create([this]() noexcept->void {
 			ListView_SetImageList(this->hwnd(), this->imageList32.himagelist(), LVSIL_NORMAL);
 		});
-		this->_subclass.on_message(WM_GETDLGCODE, [this](wm::getdlgcode p)->LRESULT {
+
+		this->_subclass.on_message(WM_GETDLGCODE, [this](wm::getdlgcode p) noexcept->LRESULT {
 			bool hasCtrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
 			if (!p.is_query() && p.vkey_code() == 'A' && hasCtrl) { // Ctrl+A to select all items
 				ListView_SetItemState(this->hwnd(), -1, LVIS_SELECTED, LVIS_SELECTED);
@@ -138,7 +140,8 @@ public:
 			}
 			return DefSubclassProc(this->hwnd(), p.message, p.wParam, p.lParam);
 		});
-		this->_subclass.on_message(WM_RBUTTONDOWN, [this](wm::rbuttondown)->LRESULT {
+
+		this->_subclass.on_message(WM_RBUTTONDOWN, [this](wm::rbuttondown) noexcept->LRESULT {
 			this->_show_context_menu(true);
 			return 0;
 		});
@@ -179,18 +182,18 @@ public:
 		return *this;
 	}
 
-	listview& set_redraw(bool doRedraw) {
+	listview& set_redraw(bool doRedraw) noexcept {
 		SendMessageW(this->hwnd(), WM_SETREDRAW,
 			static_cast<WPARAM>(static_cast<BOOL>(doRedraw)), 0);
 		return *this;
 	}
 
-	listview& set_view(view viewType) {
+	listview& set_view(view viewType) noexcept {
 		ListView_SetView(this->hwnd(), static_cast<DWORD>(viewType));
 		return *this;
 	}
 
-	view get_view() const {
+	view get_view() const noexcept {
 		return static_cast<view>(ListView_GetView(this->hwnd()));
 	}
 
@@ -200,7 +203,7 @@ private:
 		return *this;
 	}
 
-	int _show_context_menu(bool followCursor) {
+	int _show_context_menu(bool followCursor) noexcept {
 		if (!this->_contextMenu.hmenu()) return -1; // no context menu assigned
 
 		POINT coords{};

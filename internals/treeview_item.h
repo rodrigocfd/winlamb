@@ -22,28 +22,28 @@ private:
 	treeviewT& _tree = nullptr;
 
 public:
-	treeview_item(HTREEITEM hTreeItem, treeviewT* pTree)
+	treeview_item(HTREEITEM hTreeItem, treeviewT* pTree) noexcept
 		: _hTreeItem(hTreeItem), _tree(*pTree) { }
 
-	HTREEITEM htreeitem() const {
+	HTREEITEM htreeitem() const noexcept {
 		return this->_hTreeItem;
 	}
 
-	treeview_item get_parent() const {
+	treeview_item get_parent() const noexcept {
 		return {TreeView_GetParent(this->_tree.hwnd(), this->_hTreeItem),
 			&this->_tree};
 	}
 
-	bool is_root() const {
+	bool is_root() const noexcept {
 		return this->get_parent()._hTreeItem == nullptr;
 	}
 
-	treeview_item get_first_child() const {
+	treeview_item get_first_child() const noexcept {
 		return {TreeView_GetChild(this->_tree.hwnd(), this->_hTreeItem),
 			&this->_tree};
 	}
 
-	std::vector<treeview_item> get_children() const {
+	std::vector<treeview_item> get_children() const noexcept {
 		std::vector<treeview_item> children;
 		treeview_item curIt = this->get_first_child();
 		while (curIt.htreeitem()) {
@@ -53,12 +53,12 @@ public:
 		return children;
 	}
 
-	treeview_item get_next_sibling() const {
+	treeview_item get_next_sibling() const noexcept {
 		return {TreeView_GetNextSibling(this->_tree.hwnd(), this->_hTreeItem),
 			&this->_tree};
 	}
 
-	treeview_item add_child(const wchar_t* text, int imagelistIconIndex = -1) {
+	treeview_item add_child(const wchar_t* text, int imagelistIconIndex = -1) noexcept {
 		TVINSERTSTRUCTW tvi{};
 		tvi.hParent = this->_hTreeItem;
 		tvi.hInsertAfter = TVI_LAST;
@@ -71,21 +71,21 @@ public:
 			&this->_tree}; // return newly added item
 	}
 
-	treeview_item add_child(const std::wstring& caption, int imagelistIconIndex = -1) {
+	treeview_item add_child(const std::wstring& caption, int imagelistIconIndex = -1) noexcept {
 		return this->add_child(caption.c_str(), imagelistIconIndex);
 	}
 
-	treeview_item& set_select() {
+	treeview_item& set_select() noexcept {
 		TreeView_SelectItem(this->_tree.hwnd(), this->_hTreeItem);
 		return *this;
 	}
 
-	bool is_expanded() const {
+	bool is_expanded() const noexcept {
 		return (TreeView_GetItemState(this->_tree.hwnd(), this->_hTreeItem, TVIS_EXPANDED) &
 			TVIS_EXPANDED) != 0;
 	}
 
-	std::wstring get_text() const {
+	std::wstring get_text() const noexcept {
 		wchar_t tmpBuf[MAX_PATH]{}; // arbitrary length
 		TVITEMEX tvi{};
 		tvi.hItem = this->_hTreeItem;
@@ -97,7 +97,7 @@ public:
 		return tvi.pszText;
 	}
 
-	treeview_item& set_text(const wchar_t* text) {
+	treeview_item& set_text(const wchar_t* text) noexcept {
 		TVITEMEX tvi{};
 		tvi.hItem = this->_hTreeItem;
 		tvi.mask = TVIF_TEXT;
@@ -107,11 +107,11 @@ public:
 		return *this;
 	}
 
-	treeview_item& set_text(const std::wstring& text) {
+	treeview_item& set_text(const std::wstring& text) noexcept {
 		return this->set_text(text.c_str());
 	}
 
-	LPARAM get_param() const {
+	LPARAM get_param() const noexcept {
 		TVITEMEX tvi{};
 		tvi.hItem = this->_hTreeItem;
 		tvi.mask = TVIF_PARAM;
@@ -120,7 +120,7 @@ public:
 		return tvi.lParam;
 	}
 
-	treeview_item& set_param(LPARAM lp) {
+	treeview_item& set_param(LPARAM lp) noexcept {
 		TVITEMEX tvi{};
 		tvi.hItem = this->_hTreeItem;
 		tvi.mask = TVIF_PARAM;
@@ -130,7 +130,7 @@ public:
 		return *this;
 	}
 
-	int get_icon_index() const {
+	int get_icon_index() const noexcept {
 		TVITEMEX tvi{};
 		tvi.hItem = this->_hTreeItem;
 		tvi.mask = TVIF_IMAGE;
@@ -139,7 +139,7 @@ public:
 		return tvi.iImage; // return index of icon within image_list
 	}
 
-	treeview_item& set_icon_index(int imagelistIconIndex) {
+	treeview_item& set_icon_index(int imagelistIconIndex) noexcept {
 		TVITEMEX tvi{};
 		tvi.hItem = this->_hTreeItem;
 		tvi.mask = LVIF_IMAGE | TVIF_SELECTEDIMAGE;

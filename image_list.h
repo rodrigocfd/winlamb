@@ -25,19 +25,19 @@ public:
 	}
 
 	image_list() = default;
-	image_list(image_list&& other) { this->operator=(std::move(other)); }
+	image_list(image_list&& other) noexcept { this->operator=(std::move(other)); }
 
-	HIMAGELIST himagelist() const {
+	HIMAGELIST himagelist() const noexcept {
 		return this->_hImgList;
 	}
 
-	image_list& operator=(image_list&& other) {
+	image_list& operator=(image_list&& other) noexcept {
 		this->destroy();
 		std::swap(this->_hImgList, other._hImgList);
 		return *this;
 	}
 
-	image_list& destroy() {
+	image_list& destroy() noexcept {
 		if (this->_hImgList) {
 			ImageList_Destroy(this->_hImgList);
 			this->_hImgList = nullptr;
@@ -110,7 +110,7 @@ public:
 		return *this;
 	}
 
-	SIZE resolution() const {
+	SIZE resolution() const noexcept {
 		SIZE buf{};
 		if (this->_hImgList) {
 			ImageList_GetIconSize(this->_hImgList,
@@ -119,7 +119,7 @@ public:
 		return buf;
 	}
 
-	size_t size() const {
+	size_t size() const noexcept {
 		return this->_hImgList ? ImageList_GetImageCount(this->_hImgList) : 0;
 	}
 };

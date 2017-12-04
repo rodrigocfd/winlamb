@@ -54,7 +54,7 @@ public:
 	int            port() const     { return this->_uc.nPort; }
 	bool           is_https() const { return this->_uc.nScheme == INTERNET_SCHEME_HTTPS; }
 
-	std::wstring path_and_extra() const {
+	std::wstring path_and_extra() const noexcept {
 		std::wstring ret = this->_path;
 		ret.append(this->_extra);
 		return ret;

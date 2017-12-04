@@ -25,7 +25,7 @@ public:
 	native_control(const native_control&) = delete;
 	native_control& operator=(const native_control&) = delete; // non-copyable, non-movable
 
-	int control_id() const {
+	int control_id() const noexcept {
 		return GetDlgCtrlID(this->hwnd());
 	}
 

@@ -18,22 +18,22 @@ private:
 public:
 	using get = wli::path_get;
 
-	static std::wstring& trim_backslash(std::wstring& filePath) {
+	static std::wstring& trim_backslash(std::wstring& filePath) noexcept {
 		while (filePath.back() == L'\\') {
 			filePath.resize(filePath.length() - 1);
 		}
 		return filePath;
 	}
 
-	static bool is_same(const std::wstring& filePath, const wchar_t* other) {
+	static bool is_same(const std::wstring& filePath, const wchar_t* other) noexcept {
 		return !lstrcmpiW(filePath.c_str(), other);
 	}
 
-	static bool is_same(const std::wstring& filePath, const std::wstring& other) {
+	static bool is_same(const std::wstring& filePath, const std::wstring& other) noexcept {
 		return !lstrcmpiW(filePath.c_str(), other.c_str());
 	}
 
-	static bool has_extension(const std::wstring& filePath, const wchar_t* extension) {
+	static bool has_extension(const std::wstring& filePath, const wchar_t* extension) noexcept {
 		if (extension[0] == L'.') { // extension starts with dot, compare right away
 			return str::ends_withi(filePath, extension);
 		}
@@ -43,11 +43,11 @@ public:
 		return str::ends_withi(filePath, dotExtension);
 	}
 
-	static bool has_extension(const std::wstring& filePath, const std::wstring& extension) {
+	static bool has_extension(const std::wstring& filePath, const std::wstring& extension) noexcept {
 		return has_extension(filePath, extension.c_str());
 	}
 
-	static bool has_extension(const std::wstring& filePath, std::initializer_list<const wchar_t*> extensions) {
+	static bool has_extension(const std::wstring& filePath, std::initializer_list<const wchar_t*> extensions) noexcept {
 		for (const wchar_t* ext : extensions) {
 			if (has_extension(filePath, ext)) {
 				return true;
@@ -56,7 +56,7 @@ public:
 		return false;
 	}
 
-	static std::wstring& change_extension(std::wstring& filePath, const wchar_t* newExtension) {
+	static std::wstring& change_extension(std::wstring& filePath, const wchar_t* newExtension) noexcept {
 		size_t dotIdx = filePath.find_last_of(L'.');
 		if (dotIdx != std::wstring::npos) { // filePath already have an extension
 			filePath.resize(dotIdx + 1); // truncate after the dot
@@ -67,11 +67,11 @@ public:
 		return filePath;
 	}
 
-	static std::wstring& change_extension(std::wstring& filePath, const std::wstring& newExtension) {
+	static std::wstring& change_extension(std::wstring& filePath, const std::wstring& newExtension) noexcept {
 		return change_extension(filePath, newExtension.c_str());
 	}
 
-	static std::wstring folder_from(const std::wstring& filePath) {
+	static std::wstring folder_from(const std::wstring& filePath) noexcept {
 		std::wstring ret = filePath;
 		size_t found = ret.find_last_of(L'\\'); // won't include trailing backslash
 		if (found != std::wstring::npos) {
@@ -80,7 +80,7 @@ public:
 		return ret;
 	}
 
-	static std::wstring file_from(const std::wstring& filePath) {
+	static std::wstring file_from(const std::wstring& filePath) noexcept {
 		std::wstring ret = filePath;
 		size_t found = ret.find_last_of(L'\\');
 		if (found != std::wstring::npos) {

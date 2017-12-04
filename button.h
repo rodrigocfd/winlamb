@@ -33,7 +33,7 @@ class button final :
 private:
 	class _styler final : public wli::styler<button> {
 	public:
-		explicit _styler(button* pButton) : styler(pButton) { }
+		explicit _styler(button* pButton) noexcept : styler(pButton) { }
 	};
 
 public:

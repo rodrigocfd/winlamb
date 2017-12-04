@@ -42,7 +42,7 @@ private:
 protected:
 	setup_vars setup;
 
-	window_main() {
+	window_main() noexcept {
 		this->setup.wndClassEx.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
 		this->setup.wndClassEx.style = CS_DBLCLKS;
 		this->setup.position = {CW_USEDEFAULT, CW_USEDEFAULT};
@@ -55,7 +55,7 @@ protected:
 		// WS_MINIMIZEBOX adds minimize button
 		// WS_EX_ACCEPTFILES accepts dropped files (extended style, add on exStyle)
 
-		this->on_message(WM_NCDESTROY, [](params)->LRESULT {
+		this->on_message(WM_NCDESTROY, [](params) noexcept->LRESULT {
 			PostQuitMessage(0);
 			return 0;
 		});

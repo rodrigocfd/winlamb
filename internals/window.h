@@ -32,7 +32,7 @@ class window : public baseT {
 private:
 	class _styler final : public wli::styler<window> {
 	public:
-		explicit _styler(window* pWindow) : styler(pWindow) { }
+		explicit _styler(window* pWindow) noexcept : styler(pWindow) { }
 	};
 
 protected:
@@ -111,7 +111,7 @@ private:
 		return atom;
 	}
 
-	static LRESULT CALLBACK _window_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
+	static LRESULT CALLBACK _window_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) noexcept {
 		window* pSelf = nullptr;
 
 		if (msg == WM_NCCREATE) {
@@ -122,7 +122,7 @@ private:
 			pSelf = reinterpret_cast<window*>(GetWindowLongPtrW(hWnd, GWLP_USERDATA));
 		}
 
-		auto cleanupIfDestroyed = [&]()->void {
+		auto cleanupIfDestroyed = [&]() noexcept->void {
 			if (msg == WM_NCDESTROY) {
 				SetWindowLongPtrW(hWnd, GWLP_USERDATA, 0);
 				if (pSelf) {
@@ -132,7 +132,7 @@ private:
 		};
 
 		if (pSelf) {
-			std::pair<bool, LRESULT> procRet = pSelf->_process_msg(params{msg, wp, lp});
+			std::pair<bool, LRESULT> procRet = pSelf->_process_msg(params{msg, wp, lp}); // catches all message exceptions internally
 			if (procRet.first) {
 				cleanupIfDestroyed();
 				return procRet.second; // message was processed

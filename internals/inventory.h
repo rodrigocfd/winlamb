@@ -43,7 +43,7 @@ protected:
 	inventory() = default;
 
 private:
-	std::pair<bool, retT> _process_msg(params p) {
+	std::pair<bool, retT> _process_msg(params p) noexcept {
 		// WM_COMMAND and WM_NOTIFY messages could have been orthogonally inserted into
 		// store_msgT just like any other messages, however they'd be at the bottom of
 		// the linear search, while still having their own internal linear searches
@@ -76,13 +76,13 @@ private:
 	}
 
 public:
-	void on_message(UINT msg, funcT func)                                  { this->_msgs.add(msg, std::move(func)); }
-	void on_message(std::initializer_list<UINT> msgs, funcT func)          { this->_msgs.add(msgs, std::move(func)); }
-	void on_command(WORD cmd, funcT func)                                  { this->_cmds.add(cmd, std::move(func)); }
-	void on_command(std::initializer_list<WORD> cmds, funcT func)          { this->_cmds.add(cmds, std::move(func)); }
-	void on_notify(UINT_PTR idFrom, UINT code, funcT func)                 { this->_ntfs.add({idFrom, code}, std::move(func)); }
-	void on_notify(ntfT idFromAndCode, funcT func)                         { this->_ntfs.add(idFromAndCode, std::move(func)); }
-	void on_notify(std::initializer_list<ntfT> idFromAndCodes, funcT func) { this->_ntfs.add(idFromAndCodes, std::move(func)); }
+	void on_message(UINT msg, funcT func) noexcept                                  { this->_msgs.add(msg, std::move(func)); }
+	void on_message(std::initializer_list<UINT> msgs, funcT func) noexcept          { this->_msgs.add(msgs, std::move(func)); }
+	void on_command(WORD cmd, funcT func) noexcept                                  { this->_cmds.add(cmd, std::move(func)); }
+	void on_command(std::initializer_list<WORD> cmds, funcT func) noexcept          { this->_cmds.add(cmds, std::move(func)); }
+	void on_notify(UINT_PTR idFrom, UINT code, funcT func) noexcept                 { this->_ntfs.add({idFrom, code}, std::move(func)); }
+	void on_notify(ntfT idFromAndCode, funcT func) noexcept                         { this->_ntfs.add(idFromAndCode, std::move(func)); }
+	void on_notify(std::initializer_list<ntfT> idFromAndCodes, funcT func) noexcept { this->_ntfs.add(idFromAndCodes, std::move(func)); }
 };
 
 }//namespace wli

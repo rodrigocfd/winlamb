@@ -22,24 +22,24 @@ private:
 	std::vector<std::pair<idT, funcT>> _msgUnits;
 
 public:
-	explicit store(size_t msgsReserve = 0) {
+	explicit store(size_t msgsReserve = 0) noexcept {
 		this->reserve(msgsReserve); // initial reserve is useful to save realloc time
 		this->_msgUnits.emplace_back(); // 1st element is sentinel room
 	}
 
-	bool empty() const {
+	bool empty() const noexcept {
 		return this->_msgUnits.size() == 1; // sentinel always present
 	}
 
-	void reserve(size_t msgsReserve) {
+	void reserve(size_t msgsReserve) noexcept {
 		this->_msgUnits.reserve(msgsReserve + 1); // +1 because sentinel
 	}
 
-	void add(idT id, funcT func) {
+	void add(idT id, funcT func) noexcept {
 		this->_msgUnits.emplace_back(id, std::move(func)); // reverse search: messages can be overwritten by a later one
 	}
 
-	void add(std::initializer_list<idT> ids, funcT func) {
+	void add(std::initializer_list<idT> ids, funcT func) noexcept {
 		const idT* pIds = ids.begin();
 		this->add(pIds[0], std::move(func)); // store user func once
 		size_t funcIdx = this->_msgUnits.size() - 1;
@@ -52,7 +52,7 @@ public:
 		}
 	}
 
-	funcT* find(idT id) {
+	funcT* find(idT id) noexcept {
 		this->_msgUnits[0].first = id; // sentinel for reverse linear search
 		std::pair<idT, funcT>* revRunner = &this->_msgUnits.back(); // pointer to last element
 		while (revRunner->first != id) --revRunner;

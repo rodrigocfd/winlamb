@@ -30,8 +30,8 @@ protected:
 
 	setup_vars setup;
 
-	dialog_modal() {
-		this->on_message(WM_CLOSE, [this](params)->INT_PTR {
+	dialog_modal() noexcept {
+		this->on_message(WM_CLOSE, [this](params) noexcept->INT_PTR {
 			EndDialog(this->hwnd(), IDOK);
 			return TRUE;
 		});
@@ -62,7 +62,7 @@ public:
 
 protected:
 	// Centers the modal dialog onto its parent.
-	void center_on_parent() const {
+	void center_on_parent() const noexcept {
 		RECT rc{}, rcParent{};
 		GetWindowRect(this->hwnd(), &rc);
 		GetWindowRect(GetParent(this->hwnd()), &rcParent); // both relative to screen

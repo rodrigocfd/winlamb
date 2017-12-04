@@ -38,7 +38,7 @@ class dialog : public baseT {
 private:
 	class _styler final : public wli::styler<dialog> {
 	public:
-		explicit _styler(dialog* pDialog) : styler(pDialog) { }
+		explicit _styler(dialog* pDialog) noexcept : styler(pDialog) { }
 	};
 
 protected:
@@ -71,7 +71,7 @@ private:
 		}
 	}
 
-	static INT_PTR CALLBACK _dialog_proc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp) {
+	static INT_PTR CALLBACK _dialog_proc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp) noexcept {
 		dialog* pSelf = nullptr;
 		INT_PTR ret = FALSE; // default for non-processed messages
 
@@ -85,7 +85,7 @@ private:
 		}
 
 		if (pSelf) {
-			std::pair<bool, INT_PTR> procRet = pSelf->_process_msg(params{msg, wp, lp});
+			std::pair<bool, INT_PTR> procRet = pSelf->_process_msg(params{msg, wp, lp}); // catches all message exceptions internally
 			if (procRet.first) {
 				ret = procRet.second; // message was processed
 			}

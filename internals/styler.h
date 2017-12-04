@@ -17,34 +17,34 @@ private:
 	wndT& _wnd;
 
 protected:
-	explicit styler(wndT* target) : _wnd(*target) { }
+	explicit styler(wndT* target) noexcept : _wnd(*target) { }
 
 public:
 	styler(const styler&) = delete;
 	styler& operator=(const styler&) = delete; // non-copyable, non-movable
 
 protected:
-	wndT& target() const { return this->_wnd; }
+	wndT& target() const noexcept { return this->_wnd; }
 
 public:
-	wndT& set_style(bool addStyle, DWORD styleFlags) {
+	wndT& set_style(bool addStyle, DWORD styleFlags) noexcept {
 		return this->_change_style_flags(false, addStyle, styleFlags);
 	}
 
-	wndT& set_style_ex(bool addStyle, DWORD styleFlags) {
+	wndT& set_style_ex(bool addStyle, DWORD styleFlags) noexcept {
 		return this->_change_style_flags(true, addStyle, styleFlags);
 	}
 
-	bool has_style(DWORD styleFlags) const {
+	bool has_style(DWORD styleFlags) const noexcept {
 		return (GetWindowLongPtrW(this->_wnd.hwnd(), GWL_STYLE) & styleFlags) != 0;
 	}
 
-	bool has_style_ex(DWORD styleFlags) const {
+	bool has_style_ex(DWORD styleFlags) const noexcept {
 		return (GetWindowLongPtrW(this->_wnd.hwnd(), GWL_EXSTYLE) & styleFlags) != 0;
 	}
 
 private:
-	wndT& _change_style_flags(bool isEx, bool addStyle, DWORD styleFlags) {
+	wndT& _change_style_flags(bool isEx, bool addStyle, DWORD styleFlags) noexcept {
 		LONG_PTR curFlags = GetWindowLongPtrW(this->_wnd.hwnd(), isEx ? GWL_EXSTYLE : GWL_STYLE);
 		if (addStyle) {
 			curFlags |= static_cast<LONG_PTR>(styleFlags);

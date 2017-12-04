@@ -18,14 +18,14 @@ private:
 	thread() = delete;
 
 public:
-	static void run_detached(std::function<void()> func) {
+	static void run_detached(std::function<void()> func) noexcept {
 		// Cheap alternative to std::thread([](){ ... }).detach().
 		struct cb_pack final {
 			std::function<void()> func;
 		};
 		cb_pack* pack = new cb_pack{std::move(func)};
 
-		uintptr_t hThread = _beginthreadex(nullptr, 0, [](void* ptr)->unsigned int {
+		uintptr_t hThread = _beginthreadex(nullptr, 0, [](void* ptr) noexcept->unsigned int {
 			cb_pack* pPack = reinterpret_cast<cb_pack*>(ptr);
 			try {
 				pPack->func(); // invoke user callback
@@ -42,7 +42,7 @@ public:
 		CloseHandle(reinterpret_cast<HANDLE>(hThread));
 	}
 
-	static size_t num_processors() {
+	static size_t num_processors() noexcept {
 		SYSTEM_INFO si{};
 		GetSystemInfo(&si);
 		return si.dwNumberOfProcessors;

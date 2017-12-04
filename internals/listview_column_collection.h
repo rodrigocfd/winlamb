@@ -22,14 +22,14 @@ public:
 	listview_column_collection(const listview_column_collection&) = delete;
 	listview_column_collection& operator=(const listview_column_collection&) = delete; // non-copyable, non-movable
 
-	explicit listview_column_collection(listviewT* pList)
+	explicit listview_column_collection(listviewT* pList) noexcept
 		: _list(*pList) { }
 
-	size_t count() const {
+	size_t count() const noexcept {
 		return Header_GetItemCount(ListView_GetHeader(this->_list.hwnd()));
 	}
 
-	listviewT& add(const wchar_t* text, size_t width) {
+	listviewT& add(const wchar_t* text, size_t width) noexcept {
 		LVCOLUMNW lvc{};
 		lvc.mask = LVCF_TEXT | LVCF_WIDTH;
 		lvc.pszText = const_cast<wchar_t*>(text);
@@ -38,16 +38,16 @@ public:
 		return this->_list;
 	}
 
-	listviewT& add(const std::wstring& text, size_t width) {
+	listviewT& add(const std::wstring& text, size_t width) noexcept {
 		return this->add(text.c_str(), width);
 	}
 
-	listviewT& set_width(size_t columnIndex, size_t width) {
+	listviewT& set_width(size_t columnIndex, size_t width) noexcept {
 		ListView_SetColumnWidth(this->_list.hwnd(), columnIndex, width);
 		return this->_list;
 	}
 
-	listviewT& set_width_to_fill(size_t columnIndex) {
+	listviewT& set_width_to_fill(size_t columnIndex) noexcept {
 		size_t numCols = this->count();
 		int cxUsed = 0;
 		for (size_t i = 0; i < numCols; ++i) {
@@ -66,7 +66,7 @@ public:
 		return this->_list;
 	}
 
-	listviewT& set_text(size_t columnIndex, const wchar_t* text) {
+	listviewT& set_text(size_t columnIndex, const wchar_t* text) noexcept {
 		LVCOLUMNW lvc{};
 		lvc.mask = LVCF_TEXT;
 		lvc.pszText = const_cast<wchar_t*>(text);
@@ -74,11 +74,11 @@ public:
 		return this->_list;
 	}
 
-	listviewT& set_text(size_t columnIndex, const std::wstring& text) {
+	listviewT& set_text(size_t columnIndex, const std::wstring& text) noexcept {
 		return this->set_text(columnIndex, text.c_str());
 	}
 
-	std::wstring get_text(size_t columnIndex) const {
+	std::wstring get_text(size_t columnIndex) const noexcept {
 		wchar_t buf[64]{}; // arbitrary length
 		LVCOLUMNW lvc{};
 		lvc.mask = LVCF_TEXT;

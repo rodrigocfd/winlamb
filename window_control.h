@@ -8,7 +8,6 @@
 #pragma once
 #include "internals/window.h"
 
-
 /**
  * hwnd_wrapper
  *  inventory
@@ -27,7 +26,7 @@ protected:
 
 	setup_vars setup;
 
-	window_control() {
+	window_control() noexcept {
 		this->setup.wndClassEx.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
 		this->setup.wndClassEx.style = CS_DBLCLKS;
 		this->setup.style = CS_DBLCLKS | WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
