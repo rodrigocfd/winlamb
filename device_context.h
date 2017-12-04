@@ -82,6 +82,10 @@ public:
 		return *this;
 	}
 
+	device_context& set_bk_color(std::array<BYTE, 3> rgbColor) noexcept {
+		return this->set_bk_color(RGB(rgbColor[0], rgbColor[1], rgbColor[2]));
+	}
+
 	COLORREF get_bk_brush_color() const noexcept {
 		ULONG_PTR hbrBg = GetClassLongPtrW(this->_hWnd, GCLP_HBRBACKGROUND);
 		if (hbrBg > 100) {
@@ -97,6 +101,10 @@ public:
 	device_context& set_text_color(COLORREF color) noexcept {
 		SetTextColor(this->_hDC, color);
 		return *this;
+	}
+
+	device_context& set_text_color(std::array<BYTE, 3> rgbColor) noexcept {
+		return this->set_text_color(RGB(rgbColor[0], rgbColor[1], rgbColor[2]));
 	}
 
 	device_context& text_out(int x, int y, const wchar_t* text,

@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include <array>
 #include <Windows.h>
 
 namespace wl {
@@ -31,6 +32,9 @@ public:
 
 	pen(style styleType, int width, COLORREF color) noexcept
 		: _hPen(CreatePen(static_cast<int>(styleType), width, color)) { }
+
+	pen(style styleType, int width, std::array<BYTE, 3> rgbColor) noexcept
+		: _hPen(CreatePen(static_cast<int>(styleType), width, RGB(rgbColor[0], rgbColor[1], rgbColor[2]))) { }
 
 	HPEN hpen() const noexcept {
 		return this->_hPen;
@@ -74,8 +78,14 @@ public:
 	brush(COLORREF color) noexcept
 		: _hBrush(CreateSolidBrush(color)) { }
 
+	brush(std::array<BYTE, 3> rgbColor) noexcept
+		: _hBrush(CreateSolidBrush(RGB(rgbColor[0], rgbColor[1], rgbColor[2]))) { }
+
 	brush(pattern hatch, COLORREF color) noexcept
 		: _hBrush(CreateHatchBrush(static_cast<int>(hatch), color)) { }
+
+	brush(pattern hatch, std::array<BYTE, 3> rgbColor) noexcept
+		: _hBrush(CreateHatchBrush(static_cast<int>(hatch), RGB(rgbColor[0], rgbColor[1], rgbColor[2]))) { }
 
 	brush(color sysColor) noexcept
 		: _hBrush(GetSysColorBrush(static_cast<int>(sysColor))) { }
