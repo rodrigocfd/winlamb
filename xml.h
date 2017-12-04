@@ -7,9 +7,8 @@
 
 #pragma once
 #include <string>
-#include <unordered_map>
-#include <vector>
 #include "com.h"
+#include "lazy_map.h"
 #include <MsXml2.h>
 #pragma comment(lib, "msxml2.lib")
 
@@ -22,7 +21,7 @@ public:
 	public:
 		std::wstring name;
 		std::wstring value;
-		std::unordered_map<std::wstring, std::wstring> attrs;
+		lazy_map<std::wstring, std::wstring> attrs;
 		std::vector<node> children;
 
 		void clear() noexcept {
@@ -104,7 +103,7 @@ public:
 
 		com::ptr<IXMLDOMNode> rootNode;
 		docElem.query_interface(IID_IXMLDOMNode, rootNode);
-		_build_node(rootNode, this->root); // recursive
+		this->root = _build_node(rootNode); // recursive, the whole tree is loaded into memory
 		return *this;
 	}
 
@@ -113,22 +112,24 @@ public:
 	}
 
 private:
-	static void _build_node(com::ptr<IXMLDOMNode>& xmlnode, xml::node& nodebuf) noexcept {
+	static xml::node _build_node(com::ptr<IXMLDOMNode>& xmlDomNode) noexcept {
+		xml::node ret;
+
 		// Get node name.
 		com::bstr bstrName;
-		xmlnode->get_nodeName(bstrName.ptr());
-		nodebuf.name = bstrName.c_str();
+		xmlDomNode->get_nodeName(bstrName.ptr());
+		ret.name = bstrName.c_str();
 
 		// Parse attributes of node, if any.
-		_read_attrs(xmlnode, nodebuf.attrs);
+		ret.attrs = _read_attrs(xmlDomNode);
 
 		// Process children, if any.
 		VARIANT_BOOL vb = FALSE;
-		xmlnode->hasChildNodes(&vb);
+		xmlDomNode->hasChildNodes(&vb);
 		if (vb) {
 			com::ptr<IXMLDOMNodeList> nodeList;
-			xmlnode->get_childNodes(nodeList.pptr());
-			nodebuf.children.resize(_count_child_nodes(nodeList));
+			xmlDomNode->get_childNodes(nodeList.pptr());
+			ret.children.reserve(_count_child_nodes(nodeList));
 
 			int childCount = 0;
 			long totalCount = 0;
@@ -143,10 +144,10 @@ private:
 				child->get_nodeType(&type);
 				if (type == NODE_TEXT) {
 					com::bstr bstrText;
-					xmlnode->get_text(bstrText.ptr());
-					nodebuf.value.append(bstrText.c_str());
+					xmlDomNode->get_text(bstrText.ptr());
+					ret.value.append(bstrText.c_str());
 				} else if (type == NODE_ELEMENT) {
-					_build_node(child, nodebuf.children[childCount++]); // recursively
+					ret.children.emplace_back(_build_node(child)); // recursively
 				} else {
 					// (L"Unhandled node type: %d.\n", type);
 				}
@@ -154,22 +155,22 @@ private:
 		} else {
 			// Assumes that only a leaf node can have text.
 			com::bstr bstrText;
-			xmlnode->get_text(bstrText.ptr());
-			nodebuf.value = bstrText.c_str();
+			xmlDomNode->get_text(bstrText.ptr());
+			ret.value = bstrText.c_str();
 		}
+		return ret;
 	}
 
-	static void _read_attrs(com::ptr<IXMLDOMNode>& xmlnode,
-		std::unordered_map<std::wstring, std::wstring>& attrbuf) noexcept
-	{
+	static lazy_map<std::wstring, std::wstring> _read_attrs(com::ptr<IXMLDOMNode>& xmlnode) noexcept {
 		// Read attribute collection.
 		com::ptr<IXMLDOMNamedNodeMap> attrs;
 		xmlnode->get_attributes(attrs.pptr());
 
 		long attrCount = 0;
 		attrs->get_length(&attrCount);
-		attrbuf.clear();
-		attrbuf.reserve(attrCount);
+
+		lazy_map<std::wstring, std::wstring> ret;
+		ret.reserve(attrCount);
 
 		for (long i = 0; i < attrCount; ++i) {
 			com::ptr<IXMLDOMNode> attr;
@@ -182,9 +183,10 @@ private:
 				attr->get_nodeName(bstrName.ptr()); // get attribute name				
 				com::variant variNodeVal;
 				attr->get_nodeValue(variNodeVal.ptr()); // get attribute value
-				attrbuf.emplace(bstrName.c_str(), variNodeVal.get_str()); // add hash entry
+				ret[bstrName.c_str()] = variNodeVal.get_str(); // add hash entry
 			}
 		}
+		return ret;
 	}
 
 	static int _count_child_nodes(com::ptr<IXMLDOMNodeList>& nodeList) noexcept {
