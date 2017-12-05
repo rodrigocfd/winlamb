@@ -29,6 +29,7 @@ private:
 	static _static_holder<HWND>  _hWndParent;
 
 public:
+	// Ordinary MessageBox, centered at parent.
 	static int msgbox(HWND hParent, const std::wstring& title, const std::wstring& text, UINT uType = 0) {
 		if (hParent) { // the hook will center the messagebox window on parent
 			_hWndParent.val = hParent;
@@ -75,7 +76,8 @@ public:
 		return MessageBoxW(hParent, text.c_str(), title.c_str(), uType);
 	}
 
-	static int msgbox(const wli::hwnd_wrapper* parent, std::wstring title, std::wstring text, UINT uType = 0) {
+	// Ordinary MessageBox, centered at parent.
+	static int msgbox(const wli::hwnd_wrapper* parent, const std::wstring& title, const std::wstring& text, UINT uType = 0) {
 		return msgbox(parent->hwnd(), title, text, uType);
 	}
 
@@ -91,6 +93,7 @@ private:
 	}
 
 public:
+	// System dialog to select one file to be opened.
 	static bool open_file(HWND hParent, const wchar_t* filterWithPipes, std::wstring& buf) noexcept {
 		OPENFILENAME         ofn{};
 		wchar_t              tmpBuf[MAX_PATH]{};
@@ -108,11 +111,13 @@ public:
 		return ret;
 	}
 
+	// System dialog to select one file to be opened.
 	static bool open_file(const wli::hwnd_wrapper* parent, const wchar_t* filterWithPipes, std::wstring& buf) noexcept {
 		return open_file(parent->hwnd(), filterWithPipes, buf);
 	}
 
-	static bool open_file(HWND hParent, const wchar_t* filterWithPipes, std::vector<std::wstring>& arrBuf) {
+	// System dialog to select many files to be opened.
+	static bool open_files(HWND hParent, const wchar_t* filterWithPipes, std::vector<std::wstring>& arrBuf) {
 		OPENFILENAME         ofn{};
 		std::vector<wchar_t> multiBuf(65536, L'\0'); // http://www.askjf.com/?q=2179s http://www.askjf.com/?q=2181s
 		std::vector<wchar_t> zfilter = _format_file_filter(filterWithPipes);
@@ -159,10 +164,12 @@ public:
 		return true;
 	}
 
-	static bool open_file(const wli::hwnd_wrapper* parent, const wchar_t* filterWithPipes, std::vector<std::wstring>& arrBuf) {
-		return open_file(parent->hwnd(), filterWithPipes, arrBuf);
+	// System dialog to select many files to be opened.
+	static bool open_files(const wli::hwnd_wrapper* parent, const wchar_t* filterWithPipes, std::vector<std::wstring>& arrBuf) {
+		return open_files(parent->hwnd(), filterWithPipes, arrBuf);
 	}
-	
+
+	// System dialog to select where one file will be saved.
 	static bool save_file(HWND hParent, const wchar_t* filterWithPipes, std::wstring& buf, const std::wstring& defFile) noexcept {
 		OPENFILENAME         ofn{};
 		wchar_t              tmpBuf[MAX_PATH]{};
@@ -183,10 +190,12 @@ public:
 		return ret;
 	}
 
+	// System dialog to select where one file will be saved.
 	static bool save_file(const wli::hwnd_wrapper* parent, const wchar_t* filterWithPipes, std::wstring& buf, const std::wstring& defFile) noexcept {
 		return save_file(parent->hwnd(), filterWithPipes, buf, defFile);
 	}
 
+	// System dialog to select one folder.
 	static bool choose_folder(HWND hParent, std::wstring& buf) {
 		com::lib comLib{com::lib::init::NOW};
 		//LPITEMIDLIST pidlRoot = 0;
@@ -208,6 +217,7 @@ public:
 		return true;
 	}
 
+	// System dialog to select one folder.
 	static bool choose_folder(const wli::hwnd_wrapper* parent, std::wstring& buf) {
 		return choose_folder(parent->hwnd(), buf);
 	}
