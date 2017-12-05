@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#include "internals/ui_thread.h"
-#include "internals/user_control.h"
+#include "ui_thread.h"
+#include "user_control.h"
 #include "styler.h"
 
 /**
@@ -132,7 +132,7 @@ private:
 		};
 
 		if (pSelf) {
-			std::pair<bool, LRESULT> procRet = pSelf->_process_msg(params{msg, wp, lp}); // catches all message exceptions internally
+			std::pair<bool, LRESULT> procRet = pSelf->_process_msg(msg, wp, lp); // catches all message exceptions internally
 			if (procRet.first) {
 				cleanupIfDestroyed();
 				return procRet.second; // message was processed

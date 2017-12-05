@@ -43,7 +43,7 @@ protected:
 	inventory() = default;
 
 private:
-	std::pair<bool, retT> _process_msg(params p) noexcept {
+	std::pair<bool, retT> _process_msg(UINT msg, WPARAM wp, LPARAM lp) noexcept {
 		// WM_COMMAND and WM_NOTIFY messages could have been orthogonally inserted into
 		// store_msgT just like any other messages, however they'd be at the bottom of
 		// the linear search, while still having their own internal linear searches
@@ -51,23 +51,23 @@ private:
 
 		funcT* pFunc = nullptr; // user lambda
 
-		switch (p.message) {
+		switch (msg) {
 		case WM_COMMAND:
-			pFunc = this->_cmds.find(LOWORD(p.wParam));
+			pFunc = this->_cmds.find(LOWORD(wp));
 			break;
 		case WM_NOTIFY:
 			pFunc = this->_ntfs.find({
-				reinterpret_cast<NMHDR*>(p.lParam)->idFrom,
-				reinterpret_cast<NMHDR*>(p.lParam)->code
+				reinterpret_cast<NMHDR*>(lp)->idFrom,
+				reinterpret_cast<NMHDR*>(lp)->code
 			});
 			break;
 		default:
-			pFunc = this->_msgs.find(p.message);
+			pFunc = this->_msgs.find(msg);
 		}
 
 		if (pFunc) {
 			try { // any exception from a message lambda which was not caught
-				return {true, (*pFunc)(p)};
+				return {true, (*pFunc)({msg, wp, lp})};
 			} catch (const std::exception& e) {
 				MessageBoxA(nullptr, e.what(), "Oops... an exception was thrown", MB_ICONERROR);
 			}

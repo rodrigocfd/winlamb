@@ -66,7 +66,7 @@ private:
 
 		if (pSelf) {
 			if (pSelf->hwnd()) {
-				std::pair<bool, LRESULT> procRet = pSelf->_process_msg(params{msg, wp, lp}); // catches all message exceptions internally
+				std::pair<bool, LRESULT> procRet = pSelf->_process_msg(msg, wp, lp); // catches all message exceptions internally
 				if (msg == WM_NCDESTROY) {
 					pSelf->remove_subclass();
 				}

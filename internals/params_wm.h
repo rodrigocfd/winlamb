@@ -223,6 +223,9 @@ namespace wm {
 		BYTE vkey_code() const noexcept { return static_cast<BYTE>(this->wParam); }
 		bool is_query() const noexcept  { return this->lParam == 0; }
 		MSG* msg() const noexcept       { return this->is_query() ? nullptr : reinterpret_cast<MSG*>(this->lParam); }
+		bool has_alt() const noexcept   { return (GetAsyncKeyState(VK_MENU) & 0x8000) != 0; }
+		bool has_ctrl() const noexcept  { return (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0; }
+		bool has_shift() const noexcept { return (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0; }
 	};
 	WINLAMB_EMPTYWM(getfont);
 	WINLAMB_EMPTYWM(gethotkey);

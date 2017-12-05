@@ -122,8 +122,7 @@ public:
 		});
 
 		this->_subclass.on_message(WM_GETDLGCODE, [this](wm::getdlgcode p) noexcept->LRESULT {
-			bool hasCtrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
-			if (!p.is_query() && p.vkey_code() == 'A' && hasCtrl) { // Ctrl+A to select all items
+			if (!p.is_query() && p.vkey_code() == 'A' && p.has_ctrl()) { // Ctrl+A to select all items
 				ListView_SetItemState(this->hwnd(), -1, LVIS_SELECTED, LVIS_SELECTED);
 				return DLGC_WANTCHARS;
 			} else if (!p.is_query() && p.vkey_code() == VK_RETURN) { // send Enter key to parent
@@ -136,13 +135,13 @@ public:
 					reinterpret_cast<LPARAM>(&nmlvkd));
 				return DLGC_WANTALLKEYS;
 			} else if (!p.is_query() && p.vkey_code() == VK_APPS) { // context menu keyboard key
-				this->_show_context_menu(false);
+				this->_show_context_menu(false, p.has_ctrl(), p.has_shift());
 			}
 			return DefSubclassProc(this->hwnd(), p.message, p.wParam, p.lParam);
 		});
 
-		this->_subclass.on_message(WM_RBUTTONDOWN, [this](wm::rbuttondown) noexcept->LRESULT {
-			this->_show_context_menu(true);
+		this->_subclass.on_message(WM_RBUTTONDOWN, [this](wm::rbuttondown p) noexcept->LRESULT {
+			this->_show_context_menu(true, p.has_ctrl(), p.has_shift());
 			return 0;
 		});
 	}
@@ -203,7 +202,7 @@ private:
 		return *this;
 	}
 
-	int _show_context_menu(bool followCursor) noexcept {
+	int _show_context_menu(bool followCursor, bool hasCtrl, bool hasShift) noexcept {
 		if (!this->_contextMenu.hmenu()) return -1; // no context menu assigned
 
 		POINT coords{};
@@ -215,8 +214,6 @@ private:
 			ListView_HitTest(this->hwnd(), &lvhti); // item below cursor, if any
 			coords = lvhti.pt;
 			itemBelowCursor = lvhti.iItem; // -1 if none
-			bool hasCtrl = (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0;
-			bool hasShift = (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0;
 			if (itemBelowCursor != -1) { // an item was right-clicked
 				if (!hasCtrl && !hasShift) {
 					if ((ListView_GetItemState(this->hwnd(), itemBelowCursor, LVIS_SELECTED) & LVIS_SELECTED) == 0) {
@@ -229,7 +226,7 @@ private:
 			} else if (!hasCtrl && !hasShift) {
 				ListView_SetItemState(this->hwnd(), -1, 0, LVIS_SELECTED); // unselect all
 			}
-			SetFocus(this->hwnd()); // because a right-click won't set the focus by default
+			this->set_focus(); // because a right-click won't set the focus by default
 		} else { // usually fired with the context menu keyboard key
 			int itemFocused = ListView_GetNextItem(this->hwnd(), -1, LVNI_FOCUSED);
 			if (itemFocused != -1 && ListView_IsItemVisible(this->hwnd(), itemFocused)) { // item focused and visible
