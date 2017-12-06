@@ -140,7 +140,7 @@ public:
 					"GetDC failed when checking if font exists");
 			}
 			EnumFontFamiliesW(hdc, fontName,
-				[](const LOGFONT* lpelf, const TEXTMETRIC* lpntm, DWORD fontType, LPARAM lp)->int {
+				[](const LOGFONT* lpelf, const TEXTMETRIC* lpntm, DWORD fontType, LPARAM lp) noexcept->int {
 					bool* pIsInstalled = reinterpret_cast<bool*>(lp);
 					*pIsInstalled = true; // if we're here, font does exist
 					return 0;
