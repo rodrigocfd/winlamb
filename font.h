@@ -17,7 +17,23 @@ private:
 	HFONT _hFont = nullptr;
 
 public:
-	enum class deco { NONE, BOLD, ITALIC, BOLD_ITALIC };
+	enum class deco : BYTE {
+		NONE                            = 0b00000000,
+		BOLD                            = 0b00000001,
+		ITALIC                          = 0b00000010,
+		UNDERLINE                       = 0b00000100,
+		STRIKEOUT                       = 0b00001000,
+		BOLD_ITALIC                     = (BOLD | ITALIC),
+		BOLD_ITALIC_UNDERLINE           = (BOLD | ITALIC | UNDERLINE),
+		BOLD_ITALIC_UNDERLINE_STRIKEOUT = (BOLD | ITALIC | UNDERLINE | STRIKEOUT),
+		BOLD_UNDERLINE                  = (BOLD | UNDERLINE),
+		BOLD_UNDERLINE_STRIKEOUT        = (BOLD | UNDERLINE | STRIKEOUT),
+		BOLD_STRIKEOUT                  = (BOLD | STRIKEOUT),
+		ITALIC_UNDERLINE                = (ITALIC | UNDERLINE),
+		ITALIC_UNDERLINE_STRIKEOUT      = (ITALIC | UNDERLINE | STRIKEOUT),
+		ITALIC_STRIKEOUT                = (ITALIC | STRIKEOUT),
+		UNDERLINE_STRIKEOUT             = (UNDERLINE | STRIKEOUT)
+	};
 
 	~font() {
 		this->destroy();
@@ -54,13 +70,22 @@ public:
 		return *this;
 	}
 
-	font& create(const wchar_t* fontName, int size, deco style = deco::NONE) {
+	font& create(const wchar_t* fontName, BYTE size, deco style = deco::NONE) {
 		this->destroy();
 		LOGFONT lf{};
 		lstrcpyW(lf.lfFaceName, fontName);
 		lf.lfHeight = -(size + 3);
-		lf.lfWeight = style == deco::BOLD || style == deco::BOLD_ITALIC ? FW_BOLD : FW_DONTCARE;
-		lf.lfItalic = style == deco::ITALIC || style == deco::BOLD_ITALIC ? TRUE : FALSE;
+
+		auto hasDeco = [=](deco yourDeco) noexcept->BOOL {
+			return (static_cast<BYTE>(style) &
+				static_cast<BYTE>(yourDeco)) != 0 ? TRUE : FALSE;
+		};
+
+		lf.lfWeight    = hasDeco(deco::BOLD) ? FW_BOLD : FW_DONTCARE;
+		lf.lfItalic    = hasDeco(deco::ITALIC);
+		lf.lfUnderline = hasDeco(deco::UNDERLINE);
+		lf.lfStrikeOut = hasDeco(deco::STRIKEOUT);
+
 		return this->create(lf);
 	}
 
