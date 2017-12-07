@@ -67,9 +67,9 @@ private:
 	template<typename T>
 	static T _format_arg(T val) noexcept {
 		static_assert(!std::is_same<T, const char*>::value,
-			"Non-wide char* being used on str::format(), str::parse_ascii() can fix it.");
+			"Non-wide char* being used on str::format(), str::to_wstring() can fix it.");
 		static_assert(!std::is_same<T, std::string>::value,
-			"Non-wide std::string being used on str::format(), str::parse_ascii() can fix it.");
+			"Non-wide std::string being used on str::format(), str::to_wstring() can fix it.");
 		return val;
 	}
 
@@ -292,52 +292,6 @@ public:
 		return true;
 	}
 
-	// Converts int to string, adding thousand separator.
-	static std::wstring parse_int_with_separator(int number, wchar_t separator = L',') noexcept {
-		std::wstring ret;
-		ret.reserve(32); // arbitrary
-
-		int abso = abs(number);
-		BYTE blocks = 0;
-		while (abso >= 1000) {
-			abso = (abso - (abso % 1000)) / 1000;
-			++blocks;
-		}
-
-		abso = abs(number);
-		bool firstPass = true;
-		do {
-			int num = abso % 1000;
-			wchar_t buf[8]{};
-
-			if (blocks) {
-				if (num < 100) lstrcatW(buf, L"0");
-				if (num < 10) lstrcatW(buf, L"0");
-			}
-
-			#pragma warning (disable: 4996)
-			_itow(num, buf + lstrlenW(buf), 10);
-			#pragma warning (default: 4996)
-
-			if (firstPass) {
-				firstPass = false;
-			} else {
-				ret.insert(0, 1, separator);
-			}
-
-			ret.insert(0, buf);
-			abso = (abso - (abso % 1000)) / 1000;
-		} while (blocks--);
-
-		if (number < 0) ret.insert(0, 1, L'-'); // prepend minus signal
-		return ret;
-	}
-
-	// Converts unsigned int to string, adding thousand separator.
-	static std::wstring parse_uint_with_separator(size_t number, wchar_t separator = L',') noexcept {
-		return parse_int_with_separator(static_cast<int>(number), separator);
-	}
-
 	// Splits the string at the given characters.
 	static std::vector<std::wstring> explode(const std::wstring& s, const wchar_t* delimiter) noexcept {
 		std::vector<std::wstring> ret;
@@ -553,6 +507,7 @@ public:
 		return ret;
 	}
 
+	// Converts wstring to string.
 	static std::string to_ascii(const std::wstring& s) noexcept {
 		std::string ret(s.length(), '\0');
 		for (size_t i = 0; i < s.length(); ++i) {
@@ -591,7 +546,7 @@ private:
 	}
 
 public:
-	static std::wstring parse_blob(const BYTE* data, size_t sz) {
+	static std::wstring to_wstring(const BYTE* data, size_t sz) {
 		if (!data || !sz) return {};
 
 		encoding_info fileEnc = get_encoding(data, sz);
@@ -612,16 +567,62 @@ public:
 		}
 	}
 
-	static std::wstring parse_blob(const std::vector<BYTE>& data) {
-		return parse_blob(&data[0], data.size());
+	static std::wstring to_wstring(const std::vector<BYTE>& data) {
+		return to_wstring(&data[0], data.size());
 	}
 
-	static std::wstring parse_ascii(const char* s) noexcept {
+	static std::wstring to_wstring(const char* s) noexcept {
 		return _parse_ascii(reinterpret_cast<const BYTE*>(s), lstrlenA(s));
 	}
 
-	static std::wstring parse_ascii(const std::string& s) noexcept {
-		return parse_ascii(s.c_str());
+	static std::wstring to_wstring(const std::string& s) noexcept {
+		return to_wstring(s.c_str());
+	}
+
+	// Converts number to wstring, adding thousand separator.
+	static std::wstring to_wstring_with_separator(int number, wchar_t separator = L',') noexcept {
+		std::wstring ret;
+		ret.reserve(32); // arbitrary
+
+		int abso = abs(number);
+		BYTE blocks = 0;
+		while (abso >= 1000) {
+			abso = (abso - (abso % 1000)) / 1000;
+			++blocks;
+		}
+
+		abso = abs(number);
+		bool firstPass = true;
+		do {
+			int num = abso % 1000;
+			wchar_t buf[8]{};
+
+			if (blocks) {
+				if (num < 100) lstrcatW(buf, L"0");
+				if (num < 10) lstrcatW(buf, L"0");
+			}
+
+#pragma warning (disable: 4996)
+			_itow(num, buf + lstrlenW(buf), 10);
+#pragma warning (default: 4996)
+
+			if (firstPass) {
+				firstPass = false;
+			} else {
+				ret.insert(0, 1, separator);
+			}
+
+			ret.insert(0, buf);
+			abso = (abso - (abso % 1000)) / 1000;
+		} while (blocks--);
+
+		if (number < 0) ret.insert(0, 1, L'-'); // prepend minus signal
+		return ret;
+	}
+
+	// Converts number to wstring, adding thousand separator.
+	static std::wstring to_wstring_with_separator(size_t number, wchar_t separator = L',') noexcept {
+		return to_wstring_with_separator(static_cast<int>(number), separator);
 	}
 };
 

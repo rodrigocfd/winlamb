@@ -26,7 +26,7 @@ public:
 	}
 
 	file_ini& load_from_file(const wchar_t* filePath) {
-		std::wstring content = str::parse_blob(file_mapped::util::read(filePath));
+		std::wstring content = str::to_wstring(file_mapped::util::read(filePath));
 		std::vector<std::wstring> lines = str::explode(content, str::get_linebreak(content));
 		lazy_map<std::wstring, std::wstring>* curSection = nullptr;
 		std::wstring tmpName, tmpValue; // temporary buffers
