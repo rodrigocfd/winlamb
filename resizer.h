@@ -7,7 +7,7 @@
 
 #pragma once
 #include <vector>
-#include "internals/hwnd_wrapper.h"
+#include "internals/hwnd_base.h"
 #include "internals/params.h"
 
 namespace wl {
@@ -37,7 +37,7 @@ public:
 		return this->_add_one(hCtrl, modeHorz, modeVert);
 	}
 
-	resizer& add(const wli::hwnd_wrapper& ctrl, go modeHorz, go modeVert) noexcept {
+	resizer& add(const wli::hwnd_base& ctrl, go modeHorz, go modeVert) noexcept {
 		return this->add(ctrl.hwnd(), modeHorz, modeVert);
 	}
 
@@ -49,9 +49,9 @@ public:
 		return *this;
 	}
 
-	resizer& add(std::initializer_list<wli::hwnd_wrapper*> ctrls, go modeHorz, go modeVert) noexcept {
+	resizer& add(std::initializer_list<wli::hwnd_base*> ctrls, go modeHorz, go modeVert) noexcept {
 		this->_ctrls.reserve(this->_ctrls.size() + ctrls.size());
-		for (const wli::hwnd_wrapper* pCtrl : ctrls) {
+		for (const wli::hwnd_base* pCtrl : ctrls) {
 			this->_add_one(pCtrl->hwnd(), modeHorz, modeVert);
 		}
 		return *this;
@@ -61,7 +61,7 @@ public:
 		return this->add(GetDlgItem(hParent, ctrlId), modeHorz, modeVert);
 	}
 
-	resizer& add(const wli::hwnd_wrapper* parent, int ctrlId, go modeHorz, go modeVert) noexcept {
+	resizer& add(const wli::hwnd_base* parent, int ctrlId, go modeHorz, go modeVert) noexcept {
 		return this->add(parent->hwnd(), ctrlId, modeHorz, modeVert);
 	}
 
@@ -73,7 +73,7 @@ public:
 		return *this;
 	}
 
-	resizer& add(const wli::hwnd_wrapper* parent, std::initializer_list<int> ctrlIds, go modeHorz, go modeVert) noexcept {
+	resizer& add(const wli::hwnd_base* parent, std::initializer_list<int> ctrlIds, go modeHorz, go modeVert) noexcept {
 		this->_ctrls.reserve(this->_ctrls.size() + ctrlIds.size());
 		for (int ctrlId : ctrlIds) {
 			this->_add_one(GetDlgItem(parent->hwnd(), ctrlId), modeHorz, modeVert);

@@ -16,7 +16,7 @@ template<typename baseT> class dialog; // friend forward declarations
 template<typename baseT> class native_control;
 template<typename baseT> class window;
 
-class hwnd_wrapper {
+class hwnd_base {
 	friend class subclass;
 	template<typename baseT> friend class dialog;
 	template<typename baseT> friend class native_control;
@@ -26,7 +26,7 @@ private:
 	HWND _hWnd = nullptr; // can be set only by friends
 
 protected:
-	hwnd_wrapper() = default;
+	hwnd_base() = default;
 
 public:
 	HWND hwnd() const noexcept {

@@ -17,7 +17,7 @@
 #include "menu.h"
 
 /**
- * hwnd_wrapper
+ * hwnd_base
  *  native_control
  *   has_focus
  *    has_enable
@@ -156,7 +156,7 @@ public:
 		return this->_install_subclass();
 	}
 
-	listview& assign(const hwnd_wrapper* parent, int ctrlId) {
+	listview& assign(const hwnd_base* parent, int ctrlId) {
 		this->native_control::assign(parent, ctrlId);
 		return this->_install_subclass();
 	}
@@ -168,7 +168,7 @@ public:
 		return this->_install_subclass();
 	}
 
-	listview& create(const wli::hwnd_wrapper* parent, int ctrlId, POINT pos, SIZE size, view viewType = view::DETAILS) {
+	listview& create(const wli::hwnd_base* parent, int ctrlId, POINT pos, SIZE size, view viewType = view::DETAILS) {
 		return this->create(parent->hwnd(), ctrlId, pos, size, viewType);
 	}
 

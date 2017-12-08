@@ -14,7 +14,7 @@
 #include "str.h"
 
 /**
- * hwnd_wrapper
+ * hwnd_base
  *  native_control
  *   has_text
  *    has_focus
@@ -49,7 +49,7 @@ public:
 			(sortType == sort::SORTED ? CBS_SORT : 0), 0);
 	}
 
-	combobox& create(const wli::hwnd_wrapper* parent, int ctrlId, POINT pos,
+	combobox& create(const wli::hwnd_base* parent, int ctrlId, POINT pos,
 		LONG width, sort sortType)
 	{
 		return this->create(parent->hwnd(), ctrlId, pos, width, sortType);

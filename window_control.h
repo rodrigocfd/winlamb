@@ -9,7 +9,7 @@
 #include "internals/window.h"
 
 /**
- * hwnd_wrapper
+ * hwnd_base
  *  inventory
  *   ui_thread
  *    user_control
@@ -46,7 +46,7 @@ public:
 		this->_register_create(this->setup, hParent);
 	}
 
-	void create(const wli::hwnd_wrapper* parent, int ctrlId, POINT position, SIZE size) {
+	void create(const wli::hwnd_base* parent, int ctrlId, POINT position, SIZE size) {
 		this->create(parent->hwnd(), ctrlId, position, size);
 	}
 };

@@ -9,7 +9,7 @@
 #include "inventory.h"
 
 /**
- * hwnd_wrapper
+ * hwnd_base
  *  inventory
  *   ui_thread
  */

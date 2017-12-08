@@ -7,7 +7,7 @@
 
 #pragma once
 #include <stdexcept>
-#include "internals/hwnd_wrapper.h"
+#include "internals/hwnd_base.h"
 #include "com.h"
 #include <ShObjIdl.h>
 
@@ -37,7 +37,7 @@ public:
 		return *this;
 	}
 
-	progress_taskbar& init(const wli::hwnd_wrapper* owner) {
+	progress_taskbar& init(const wli::hwnd_base* owner) {
 		return this->init(owner->hwnd());
 	}
 

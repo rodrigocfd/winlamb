@@ -10,7 +10,7 @@
 #include <CommCtrl.h>
 
 /**
- * hwnd_wrapper
+ * hwnd_base
  *  inventory
  *   ui_thread
  *    subclass
@@ -54,9 +54,9 @@ public:
 		}
 	}
 
-	void install_subclass(const wli::hwnd_wrapper& ctrl)               { this->install_subclass(ctrl.hwnd()); }
-	void install_subclass(HWND hParent, int ctrlId)                    { this->install_subclass(GetDlgItem(hParent, ctrlId)); }
-	void install_subclass(const wli::hwnd_wrapper* parent, int ctrlId) { this->install_subclass(GetDlgItem(parent->hwnd(), ctrlId)); }
+	void install_subclass(const wli::hwnd_base& ctrl)               { this->install_subclass(ctrl.hwnd()); }
+	void install_subclass(HWND hParent, int ctrlId)                 { this->install_subclass(GetDlgItem(hParent, ctrlId)); }
+	void install_subclass(const wli::hwnd_base* parent, int ctrlId) { this->install_subclass(GetDlgItem(parent->hwnd(), ctrlId)); }
 
 private:
 	static LRESULT CALLBACK _subclass_proc(HWND hWnd, UINT msg,

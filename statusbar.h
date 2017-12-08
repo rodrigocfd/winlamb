@@ -13,7 +13,7 @@
 #include "icon.h"
 
 /**
- * hwnd_wrapper
+ * hwnd_base
  *  native_control
  *   statusbar
  */
@@ -59,7 +59,7 @@ public:
 			(WS_CHILD | WS_VISIBLE) | (canStretch ? SBARS_SIZEGRIP : 0), 0);
 	}
 
-	statusbar& create(const wli::hwnd_wrapper* parent) {
+	statusbar& create(const wli::hwnd_base* parent) {
 		return this->create(parent->hwnd());
 	}
 

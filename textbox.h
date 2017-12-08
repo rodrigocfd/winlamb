@@ -13,7 +13,7 @@
 #include "internals/styler.h"
 
 /**
- * hwnd_wrapper
+ * hwnd_base
  *  native_control
  *   has_text
  *    has_focus
@@ -64,7 +64,7 @@ public:
 			WS_CHILD | WS_VISIBLE | styles, WS_EX_CLIENTEDGE);
 	}
 
-	textbox& create(const wli::hwnd_wrapper* parent, int ctrlId,
+	textbox& create(const wli::hwnd_base* parent, int ctrlId,
 		type t, POINT pos, LONG width, LONG height = 21)
 	{
 		return this->create(parent->hwnd(), ctrlId, t, pos, width, height);

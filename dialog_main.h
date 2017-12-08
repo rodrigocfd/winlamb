@@ -12,7 +12,7 @@
 #include "internals/run.h"
 
 /**
- * hwnd_wrapper
+ * hwnd_base
  *  inventory
  *   ui_thread
  *    dialog

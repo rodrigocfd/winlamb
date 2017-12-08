@@ -13,7 +13,7 @@
 #include "internals/styler.h"
 
 /**
- * hwnd_wrapper
+ * hwnd_base
  *  native_control
  *   has_text
  *    has_focus
@@ -46,7 +46,7 @@ public:
 			L"Button", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTOCHECKBOX);
 	}
 
-	checkbox& create(const wli::hwnd_wrapper* parent, int ctrlId,
+	checkbox& create(const wli::hwnd_base* parent, int ctrlId,
 		const wchar_t* caption, POINT pos, SIZE size)
 	{
 		return this->create(parent->hwnd(), ctrlId, caption, pos, size);

@@ -8,7 +8,7 @@
 #pragma once
 #include <algorithm>
 #include <system_error>
-#include "internals/hwnd_wrapper.h"
+#include "internals/hwnd_base.h"
 #include "com.h"
 #include "str.h"
 #include <Shlobj.h>
@@ -77,7 +77,7 @@ public:
 	}
 
 	// Ordinary MessageBox, centered at parent.
-	static int msgbox(const wli::hwnd_wrapper* parent, const std::wstring& title, const std::wstring& text, UINT uType = 0) {
+	static int msgbox(const wli::hwnd_base* parent, const std::wstring& title, const std::wstring& text, UINT uType = 0) {
 		return msgbox(parent->hwnd(), title, text, uType);
 	}
 
@@ -112,7 +112,7 @@ public:
 	}
 
 	// System dialog to select one file to be opened.
-	static bool open_file(const wli::hwnd_wrapper* parent, const wchar_t* filterWithPipes, std::wstring& buf) noexcept {
+	static bool open_file(const wli::hwnd_base* parent, const wchar_t* filterWithPipes, std::wstring& buf) noexcept {
 		return open_file(parent->hwnd(), filterWithPipes, buf);
 	}
 
@@ -165,7 +165,7 @@ public:
 	}
 
 	// System dialog to select many files to be opened.
-	static bool open_files(const wli::hwnd_wrapper* parent, const wchar_t* filterWithPipes, std::vector<std::wstring>& arrBuf) {
+	static bool open_files(const wli::hwnd_base* parent, const wchar_t* filterWithPipes, std::vector<std::wstring>& arrBuf) {
 		return open_files(parent->hwnd(), filterWithPipes, arrBuf);
 	}
 
@@ -191,7 +191,7 @@ public:
 	}
 
 	// System dialog to select where one file will be saved.
-	static bool save_file(const wli::hwnd_wrapper* parent, const wchar_t* filterWithPipes, std::wstring& buf, const std::wstring& defFile) noexcept {
+	static bool save_file(const wli::hwnd_base* parent, const wchar_t* filterWithPipes, std::wstring& buf, const std::wstring& defFile) noexcept {
 		return save_file(parent->hwnd(), filterWithPipes, buf, defFile);
 	}
 
@@ -218,7 +218,7 @@ public:
 	}
 
 	// System dialog to select one folder.
-	static bool choose_folder(const wli::hwnd_wrapper* parent, std::wstring& buf) {
+	static bool choose_folder(const wli::hwnd_base* parent, std::wstring& buf) {
 		return choose_folder(parent->hwnd(), buf);
 	}
 };

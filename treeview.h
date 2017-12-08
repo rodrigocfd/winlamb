@@ -14,7 +14,7 @@
 #include "internals/member_image_list.h"
 
 /**
- * hwnd_wrapper
+ * hwnd_base
  *  native_control
  *   has_focus
  *    has_enable
@@ -75,7 +75,7 @@ public:
 			WS_EX_CLIENTEDGE); // for children, WS_BORDER gives old, flat drawing; always use WS_EX_CLIENTEDGE
 	}
 
-	treeview& create(const wli::hwnd_wrapper* parent, int ctrlId, POINT pos, SIZE size) {
+	treeview& create(const wli::hwnd_base* parent, int ctrlId, POINT pos, SIZE size) {
 		return this->create(parent->hwnd(), ctrlId, pos, size);
 	}
 };

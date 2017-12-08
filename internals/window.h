@@ -11,7 +11,7 @@
 #include "styler.h"
 
 /**
- * hwnd_wrapper
+ * hwnd_base
  *  inventory
  *   ui_thread
  *    [user_control]

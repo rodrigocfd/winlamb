@@ -14,7 +14,7 @@
 #include <CommCtrl.h>
 
 /**
- * hwnd_wrapper
+ * hwnd_base
  *  native_control
  *   has_focus
  *    has_enable
@@ -47,7 +47,7 @@ public:
 			nullptr, pos, {width,21}, DATETIMEPICK_CLASS);
 	}
 
-	datetime_picker& create(const wli::hwnd_wrapper* parent, int ctrlId, POINT pos, LONG width) {
+	datetime_picker& create(const wli::hwnd_base* parent, int ctrlId, POINT pos, LONG width) {
 		return this->create(parent->hwnd(), ctrlId, pos, width);
 	}
 

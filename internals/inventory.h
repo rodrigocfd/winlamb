@@ -6,14 +6,14 @@
  */
 
 #pragma once
-#include "hwnd_wrapper.h"
+#include "hwnd_base.h"
 #include "store.h"
 #include "params.h"
 #include "params_wm.h"
 #include "params_wmn.h"
 
 /**
- * hwnd_wrapper
+ * hwnd_base
  *  inventory
  */
 
@@ -25,7 +25,7 @@ template<typename baseT> class dialog; // friend forward declarations
 template<typename baseT> class window;
 
 template<typename retT>
-class inventory : public hwnd_wrapper {
+class inventory : public hwnd_base {
 	friend class subclass;
 	template<typename baseT> friend class dialog;
 	template<typename baseT> friend class window;

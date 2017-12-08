@@ -12,7 +12,7 @@
 #pragma comment(lib, "UxTheme.lib")
 
 /**
- * hwnd_wrapper
+ * hwnd_base
  *  inventory
  *   ui_thread
  *    user_control

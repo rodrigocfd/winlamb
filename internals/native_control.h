@@ -6,10 +6,10 @@
  */
 
 #pragma once
-#include "hwnd_wrapper.h"
+#include "hwnd_base.h"
 
 /**
- * hwnd_wrapper
+ * hwnd_base
  *  native_control
  */
 
@@ -17,7 +17,7 @@ namespace wl {
 namespace wli {
 
 template<typename derivedT>
-class native_control : public hwnd_wrapper {
+class native_control : public hwnd_base {
 protected:
 	native_control() = default;
 
@@ -41,7 +41,7 @@ public:
 		return this->assign(GetDlgItem(hParent, ctrlId));
 	}
 
-	derivedT& assign(const hwnd_wrapper* parent, int ctrlId) {
+	derivedT& assign(const hwnd_base* parent, int ctrlId) {
 		return this->assign(parent->hwnd(), ctrlId);
 	}
 
@@ -56,7 +56,7 @@ public:
 			nullptr));
 	}
 
-	derivedT& create(const hwnd_wrapper* parent, int ctrlId, const wchar_t* title,
+	derivedT& create(const hwnd_base* parent, int ctrlId, const wchar_t* title,
 		POINT pos, SIZE size, const wchar_t* className,
 		DWORD styles = (WS_CHILD | WS_VISIBLE), DWORD exStyles = 0)
 	{

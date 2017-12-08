@@ -10,7 +10,7 @@
 #include "internals/has_text.h"
 
 /**
- * hwnd_wrapper
+ * hwnd_base
  *  inventory
  *   ui_thread
  *    dialog
@@ -56,7 +56,7 @@ public:
 		return static_cast<int>(ret); // value passed to EndDialog()
 	}
 
-	int show(const wli::hwnd_wrapper* parent) {
+	int show(const wli::hwnd_base* parent) {
 		return this->show(parent->hwnd());
 	}
 

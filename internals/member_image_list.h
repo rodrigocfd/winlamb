@@ -7,7 +7,7 @@
 
 #pragma once
 #include <functional>
-#include "hwnd_wrapper.h"
+#include "hwnd_base.h"
 #include "../image_list.h"
 
 namespace wl {

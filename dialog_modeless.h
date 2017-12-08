@@ -11,7 +11,7 @@
 #include "internals/has_text.h"
 
 /**
- * hwnd_wrapper
+ * hwnd_base
  *  inventory
  *   ui_thread
  *    dialog

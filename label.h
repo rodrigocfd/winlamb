@@ -12,7 +12,7 @@
 #include "internals/styler.h"
 
 /**
- * hwnd_wrapper
+ * hwnd_base
  *  native_control
  *   has_text
  *     has_enable
@@ -42,7 +42,7 @@ public:
 		return this->native_control::create(hParent, ctrlId, caption, pos, size, L"Static");
 	}
 
-	label& create(const wli::hwnd_wrapper* parent, int ctrlId,
+	label& create(const wli::hwnd_base* parent, int ctrlId,
 		const wchar_t* caption, POINT pos, SIZE size)
 	{
 		return this->create(parent->hwnd(), ctrlId, caption, pos, size);
