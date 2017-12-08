@@ -259,6 +259,16 @@ public:
 		static void write(const wchar_t* filePath, const std::vector<BYTE>& data)      { write(filePath, &data[0], data.size()); }
 		static void write(const std::wstring& filePath, const std::vector<BYTE>& data) { write(filePath.c_str(), &data[0], data.size()); }
 
+		// Gets creation, last access and last write dates.
+		static dates get_dates(const wchar_t* filePath) {
+			file ff;
+			ff.open_existing(filePath, file::access::READONLY);
+			return ff.get_dates();
+		}
+
+		// Gets creation, last access and last write dates.
+		static dates get_dates(const std::wstring& filePath) { return get_dates(filePath.c_str()); }
+
 		static bool exists(const wchar_t* fileOrFolder) noexcept {
 			return GetFileAttributesW(fileOrFolder) != INVALID_FILE_ATTRIBUTES;
 		}
