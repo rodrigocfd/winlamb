@@ -8,7 +8,7 @@
 #pragma once
 #include <string>
 #include "com.h"
-#include "lazy_map.h"
+#include "held_map.h"
 #include <MsXml2.h>
 #pragma comment(lib, "msxml2.lib")
 
@@ -21,7 +21,7 @@ public:
 	public:
 		std::wstring name;
 		std::wstring value;
-		lazy_map<std::wstring, std::wstring> attrs;
+		held_map<std::wstring, std::wstring> attrs;
 		std::vector<node> children;
 
 		void clear() noexcept {
@@ -161,7 +161,7 @@ private:
 		return ret;
 	}
 
-	static lazy_map<std::wstring, std::wstring> _read_attrs(com::ptr<IXMLDOMNode>& xmlnode) noexcept {
+	static held_map<std::wstring, std::wstring> _read_attrs(com::ptr<IXMLDOMNode>& xmlnode) noexcept {
 		// Read attribute collection.
 		com::ptr<IXMLDOMNamedNodeMap> attrs;
 		xmlnode->get_attributes(attrs.pptr());
@@ -169,7 +169,7 @@ private:
 		long attrCount = 0;
 		attrs->get_length(&attrCount);
 
-		lazy_map<std::wstring, std::wstring> ret;
+		held_map<std::wstring, std::wstring> ret;
 		ret.reserve(attrCount);
 
 		for (long i = 0; i < attrCount; ++i) {

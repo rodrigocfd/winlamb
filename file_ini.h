@@ -7,7 +7,7 @@
 
 #pragma once
 #include "file_mapped.h"
-#include "lazy_map.h"
+#include "held_map.h"
 #include "str.h"
 
 namespace wl {
@@ -15,20 +15,20 @@ namespace wl {
 // Wrapper to INI file.
 class file_ini final {
 public:
-	lazy_map<std::wstring, lazy_map<std::wstring, std::wstring>> sections;
+	held_map<std::wstring, held_map<std::wstring, std::wstring>> sections;
 
-	const lazy_map<std::wstring, std::wstring>& operator[](const std::wstring& sectionName) const {
+	const held_map<std::wstring, std::wstring>& operator[](const std::wstring& sectionName) const {
 		return this->sections.operator[](sectionName);
 	}
 
-	lazy_map<std::wstring, std::wstring>& operator[](const std::wstring& sectionName) noexcept {
+	held_map<std::wstring, std::wstring>& operator[](const std::wstring& sectionName) noexcept {
 		return this->sections.operator[](sectionName);
 	}
 
 	file_ini& load_from_file(const wchar_t* filePath) {
 		std::wstring content = str::to_wstring(file_mapped::util::read(filePath));
 		std::vector<std::wstring> lines = str::explode(content, str::get_linebreak(content));
-		lazy_map<std::wstring, std::wstring>* curSection = nullptr;
+		held_map<std::wstring, std::wstring>* curSection = nullptr; // section-less keys will be ignored
 		std::wstring tmpName, tmpValue; // temporary buffers
 
 		for (std::wstring& line : lines) {
@@ -38,7 +38,7 @@ public:
 				tmpName.clear();
 				tmpName.insert(0, &line[1], line.length() - 2); // extract section name
 				curSection = &this->sections[str::trim(tmpName)]; // if inexistent, will be inserted
-			} else if (curSection && line[0] != L';') {
+			} else if (curSection && line[0] != L';' && line[0] != L'#') { // lines starting with ; or # will be ignored
 				size_t idxEq = line.find_first_of(L'=');
 				if (idxEq != std::wstring::npos) {
 					tmpName.clear();
@@ -66,23 +66,49 @@ public:
 		std::wstring out;
 		bool isFirst = true;
 
-		using sectionT = lazy_map<std::wstring, lazy_map<std::wstring, std::wstring>>::entry;
-		using entryT = lazy_map<std::wstring, std::wstring>::entry;
+		using sectionT = held_map<std::wstring, held_map<std::wstring, std::wstring>>::entry;
+		using entryT = held_map<std::wstring, std::wstring>::entry;
 
-		for (const sectionT& sec : this->sections.entries()) {
+		for (const sectionT& sectionEntry : this->sections) {
 			if (isFirst) {
 				isFirst = false;
 			} else {
 				out.append(L"\r\n");
 			}
-			out.append(L"[").append(sec.key).append(L"]\r\n");
+			out.append(L"[").append(sectionEntry.key).append(L"]\r\n");
 
-			for (const entryT& entry : sec.value.entries()) {
-				out.append(entry.key).append(L"=")
-					.append(entry.value).append(L"\r\n");
+			for (const entryT& keyEntry : sectionEntry.value) {
+				out.append(keyEntry.key).append(L"=")
+					.append(keyEntry.value).append(L"\r\n");
 			}
 		}
 		return out;
+	}
+
+	// Checks INI file structure against "[section1]keyA,keyB,keyC[section2]keyX,keyY".
+	bool structure_is(const std::wstring& structure) const noexcept {
+		for (const held_map<std::wstring, std::vector<std::wstring>>::entry& descrSectionEntry : this->_parse_structure(structure)) {
+			const held_map<std::wstring, std::wstring>* pCurSection = this->sections.get_if_exists(descrSectionEntry.key);
+			if (!pCurSection) return false; // section name not found
+			for (const std::wstring& descrKeyEntry : descrSectionEntry.value) {
+				if (!pCurSection->has(descrKeyEntry)) return false; // key name not found
+			}
+		}
+		return true;		
+	}
+
+private:
+	held_map<std::wstring, std::vector<std::wstring>> _parse_structure(const std::wstring& structure) const noexcept {
+		held_map<std::wstring, std::vector<std::wstring>> parsed;
+		std::vector<std::wstring> secBlocks = str::explode(structure, L"[");
+		for (std::wstring& secBlock : secBlocks) {
+			if (secBlock.empty()) continue;
+			size_t endSecIdx = secBlock.find_first_of(L']');
+			std::vector<std::wstring>& curSec = parsed[secBlock.substr(0, endSecIdx)];
+			secBlock.erase(0, endSecIdx + 1);
+			curSec = str::explode(secBlock, L",");
+		}
+		return parsed;
 	}
 };
 

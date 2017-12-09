@@ -9,7 +9,7 @@
 #include <functional>
 #include "internals/download_session.h"
 #include "internals/download_url.h"
-#include "lazy_map.h"
+#include "held_map.h"
 #include "str.h"
 
 namespace wl {
@@ -24,8 +24,8 @@ private:
 	HINTERNET                            _hConnect = nullptr, _hRequest = nullptr;
 	size_t                               _contentLength = 0, _totalGot = 0;
 	std::wstring                         _url, _verb, _referrer;
-	lazy_map<std::wstring, std::wstring> _requestHeaders;
-	lazy_map<std::wstring, std::wstring> _responseHeaders;
+	held_map<std::wstring, std::wstring> _requestHeaders;
+	held_map<std::wstring, std::wstring> _responseHeaders;
 	std::function<void()>                _startCallback, _progressCallback;
 
 public:
@@ -105,8 +105,8 @@ public:
 		return this->abort(); // cleanup
 	}
 
-	const lazy_map<std::wstring, std::wstring>& get_request_headers() const noexcept  { return this->_requestHeaders; }
-	const lazy_map<std::wstring, std::wstring>& get_response_headers() const noexcept { return this->_responseHeaders; }
+	const held_map<std::wstring, std::wstring>& get_request_headers() const noexcept  { return this->_requestHeaders; }
+	const held_map<std::wstring, std::wstring>& get_response_headers() const noexcept { return this->_responseHeaders; }
 	size_t                                      get_content_length() const noexcept   { return this->_contentLength; }
 	size_t                                      get_total_downloaded() const noexcept { return this->_totalGot; }
 
@@ -149,7 +149,7 @@ private:
 		// Add the request headers to request handle.
 		std::wstring rhTmp;
 		rhTmp.reserve(20);
-		for (const lazy_map<std::wstring, std::wstring>::entry& rh : this->_requestHeaders.entries()) {
+		for (const held_map<std::wstring, std::wstring>::entry& rh : this->_requestHeaders) {
 			rhTmp = rh.key;
 			rhTmp += L": ";
 			rhTmp += rh.value;
