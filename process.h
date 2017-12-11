@@ -17,7 +17,7 @@ private:
 	process() = delete;
 
 public:
-	// Retrieve the program's command line, tokenized.
+	// Retrieves the program's command line, tokenized.
 	static std::vector<std::wstring> get_cmd_line() noexcept {
 		return str::explode_quoted(GetCommandLineW());
 	}
@@ -55,8 +55,8 @@ public:
 	// Runs the shell-associated program to the given file, for example Notepad to a TXT.
 	static void shell_exec(const std::wstring& file, INT showCmd = SW_SHOWNORMAL) {
 		com::lib comLib{com::lib::init::NOW};
-		int h = reinterpret_cast<int>(ShellExecuteW(nullptr, L"open",
-			file.c_str(), nullptr, nullptr, showCmd));
+		int h = static_cast<int>(reinterpret_cast<INT_PTR>(ShellExecuteW(nullptr,
+			L"open", file.c_str(), nullptr, nullptr, showCmd)));
 		if (h <= 8) {
 			throw std::system_error(h, std::system_category(),
 				"ShellExecute failed");
