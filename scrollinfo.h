@@ -15,21 +15,11 @@ namespace wl {
 class scrollinfo final {
 public:
 	enum class flags : UINT {
-		PAGE                 = SIF_PAGE,
-		POS                  = SIF_POS,
-		RANGE                = SIF_RANGE,
-		TRACK                = SIF_TRACKPOS,
-		PAGE_POS             = (PAGE | POS),
-		PAGE_POS_RANGE       = (PAGE | POS | RANGE),
-		PAGE_POS_TRACK       = (PAGE | POS | TRACK),
-		PAGE_POS_RANGE_TRACK = (PAGE | POS | RANGE | TRACK),
-		PAGE_RANGE           = (PAGE | RANGE),
-		PAGE_RANGE_TRACK     = (PAGE | RANGE | TRACK),
-		PAGE_TRACK           = (PAGE | TRACK),
-		POS_RANGE            = (POS | RANGE),
-		POS_RANGE_TRACK      = (POS | RANGE | TRACK),
-		POS_TRACK            = (POS | TRACK),
-		RANGE_TRACK          = (RANGE | TRACK),
+		PAGE  = SIF_PAGE,
+		POS   = SIF_POS,
+		RANGE = SIF_RANGE,
+		TRACK = SIF_TRACKPOS,
+		WINLAMB_COMBINED_FLAGS4(PAGE, POS, RANGE, TRACK)
 	};
 
 	enum class bar : int {

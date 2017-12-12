@@ -19,22 +19,12 @@ private:
 
 public:
 	enum class deco : BYTE {
-		NONE                            = 0b00000000,
-		BOLD                            = 0b00000001,
-		ITALIC                          = 0b00000010,
-		UNDERLINE                       = 0b00000100,
-		STRIKEOUT                       = 0b00001000,
-		BOLD_ITALIC                     = (BOLD | ITALIC),
-		BOLD_ITALIC_UNDERLINE           = (BOLD | ITALIC | UNDERLINE),
-		BOLD_ITALIC_STRIKEOUT           = (BOLD | ITALIC | STRIKEOUT),
-		BOLD_ITALIC_UNDERLINE_STRIKEOUT = (BOLD | ITALIC | UNDERLINE | STRIKEOUT),
-		BOLD_UNDERLINE                  = (BOLD | UNDERLINE),
-		BOLD_UNDERLINE_STRIKEOUT        = (BOLD | UNDERLINE | STRIKEOUT),
-		BOLD_STRIKEOUT                  = (BOLD | STRIKEOUT),
-		ITALIC_UNDERLINE                = (ITALIC | UNDERLINE),
-		ITALIC_UNDERLINE_STRIKEOUT      = (ITALIC | UNDERLINE | STRIKEOUT),
-		ITALIC_STRIKEOUT                = (ITALIC | STRIKEOUT),
-		UNDERLINE_STRIKEOUT             = (UNDERLINE | STRIKEOUT)
+		NONE      = 0b00000000,
+		BOLD      = 0b00000001,
+		ITALIC    = 0b00000010,
+		STRIKEOUT = 0b00000100,
+		UNDERLINE = 0b00001000,
+		WINLAMB_COMBINED_FLAGS4(BOLD, ITALIC, STRIKEOUT, UNDERLINE)
 	};
 
 	~font() {
