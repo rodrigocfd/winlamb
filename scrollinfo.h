@@ -6,7 +6,8 @@
  */
 
 #pragma once
-#include <winlamb/internals/hwnd_base.h>
+#include "internals/hwnd_base.h"
+#include "internals/combinable_flags.h"
 
 namespace wl {
 
@@ -14,13 +15,21 @@ namespace wl {
 class scrollinfo final {
 public:
 	enum class flags : UINT {
-		PAGE           = SIF_PAGE,
-		POS            = SIF_POS,
-		RANGE          = SIF_RANGE,
-		PAGE_POS       = (PAGE | POS),
-		PAGE_POS_RANGE = (PAGE | POS | RANGE),
-		PAGE_RANGE     = (PAGE | RANGE),
-		POS_RANGE      = (POS | RANGE)
+		PAGE                 = SIF_PAGE,
+		POS                  = SIF_POS,
+		RANGE                = SIF_RANGE,
+		TRACK                = SIF_TRACKPOS,
+		PAGE_POS             = (PAGE | POS),
+		PAGE_POS_RANGE       = (PAGE | POS | RANGE),
+		PAGE_POS_TRACK       = (PAGE | POS | TRACK),
+		PAGE_POS_RANGE_TRACK = (PAGE | POS | RANGE | TRACK),
+		PAGE_RANGE           = (PAGE | RANGE),
+		PAGE_RANGE_TRACK     = (PAGE | RANGE | TRACK),
+		PAGE_TRACK           = (PAGE | TRACK),
+		POS_RANGE            = (POS | RANGE),
+		POS_RANGE_TRACK      = (POS | RANGE | TRACK),
+		POS_TRACK            = (POS | TRACK),
+		RANGE_TRACK          = (RANGE | TRACK),
 	};
 
 	enum class bar : int {
@@ -63,15 +72,16 @@ public:
 	}
 
 	// Calls SetScrollInfo function.
-	scrollinfo& set(HWND target, bar whatBar) noexcept {
-		SetScrollInfo(target, static_cast<int>(whatBar), &this->_si, TRUE);
-		return *this;
+	int set(HWND target, bar whatBar) noexcept {
+		return SetScrollInfo(target, static_cast<int>(whatBar), &this->_si, TRUE); // returns current position
 	}
 
 	// Calls SetScrollInfo function.
-	scrollinfo& set(const wl::wli::hwnd_base* target, bar whatBar) noexcept {
+	int set(const wl::wli::hwnd_base* target, bar whatBar) noexcept {
 		return this->set(target->hwnd(), whatBar);
 	}
 };
+
+WINLAMB_COMBINABLE_FLAGS(scrollinfo::flags);
 
 }//namespace wl

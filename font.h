@@ -8,6 +8,7 @@
 #pragma once
 #include <system_error>
 #include <Windows.h>
+#include "internals/combinable_flags.h"
 
 namespace wl {
 
@@ -25,6 +26,7 @@ public:
 		STRIKEOUT                       = 0b00001000,
 		BOLD_ITALIC                     = (BOLD | ITALIC),
 		BOLD_ITALIC_UNDERLINE           = (BOLD | ITALIC | UNDERLINE),
+		BOLD_ITALIC_STRIKEOUT           = (BOLD | ITALIC | STRIKEOUT),
 		BOLD_ITALIC_UNDERLINE_STRIKEOUT = (BOLD | ITALIC | UNDERLINE | STRIKEOUT),
 		BOLD_UNDERLINE                  = (BOLD | UNDERLINE),
 		BOLD_UNDERLINE_STRIKEOUT        = (BOLD | UNDERLINE | STRIKEOUT),
@@ -150,5 +152,7 @@ public:
 		}
 	};
 };
+
+WINLAMB_COMBINABLE_FLAGS(font::deco);
 
 }//namespace wl
