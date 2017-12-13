@@ -151,13 +151,13 @@ public:
 	}
 
 	_itemT get_focused() const noexcept {
-		return {ListView_GetNextItem(this->_list.hwnd(), -1, LVNI_FOCUSED),
+		return {static_cast<size_t>(ListView_GetNextItem(this->_list.hwnd(), -1, LVNI_FOCUSED)),
 			this->_list};
 	}
 
 	size_t get_focused_index() const noexcept {
 		int iFoc = ListView_GetNextItem(this->_list.hwnd(), -1, LVNI_FOCUSED);
-		return iFoc == -1 ? _itemT::npos : iFoc;
+		return iFoc == -1 ? _itemT::npos : static_cast<size_t>(iFoc);
 	}
 
 	std::vector<std::wstring> get_texts(const std::vector<_itemT>& itemsToGet, size_t columnIndex = 0) const noexcept {

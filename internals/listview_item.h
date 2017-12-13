@@ -56,7 +56,7 @@ public:
 	}
 
 	listview_item& ensure_visible() noexcept {
-		if (this->_list.get_view() == view::DETAILS) {
+		if (this->_list.get_view() == listviewT::view::DETAILS) {
 			// In details view, ListView_EnsureVisible() won't center the item vertically.
 			// This new implementation has this behavior.
 			RECT rc{};

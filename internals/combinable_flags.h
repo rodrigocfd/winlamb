@@ -9,7 +9,7 @@
 #include <type_traits>
 
 #define WINLAMB_COMBINABLE_FLAGS(flag) \
-	flag operator|(flag a, flag b) noexcept { \
+	inline flag operator|(flag a, flag b) noexcept { \
 		return static_cast<flag>(static_cast<std::underlying_type<flag>::type>(a) | \
 			static_cast<std::underlying_type<flag>::type>(b)); \
 	}

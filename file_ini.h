@@ -53,13 +53,13 @@ public:
 		return *this;
 	}
 
-	file_ini& save_to_file(const wchar_t* filePath) const {
+	void save_to_file(const wchar_t* filePath) const {
 		file::util::write(filePath,
 			str::to_utf8_blob(this->serialize(), str::write_bom::YES));
 	}
 
 	file_ini& load_from_file(const std::wstring& filePath)     { return this->load_from_file(filePath.c_str()); }
-	file_ini& save_to_file(const std::wstring& filePath) const { return this->save_to_file(filePath.c_str()); }
+	void      save_to_file(const std::wstring& filePath) const { this->save_to_file(filePath.c_str()); }
 
 	// Returns the INI contents as a string, ready to be written to a file.
 	std::wstring serialize() const noexcept {
