@@ -155,7 +155,7 @@ namespace wm {
 	struct displaychange : public params {
 		displaychange(const params& p) noexcept : params(p) { }
 		UINT bits_per_pixel() const noexcept { return static_cast<UINT>(this->wParam); }
-		SIZE sz() const noexcept             { return { LOWORD(this->lParam), HIWORD(this->lParam) }; }
+		SIZE sz() const noexcept             { return {LOWORD(this->lParam), HIWORD(this->lParam)}; }
 	};
 	WINLAMB_EMPTYWM(drawclipboard);
 	struct drawitem : public params {
@@ -600,7 +600,7 @@ namespace wm {
 		bool is_other_restored() const noexcept  { return this->wParam == 3; }
 		bool is_minimized() const noexcept       { return this->wParam == 1; }
 		bool is_restored() const noexcept        { return this->wParam == 0; }
-		SIZE sz() const noexcept                 { return { LOWORD(this->lParam), HIWORD(this->lParam) }; }
+		SIZE sz() const noexcept                 { return {LOWORD(this->lParam), HIWORD(this->lParam)}; }
 	};
 	struct sizeclipboard : public params {
 		sizeclipboard(const params& p) noexcept : params(p) { }
