@@ -53,7 +53,7 @@ public:
 			size.cx, size.cy, SWP_NOZORDER);
 	}
 
-	void create(const wli::hwnd_base* parent, int ctrlId, POINT position, SIZE size) {
+	void create(const hwnd_base* parent, int ctrlId, POINT position, SIZE size) {
 		this->create(parent->hwnd(), ctrlId, position, size);
 	}
 

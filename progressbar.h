@@ -41,7 +41,7 @@ public:
 		return this->native_control::create(hParent, ctrlId, nullptr, pos, size, PROGRESS_CLASS);
 	}
 
-	progressbar& create(const wli::hwnd_base* parent, int ctrlId, const wchar_t* caption, POINT pos, SIZE size) {
+	progressbar& create(const hwnd_base* parent, int ctrlId, const wchar_t* caption, POINT pos, SIZE size) {
 		return this->create(parent->hwnd(), ctrlId, caption, pos, size);
 	}
 

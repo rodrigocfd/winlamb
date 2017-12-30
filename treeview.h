@@ -75,7 +75,7 @@ public:
 			WS_EX_CLIENTEDGE); // for children, WS_BORDER gives old, flat drawing; always use WS_EX_CLIENTEDGE
 	}
 
-	treeview& create(const wli::hwnd_base* parent, int ctrlId, POINT pos, SIZE size) {
+	treeview& create(const hwnd_base* parent, int ctrlId, POINT pos, SIZE size) {
 		return this->create(parent->hwnd(), ctrlId, pos, size);
 	}
 };

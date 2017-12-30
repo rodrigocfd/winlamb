@@ -7,12 +7,12 @@
 
 #pragma once
 #include <functional>
-#include "hwnd_base.h"
 #include "../image_list.h"
 
 namespace wl {
 namespace wli {
 
+// Wrapper to image_list so it can be exposed as a public member of a control, like listview.
 template<typename controlT>
 class member_image_list final {
 private:

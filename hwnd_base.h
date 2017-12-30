@@ -12,15 +12,17 @@ namespace wl {
 class subclass; // friend forward declaration
 
 namespace wli {
-template<typename baseT> class dialog; // friend forward declarations
-template<typename baseT> class native_control;
-template<typename baseT> class window;
+	template<typename baseT> class dialog; // friend forward declarations
+	template<typename baseT> class native_control;
+	template<typename baseT> class window;
+}
 
+// Simple HWND wrapper, base to all dialog and window classes.
 class hwnd_base {
 	friend class subclass;
-	template<typename baseT> friend class dialog;
-	template<typename baseT> friend class native_control;
-	template<typename baseT> friend class window;
+	template<typename baseT> friend class wli::dialog;
+	template<typename baseT> friend class wli::native_control;
+	template<typename baseT> friend class wli::window;
 
 private:
 	HWND _hWnd = nullptr; // can be set only by friends
@@ -34,5 +36,4 @@ public:
 	}
 };
 
-}//namespace wli
 }//namespace wl

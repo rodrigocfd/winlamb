@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "internals/hwnd_base.h"
+#include "hwnd_base.h"
 #include "internals/combinable_flags.h"
 
 namespace wl {
@@ -57,7 +57,7 @@ public:
 	}
 
 	// Calls GetScrollInfo function.
-	scrollinfo& get(const wl::wli::hwnd_base* target, bar whatBar) noexcept {
+	scrollinfo& get(const hwnd_base* target, bar whatBar) noexcept {
 		return this->get(target->hwnd(), whatBar);
 	}
 
@@ -67,7 +67,7 @@ public:
 	}
 
 	// Calls SetScrollInfo function.
-	int set(const wl::wli::hwnd_base* target, bar whatBar) noexcept {
+	int set(const hwnd_base* target, bar whatBar) noexcept {
 		return this->set(target->hwnd(), whatBar);
 	}
 };

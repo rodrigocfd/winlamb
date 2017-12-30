@@ -59,7 +59,7 @@ public:
 			(WS_CHILD | WS_VISIBLE) | (canStretch ? SBARS_SIZEGRIP : 0), 0);
 	}
 
-	statusbar& create(const wli::hwnd_base* parent) {
+	statusbar& create(const hwnd_base* parent) {
 		return this->create(parent->hwnd());
 	}
 

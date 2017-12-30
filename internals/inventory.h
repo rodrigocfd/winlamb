@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "hwnd_base.h"
+#include "../hwnd_base.h"
 #include "store.h"
 #include "params.h"
 #include "params_wm.h"

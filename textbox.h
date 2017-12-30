@@ -43,6 +43,7 @@ private:
 public:
 	enum class type { NORMAL, PASSWORD, MULTILINE };
 
+	// Information about start and length of selected text.
 	struct selection final {
 		int start = 0;
 		int len = 0;
@@ -64,7 +65,7 @@ public:
 			WS_CHILD | WS_VISIBLE | styles, WS_EX_CLIENTEDGE);
 	}
 
-	textbox& create(const wli::hwnd_base* parent, int ctrlId,
+	textbox& create(const hwnd_base* parent, int ctrlId,
 		type t, POINT pos, LONG width, LONG height = 21)
 	{
 		return this->create(parent->hwnd(), ctrlId, t, pos, width, height);

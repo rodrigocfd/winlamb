@@ -45,7 +45,7 @@ public:
 		return this->native_control::create(hParent, ctrlId, caption, pos, size, L"Button");
 	}
 
-	button& create(const wli::hwnd_base* parent, int ctrlId,
+	button& create(const hwnd_base* parent, int ctrlId,
 		const wchar_t* caption, POINT pos, SIZE size = {75,23})
 	{
 		return this->create(parent->hwnd(), ctrlId, caption, pos, size);

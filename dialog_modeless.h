@@ -64,7 +64,7 @@ public:
 				"CreateDialogParam failed for modeless dialog");
 		}
 
-		this->_pLoop = parent->_loop; // keep parent's loop instance
+		this->_pLoop = parent->_loop; // keep parent's wli::loop instance; won't compile if parent doesn't have it
 		this->_pLoop->add_modeless(this->hwnd());
 		ShowWindow(this->hwnd(), SW_SHOW);
 	}

@@ -56,7 +56,7 @@ public:
 		return static_cast<int>(ret); // value passed to EndDialog()
 	}
 
-	int show(const wli::hwnd_base* parent) {
+	int show(const hwnd_base* parent) {
 		return this->show(parent->hwnd());
 	}
 

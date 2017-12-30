@@ -47,7 +47,7 @@ public:
 			nullptr, pos, {width,21}, DATETIMEPICK_CLASS);
 	}
 
-	datetime_picker& create(const wli::hwnd_base* parent, int ctrlId, POINT pos, LONG width) {
+	datetime_picker& create(const hwnd_base* parent, int ctrlId, POINT pos, LONG width) {
 		return this->create(parent->hwnd(), ctrlId, pos, width);
 	}
 

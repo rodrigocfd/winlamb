@@ -29,7 +29,7 @@ class window_main :
 	public wli::has_text<
 		window_main, wli::window_ui_thread>
 {
-	friend class dialog_modeless;
+	friend class wli::dialog_modeless;
 
 protected:
 	struct setup_vars final : public wli::window_ui_thread::setup_vars {

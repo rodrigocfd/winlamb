@@ -42,7 +42,7 @@ public:
 		return this->native_control::create(hParent, ctrlId, caption, pos, size, L"Static");
 	}
 
-	label& create(const wli::hwnd_base* parent, int ctrlId,
+	label& create(const hwnd_base* parent, int ctrlId,
 		const wchar_t* caption, POINT pos, SIZE size)
 	{
 		return this->create(parent->hwnd(), ctrlId, caption, pos, size);

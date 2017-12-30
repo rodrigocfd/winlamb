@@ -168,7 +168,7 @@ public:
 		return this->_install_subclass();
 	}
 
-	listview& create(const wli::hwnd_base* parent, int ctrlId, POINT pos, SIZE size, view viewType = view::DETAILS) {
+	listview& create(const hwnd_base* parent, int ctrlId, POINT pos, SIZE size, view viewType = view::DETAILS) {
 		return this->create(parent->hwnd(), ctrlId, pos, size, viewType);
 	}
 

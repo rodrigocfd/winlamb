@@ -28,7 +28,7 @@ class dialog_main :
 	public wli::has_text<
 		dialog_main, wli::dialog_ui_thread>
 {
-	friend class dialog_modeless;
+	friend class wli::dialog_modeless;
 
 protected:
 	struct setup_vars final : public wli::dialog_ui_thread::setup_vars {
