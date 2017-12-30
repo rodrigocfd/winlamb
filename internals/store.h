@@ -42,11 +42,13 @@ public:
 		this->_msgUnits.reserve(msgsReserve + 1); // +1 because sentinel
 	}
 
-	void add(idT id, funcT func) noexcept {
+	template<typename handlerT>
+	void add(idT id, handlerT&& func) noexcept {
 		this->_msgUnits.emplace_back(id, std::move(func)); // reverse search: messages can be overwritten by a later one
 	}
 
-	void add(std::initializer_list<idT> ids, funcT func) noexcept {
+	template<typename handlerT>
+	void add(std::initializer_list<idT> ids, handlerT&& func) noexcept {
 		const idT* pIds = ids.begin();
 		this->add(pIds[0], std::move(func)); // store user func once
 		size_t funcIdx = this->_msgUnits.size() - 1;

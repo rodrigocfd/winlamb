@@ -18,7 +18,8 @@ private:
 	thread() = delete;
 
 public:
-	static void run_detached(std::function<void()> func) noexcept {
+	template<typename funcT>
+	static void run_detached(funcT&& func) noexcept {
 		// Cheap alternative to std::thread([](){ ... }).detach().
 		struct cb_pack final {
 			std::function<void()> func;
