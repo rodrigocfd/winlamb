@@ -79,12 +79,14 @@ private:
 				std::rethrow_exception(pPack->curExcept);
 			} catch (...) {
 				lippincott();
+				PostQuitMessage(-1);
 			}
 		} else { // from run_thread_ui()
 			try {
 				pPack->func(); // invoke user callback
 			} catch (...) {
 				lippincott();
+				PostQuitMessage(-1);
 			}
 		}
 		delete pPack;
