@@ -31,7 +31,7 @@ public:
 			this->children.clear();
 		}
 
-		std::vector<node*> children_by_name(const wchar_t* elemName) noexcept {
+		std::vector<node*> children_by_name(const wchar_t* elemName) {
 			std::vector<node*> nodeBuf;
 			for (node& node : this->children) {
 				if (!lstrcmpiW(node.name.c_str(), elemName)) { // case-insensitive match
@@ -41,7 +41,7 @@ public:
 			return nodeBuf;
 		}
 
-		std::vector<node*> children_by_name(const std::wstring& elemName) noexcept {
+		std::vector<node*> children_by_name(const std::wstring& elemName) {
 			return this->children_by_name(elemName.c_str());
 		}
 
@@ -112,7 +112,7 @@ public:
 	}
 
 private:
-	static xml::node _build_node(com::ptr<IXMLDOMNode>& xmlDomNode) noexcept {
+	static xml::node _build_node(com::ptr<IXMLDOMNode>& xmlDomNode) {
 		xml::node ret;
 
 		// Get node name.
@@ -161,7 +161,7 @@ private:
 		return ret;
 	}
 
-	static held_map<std::wstring, std::wstring> _read_attrs(com::ptr<IXMLDOMNode>& xmlnode) noexcept {
+	static held_map<std::wstring, std::wstring> _read_attrs(com::ptr<IXMLDOMNode>& xmlnode) {
 		// Read attribute collection.
 		com::ptr<IXMLDOMNamedNodeMap> attrs;
 		xmlnode->get_attributes(attrs.pptr());

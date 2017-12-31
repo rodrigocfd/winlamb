@@ -82,7 +82,7 @@ public:
 	}
 
 private:
-	static std::vector<wchar_t> _format_file_filter(const wchar_t* filterWithPipes) noexcept {
+	static std::vector<wchar_t> _format_file_filter(const wchar_t* filterWithPipes) {
 		// Input filter follows same C# syntax:
 		// L"Text Files (*.txt)|*.txt|All Files (*.*)|*.*"
 		std::vector<wchar_t> ret(lstrlenW(filterWithPipes) + 2, L'\0'); // two terminating nulls
@@ -94,7 +94,7 @@ private:
 
 public:
 	// System dialog to select one file to be opened.
-	static bool open_file(HWND hParent, const wchar_t* filterWithPipes, std::wstring& buf) noexcept {
+	static bool open_file(HWND hParent, const wchar_t* filterWithPipes, std::wstring& buf) {
 		OPENFILENAME         ofn{};
 		wchar_t              tmpBuf[MAX_PATH]{};
 		std::vector<wchar_t> zfilter = _format_file_filter(filterWithPipes);
@@ -112,7 +112,7 @@ public:
 	}
 
 	// System dialog to select one file to be opened.
-	static bool open_file(const hwnd_base* parent, const wchar_t* filterWithPipes, std::wstring& buf) noexcept {
+	static bool open_file(const hwnd_base* parent, const wchar_t* filterWithPipes, std::wstring& buf) {
 		return open_file(parent->hwnd(), filterWithPipes, buf);
 	}
 
@@ -170,7 +170,7 @@ public:
 	}
 
 	// System dialog to select where one file will be saved.
-	static bool save_file(HWND hParent, const wchar_t* filterWithPipes, std::wstring& buf, const std::wstring& defFile) noexcept {
+	static bool save_file(HWND hParent, const wchar_t* filterWithPipes, std::wstring& buf, const std::wstring& defFile) {
 		OPENFILENAME         ofn{};
 		wchar_t              tmpBuf[MAX_PATH]{};
 		std::vector<wchar_t> zfilter = _format_file_filter(filterWithPipes);
@@ -191,7 +191,7 @@ public:
 	}
 
 	// System dialog to select where one file will be saved.
-	static bool save_file(const hwnd_base* parent, const wchar_t* filterWithPipes, std::wstring& buf, const std::wstring& defFile) noexcept {
+	static bool save_file(const hwnd_base* parent, const wchar_t* filterWithPipes, std::wstring& buf, const std::wstring& defFile) {
 		return save_file(parent->hwnd(), filterWithPipes, buf, defFile);
 	}
 

@@ -27,7 +27,7 @@ public:
 		return this->set_text(s.c_str());
 	}
 
-	std::wstring get_text() const noexcept {
+	std::wstring get_text() const {
 		std::wstring buf;
 		int len = GetWindowTextLengthW(this->hwnd());
 		if (len) {

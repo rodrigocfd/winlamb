@@ -94,7 +94,7 @@ public:
 		}
 	}
 
-	statusbar& add_fixed_part(UINT sizePixels) noexcept {
+	statusbar& add_fixed_part(UINT sizePixels) {
 		if (this->hwnd()) {
 			this->_parts.push_back({sizePixels, 0});
 			this->_rightEdges.emplace_back(0);
@@ -103,7 +103,7 @@ public:
 		return *this;
 	}
 
-	statusbar& add_resizable_part(UINT resizeWeight) noexcept {
+	statusbar& add_resizable_part(UINT resizeWeight) {
 		// How resizeWeight works:
 		// Suppose you have 3 parts, respectively with weights of 1, 1 and 2.
 		// If available client area is 400px, respective part widths will be 100, 100 and 200px.
@@ -126,7 +126,7 @@ public:
 		return this->set_text(text.c_str(), iPart);
 	}
 
-	std::wstring get_text(size_t iPart) const noexcept {
+	std::wstring get_text(size_t iPart) const {
 		std::wstring buf;
 		int len = LOWORD(SendMessageW(this->hwnd(), SB_GETTEXTLENGTH, iPart, 0));
 		if (len) {

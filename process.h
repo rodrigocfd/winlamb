@@ -18,7 +18,7 @@ private:
 
 public:
 	// Retrieves the program's command line, tokenized.
-	static std::vector<std::wstring> get_cmd_line() noexcept {
+	static std::vector<std::wstring> get_cmd_line() {
 		return str::explode_quoted(GetCommandLineW());
 	}
 

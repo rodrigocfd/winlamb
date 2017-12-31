@@ -43,7 +43,7 @@ public:
 			&this->_tree};
 	}
 
-	std::vector<treeview_item> get_children() const noexcept {
+	std::vector<treeview_item> get_children() const {
 		std::vector<treeview_item> children;
 		treeview_item curIt = this->get_first_child();
 		while (curIt.htreeitem()) {
@@ -85,7 +85,7 @@ public:
 			TVIS_EXPANDED) != 0;
 	}
 
-	std::wstring get_text() const noexcept {
+	std::wstring get_text() const {
 		wchar_t tmpBuf[MAX_PATH]{}; // arbitrary length
 		TVITEMEX tvi{};
 		tvi.hItem = this->_hTreeItem;

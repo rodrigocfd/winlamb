@@ -62,7 +62,7 @@ public:
 	void      save_to_file(const std::wstring& filePath) const { this->save_to_file(filePath.c_str()); }
 
 	// Returns the INI contents as a string, ready to be written to a file.
-	std::wstring serialize() const noexcept {
+	std::wstring serialize() const {
 		std::wstring out;
 		bool isFirst = true;
 
@@ -86,8 +86,9 @@ public:
 	}
 
 	// Checks INI file structure against "[section1]keyA,keyB,keyC[section2]keyX,keyY".
-	bool structure_is(const std::wstring& structure) const noexcept {
-		for (const held_map<std::wstring, std::vector<std::wstring>>::entry& descrSectionEntry : this->_parse_structure(structure)) {
+	bool structure_is(const std::wstring& structure) const {
+		using strvec = std::vector<std::wstring>;
+		for (const held_map<std::wstring, strvec>::entry& descrSectionEntry : this->_parse_structure(structure)) {
 			const held_map<std::wstring, std::wstring>* pCurSection = this->sections.get_if_exists(descrSectionEntry.key);
 			if (!pCurSection) return false; // section name not found
 			for (const std::wstring& descrKeyEntry : descrSectionEntry.value) {
@@ -98,13 +99,14 @@ public:
 	}
 
 private:
-	held_map<std::wstring, std::vector<std::wstring>> _parse_structure(const std::wstring& structure) const noexcept {
-		held_map<std::wstring, std::vector<std::wstring>> parsed;
-		std::vector<std::wstring> secBlocks = str::explode(structure, L"[");
+	held_map<std::wstring, std::vector<std::wstring>> _parse_structure(const std::wstring& structure) const {
+		using strvec = std::vector<std::wstring>;
+		held_map<std::wstring, strvec> parsed;
+		strvec secBlocks = str::explode(structure, L"[");
 		for (std::wstring& secBlock : secBlocks) {
 			if (secBlock.empty()) continue;
 			size_t endSecIdx = secBlock.find_first_of(L']');
-			std::vector<std::wstring>& curSec = parsed[secBlock.substr(0, endSecIdx)];
+			strvec& curSec = parsed[secBlock.substr(0, endSecIdx)];
 			secBlock.erase(0, endSecIdx + 1);
 			curSec = str::explode(secBlock, L",");
 		}

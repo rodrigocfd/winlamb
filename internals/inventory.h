@@ -78,13 +78,13 @@ private:
 	}
 
 public:
-	template<typename handlerT> void on_message(UINT msg, handlerT&& func) noexcept                                  { this->_msgs.add(msg, std::move(func)); }
-	template<typename handlerT> void on_message(std::initializer_list<UINT> msgs, handlerT&& func) noexcept          { this->_msgs.add(msgs, std::move(func)); }
-	template<typename handlerT> void on_command(WORD cmd, handlerT&& func) noexcept                                  { this->_cmds.add(cmd, std::move(func)); }
-	template<typename handlerT> void on_command(std::initializer_list<WORD> cmds, handlerT&& func) noexcept          { this->_cmds.add(cmds, std::move(func)); }
-	template<typename handlerT> void on_notify(UINT_PTR idFrom, UINT code, handlerT&& func) noexcept                 { this->_ntfs.add({idFrom, code}, std::move(func)); }
-	template<typename handlerT> void on_notify(ntfT idFromAndCode, handlerT&& func) noexcept                         { this->_ntfs.add(idFromAndCode, std::move(func)); }
-	template<typename handlerT> void on_notify(std::initializer_list<ntfT> idFromAndCodes, handlerT&& func) noexcept { this->_ntfs.add(idFromAndCodes, std::move(func)); }
+	template<typename handlerT> void on_message(UINT msg, handlerT&& func)                                  { this->_msgs.add(msg, std::move(func)); }
+	template<typename handlerT> void on_message(std::initializer_list<UINT> msgs, handlerT&& func)          { this->_msgs.add(msgs, std::move(func)); }
+	template<typename handlerT> void on_command(WORD cmd, handlerT&& func)                                  { this->_cmds.add(cmd, std::move(func)); }
+	template<typename handlerT> void on_command(std::initializer_list<WORD> cmds, handlerT&& func)          { this->_cmds.add(cmds, std::move(func)); }
+	template<typename handlerT> void on_notify(UINT_PTR idFrom, UINT code, handlerT&& func)                 { this->_ntfs.add({idFrom, code}, std::move(func)); }
+	template<typename handlerT> void on_notify(ntfT idFromAndCode, handlerT&& func)                         { this->_ntfs.add(idFromAndCode, std::move(func)); }
+	template<typename handlerT> void on_notify(std::initializer_list<ntfT> idFromAndCodes, handlerT&& func) { this->_ntfs.add(idFromAndCodes, std::move(func)); }
 };
 
 }//namespace wli

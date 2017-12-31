@@ -68,7 +68,7 @@ public:
 		return *this;
 	}
 
-	combobox& item_add(const wchar_t* entries, wchar_t delimiter = L'|') noexcept {
+	combobox& item_add(const wchar_t* entries, wchar_t delimiter = L'|') {
 		wchar_t delim[2]{delimiter, L'\0'};
 		std::vector<std::wstring> vals = str::explode(entries, delim);
 		for (const std::wstring& s : vals) {
@@ -84,7 +84,7 @@ public:
 		return *this;
 	}
 
-	std::wstring item_get_text(size_t index) const noexcept {
+	std::wstring item_get_text(size_t index) const {
 		std::wstring buf;
 		size_t len = SendMessageW(this->hwnd(), CB_GETLBTEXTLEN, index, 0);
 		if (len) {
@@ -95,7 +95,7 @@ public:
 		return buf;
 	}
 
-	std::wstring item_get_selected_text() const noexcept {
+	std::wstring item_get_selected_text() const {
 		return this->item_get_text(this->item_get_selected());
 	}
 

@@ -35,12 +35,12 @@ public:
 		return static_cast<int>(msg.wParam); // this can be used as program return value
 	}
 
-	void add_modeless(HWND hWnd) noexcept {
+	void add_modeless(HWND hWnd) {
 		this->_modelessChildren.emplace_back(hWnd);
 	}
 
-	void remove_modeless(HWND hWnd) noexcept {
-		for (auto it = this->_modelessChildren.begin();
+	void remove_modeless(HWND hWnd) {
+		for (std::vector<HWND>::iterator it = this->_modelessChildren.begin();
 			it != this->_modelessChildren.end(); ++it)
 		{
 			if (*it == hWnd) {

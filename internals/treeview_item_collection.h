@@ -35,7 +35,7 @@ public:
 			&this->_tree};
 	}
 
-	std::vector<_itemT> get_roots() const noexcept {
+	std::vector<_itemT> get_roots() const {
 		std::vector<_itemT> roots;
 		_itemT curIt = this->get_first_root();
 		while (curIt.htreeitem()) {

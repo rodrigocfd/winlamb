@@ -35,8 +35,8 @@ public:
 		this->abort();
 	}
 
-	download(const session& sess, std::wstring url, std::wstring verb = L"GET") noexcept
-		: _session(sess), _url(url), _verb(verb) { }
+	download(const session& sess, std::wstring url, std::wstring verb = L"GET")
+		: _session{sess}, _url{url}, _verb{verb} { }
 
 	download& abort() noexcept {
 		if (this->_hRequest) {
@@ -51,12 +51,12 @@ public:
 		return *this;
 	}
 
-	download& add_request_header(const wchar_t* name, const wchar_t* value) noexcept {
+	download& add_request_header(const wchar_t* name, const wchar_t* value) {
 		this->_requestHeaders[name] = value;
 		return *this;
 	}
 
-	download& set_referrer(const std::wstring& referrer) noexcept {
+	download& set_referrer(const std::wstring& referrer) {
 		this->_referrer = referrer;
 		return *this;
 	}

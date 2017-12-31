@@ -33,15 +33,15 @@ private:
 	SIZE               _szOrig;
 
 public:
-	resizer& add(HWND hCtrl, go modeHorz, go modeVert) noexcept {
+	resizer& add(HWND hCtrl, go modeHorz, go modeVert) {
 		return this->_add_one(hCtrl, modeHorz, modeVert);
 	}
 
-	resizer& add(const hwnd_base& ctrl, go modeHorz, go modeVert) noexcept {
+	resizer& add(const hwnd_base& ctrl, go modeHorz, go modeVert) {
 		return this->add(ctrl.hwnd(), modeHorz, modeVert);
 	}
 
-	resizer& add(std::initializer_list<HWND> hCtrls, go modeHorz, go modeVert) noexcept {
+	resizer& add(std::initializer_list<HWND> hCtrls, go modeHorz, go modeVert) {
 		this->_ctrls.reserve(this->_ctrls.size() + hCtrls.size());
 		for (const HWND hCtrl : hCtrls) {
 			this->_add_one(hCtrl, modeHorz, modeVert);
@@ -49,7 +49,7 @@ public:
 		return *this;
 	}
 
-	resizer& add(std::initializer_list<hwnd_base*> ctrls, go modeHorz, go modeVert) noexcept {
+	resizer& add(std::initializer_list<hwnd_base*> ctrls, go modeHorz, go modeVert) {
 		this->_ctrls.reserve(this->_ctrls.size() + ctrls.size());
 		for (const hwnd_base* pCtrl : ctrls) {
 			this->_add_one(pCtrl->hwnd(), modeHorz, modeVert);
@@ -57,15 +57,15 @@ public:
 		return *this;
 	}
 
-	resizer& add(HWND hParent, int ctrlId, go modeHorz, go modeVert) noexcept {
+	resizer& add(HWND hParent, int ctrlId, go modeHorz, go modeVert) {
 		return this->add(GetDlgItem(hParent, ctrlId), modeHorz, modeVert);
 	}
 
-	resizer& add(const hwnd_base* parent, int ctrlId, go modeHorz, go modeVert) noexcept {
+	resizer& add(const hwnd_base* parent, int ctrlId, go modeHorz, go modeVert) {
 		return this->add(parent->hwnd(), ctrlId, modeHorz, modeVert);
 	}
 
-	resizer& add(HWND hParent, std::initializer_list<int> ctrlIds, go modeHorz, go modeVert) noexcept {
+	resizer& add(HWND hParent, std::initializer_list<int> ctrlIds, go modeHorz, go modeVert) {
 		this->_ctrls.reserve(this->_ctrls.size() + ctrlIds.size());
 		for (int ctrlId : ctrlIds) {
 			this->_add_one(GetDlgItem(hParent, ctrlId), modeHorz, modeVert);
@@ -73,7 +73,7 @@ public:
 		return *this;
 	}
 
-	resizer& add(const hwnd_base* parent, std::initializer_list<int> ctrlIds, go modeHorz, go modeVert) noexcept {
+	resizer& add(const hwnd_base* parent, std::initializer_list<int> ctrlIds, go modeHorz, go modeVert) {
 		this->_ctrls.reserve(this->_ctrls.size() + ctrlIds.size());
 		for (int ctrlId : ctrlIds) {
 			this->_add_one(GetDlgItem(parent->hwnd(), ctrlId), modeHorz, modeVert);
@@ -119,7 +119,7 @@ public:
 	}
 
 private:
-	resizer& _add_one(HWND hChild, go modeHorz, go modeVert) noexcept {
+	resizer& _add_one(HWND hChild, go modeHorz, go modeVert) {
 		HWND hParent = GetParent(hChild);
 		if (this->_ctrls.empty()) { // first call to _addOne()
 			RECT rcP{};

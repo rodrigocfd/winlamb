@@ -112,7 +112,7 @@ public:
 		this->_contextMenu.destroy();
 	}
 
-	listview() noexcept {
+	listview() {
 		this->imageList16.on_create([this]() noexcept->void {
 			ListView_SetImageList(this->hwnd(), this->imageList16.himagelist(), LVSIL_SMALL);
 		});

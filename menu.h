@@ -78,7 +78,7 @@ public:
 		return GetMenuItemID(this->_hMenu, static_cast<int>(pos));
 	}
 
-	std::wstring get_caption(WORD commandId) const noexcept {
+	std::wstring get_caption(WORD commandId) const {
 		wchar_t captionBuf[64]{}; // arbitrary buffer length
 		MENUITEMINFO mii{};
 		mii.cbSize     = sizeof(mii);

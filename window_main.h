@@ -42,7 +42,7 @@ private:
 protected:
 	setup_vars setup;
 
-	window_main() noexcept {
+	window_main() {
 		this->setup.wndClassEx.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
 		this->setup.wndClassEx.style = CS_DBLCLKS;
 		this->setup.position = {CW_USEDEFAULT, CW_USEDEFAULT};

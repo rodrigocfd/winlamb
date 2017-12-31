@@ -19,7 +19,7 @@ private:
 	str() = delete;
 
 public:
-	static std::wstring& trim(std::wstring& s) noexcept {
+	static std::wstring& trim(std::wstring& s) {
 		if (s.empty()) return s;
 		trim_nulls(s);
 
@@ -53,7 +53,7 @@ public:
 	}
 
 	// Removes any padding zeroes after the string, making size correct.
-	static std::wstring& trim_nulls(std::wstring& s) noexcept {
+	static std::wstring& trim_nulls(std::wstring& s) {
 		// When a std::wstring is initialized with any length, possibly to be used as a buffer,
 		// the string length may not match the size() method, after the operation.
 		// This function fixes this.
@@ -78,7 +78,7 @@ private:
 	}
 
 	template<typename ...argsT>
-	static std::wstring _raw_format(size_t strFormatLen, const wchar_t* strFormat, const argsT&... args) noexcept {
+	static std::wstring _raw_format(size_t strFormatLen, const wchar_t* strFormat, const argsT&... args) {
 		// https://msdn.microsoft.com/en-us/magazine/dn913181.aspx
 		// https://stackoverflow.com/a/514921/6923555
 		size_t len = swprintf(nullptr, 0, strFormat, _format_arg(args)...);
@@ -90,12 +90,12 @@ private:
 
 public:
 	template<typename ...argsT>
-	static std::wstring format(const wchar_t* strFormat, const argsT&... args) noexcept {
+	static std::wstring format(const wchar_t* strFormat, const argsT&... args) {
 		return _raw_format(lstrlenW(strFormat), strFormat, std::forward<const argsT&>(args)...);
 	}
 
 	template<typename ...argsT>
-	static std::wstring format(const std::wstring& strFormat, const argsT&... args) noexcept {
+	static std::wstring format(const std::wstring& strFormat, const argsT&... args) {
 		return _raw_format(strFormat.length(), strFormat.c_str(), std::forward<const argsT&>(args)...);
 	}
 
@@ -153,13 +153,13 @@ public:
 		return !_wcsnicmp(s.c_str(), what, whatLen);
 	}
 
-	static std::wstring upper(const std::wstring& s) noexcept {
+	static std::wstring upper(const std::wstring& s) {
 		std::wstring ret = s;
 		CharUpperBuffW(&ret[0], static_cast<DWORD>(ret.length()));
 		return ret;
 	}
 
-	static std::wstring lower(const std::wstring& s) noexcept {
+	static std::wstring lower(const std::wstring& s) {
 		std::wstring ret = s;
 		CharLowerBuffW(&ret[0], static_cast<DWORD>(ret.length()));
 		return ret;
@@ -182,22 +182,22 @@ public:
 	}
 
 	// Finds index of substring within string, case insensitive.
-	static size_t findi(const std::wstring& s, const wchar_t* what, size_t offset = 0) noexcept {
+	static size_t findi(const std::wstring& s, const wchar_t* what, size_t offset = 0) {
 		std::wstring s2 = upper(s);
-		std::wstring what2(what);
+		std::wstring what2 = what;
 		CharUpperBuffW(&what2[0], static_cast<DWORD>(what2.length()));
 		return s2.find(what2, offset);
 	}
 
 	// Finds index of substring within string, case insensitive, reverse search.
-	static size_t rfindi(const std::wstring& s, const wchar_t* what, size_t offset = 0) noexcept {
+	static size_t rfindi(const std::wstring& s, const wchar_t* what, size_t offset = 0) {
 		std::wstring s2 = upper(s);
-		std::wstring what2(what);
+		std::wstring what2 = what;
 		CharUpperBuffW(&what2[0], static_cast<DWORD>(what2.length()));
 		return s2.rfind(what2, offset);
 	}
 
-	static std::wstring& replace(std::wstring& haystack, const std::wstring& needle, const std::wstring& replacement) noexcept {
+	static std::wstring& replace(std::wstring& haystack, const std::wstring& needle, const std::wstring& replacement) {
 		if (haystack.empty() || needle.empty()) return haystack;
 
 		std::wstring output;
@@ -219,7 +219,7 @@ public:
 		return haystack;
 	}
 
-	static std::wstring& replacei(std::wstring& haystack, const std::wstring& needle, const std::wstring& replacement) noexcept {
+	static std::wstring& replacei(std::wstring& haystack, const std::wstring& needle, const std::wstring& replacement) {
 		if (haystack.empty() || needle.empty()) return haystack;
 
 		std::wstring haystackU = upper(haystack);
@@ -293,7 +293,7 @@ public:
 	}
 
 	// Splits the string at the given characters.
-	static std::vector<std::wstring> explode(const std::wstring& s, const wchar_t* delimiter) noexcept {
+	static std::vector<std::wstring> explode(const std::wstring& s, const wchar_t* delimiter) {
 		std::vector<std::wstring> ret;
 		if (s.empty() || !delimiter) return ret;
 
@@ -314,12 +314,12 @@ public:
 	}
 
 	// Splits the string at the given characters.
-	static std::vector<std::wstring> explode(const std::wstring& s, const std::wstring& delimiter) noexcept {
+	static std::vector<std::wstring> explode(const std::wstring& s, const std::wstring& delimiter) {
 		return explode(s, delimiter.c_str());
 	}
 
 	// Splits a zero-delimited multi-string.
-	static std::vector<std::wstring> explode_multi_zero(const wchar_t* s) noexcept {
+	static std::vector<std::wstring> explode_multi_zero(const wchar_t* s) {
 		// Example multi-zero string:
 		// L"first one\0second one\0third one\0"
 		// Assumes a well-formed multiStr, which ends with two nulls.
@@ -346,7 +346,7 @@ public:
 	}
 
 	// Splits string into tokens, which may be enclosed in double quotes.
-	static std::vector<std::wstring> explode_quoted(const wchar_t* s) noexcept {
+	static std::vector<std::wstring> explode_quoted(const wchar_t* s) {
 		// Example quoted string:
 		// "First one" NoQuoteSecond "Third one"
 
@@ -423,7 +423,7 @@ public:
 	};
 
 	static encoding_info get_encoding(const BYTE* data, size_t sz) noexcept {
-		auto match = [&](const BYTE* pBom, int szBom)->bool {
+		auto match = [&](const BYTE* pBom, int szBom) noexcept->bool {
 			return (sz >= static_cast<size_t>(szBom)) &&
 				!memcmp(data, pBom, sizeof(BYTE) * szBom);
 		};
@@ -484,7 +484,7 @@ public:
 
 	enum class write_bom { YES, NO };
 
-	static std::vector<BYTE> to_utf8_blob(const std::wstring& s, write_bom writeBom) noexcept {
+	static std::vector<BYTE> to_utf8_blob(const std::wstring& s, write_bom writeBom) {
 		std::vector<BYTE> ret;
 		if (!s.empty()) {
 			BYTE utf8bom[]{0xEF, 0xBB, 0xBF};
@@ -508,7 +508,7 @@ public:
 	}
 
 	// Converts wstring to string.
-	static std::string to_ascii(const std::wstring& s) noexcept {
+	static std::string to_ascii(const std::wstring& s) {
 		std::string ret(s.length(), '\0');
 		for (size_t i = 0; i < s.length(); ++i) {
 			ret[i] = static_cast<char>(s[i]); // raw conversion
@@ -517,7 +517,7 @@ public:
 	}
 
 private:
-	static std::wstring _parse_ascii(const BYTE* data, size_t sz) noexcept {
+	static std::wstring _parse_ascii(const BYTE* data, size_t sz) {
 		std::wstring ret;
 		if (data && sz) {
 			ret.resize(sz);
@@ -532,7 +532,7 @@ private:
 		return ret; // data didn't have a terminating null
 	}
 
-	static std::wstring _parse_encoded(const BYTE* data, size_t sz, UINT codePage) noexcept {
+	static std::wstring _parse_encoded(const BYTE* data, size_t sz, UINT codePage) {
 		std::wstring ret;
 		if (data && sz) {
 			int neededLen = MultiByteToWideChar(codePage, 0, reinterpret_cast<const char*>(data),
@@ -571,16 +571,16 @@ public:
 		return to_wstring(&data[0], data.size());
 	}
 
-	static std::wstring to_wstring(const char* s) noexcept {
+	static std::wstring to_wstring(const char* s) {
 		return _parse_ascii(reinterpret_cast<const BYTE*>(s), lstrlenA(s));
 	}
 
-	static std::wstring to_wstring(const std::string& s) noexcept {
+	static std::wstring to_wstring(const std::string& s) {
 		return to_wstring(s.c_str());
 	}
 
 	// Converts number to wstring, adding thousand separator.
-	static std::wstring to_wstring_with_separator(int number, wchar_t separator = L',') noexcept {
+	static std::wstring to_wstring_with_separator(int number, wchar_t separator = L',') {
 		std::wstring ret;
 		ret.reserve(32); // arbitrary
 
@@ -621,7 +621,7 @@ public:
 	}
 
 	// Converts number to wstring, adding thousand separator.
-	static std::wstring to_wstring_with_separator(size_t number, wchar_t separator = L',') noexcept {
+	static std::wstring to_wstring_with_separator(size_t number, wchar_t separator = L',') {
 		return to_wstring_with_separator(static_cast<int>(number), separator);
 	}
 };

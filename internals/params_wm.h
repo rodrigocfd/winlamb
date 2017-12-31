@@ -168,7 +168,7 @@ namespace wm {
 		dropfiles(const params& p) noexcept : params(p) { }
 		HDROP hdrop() const noexcept { return reinterpret_cast<HDROP>(this->wParam); }
 		UINT  count() const noexcept { return DragQueryFileW(this->hdrop(), 0xFFFFFFFF, nullptr, 0); }
-		std::vector<std::wstring> files() const noexcept {
+		std::vector<std::wstring> files() const {
 			std::vector<std::wstring> files(this->count()); // alloc return vector
 			for (size_t i = 0; i < files.size(); ++i) {
 				files[i].resize(DragQueryFileW(this->hdrop(),

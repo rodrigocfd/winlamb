@@ -78,7 +78,7 @@ public:
 		return this->set_text(columnIndex, text.c_str());
 	}
 
-	std::wstring get_text(size_t columnIndex) const noexcept {
+	std::wstring get_text(size_t columnIndex) const {
 		wchar_t buf[64]{}; // arbitrary length
 		LVCOLUMNW lvc{};
 		lvc.mask = LVCF_TEXT;

@@ -40,7 +40,7 @@ public:
 		return false;
 	}
 
-	std::wstring to_string(BYTE numDigits = 4) const noexcept {
+	std::wstring to_string(BYTE numDigits = 4) const {
 		std::wstring ret;
 		if (numDigits) {
 			ret.append(std::to_wstring(this->num[0]));
@@ -52,7 +52,7 @@ public:
 		return ret;
 	}
 
-	bool parse(const std::wstring& text) noexcept {
+	bool parse(const std::wstring& text) {
 		std::vector<std::wstring> fields = str::explode(text, L".");
 		for (size_t i = 0; i < fields.size() && i <= 4; ++i) {
 			if (!str::is_uint(fields[i])) {

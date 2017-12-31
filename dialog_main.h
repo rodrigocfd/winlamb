@@ -42,7 +42,7 @@ private:
 protected:
 	setup_vars setup;
 
-	dialog_main() noexcept {
+	dialog_main() {
 		this->on_message(WM_CLOSE, [this](params) noexcept->INT_PTR {
 			DestroyWindow(this->hwnd());
 			return TRUE;

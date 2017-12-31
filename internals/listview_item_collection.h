@@ -49,7 +49,7 @@ public:
 		return this->add(caption.c_str(), imagelistIconIndex, positionIndex);
 	}
 
-	std::vector<_itemT> get_all() const noexcept {
+	std::vector<_itemT> get_all() const {
 		size_t totItems = this->count();
 		std::vector<_itemT> items; // a big array with all items in list
 		items.reserve(totItems);
@@ -124,7 +124,7 @@ public:
 		return {ListView_GetTopIndex(this->_list.hwnd()), this->_list};
 	}
 
-	std::vector<_itemT> get_selected() const noexcept {
+	std::vector<_itemT> get_selected() const {
 		std::vector<_itemT> items;
 		items.reserve(this->count_selected());
 
@@ -137,7 +137,7 @@ public:
 		return items;
 	}
 
-	std::vector<size_t> get_selected_indexes() const noexcept {
+	std::vector<size_t> get_selected_indexes() const {
 		std::vector<size_t> indexes;
 		indexes.reserve(this->count_selected());
 
@@ -160,7 +160,7 @@ public:
 		return iFoc == -1 ? _itemT::npos : static_cast<size_t>(iFoc);
 	}
 
-	std::vector<std::wstring> get_texts(const std::vector<_itemT>& itemsToGet, size_t columnIndex = 0) const noexcept {
+	std::vector<std::wstring> get_texts(const std::vector<_itemT>& itemsToGet, size_t columnIndex = 0) const {
 		std::vector<std::wstring> texts;
 		texts.reserve(itemsToGet.size());
 		for (const _itemT& oneItem : itemsToGet) {

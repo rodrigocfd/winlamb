@@ -24,7 +24,7 @@ namespace wli {
 template<typename retT, retT RET_VAL>
 class user_control : public thread_capable<retT, RET_VAL> {
 protected:
-	user_control() noexcept {
+	user_control() {
 		this->on_message(WM_NCPAINT, [this](params p) noexcept->retT {
 			this->_paint_themed_borders(p);
 			return RET_VAL; // 0 for windows, TRUE for dialogs

@@ -19,8 +19,8 @@ public:
 		valueT value;
 
 		entry() = default;
-		explicit entry(const keyT& key) noexcept : key(key) { }
-		entry(const keyT& key, const valueT& value) noexcept : key(key), value(value) { }
+		explicit entry(const keyT& key) : key(key) { }
+		entry(const keyT& key, const valueT& value) : key(key), value(value) { }
 	};
 
 private:
@@ -29,12 +29,12 @@ private:
 public:
 	held_map() = default;
 	held_map(held_map&& other) noexcept { this->operator=(std::move(other)); }
-	held_map(std::initializer_list<entry> entries) noexcept : _entries{entries} { }
+	held_map(std::initializer_list<entry> entries) : _entries{entries} { }
 
-	size_t    size() const noexcept               { return this->_entries.size(); }
-	bool      empty() const noexcept              { return this->_entries.empty(); }
-	held_map& clear() noexcept                    { this->_entries.clear(); return *this; }
-	held_map& reserve(size_t numEntries) noexcept { this->_entries.reserve(numEntries); return *this; }
+	size_t    size() const noexcept      { return this->_entries.size(); }
+	bool      empty() const noexcept     { return this->_entries.empty(); }
+	held_map& clear() noexcept           { this->_entries.clear(); return *this; }
+	held_map& reserve(size_t numEntries) { this->_entries.reserve(numEntries); return *this; }
 
 	held_map& operator=(held_map&& other) noexcept {
 		this->empty();
@@ -79,7 +79,7 @@ public:
 		return this->_find(key) != this->_entries.cend();
 	}
 
-	held_map& remove(const keyT& key) noexcept {
+	held_map& remove(const keyT& key) {
 		std::vector<entry>::iterator ite = this->_find(key);
 		if (ite != this->_entries.end()) { // won't fail if inexistent
 			this->_entries.erase(ite);

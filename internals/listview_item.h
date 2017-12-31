@@ -32,7 +32,7 @@ public:
 		ListView_DeleteItem(this->_list.hwnd(), this->_index);
 	}
 
-	void swap_with(size_t itemIndex) noexcept {
+	void swap_with(size_t itemIndex) {
 		this->_list.set_redraw(false);
 
 		item newItem = this->_list.items[itemIndex]; // make a copy
@@ -117,7 +117,7 @@ public:
 		return rc;
 	}
 
-	std::wstring get_text(size_t columnIndex = 0) const noexcept {
+	std::wstring get_text(size_t columnIndex = 0) const {
 		// http://forums.codeguru.com/showthread.php?351972-Getting-listView-item-text-length
 		LVITEMW lvi{};
 		lvi.iItem = static_cast<int>(this->_index);
