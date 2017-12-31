@@ -11,6 +11,7 @@
 #include "params.h"
 #include "params_wm.h"
 #include "params_wmn.h"
+#include "lippincott.h"
 
 /**
  * hwnd_base
@@ -69,8 +70,8 @@ private:
 		if (pFunc) {
 			try { // any exception from a message lambda which was not caught
 				return {true, (*pFunc)({msg, wp, lp})};
-			} catch (const std::exception& e) {
-				MessageBoxA(nullptr, e.what(), "Oops... an exception was thrown", MB_ICONERROR);
+			} catch (...) {
+				lippincott();
 			}
 		}
 		return {false, -1}; // message not processed

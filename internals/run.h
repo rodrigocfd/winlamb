@@ -8,6 +8,7 @@
 #pragma once
 #include <Windows.h>
 #include <CommCtrl.h>
+#include "lippincott.h"
 #pragma comment(lib, "Comctl32.lib")
 #pragma comment(linker, \
 	"\"/manifestdependency:type='Win32' " \
@@ -17,21 +18,27 @@
 	"publicKeyToken='6595b64144ccf1df' " \
 	"language='*'\"")
 
+namespace wl {
+namespace wli {
+
 template<typename wnd_mainT>
-int _winlamb_run_main(HINSTANCE hInst, int cmdShow) noexcept {
+int run_main(HINSTANCE hInst, int cmdShow) noexcept {
 	int ret = 0;
 	try { // any exception which was not caught, except those from within message lambdas
 		wnd_mainT wndMain;
 		ret = wndMain.winmain_run(hInst, cmdShow);
-	} catch (const std::exception& e) {
-		MessageBoxA(nullptr, e.what(), "Oops... an exception was thrown", MB_ICONERROR);
+	} catch (...) {
+		lippincott();
 		ret = -1;
 	}
 	_ASSERT(!_CrtDumpMemoryLeaks());
 	return ret;
 }
 
+}//namespace wli
+}//namespace wl
+
 #define RUN(wnd_mainT) \
 int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE, LPWSTR, int cmdShow) { \
-	return _winlamb_run_main<wnd_mainT>(hInst, cmdShow); \
+	return wl::wli::run_main<wnd_mainT>(hInst, cmdShow); \
 }

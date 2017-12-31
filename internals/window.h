@@ -6,14 +6,14 @@
  */
 
 #pragma once
-#include "ui_thread.h"
+#include "thread_capable.h"
 #include "user_control.h"
 #include "styler.h"
 
 /**
  * hwnd_base
  *  inventory
- *   ui_thread
+ *   thread_capable
  *    [user_control]
  *     window
  */
@@ -144,7 +144,7 @@ private:
 	}
 };
 
-using window_ui_thread = window<ui_thread<LRESULT, 0>>;
+using window_thread_capable = window<thread_capable<LRESULT, 0>>;
 using window_user_control = window<user_control<LRESULT, 0>>;
 
 }//namespace wli

@@ -12,7 +12,7 @@
 /**
  * hwnd_base
  *  inventory
- *   ui_thread
+ *   thread_capable
  *    dialog
  *     has_text
  *      dialog_modal
@@ -23,10 +23,10 @@ namespace wl {
 // Inherit from this class to have a modal dialog popup.
 class dialog_modal :
 	public wli::has_text<
-		dialog_modal, wli::dialog_ui_thread>
+		dialog_modal, wli::dialog_thread_capable>
 {
 protected:
-	struct setup_vars final : public wli::dialog_ui_thread::setup_vars { };
+	struct setup_vars final : public wli::dialog_thread_capable::setup_vars { };
 
 	setup_vars setup;
 

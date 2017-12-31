@@ -15,7 +15,7 @@
 /**
  * hwnd_base
  *  inventory
- *   ui_thread
+ *   thread_capable
  *    window
  *     has_text
  *      window_main
@@ -27,12 +27,12 @@ namespace wli { class dialog_modeless; } // friend forward declaration
 // Inherit from this class to have an ordinary main window for your application.
 class window_main :
 	public wli::has_text<
-		window_main, wli::window_ui_thread>
+		window_main, wli::window_thread_capable>
 {
 	friend class wli::dialog_modeless;
 
 protected:
-	struct setup_vars final : public wli::window_ui_thread::setup_vars {
+	struct setup_vars final : public wli::window_thread_capable::setup_vars {
 		HACCEL accelTable = nullptr;
 	};
 

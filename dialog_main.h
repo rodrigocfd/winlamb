@@ -14,7 +14,7 @@
 /**
  * hwnd_base
  *  inventory
- *   ui_thread
+ *   thread_capable
  *    dialog
  *     has_text
  *      dialog_main
@@ -26,12 +26,12 @@ namespace wli { class dialog_modeless; } // friend forward declaration
 // Inherit from this class to have a dialog as the main window for your application.
 class dialog_main :
 	public wli::has_text<
-		dialog_main, wli::dialog_ui_thread>
+		dialog_main, wli::dialog_thread_capable>
 {
 	friend class wli::dialog_modeless;
 
 protected:
-	struct setup_vars final : public wli::dialog_ui_thread::setup_vars {
+	struct setup_vars final : public wli::dialog_thread_capable::setup_vars {
 		int iconId = 0;
 		int accelTableId = 0;
 	};

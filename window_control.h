@@ -11,7 +11,7 @@
 /**
  * hwnd_base
  *  inventory
- *   ui_thread
+ *   thread_capable
  *    user_control
  *     window
  *      window_control

@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "ui_thread.h"
+#include "thread_capable.h"
 #include "user_control.h"
 #include "hover_scroll.h"
 #include "styler.h"
@@ -15,7 +15,7 @@
 /**
  * hwnd_base
  *  inventory
- *   ui_thread
+ *   thread_capable
  *    [user_control]
  *     dialog
  */
@@ -104,7 +104,7 @@ private:
 	}
 };
 
-using dialog_ui_thread = dialog<ui_thread<INT_PTR, TRUE>>;
+using dialog_thread_capable = dialog<thread_capable<INT_PTR, TRUE>>;
 using dialog_user_control = dialog<user_control<INT_PTR, TRUE>>;
 
 }//namespace wli
