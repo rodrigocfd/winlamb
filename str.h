@@ -165,6 +165,19 @@ public:
 		return ret;
 	}
 
+	static std::wstring& reverse(std::wstring& s) noexcept {
+		size_t lim = (s.length() - (s.length() % 2)) / 2;
+		for (size_t i = 0; i < lim; ++i) {
+			std::swap(s[i], s[s.length() - i - 1]);
+		}
+		return s;
+	}
+
+	static std::wstring reverse(const wchar_t* s) {
+		std::wstring ret = s;
+		return reverse(s);
+	}
+
 	// Simple diacritics removal.
 	static std::wstring& remove_diacritics(std::wstring& s) noexcept {
 		const wchar_t* diacritics   = L"ÁáÀàÃãÂâÄäÉéÈèÊêËëÍíÌìÎîÏïÓóÒòÕõÔôÖöÚúÙùÛûÜüÇçÅåÐðÑñØøÝý";
