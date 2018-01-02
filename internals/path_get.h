@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "../com.h"
 #include "../str.h"
 #include <ShlObj.h>
 
@@ -59,11 +60,9 @@ public:
 private:
 	static std::wstring _get_shell_folder(int clsId) {
 		wchar_t buf[MAX_PATH + 1]{};
-		HRESULT hr = SHGetFolderPathW(nullptr, clsId, nullptr, 0, buf); // won't have trailing backslash
-		if (FAILED(hr)) {
-			throw std::system_error(hr, std::system_category(),
-				"SHGetFolderPath failed");
-		}
+		com::check_hr(
+			SHGetFolderPathW(nullptr, clsId, nullptr, 0, buf), // won't have trailing backslash
+			"SHGetFolderPath failed");
 		return buf;
 	}
 };

@@ -36,47 +36,37 @@ public:
 		variZipFilePath.set_str(zipFile);
 
 		com::ptr<Folder> zippedFile;
-		HRESULT hr = shellDispatch->NameSpace(variZipFilePath.variant(), zippedFile.pptr());
-		if (FAILED(hr)) {
-			throw std::system_error(hr, std::system_category(),
-				"IShellDispatch::NameSpace failed on zip file name");
-		}
+		com::check_hr(
+			shellDispatch->NameSpace(variZipFilePath, &zippedFile),
+			"IShellDispatch::NameSpace failed on zip file name");
 		
 		com::variant variOutFolderPath;
 		variOutFolderPath.set_str(destFolder);
 
 		com::ptr<Folder> outFolder;
-		hr = shellDispatch->NameSpace(variOutFolderPath.variant(), outFolder.pptr());
-		if (FAILED(hr)) {
-			throw std::system_error(hr, std::system_category(),
-				"IShellDispatch::NameSpace failed on directory name");
-		}
+		com::check_hr(
+			shellDispatch->NameSpace(variOutFolderPath, &outFolder),
+			"IShellDispatch::NameSpace failed on directory name");
 
 		com::ptr<FolderItems> filesInside;
-		hr = zippedFile->Items(filesInside.pptr());
-		if (FAILED(hr)) {
-			throw std::system_error(hr, std::system_category(),
-				"Folder::Items failed");
-		}
+		com::check_hr(
+			zippedFile->Items(&filesInside),
+			"Folder::Items failed");
 
 		long fileCount = 0;
-		hr = filesInside->get_Count(&fileCount);
-		if (FAILED(hr)) {
-			throw std::system_error(hr, std::system_category(),
-				"Folder::get_Count failed");
-		}
+		com::check_hr(
+			filesInside->get_Count(&fileCount),
+			"Folder::get_Count failed");
 
 		com::variant variItem;
-		variItem.set_dispatch(filesInside.ptr());
+		variItem.set_idispatch(filesInside);
 
 		com::variant variOptions;
 		variOptions.set_int4(1024 | 512 | 16 | 4); // http://msdn.microsoft.com/en-us/library/bb787866(VS.85).aspx
 
-		hr = outFolder->CopyHere(variItem.variant(), variOptions.variant());
-		if (FAILED(hr)) {
-			throw std::system_error(hr, std::system_category(),
-				"Folder::CopyHere failed");
-		}
+		com::check_hr(
+			outFolder->CopyHere(variItem, variOptions),
+			"Folder::CopyHere failed");
 	}
 };
 

@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include <system_error>
 #include <Windows.h>
 #include <objbase.h>
 
@@ -43,6 +44,12 @@ public:
 		return this->_hr;
 	}
 };
+
+inline void check_hr(HRESULT hr, const char* exceptionMsg) {
+	if (FAILED(hr)) {
+		throw std::system_error(hr, std::system_category(), exceptionMsg);
+	}
+}
 
 }//namespace wli
 }//namespace wl

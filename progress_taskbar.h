@@ -27,7 +27,7 @@ public:
 	progress_taskbar& operator=(const progress_taskbar&) = delete; // non-copyable, non-movable
 
 	progress_taskbar& init(HWND hOwner) {
-		if (!this->_bar.empty()) {
+		if (this->_bar) {
 			throw std::logic_error("Trying to init a progress taskbar twice.");
 		} else {
 			this->_hWnd = hOwner;

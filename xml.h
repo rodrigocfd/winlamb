@@ -87,22 +87,18 @@ public:
 
 		// Parse the XML string.
 		VARIANT_BOOL vb = FALSE;
-		HRESULT hr = doc->loadXML(static_cast<BSTR>(const_cast<wchar_t*>(str)), &vb);
-		if (FAILED(hr)) {
-			throw std::system_error(hr, std::system_category(),
-				"IXMLDOMDocument::loadXML failed");
-		}
+		com::check_hr(
+			doc->loadXML(static_cast<BSTR>(const_cast<wchar_t*>(str)), &vb),
+			"IXMLDOMDocument::loadXML failed");
 
 		// Get document element and root node from XML.
 		com::ptr<IXMLDOMElement> docElem;
-		hr = doc->get_documentElement(docElem.pptr());
-		if (FAILED(hr)) {
-			throw std::system_error(hr, std::system_category(),
-				"IXMLDOMDocument::get_documentElement failed");
-		}
+		com::check_hr(
+			doc->get_documentElement(&docElem),
+			"IXMLDOMDocument::get_documentElement failed");
 
 		com::ptr<IXMLDOMNode> rootNode;
-		docElem.query_interface(IID_IXMLDOMNode, rootNode);
+		docElem.query_interface(IID_IXMLDOMNode, &rootNode);
 		this->root = _build_node(rootNode); // recursive, the whole tree is loaded into memory
 		return *this;
 	}
@@ -117,7 +113,7 @@ private:
 
 		// Get node name.
 		com::bstr bstrName;
-		xmlDomNode->get_nodeName(bstrName.ptr());
+		xmlDomNode->get_nodeName(&bstrName);
 		ret.name = bstrName.c_str();
 
 		// Parse attributes of node, if any.
@@ -128,7 +124,7 @@ private:
 		xmlDomNode->hasChildNodes(&vb);
 		if (vb) {
 			com::ptr<IXMLDOMNodeList> nodeList;
-			xmlDomNode->get_childNodes(nodeList.pptr());
+			xmlDomNode->get_childNodes(&nodeList);
 			ret.children.reserve(_count_child_nodes(nodeList));
 
 			int childCount = 0;
@@ -137,14 +133,14 @@ private:
 
 			for (long i = 0; i < totalCount; ++i) {
 				com::ptr<IXMLDOMNode> child;
-				nodeList->get_item(i, child.pptr());
+				nodeList->get_item(i, &child);
 
 				// Node can be text or an actual child node.
 				DOMNodeType type = NODE_INVALID;
 				child->get_nodeType(&type);
 				if (type == NODE_TEXT) {
 					com::bstr bstrText;
-					xmlDomNode->get_text(bstrText.ptr());
+					xmlDomNode->get_text(&bstrText);
 					ret.value.append(bstrText.c_str());
 				} else if (type == NODE_ELEMENT) {
 					ret.children.emplace_back(_build_node(child)); // recursively
@@ -155,7 +151,7 @@ private:
 		} else {
 			// Assumes that only a leaf node can have text.
 			com::bstr bstrText;
-			xmlDomNode->get_text(bstrText.ptr());
+			xmlDomNode->get_text(&bstrText);
 			ret.value = bstrText.c_str();
 		}
 		return ret;
@@ -164,7 +160,7 @@ private:
 	static held_map<std::wstring, std::wstring> _read_attrs(com::ptr<IXMLDOMNode>& xmlnode) {
 		// Read attribute collection.
 		com::ptr<IXMLDOMNamedNodeMap> attrs;
-		xmlnode->get_attributes(attrs.pptr());
+		xmlnode->get_attributes(&attrs);
 
 		long attrCount = 0;
 		attrs->get_length(&attrCount);
@@ -174,15 +170,15 @@ private:
 
 		for (long i = 0; i < attrCount; ++i) {
 			com::ptr<IXMLDOMNode> attr;
-			attrs->get_item(i, attr.pptr());
+			attrs->get_item(i, &attr);
 
 			DOMNodeType type = NODE_INVALID;
 			attr->get_nodeType(&type);
 			if (type == NODE_ATTRIBUTE) {
 				com::bstr bstrName;
-				attr->get_nodeName(bstrName.ptr()); // get attribute name				
+				attr->get_nodeName(&bstrName); // get attribute name				
 				com::variant variNodeVal;
-				attr->get_nodeValue(variNodeVal.ptr()); // get attribute value
+				attr->get_nodeValue(&variNodeVal); // get attribute value
 				ret[bstrName.c_str()] = variNodeVal.get_str(); // add hash entry
 			}
 		}
@@ -196,7 +192,7 @@ private:
 
 		for (long i = 0; i < totalCount; ++i) {
 			com::ptr<IXMLDOMNode> child;
-			nodeList->get_item(i, child.pptr());
+			nodeList->get_item(i, &child);
 
 			DOMNodeType type = NODE_INVALID;
 			child->get_nodeType(&type);

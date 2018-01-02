@@ -6,9 +6,7 @@
  */
 
 #pragma once
-#include <system_error>
-#include <Windows.h>
-#include <objbase.h>
+#include "com_lib.h"
 
 namespace wl {
 namespace wli {
@@ -21,24 +19,29 @@ private:
 
 public:
 	~com_ptr() {
-		this->release();
+		this->free();
 	}
 
 	com_ptr() = default;
 	com_ptr(com_ptr&& other) noexcept : _ptr{other._ptr} { other._ptr = nullptr; }
 
-	bool   empty() const noexcept { return this->_ptr == nullptr; }
-	ptrT*  operator->() noexcept  { return this->_ptr; }
-	ptrT*  ptr() const noexcept   { return this->_ptr; }
-	ptrT** pptr() noexcept        { return &this->_ptr; }
+	explicit operator bool() const noexcept  { return this->_ptr != nullptr; }
+	operator const ptrT*() const noexcept    { return this->_ptr; }
+	operator ptrT*() noexcept                { return this->_ptr; }
+	const ptrT*  operator->() const noexcept { return this->_ptr; }
+	ptrT*        operator->() noexcept       { return this->_ptr; }
+	const ptrT** operator&() const noexcept  { return &this->_ptr; }
+	ptrT**       operator&() noexcept        { return &this->_ptr; }
 
 	com_ptr& operator=(com_ptr&& other) noexcept {
-		this->release();
+		this->free();
 		std::swap(this->_ptr, other._ptr);
 		return *this;
 	}
 
-	void release() noexcept {
+	void free() noexcept {
+		// "free" instead of "release" to avoid confusion with
+		// unique_ptr::release, which has a different behavior.
 		if (this->_ptr) {
 			this->_ptr->Release();
 			this->_ptr = nullptr;
@@ -47,53 +50,34 @@ public:
 
 	void co_create_instance(REFCLSID clsid_something) {
 		this->_check_creating_twice();
-		HRESULT hr = CoCreateInstance(clsid_something, nullptr,
-			CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&this->_ptr));
-		if (FAILED(hr)) {
-			throw std::system_error(hr, std::system_category(),
-				"CoCreateInstance failed");
-		}
+		check_hr(
+			CoCreateInstance(clsid_something, nullptr,
+				CLSCTX_INPROC_SERVER, IID_PPV_ARGS(&this->_ptr)),
+			"CoCreateInstance failed");
 	}
 
 	void co_create_instance(REFCLSID clsid_something, REFIID iid_something) {
 		this->_check_creating_twice();
-		HRESULT hr = CoCreateInstance(clsid_something, nullptr,
-			CLSCTX_INPROC_SERVER, iid_something, reinterpret_cast<void**>(&this->_ptr));
-		if (FAILED(hr)) {
-			throw std::system_error(hr, std::system_category(),
-				"CoCreateInstance failed");
-		}
+		check_hr(
+			CoCreateInstance(clsid_something, nullptr,
+				CLSCTX_INPROC_SERVER, iid_something, reinterpret_cast<void**>(&this->_ptr)),
+			"CoCreateInstance failed");
 	}
 
 	template<typename com_interfaceT>
 	void query_interface(REFIID iid_something, com_interfaceT** targetComPtr) {
 		this->_check_uncreated();
-		HRESULT hr = this->_ptr->QueryInterface(iid_something,
-			reinterpret_cast<void**>(targetComPtr));
-		if (FAILED(hr)) {
-			throw std::system_error(hr, std::system_category(),
-				"QueryInterface failed");
-		}
-	}
-
-	template<typename com_interfaceT>
-	void query_interface(REFIID iid_something, com_ptr<com_interfaceT>& targetComPtr) {
-		this->query_interface(iid_something, targetComPtr.pptr());
+		check_hr(
+			this->_ptr->QueryInterface(iid_something, reinterpret_cast<void**>(targetComPtr)),
+			"QueryInterface failed");
 	}
 
 	template<typename com_interfaceT>
 	void query_interface(com_interfaceT** targetComPtr) {
 		this->_check_uncreated();
-		HRESULT hr = this->_ptr->QueryInterface(IID_PPV_ARGS(targetComPtr));
-		if (FAILED(hr)) {
-			throw std::system_error(hr, std::system_category(),
-				"QueryInterface failed");
-		}
-	}
-
-	template<typename com_interfaceT>
-	void query_interface(com_ptr<com_interfaceT>& targetComPtr) {
-		this->query_interface(targetComPtr.pptr());
+		check_hr(
+			this->_ptr->QueryInterface(IID_PPV_ARGS(targetComPtr)),
+			"QueryInterface failed");
 	}
 
 private:

@@ -8,6 +8,7 @@
 #pragma once
 #include <string>
 #include <OleAuto.h>
+#include "com_ptr.h"
 
 namespace wl {
 namespace wli {
@@ -25,6 +26,10 @@ public:
 	com_variant() = default;
 	com_variant(com_variant&& other) noexcept { this->operator=(std::move(other)); }
 
+	operator const VARIANT&() const noexcept  { return this->_variant; }
+	const VARIANT* operator&() const noexcept { return &this->_variant; }
+	VARIANT* operator&() noexcept             { return &this->_variant; }
+
 	com_variant& operator=(com_variant&& other) noexcept {
 		this->clear();
 		std::swap(this->_variant, other._variant);
@@ -36,14 +41,6 @@ public:
 			VariantClear(&this->_variant); // will set VT_EMPTY
 		}
 		return *this;
-	}
-
-	VARIANT& variant() noexcept {
-		return this->_variant; // unsafe method, but some COM functions need it
-	}
-
-	VARIANT* ptr() noexcept {
-		return &this->_variant;
 	}
 
 	com_variant& set_str(const wchar_t* s) noexcept {
@@ -72,15 +69,15 @@ public:
 		return this->_variant.lVal;
 	}
 
-	com_variant& set_dispatch(IDispatch* objToQueryFrom) noexcept {
+	template<typename idispatch_derivedT>
+	com_variant& set_idispatch(com_ptr<idispatch_derivedT>& objToQueryFrom) {
 		this->clear();
 		this->_variant.vt = VT_DISPATCH;
-		objToQueryFrom->QueryInterface(IID_IDispatch,
-			reinterpret_cast<void**>(&this->_variant.pdispVal));
+		objToQueryFrom.query_interface(IID_IDispatch, &this->_variant.pdispVal);
 		return *this;
 	}
 
-	IDispatch* get_dispatch() const noexcept {
+	IDispatch* get_idispatch() const noexcept {
 		return this->_variant.pdispVal;
 	}
 };

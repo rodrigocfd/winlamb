@@ -6,7 +6,6 @@
  */
 
 #pragma once
-#include <system_error>
 #include <Windows.h>
 #include <CommCtrl.h>
 #include <commoncontrols.h> // IID_IImageList
@@ -91,12 +90,11 @@ public:
 			this->_hIcon = shfi.hIcon;
 		} else if (resolution != res::OTHER) {
 			IImageList* pImgList = nullptr; // http://stackoverflow.com/a/30496252
-			HRESULT hr = SHGetImageList(static_cast<int>(resolution),
-				IID_IImageList, reinterpret_cast<void**>(&pImgList));
-			if (FAILED(hr)) {
-				throw std::system_error(hr, std::system_category(),
-					"SHGetImageList failed when trying to load icon from shell");
-			}
+			com::check_hr(
+				SHGetImageList(static_cast<int>(resolution),
+					IID_IImageList, reinterpret_cast<void**>(&pImgList)),
+				"SHGetImageList failed when trying to load icon from shell");
+
 			DWORD_PTR gfiOk = SHGetFileInfoW(extens, FILE_ATTRIBUTE_NORMAL, &shfi, sizeof(shfi),
 				SHGFI_USEFILEATTRIBUTES | SHGFI_SYSICONINDEX);
 			if (!gfiOk) {

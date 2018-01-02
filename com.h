@@ -23,6 +23,10 @@ public:
 	using lib = wli::com_lib;
 	template<typename ptrT> using ptr = wli::com_ptr<ptrT>;
 	using variant = wli::com_variant;
+
+	static void check_hr(HRESULT hr, const char* exceptionMsg) {
+		wli::check_hr(hr, exceptionMsg);
+	}
 };
 
 }//namespace wl

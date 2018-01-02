@@ -28,6 +28,10 @@ public:
 	com_bstr(const wchar_t* s) noexcept      : _bstr{SysAllocString(s)} { }
 	com_bstr(const std::wstring& s) noexcept : com_bstr(s.c_str()) { }
 
+	operator const BSTR&() const noexcept  { return this->_bstr; }
+	const BSTR* operator&() const noexcept { return &this->_bstr; }
+	BSTR* operator&() noexcept             { return &this->_bstr; }
+
 	com_bstr& operator=(com_bstr&& other) noexcept {
 		this->free();
 		std::swap(this->_bstr, other._bstr);
@@ -52,9 +56,9 @@ public:
 		return *this;
 	}
 
-	BSTR           bstr() const noexcept  { return this->_bstr; }
-	BSTR*          ptr() noexcept         { return &this->_bstr; }
-	const wchar_t* c_str() const noexcept { return static_cast<wchar_t*>(this->_bstr); }
+	const wchar_t* c_str() const noexcept {
+		return static_cast<wchar_t*>(this->_bstr);
+	}
 };
 
 }//namespace wli
