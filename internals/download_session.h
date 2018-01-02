@@ -25,7 +25,7 @@ public:
 	}
 
 	download_session() = default;
-	download_session(download_session&& other) noexcept { this->operator=(std::move(other)); }
+	download_session(download_session&& other) noexcept : _hSession{other._hSession} { other._hSession = nullptr; }
 
 	HINTERNET hsession() const noexcept {
 		return this->_hSession;

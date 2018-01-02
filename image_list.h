@@ -25,7 +25,7 @@ public:
 	}
 
 	image_list() = default;
-	image_list(image_list&& other) noexcept { this->operator=(std::move(other)); }
+	image_list(image_list&& other) noexcept : _hImgList{other._hImgList} { other._hImgList = nullptr; }
 
 	HIMAGELIST himagelist() const noexcept {
 		return this->_hImgList;

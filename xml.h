@@ -66,7 +66,7 @@ public:
 	node root;
 
 	xml() = default;
-	xml(xml&& other) noexcept    { this->operator=(std::move(other)); }
+	xml(xml&& other) noexcept    : root{std::move(other.root)} { }
 	xml(const wchar_t* str)      { this->parse(str); }
 	xml(const std::wstring& str) : xml(str.c_str()) { }
 

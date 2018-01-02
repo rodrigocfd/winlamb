@@ -32,7 +32,7 @@ public:
 	}
 
 	font() = default;
-	font(font&& other) noexcept { this->operator=(std::move(other)); }
+	font(font&& other) noexcept : _hFont{other._hFont} { other._hFont = nullptr; }
 
 	HFONT hfont() const noexcept {
 		return this->_hFont;

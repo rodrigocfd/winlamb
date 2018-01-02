@@ -25,7 +25,7 @@ public:
 	}
 
 	com_ptr() = default;
-	com_ptr(com_ptr&& other) noexcept { this->operator=(std::move(other)); }
+	com_ptr(com_ptr&& other) noexcept : _ptr{other._ptr} { other._ptr = nullptr; }
 
 	bool   empty() const noexcept { return this->_ptr == nullptr; }
 	ptrT*  operator->() noexcept  { return this->_ptr; }

@@ -33,7 +33,7 @@ public:
 	}
 
 	icon() = default;
-	icon(icon&& other) noexcept { this->operator=(std::move(other)); }
+	icon(icon&& other) noexcept : _hIcon{other._hIcon} { other._hIcon = nullptr; }
 
 	HICON hicon() const noexcept {
 		return this->_hIcon;

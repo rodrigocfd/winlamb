@@ -19,8 +19,8 @@ public:
 		valueT value;
 
 		entry() = default;
-		explicit entry(const keyT& key) : key(key) { }
-		entry(const keyT& key, const valueT& value) : key(key), value(value) { }
+		explicit entry(const keyT& key) : key{key} { }
+		entry(const keyT& key, const valueT& value) : key{key}, value{value} { }
 	};
 
 private:
@@ -28,7 +28,7 @@ private:
 
 public:
 	held_map() = default;
-	held_map(held_map&& other) noexcept { this->operator=(std::move(other)); }
+	held_map(held_map&& other) noexcept : _entries{std::move(other._entries)} { }
 	held_map(std::initializer_list<entry> entries) : _entries{entries} { }
 
 	size_t    size() const noexcept      { return this->_entries.size(); }

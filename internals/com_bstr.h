@@ -24,9 +24,9 @@ public:
 	}
 
 	com_bstr() = default;
-	com_bstr(com_bstr&& other) noexcept      { this->operator=(std::move(other)); }
-	com_bstr(const wchar_t* s) noexcept      { this->operator=(s); }
-	com_bstr(const std::wstring& s) noexcept { this->operator=(s); }
+	com_bstr(com_bstr&& other) noexcept      : _bstr{other._bstr} { other._bstr = nullptr; }
+	com_bstr(const wchar_t* s) noexcept      : _bstr{SysAllocString(s)} { }
+	com_bstr(const std::wstring& s) noexcept : com_bstr(s.c_str()) { }
 
 	com_bstr& operator=(com_bstr&& other) noexcept {
 		this->free();
