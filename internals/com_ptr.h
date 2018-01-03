@@ -19,10 +19,11 @@ private:
 
 public:
 	~com_ptr() {
-		this->free();
+		this->reset();
 	}
 
 	com_ptr() = default;
+	com_ptr(ptrT* livePtr) noexcept   : _ptr{livePtr} { }
 	com_ptr(com_ptr&& other) noexcept : _ptr{other._ptr} { other._ptr = nullptr; }
 
 	explicit operator bool() const noexcept  { return this->_ptr != nullptr; }
@@ -34,18 +35,15 @@ public:
 	ptrT**       operator&() noexcept        { return &this->_ptr; }
 
 	com_ptr& operator=(com_ptr&& other) noexcept {
-		this->free();
+		this->reset();
 		std::swap(this->_ptr, other._ptr);
 		return *this;
 	}
 
-	void free() noexcept {
-		// "free" instead of "release" to avoid confusion with
-		// unique_ptr::release, which has a different behavior.
-		if (this->_ptr) {
-			this->_ptr->Release();
-			this->_ptr = nullptr;
-		}
+	void reset(ptrT* livePtr = nullptr) noexcept {
+		if (this->_ptr == livePtr) return;
+		if (this->_ptr) this->_ptr->Release();
+		this->_ptr = livePtr;
 	}
 
 	void co_create_instance(REFCLSID clsid_something) {
