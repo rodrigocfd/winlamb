@@ -23,9 +23,15 @@ public:
 	}
 
 	com_ptr() = default;
-	com_ptr(ptrT* livePtr) noexcept   : _ptr{livePtr} { }
 	com_ptr(com_ptr&& other) noexcept : _ptr{other._ptr} { other._ptr = nullptr; }
+	explicit com_ptr(ptrT* livePtr) noexcept : _ptr{livePtr} { }
 
+	com_ptr& operator=(com_ptr&& other) noexcept {
+		this->reset();
+		std::swap(this->_ptr, other._ptr);
+		return *this;
+	}
+	
 	explicit operator bool() const noexcept  { return this->_ptr != nullptr; }
 	operator const ptrT*() const noexcept    { return this->_ptr; }
 	operator ptrT*() noexcept                { return this->_ptr; }
@@ -33,12 +39,6 @@ public:
 	ptrT*        operator->() noexcept       { return this->_ptr; }
 	const ptrT** operator&() const noexcept  { return &this->_ptr; }
 	ptrT**       operator&() noexcept        { return &this->_ptr; }
-
-	com_ptr& operator=(com_ptr&& other) noexcept {
-		this->reset();
-		std::swap(this->_ptr, other._ptr);
-		return *this;
-	}
 
 	void reset(ptrT* livePtr = nullptr) noexcept {
 		if (this->_ptr == livePtr) return;
@@ -76,6 +76,11 @@ public:
 		check_hr(
 			this->_ptr->QueryInterface(IID_PPV_ARGS(targetComPtr)),
 			"QueryInterface failed");
+	}
+
+	com_ptr clone() noexcept {
+		_ptr->AddRef();
+		return com_ptr{_ptr};
 	}
 
 private:

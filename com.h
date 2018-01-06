@@ -24,6 +24,7 @@ public:
 	template<typename ptrT> using ptr = wli::com_ptr<ptrT>;
 	using variant = wli::com_variant;
 
+	// Calls FAILED() macro upon HRESULT; if failed, throws an system_error.
 	static void check_hr(HRESULT hr, const char* exceptionMsg) {
 		wli::check_hr(hr, exceptionMsg);
 	}

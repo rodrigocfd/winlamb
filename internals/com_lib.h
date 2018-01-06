@@ -13,7 +13,7 @@
 namespace wl {
 namespace wli {
 
-// Smart class to automate CoInitialize calls and cleanup.
+// Smart class to automate CoInitialize and CoUninitialize calls.
 class com_lib {
 private:
 	HRESULT _hr = -1;
@@ -23,9 +23,7 @@ public:
 
 	~com_lib() {
 		// https://stackoverflow.com/q/47123650/6923555
-		if (SUCCEEDED(this->_hr)) {
-			CoUninitialize();
-		}
+		this->un_initialize();
 	}
 
 	explicit com_lib(init when) noexcept {
@@ -34,9 +32,28 @@ public:
 		}
 	}
 
+	com_lib(com_lib&& other) noexcept : _hr{other._hr} { other._hr = -1; }
+
+	com_lib& operator=(com_lib&& other) noexcept {
+		this->un_initialize();
+		std::swap(this->_hr, other._hr);
+		return *this;
+	}
+
 	void initialize() noexcept {
-		if (FAILED(this->_hr)) { // so that initialize() can be called multiple times
+		// #define FAILED(hr) (((HRESULT)(hr)) < 0)
+		if (FAILED(this->_hr)) {
+			// So that initialize() can be carelessly called multiple
+			// times, but CoInitialize() will be called only once.
 			this->_hr = CoInitialize(nullptr);
+		}
+	}
+
+	void un_initialize() noexcept {
+		// #define SUCCEEDED(hr) (((HRESULT)(hr)) >= 0)
+		if (SUCCEEDED(this->_hr)) {
+			CoUninitialize();
+			this->_hr = -1;
 		}
 	}
 
@@ -44,6 +61,7 @@ public:
 		return this->_hr;
 	}
 };
+
 
 inline void check_hr(HRESULT hr, const char* exceptionMsg) {
 	if (FAILED(hr)) {
