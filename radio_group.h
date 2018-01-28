@@ -19,7 +19,6 @@ private:
 
 public:
 	radio_group() = default;
-
 	radio_group(const radio_group&) = delete;
 	radio_group& operator=(const radio_group&) = delete; // non-copyable, non-movable
 

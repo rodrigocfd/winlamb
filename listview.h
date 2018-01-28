@@ -176,7 +176,7 @@ public:
 		if (this->_contextMenu.hmenu()) {
 			throw std::logic_error("Trying to set listview context menu twice.");
 		}
-		this->_contextMenu.load_resource_submenu(contextMenuId, 0,
+		this->_contextMenu.load_from_resource_submenu(contextMenuId, 0,
 			GetParent(this->hwnd()));
 		return *this;
 	}
