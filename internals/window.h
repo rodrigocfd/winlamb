@@ -30,6 +30,16 @@ class window : public baseT {
 	friend class window_main;
 
 private:
+	struct _wndclassex_less final {
+		UINT           style = 0;
+		HICON          hIcon = nullptr;
+		HCURSOR        hCursor = nullptr;
+		HBRUSH         hbrBackground = nullptr;
+		const wchar_t* lpszMenuName = nullptr;
+		const wchar_t* lpszClassName = nullptr;
+		HICON          hIconSm = nullptr;
+	};
+
 	class _styler final : public wli::styler<window> {
 	public:
 		explicit _styler(window* pWindow) noexcept : styler(pWindow) { }
@@ -37,12 +47,12 @@ private:
 
 protected:
 	struct setup_vars {
-		WNDCLASSEX     wndClassEx{};
-		const wchar_t* title = nullptr;
-		DWORD          style = 0, exStyle = 0;
-		POINT          position{};
-		SIZE           size{};
-		HMENU          menu = nullptr;
+		_wndclassex_less wndClassEx;
+		const wchar_t*   title = nullptr;
+		DWORD            style = 0, exStyle = 0;
+		POINT            position{};
+		SIZE             size{};
+		HMENU            menu = nullptr;
 	};
 
 public:
@@ -70,7 +80,23 @@ private:
 		}
 	}
 
-	void _register_create(setup_vars& setup, HWND hParent, HINSTANCE hInst = nullptr) {
+	WNDCLASSEXW _gen_wndclassex(const setup_vars& setup, HINSTANCE hInst) const noexcept {
+		WNDCLASSEXW wcx{};
+		wcx.cbSize = sizeof(WNDCLASSEXW);
+		wcx.lpfnWndProc = _window_proc;
+		wcx.hInstance = hInst;
+
+		wcx.style = setup.wndClassEx.style;
+		wcx.hIcon = setup.wndClassEx.hIcon;
+		wcx.hCursor = setup.wndClassEx.hCursor;
+		wcx.hbrBackground = setup.wndClassEx.hbrBackground;
+		wcx.lpszMenuName = setup.wndClassEx.lpszMenuName;
+		wcx.lpszClassName = setup.wndClassEx.lpszClassName;
+		wcx.hIconSm = setup.wndClassEx.hIconSm;
+		return wcx;
+	}
+
+	void _register_create(const setup_vars& setup, HWND hParent, HINSTANCE hInst = nullptr) {
 		this->_basic_initial_checks(setup);
 		if (!hParent && !hInst) {
 			throw std::invalid_argument("To create a window, HINSTANCE or parent HWND must be provided.");
@@ -79,11 +105,7 @@ private:
 			hInst = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hParent, GWLP_HINSTANCE));
 		}
 
-		setup.wndClassEx.cbSize = sizeof(WNDCLASSEX); // make sure of these
-		setup.wndClassEx.lpfnWndProc = _window_proc;
-		setup.wndClassEx.hInstance = hInst;
-
-		ATOM atom = this->_register_class(setup, hInst);
+		ATOM atom = this->_register_class(this->_gen_wndclassex(setup, hInst), setup);
 
 		if (!CreateWindowExW(setup.exStyle,
 			MAKEINTATOM(atom), setup.title, setup.style,
@@ -95,14 +117,13 @@ private:
 		}
 	}
 
-	ATOM _register_class(setup_vars& setup, HINSTANCE hInst) {
-		ATOM atom = RegisterClassExW(&setup.wndClassEx);
+	ATOM _register_class(WNDCLASSEXW& wcx, const setup_vars& setup) {
+		ATOM atom = RegisterClassExW(&wcx);
 		if (!atom) {
 			DWORD errCode = GetLastError();
 			if (errCode == ERROR_CLASS_ALREADY_EXISTS) {
-				atom = static_cast<ATOM>(GetClassInfoExW(hInst,
-					setup.wndClassEx.lpszClassName,
-					&setup.wndClassEx)); // https://blogs.msdn.microsoft.com/oldnewthing/20041011-00/?p=37603
+				atom = static_cast<ATOM>(GetClassInfoExW(wcx.hInstance,
+					wcx.lpszClassName, &wcx)); // https://blogs.msdn.microsoft.com/oldnewthing/20041011-00/?p=37603
 			} else {
 				throw std::system_error(errCode, std::system_category(),
 					"RegisterClassEx failed");
