@@ -33,7 +33,8 @@ public:
 		for (int ctrlId : ctrlIds) {
 			this->_items[i++].assign(hParent, ctrlId);
 		}
-		this->_items[0].set_check(true); // first is checked by default
+		this->_items[0].set_check(true) // first is checked by default
+			.style.first_in_group(true); // and receives WS_GROUP
 		return *this;
 	}
 

@@ -34,6 +34,10 @@ private:
 	class _styler final : public wli::styler<radio> {
 	public:
 		explicit _styler(radio* pRadio) noexcept : styler(pRadio) { }
+
+		radio& first_in_group(bool doSet) noexcept {
+			return this->set_style(doSet, WS_GROUP);
+		}
 	};
 
 public:
