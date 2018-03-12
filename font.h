@@ -8,6 +8,7 @@
 #pragma once
 #include <system_error>
 #include <Windows.h>
+#include <VersionHelpers.h>
 #include "internals/combinable_flags.h"
 
 namespace wl {
@@ -83,17 +84,9 @@ public:
 
 	// Create the same exact font used by UI, like Tahoma or Segoe UI.
 	font& create_ui() {
-		OSVERSIONINFO ovi{};
-		ovi.dwOSVersionInfoSize = sizeof(ovi);
-
-		#pragma warning (disable: 4996)
-		// http://www.codeproject.com/Articles/678606/Part-Overcoming-Windows-s-deprecation-of-GetVe
-		GetVersionExW(&ovi);
-		#pragma warning (default: 4996)
-
 		NONCLIENTMETRICS ncm{};
 		ncm.cbSize = sizeof(ncm);
-		if (ovi.dwMajorVersion < 6) { // below Vista
+		if (!IsWindowsVistaOrGreater()) {
 			ncm.cbSize -= sizeof(ncm.iBorderWidth);
 		}
 		SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0);

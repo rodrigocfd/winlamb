@@ -18,6 +18,10 @@ WinLamb is a header-only library. You can clone the repository or simply downloa
 
 It has been tested with Visual C++ 2017.
 
+#### Windows 10 manifest file
+
+There's an included `win10.exe.manifest` file, which you can [add to your Visual Studio project](https://stackoverflow.com/a/18115255/6923555). This manifest includes Common Controls and [Windows 10 support](https://msdn.microsoft.com/en-us/library/windows/desktop/dn481241(v=vs.85).aspx).
+
 ### Example
 
 This is a simple Win32 program written with WinLamb. Each window has a class, and messages are handled with C++11 lambdas. There's no need to write a message loop or window registering.

@@ -7,7 +7,7 @@
 
 #pragma once
 #include "internals/window.h"
-#include "internals/hover_scroll.h"
+#include "internals/scroll_inactive.h"
 #include "internals/loop.h"
 #include "internals/has_text.h"
 #include "internals/run.h"
@@ -70,7 +70,7 @@ public:
 			throw std::system_error(GetLastError(), std::system_category(),
 				"UpdateWindow failed");
 		}
-		wli::hover_scroll::apply_behavior(this->hwnd());
+		wli::scroll_inactive::apply_behavior(this->hwnd());
 		return this->_loop.run_loop(this->hwnd(), this->setup.accelTable); // can be used as program return value
 	}
 };

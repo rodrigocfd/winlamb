@@ -8,7 +8,7 @@
 #pragma once
 #include "thread_capable.h"
 #include "user_control.h"
-#include "hover_scroll.h"
+#include "scroll_inactive.h"
 #include "styler.h"
 #include "../font.h"
 
@@ -92,7 +92,7 @@ private:
 		}
 
 		if (msg == WM_INITDIALOG) {
-			wli::hover_scroll::apply_behavior(pSelf->hwnd());
+			wli::scroll_inactive::apply_behavior(pSelf->hwnd());
 		} else if (msg == WM_NCDESTROY) { // cleanup
 			SetWindowLongPtrW(hDlg, DWLP_USER, 0);
 			if (pSelf) {
