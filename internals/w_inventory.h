@@ -82,16 +82,74 @@ private:
 	}
 
 public:
-	template<typename handlerT> void on_message(UINT msg, handlerT&& func)                                  { this->_can(); this->_msgs.add(msg, std::move(func)); }
-	template<typename handlerT> void on_message(std::initializer_list<UINT> msgs, handlerT&& func)          { this->_can(); this->_msgs.add(msgs, std::move(func)); }
-	template<typename handlerT> void on_command(WORD cmd, handlerT&& func)                                  { this->_can(); this->_cmds.add(cmd, std::move(func)); }
-	template<typename handlerT> void on_command(std::initializer_list<WORD> cmds, handlerT&& func)          { this->_can(); this->_cmds.add(cmds, std::move(func)); }
-	template<typename handlerT> void on_notify(UINT_PTR idFrom, UINT code, handlerT&& func)                 { this->_can(); this->_ntfs.add({idFrom, code}, std::move(func)); }
-	template<typename handlerT> void on_notify(ntfT idFromAndCode, handlerT&& func)                         { this->_can(); this->_ntfs.add(idFromAndCode, std::move(func)); }
-	template<typename handlerT> void on_notify(std::initializer_list<ntfT> idFromAndCodes, handlerT&& func) { this->_can(); this->_ntfs.add(idFromAndCodes, std::move(func)); }
+	template<typename lambdaT>
+	void on_message(UINT msg, lambdaT&& func) {
+		this->_check_can_add();
+		this->_msgs.add(msg, std::move(func));
+	}
+	template<typename lambdaT>
+	void on_message(std::initializer_list<UINT> msgs, lambdaT&& func) {
+		this->_check_can_add();
+		this->_msgs.add(msgs, std::move(func));
+	}
+	template<typename memberfuncT, typename finalclassT>
+	void on_message(UINT msg, memberfuncT&& memberFuncPtr, finalclassT* pThis) {
+		this->on_message(msg, std::bind(std::move(memberFuncPtr), pThis, std::placeholders::_1));
+	}
+	template<typename memberfuncT, typename finalclassT>
+	void on_message(std::initializer_list<UINT> msgs, memberfuncT&& memberFuncPtr, finalclassT* pThis) {
+		this->on_message(msgs, std::bind(std::move(memberFuncPtr), pThis, std::placeholders::_1));
+	}
 
+	template<typename lambdaT>
+	void on_command(WORD cmd, lambdaT&& func) {
+		this->_check_can_add();
+		this->_cmds.add(cmd, std::move(func));
+	}
+	template<typename lambdaT>
+	void on_command(std::initializer_list<WORD> cmds, lambdaT&& func) {
+		this->_check_can_add();
+		this->_cmds.add(cmds, std::move(func));
+	}
+	template<typename memberfuncT, typename finalclassT>
+	void on_command(WORD cmd, memberfuncT&& memberFuncPtr, finalclassT* pThis) {
+		this->on_command(cmd, std::bind(std::move(memberFuncPtr), pThis, std::placeholders::_1));
+	}
+	template<typename memberfuncT, typename finalclassT>
+	void on_command(std::initializer_list<WORD> cmds, memberfuncT&& memberFuncPtr, finalclassT* pThis) {
+		this->on_command(cmds, std::bind(std::move(memberFuncPtr), pThis, std::placeholders::_1));
+	}
+
+	template<typename lambdaT>
+	void on_notify(UINT_PTR idFrom, UINT code, lambdaT&& func) {
+		this->_check_can_add();
+		this->_ntfs.add({idFrom, code}, std::move(func));
+	}
+	template<typename lambdaT>
+	void on_notify(ntfT idFromAndCode, lambdaT&& func) {
+		this->_check_can_add();
+		this->_ntfs.add(idFromAndCode, std::move(func));
+	}
+	template<typename lambdaT>
+	void on_notify(std::initializer_list<ntfT> idFromAndCodes, lambdaT&& func) {
+		this->_check_can_add();
+		this->_ntfs.add(idFromAndCodes, std::move(func));
+	}
+	template<typename memberfuncT, typename finalclassT>
+	void on_notify(UINT_PTR idFrom, UINT code, memberfuncT&& memberFuncPtr, finalclassT* pThis) {
+		this->on_notify(idFrom, code, std::bind(std::move(memberFuncPtr), pThis, std::placeholders::_1));
+	}
+	template<typename memberfuncT, typename finalclassT>
+	void on_notify(ntfT idFromAndCode, memberfuncT&& memberFuncPtr, finalclassT* pThis) {
+		this->on_notify(idFromAndCode, std::bind(std::move(memberFuncPtr), pThis, std::placeholders::_1));
+	}
+	template<typename memberfuncT, typename finalclassT>
+	void on_notify(std::initializer_list<ntfT> idFromAndCodes, memberfuncT&& memberFuncPtr, finalclassT* pThis) {
+		this->on_notify(idFromAndCodes, std::bind(std::move(memberFuncPtr), pThis, std::placeholders::_1));
+	}
+	
 private:
-	void _can() const {
+	void _check_can_add() const {
 		if (!this->_canAdd) {
 			throw std::logic_error("Can't add a message handler after the loop started.\n"
 				"This would be an unsafe operation, therefore it's explicitly forbidden.");
