@@ -24,6 +24,7 @@ public:
 	styler& operator=(const styler&) = delete; // non-copyable, non-movable
 
 protected:
+	HWND  hwnd() const noexcept   { return this->_wnd.hwnd(); }
 	wndT& target() const noexcept { return this->_wnd; }
 
 public:

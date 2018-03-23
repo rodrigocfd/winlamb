@@ -31,6 +31,7 @@ int run_main(HINSTANCE hInst, int cmdShow) noexcept {
 }//namespace wli
 }//namespace wl
 
+// Instantiates your main class into a generic WinMain function.
 #define RUN(wnd_mainT) \
 int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE, LPWSTR, int cmdShow) { \
 	return wl::wli::run_main<wnd_mainT>(hInst, cmdShow); \

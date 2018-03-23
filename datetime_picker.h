@@ -7,8 +7,8 @@
 
 #pragma once
 #include "internals/native_control.h"
-#include "internals/has_enable.h"
-#include "internals/has_focus.h"
+#include "internals/w_enable.h"
+#include "internals/w_focus.h"
 #include "internals/styler.h"
 #include "datetime.h"
 #include <CommCtrl.h>
@@ -16,8 +16,8 @@
 /**
  * hwnd_base
  *  native_control
- *   has_focus
- *    has_enable
+ *   w_focus
+ *    w_enable
  *     textbox
  */
 
@@ -25,8 +25,8 @@ namespace wl {
 
 // Wrapper to datetime picker control from Common Controls library.
 class datetime_picker final :
-	public wli::has_enable<
-		datetime_picker, wli::has_focus<
+	public wli::w_enable<
+		datetime_picker, wli::w_focus<
 			datetime_picker, wli::native_control<datetime_picker>>>
 {
 private:

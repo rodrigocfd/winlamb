@@ -12,17 +12,13 @@ namespace wl {
 namespace wli {
 
 template<typename derivedT, typename baseT>
-class has_enable : public baseT {
+class w_focus : public baseT {
 protected:
-	has_enable() = default;
+	w_focus() = default;
 
 public:
-	bool is_enabled() const noexcept {
-		return IsWindowEnabled(this->hwnd());
-	}
-
-	derivedT& set_enable(bool doEnable) noexcept {
-		EnableWindow(this->hwnd(), doEnable);
+	derivedT& set_focus() noexcept {
+		SetFocus(this->hwnd());
 		return *static_cast<derivedT*>(this);
 	}
 };

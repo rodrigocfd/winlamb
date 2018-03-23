@@ -7,17 +7,17 @@
 
 #pragma once
 #include "internals/native_control.h"
-#include "internals/has_enable.h"
-#include "internals/has_focus.h"
-#include "internals/has_text.h"
+#include "internals/w_enable.h"
+#include "internals/w_focus.h"
+#include "internals/w_text.h"
 #include "internals/styler.h"
 
 /**
  * hwnd_base
  *  native_control
- *   has_text
- *    has_focus
- *     has_enable
+ *   w_text
+ *    w_focus
+ *     w_enable
  *      checkbox
  */
 
@@ -25,9 +25,9 @@ namespace wl {
 
 // Wrapper to native checkbox control.
 class checkbox final :
-	public wli::has_enable<
-		checkbox, wli::has_focus<
-			checkbox, wli::has_text<
+	public wli::w_enable<
+		checkbox, wli::w_focus<
+			checkbox, wli::w_text<
 				checkbox, wli::native_control<checkbox>>>>
 {
 private:

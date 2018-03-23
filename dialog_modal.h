@@ -7,14 +7,14 @@
 
 #pragma once
 #include "internals/dialog.h"
-#include "internals/has_text.h"
+#include "internals/w_text.h"
 
 /**
  * hwnd_base
- *  inventory
- *   thread_capable
+ *  w_inventory
+ *   w_thread_capable
  *    dialog
- *     has_text
+ *     w_text
  *      dialog_modal
  */
 
@@ -22,7 +22,7 @@ namespace wl {
 
 // Inherit from this class to have a modal dialog popup.
 class dialog_modal :
-	public wli::has_text<
+	public wli::w_text<
 		dialog_modal, wli::dialog_thread_capable>
 {
 protected:

@@ -6,20 +6,20 @@
  */
 
 #pragma once
-#include "inventory.h"
+#include "w_inventory.h"
 #include <process.h>
 
 /**
  * hwnd_base
- *  inventory
- *   thread_capable
+ *  w_inventory
+ *   w_thread_capable
  */
 
 namespace wl {
 namespace wli {
 
 template<typename retT, retT RET_VAL>
-class thread_capable : public inventory<retT> {
+class w_thread_capable : public w_inventory<retT> {
 private:
 	struct _callback_pack final {
 		std::function<void()> func;
@@ -30,7 +30,7 @@ private:
 	static const UINT WM_THREAD_MESSAGE = WM_APP + 0x3FFF;
 
 protected:
-	thread_capable() {
+	w_thread_capable() {
 		this->on_message(WM_THREAD_MESSAGE, [this](params p) noexcept->retT {
 			this->_process_thread_ui_msg(p);
 			return RET_VAL; // 0 for windows, TRUE for dialogs

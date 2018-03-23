@@ -7,11 +7,11 @@
 
 #pragma once
 #include "internals/native_control.h"
-#include "internals/has_enable.h"
-#include "internals/has_focus.h"
-#include "internals/styler.h"
+#include "internals/w_enable.h"
+#include "internals/w_focus.h"
 #include "internals/listview_column_collection.h"
 #include "internals/listview_item_collection.h"
+#include "internals/listview_styler.h"
 #include "internals/member_image_list.h"
 #include "subclass.h"
 #include "menu.h"
@@ -19,8 +19,8 @@
 /**
  * hwnd_base
  *  native_control
- *   has_focus
- *    has_enable
+ *   w_focus
+ *    w_enable
  *     listview
  */
 
@@ -28,62 +28,11 @@ namespace wl {
 
 // Wrapper to listview control from Common Controls library.
 class listview final :
-	public wli::has_enable<
-		listview, wli::has_focus<
+	public wli::w_enable<
+		listview, wli::w_focus<
 			listview, wli::native_control<listview>>>
 {
 private:
-	class _styler final : public wli::styler<listview> {
-	public:
-		explicit _styler(listview* pList) noexcept : styler(pList) { }
-
-		listview& always_show_sel(bool doSet) noexcept {
-			return this->set_style(doSet, LVS_SHOWSELALWAYS);
-		}
-
-		listview& edit_labels(bool doSet) noexcept {
-			return this->set_style(doSet, LVS_EDITLABELS);
-		}
-
-		listview& multiple_sel(bool doSet) noexcept {
-			return this->set_style(!doSet, LVS_SINGLESEL);
-		}
-
-		listview& show_headers(bool doSet) noexcept {
-			return this->set_style(doSet, LVS_NOCOLUMNHEADER);
-		}
-
-		listview& checkboxes(bool doSet) noexcept {
-			ListView_SetExtendedListViewStyleEx(this->target().hwnd(), LVS_EX_CHECKBOXES,
-				doSet ? LVS_EX_CHECKBOXES : 0);
-			return this->target();
-		}
-
-		listview& double_buffer(bool doSet) noexcept {
-			ListView_SetExtendedListViewStyleEx(this->target().hwnd(), LVS_EX_DOUBLEBUFFER,
-				doSet ? LVS_EX_DOUBLEBUFFER : 0);
-			return this->target();
-		}
-
-		listview& full_row_select(bool doSet) noexcept {
-			ListView_SetExtendedListViewStyleEx(this->target().hwnd(), LVS_EX_FULLROWSELECT,
-				doSet ? LVS_EX_FULLROWSELECT : 0);
-			return this->target();
-		}
-
-		listview& grid_lines(bool doSet) noexcept {
-			ListView_SetExtendedListViewStyleEx(this->target().hwnd(), LVS_EX_GRIDLINES,
-				doSet ? LVS_EX_GRIDLINES : 0);
-			return this->target();
-		}
-
-		listview& reorder_header(bool doSet) noexcept {
-			ListView_SetExtendedListViewStyleEx(this->target().hwnd(), LVS_EX_HEADERDRAGDROP,
-				doSet ? LVS_EX_HEADERDRAGDROP : 0);
-			return this->target();
-		}
-	};
-
 	using _column_collection = wli::listview_column_collection<listview>;
 	using _item_collection = wli::listview_item_collection<listview>;
 
@@ -103,7 +52,7 @@ private:
 	menu     _contextMenu;
 
 public:
-	_styler                          style{this};
+	wli::listview_styler<listview>   style{this};
 	_item_collection                 items{this};
 	_column_collection               columns{this};
 	wli::member_image_list<listview> imageList16{this, 16}, imageList32{this, 32};

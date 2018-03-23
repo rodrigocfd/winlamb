@@ -6,15 +6,15 @@
  */
 
 #pragma once
-#include "thread_capable.h"
-#include "user_control.h"
+#include "w_thread_capable.h"
+#include "w_user_control.h"
 #include "styler.h"
 
 /**
  * hwnd_base
- *  inventory
- *   thread_capable
- *    [user_control]
+ *  w_inventory
+ *   w_thread_capable
+ *    [w_user_control]
  *     window
  */
 
@@ -80,19 +80,19 @@ private:
 		}
 	}
 
-	WNDCLASSEXW _gen_wndclassex(const setup_vars& setup, HINSTANCE hInst) const noexcept {
+	WNDCLASSEXW _gen_wndclassex(const _wndclassex_less& wLess, HINSTANCE hInst) const noexcept {
 		WNDCLASSEXW wcx{};
 		wcx.cbSize = sizeof(WNDCLASSEXW);
 		wcx.lpfnWndProc = _window_proc;
 		wcx.hInstance = hInst;
 
-		wcx.style = setup.wndClassEx.style;
-		wcx.hIcon = setup.wndClassEx.hIcon;
-		wcx.hCursor = setup.wndClassEx.hCursor;
-		wcx.hbrBackground = setup.wndClassEx.hbrBackground;
-		wcx.lpszMenuName = setup.wndClassEx.lpszMenuName;
-		wcx.lpszClassName = setup.wndClassEx.lpszClassName;
-		wcx.hIconSm = setup.wndClassEx.hIconSm;
+		wcx.style = wLess.style;
+		wcx.hIcon = wLess.hIcon;
+		wcx.hCursor = wLess.hCursor;
+		wcx.hbrBackground = wLess.hbrBackground;
+		wcx.lpszMenuName = wLess.lpszMenuName;
+		wcx.lpszClassName = wLess.lpszClassName;
+		wcx.hIconSm = wLess.hIconSm;
 		return wcx;
 	}
 
@@ -105,7 +105,7 @@ private:
 			hInst = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hParent, GWLP_HINSTANCE));
 		}
 
-		ATOM atom = this->_register_class(this->_gen_wndclassex(setup, hInst), setup);
+		ATOM atom = this->_register_class(this->_gen_wndclassex(setup.wndClassEx, hInst), setup);
 
 		if (!CreateWindowExW(setup.exStyle,
 			MAKEINTATOM(atom), setup.title, setup.style,
@@ -165,8 +165,8 @@ private:
 	}
 };
 
-using window_thread_capable = window<thread_capable<LRESULT, 0>>;
-using window_user_control = window<user_control<LRESULT, 0>>;
+using window_thread_capable = window<w_thread_capable<LRESULT, 0>>;
+using window_user_control = window<w_user_control<LRESULT, 0>>;
 
 }//namespace wli
 }//namespace wl

@@ -13,9 +13,9 @@ namespace wl {
 namespace wli {
 
 template<typename derivedT, typename baseT>
-class has_text : public baseT {
+class w_text : public baseT {
 protected:
-	has_text() = default;
+	w_text() = default;
 
 public:
 	derivedT& set_text(const wchar_t* s) noexcept {

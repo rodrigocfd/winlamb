@@ -9,15 +9,15 @@
 #include "internals/window.h"
 #include "internals/scroll_inactive.h"
 #include "internals/loop.h"
-#include "internals/has_text.h"
+#include "internals/w_text.h"
 #include "internals/run.h"
 
 /**
  * hwnd_base
- *  inventory
- *   thread_capable
+ *  w_inventory
+ *   w_thread_capable
  *    window
- *     has_text
+ *     w_text
  *      window_main
  */
 
@@ -26,7 +26,7 @@ namespace wli { class dialog_modeless; } // friend forward declaration
 
 // Inherit from this class to have an ordinary main window for your application.
 class window_main :
-	public wli::has_text<
+	public wli::w_text<
 		window_main, wli::window_thread_capable>
 {
 	friend class wli::dialog_modeless;

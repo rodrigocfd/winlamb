@@ -13,8 +13,8 @@ class subclass; // friend forward declaration
 
 namespace wli {
 	template<typename baseT> class dialog; // friend forward declarations
-	template<typename baseT> class native_control;
 	template<typename baseT> class window;
+	template<typename baseT> class native_control;
 }
 
 // Simple HWND wrapper, base to all dialog and window classes.

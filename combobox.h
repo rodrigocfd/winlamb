@@ -7,18 +7,18 @@
 
 #pragma once
 #include "internals/native_control.h"
-#include "internals/has_enable.h"
-#include "internals/has_focus.h"
-#include "internals/has_text.h"
+#include "internals/w_enable.h"
+#include "internals/w_focus.h"
+#include "internals/w_text.h"
 #include "internals/styler.h"
 #include "str.h"
 
 /**
  * hwnd_base
  *  native_control
- *   has_text
- *    has_focus
- *     has_enable
+ *   w_text
+ *    w_focus
+ *     w_enable
  *      combobox
  */
 
@@ -26,9 +26,9 @@ namespace wl {
 
 // Wrapper to native combobox control.
 class combobox final :
-	public wli::has_enable<
-		combobox, wli::has_focus<
-			combobox, wli::has_text<
+	public wli::w_enable<
+		combobox, wli::w_focus<
+			combobox, wli::w_text<
 				combobox, wli::native_control<combobox>>>>
 {
 private:

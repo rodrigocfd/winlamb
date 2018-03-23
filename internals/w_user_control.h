@@ -6,25 +6,25 @@
  */
 
 #pragma once
-#include "thread_capable.h"
+#include "w_thread_capable.h"
 #include <VsStyle.h>
 #include <Uxtheme.h>
 #pragma comment(lib, "UxTheme.lib")
 
 /**
  * hwnd_base
- *  inventory
- *   thread_capable
- *    user_control
+ *  w_inventory
+ *   w_thread_capable
+ *    w_user_control
  */
 
 namespace wl {
 namespace wli {
 
 template<typename retT, retT RET_VAL>
-class user_control : public thread_capable<retT, RET_VAL> {
+class w_user_control : public w_thread_capable<retT, RET_VAL> {
 protected:
-	user_control() {
+	w_user_control() {
 		this->on_message(WM_NCPAINT, [this](params p) noexcept->retT {
 			this->_paint_themed_borders(p);
 			return RET_VAL; // 0 for windows, TRUE for dialogs

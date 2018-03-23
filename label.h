@@ -7,15 +7,15 @@
 
 #pragma once
 #include "internals/native_control.h"
-#include "internals/has_enable.h"
-#include "internals/has_text.h"
+#include "internals/w_enable.h"
+#include "internals/w_text.h"
 #include "internals/styler.h"
 
 /**
  * hwnd_base
  *  native_control
- *   has_text
- *     has_enable
+ *   w_text
+ *     w_enable
  *      label
  */
 
@@ -23,8 +23,8 @@ namespace wl {
 
 // Wrapper to native static text control.
 class label final :
-	public wli::has_enable<
-		label, wli::has_text<
+	public wli::w_enable<
+		label, wli::w_text<
 			label, wli::native_control<label>>>
 {
 private:

@@ -7,17 +7,17 @@
 
 #pragma once
 #include "internals/native_control.h"
-#include "internals/has_enable.h"
-#include "internals/has_focus.h"
-#include "internals/has_text.h"
+#include "internals/w_enable.h"
+#include "internals/w_focus.h"
+#include "internals/w_text.h"
 #include "internals/styler.h"
 
 /**
  * hwnd_base
  *  native_control
- *   has_text
- *    has_focus
- *     has_enable
+ *   w_text
+ *    w_focus
+ *     w_enable
  *      button
  */
 
@@ -25,9 +25,9 @@ namespace wl {
 
 // Wrapper to native button control.
 class button final :
-	public wli::has_enable<
-		button, wli::has_focus<
-			button, wli::has_text<
+	public wli::w_enable<
+		button, wli::w_focus<
+			button, wli::w_text<
 				button, wli::native_control<button>>>>
 {
 private:

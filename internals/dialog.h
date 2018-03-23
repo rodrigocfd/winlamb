@@ -6,17 +6,17 @@
  */
 
 #pragma once
-#include "thread_capable.h"
-#include "user_control.h"
+#include "w_thread_capable.h"
+#include "w_user_control.h"
 #include "scroll_inactive.h"
 #include "styler.h"
 #include "../font.h"
 
 /**
  * hwnd_base
- *  inventory
- *   thread_capable
- *    [user_control]
+ *  w_inventory
+ *   w_thread_capable
+ *    [w_user_control]
  *     dialog
  */
 
@@ -104,8 +104,8 @@ private:
 	}
 };
 
-using dialog_thread_capable = dialog<thread_capable<INT_PTR, TRUE>>;
-using dialog_user_control = dialog<user_control<INT_PTR, TRUE>>;
+using dialog_thread_capable = dialog<w_thread_capable<INT_PTR, TRUE>>;
+using dialog_user_control = dialog<w_user_control<INT_PTR, TRUE>>;
 
 }//namespace wli
 }//namespace wl

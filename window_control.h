@@ -10,9 +10,9 @@
 
 /**
  * hwnd_base
- *  inventory
- *   thread_capable
- *    user_control
+ *  w_inventory
+ *   w_thread_capable
+ *    w_user_control
  *     window
  *      window_control
  */

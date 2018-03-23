@@ -16,6 +16,8 @@ namespace wli {
 class scroll_inactive final {
 public:
 	static void apply_behavior(HWND hWnd) noexcept {
+		// Scrolling of inative windows has been natively implemented in
+		// Windows 10, so we don't need to implement it here.
 		if (IsWindows10OrGreater()) return;
 
 		EnumChildWindows(hWnd, [](HWND hChild, LPARAM lp) noexcept->BOOL {

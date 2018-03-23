@@ -15,7 +15,7 @@
 
 /**
  * hwnd_base
- *  inventory
+ *  w_inventory
  */
 
 namespace wl {
@@ -26,7 +26,7 @@ template<typename baseT> class dialog; // friend forward declarations
 template<typename baseT> class window;
 
 template<typename retT>
-class inventory : public hwnd_base {
+class w_inventory : public hwnd_base {
 	friend class subclass;
 	template<typename baseT> friend class dialog;
 	template<typename baseT> friend class window;
@@ -41,7 +41,7 @@ private:
 	bool              _canAdd = true;
 
 protected:
-	inventory() = default;
+	w_inventory() = default;
 
 private:
 	std::pair<bool, retT> _process_msg(UINT msg, WPARAM wp, LPARAM lp) noexcept {

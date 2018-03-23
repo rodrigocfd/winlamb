@@ -7,17 +7,17 @@
 
 #pragma once
 #include "internals/native_control.h"
-#include "internals/has_enable.h"
-#include "internals/has_focus.h"
-#include "internals/has_text.h"
+#include "internals/w_enable.h"
+#include "internals/w_focus.h"
+#include "internals/w_text.h"
 #include "internals/styler.h"
 
 /**
  * hwnd_base
  *  native_control
- *   has_text
- *    has_focus
- *     has_enable
+ *   w_text
+ *    w_focus
+ *     w_enable
  *      textbox
  */
 
@@ -25,9 +25,9 @@ namespace wl {
 
 // Wrapper to native edit box control.
 class textbox final :
-	public wli::has_enable<
-		textbox, wli::has_focus<
-			textbox, wli::has_text<
+	public wli::w_enable<
+		textbox, wli::w_focus<
+			textbox, wli::w_text<
 				textbox, wli::native_control<textbox>>>>
 {
 private:

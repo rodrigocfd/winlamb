@@ -8,15 +8,15 @@
 #pragma once
 #include "internals/dialog.h"
 #include "internals/loop.h"
-#include "internals/has_text.h"
+#include "internals/w_text.h"
 #include "internals/run.h"
 
 /**
  * hwnd_base
- *  inventory
- *   thread_capable
+ *  w_inventory
+ *   w_thread_capable
  *    dialog
- *     has_text
+ *     w_text
  *      dialog_main
  */
 
@@ -25,7 +25,7 @@ namespace wli { class dialog_modeless; } // friend forward declaration
 
 // Inherit from this class to have a dialog as the main window for your application.
 class dialog_main :
-	public wli::has_text<
+	public wli::w_text<
 		dialog_main, wli::dialog_thread_capable>
 {
 	friend class wli::dialog_modeless;

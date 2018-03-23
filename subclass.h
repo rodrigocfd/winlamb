@@ -6,20 +6,20 @@
  */
 
 #pragma once
-#include "internals/thread_capable.h"
+#include "internals/w_thread_capable.h"
 #include <CommCtrl.h>
 
 /**
  * hwnd_base
- *  inventory
- *   thread_capable
+ *  w_inventory
+ *   w_thread_capable
  *    subclass
  */
 
 namespace wl {
 
 // Manages window subclassing for a window.
-class subclass final : public wli::thread_capable<LRESULT, 0> {
+class subclass final : public wli::w_thread_capable<LRESULT, 0> {
 private:
 	UINT _subclassId = -1;
 

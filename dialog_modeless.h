@@ -8,14 +8,14 @@
 #pragma once
 #include "internals/dialog.h"
 #include "internals/loop.h"
-#include "internals/has_text.h"
+#include "internals/w_text.h"
 
 /**
  * hwnd_base
- *  inventory
- *   thread_capable
+ *  w_inventory
+ *   w_thread_capable
  *    dialog
- *     has_text
+ *     w_text
  *      dialog_modeless
  */
 
@@ -23,7 +23,7 @@ namespace wl {
 
 // Inherit from this class to have a dialog modeless popup.
 class dialog_modeless :
-	public wli::has_text<
+	public wli::w_text<
 		dialog_modeless, wli::dialog_thread_capable>
 {
 protected:
