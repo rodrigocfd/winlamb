@@ -85,10 +85,8 @@ public:
 	template<typename handlerT> void on_message(UINT msg, handlerT&& func)                                  { this->_can(); this->_msgs.add(msg, std::move(func)); }
 	template<typename handlerT> void on_message(std::initializer_list<UINT> msgs, handlerT&& func)          { this->_can(); this->_msgs.add(msgs, std::move(func)); }
 	template<typename handlerT> void on_command(WORD cmd, handlerT&& func)                                  { this->_can(); this->_cmds.add(cmd, std::move(func)); }
-	template<typename handlerT> void on_command(const hwnd_base& ctrl, handlerT&& func)                     { this->_can(); this->_cmds.add(GetDlgCtrlID(ctrl.hwnd()), std::move(func)); }
 	template<typename handlerT> void on_command(std::initializer_list<WORD> cmds, handlerT&& func)          { this->_can(); this->_cmds.add(cmds, std::move(func)); }
 	template<typename handlerT> void on_notify(UINT_PTR idFrom, UINT code, handlerT&& func)                 { this->_can(); this->_ntfs.add({idFrom, code}, std::move(func)); }
-	template<typename handlerT> void on_notify(const hwnd_base& ctrl, UINT code, handlerT&& func)           { this->_can(); this->_ntfs.add({GetDlgCtrlID(ctrl.hwnd()), code}, std::move(func)); }
 	template<typename handlerT> void on_notify(ntfT idFromAndCode, handlerT&& func)                         { this->_can(); this->_ntfs.add(idFromAndCode, std::move(func)); }
 	template<typename handlerT> void on_notify(std::initializer_list<ntfT> idFromAndCodes, handlerT&& func) { this->_can(); this->_ntfs.add(idFromAndCodes, std::move(func)); }
 
