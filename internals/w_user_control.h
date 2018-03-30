@@ -13,7 +13,7 @@
 
 /**
  * hwnd_base
- *  w_inventory
+ *  w_message
  *   w_thread_capable
  *    w_user_control
  */

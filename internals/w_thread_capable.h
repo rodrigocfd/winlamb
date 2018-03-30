@@ -6,12 +6,12 @@
  */
 
 #pragma once
-#include "w_inventory.h"
+#include "w_message.h"
 #include <process.h>
 
 /**
  * hwnd_base
- *  w_inventory
+ *  w_message
  *   w_thread_capable
  */
 
@@ -19,7 +19,7 @@ namespace wl {
 namespace wli {
 
 template<typename retT, retT RET_VAL>
-class w_thread_capable : public w_inventory<retT> {
+class w_thread_capable : public w_message<retT> {
 private:
 	struct _callback_pack final {
 		std::function<void()> func;

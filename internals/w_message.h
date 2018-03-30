@@ -15,7 +15,7 @@
 
 /**
  * hwnd_base
- *  w_inventory
+ *  w_message
  */
 
 namespace wl {
@@ -26,7 +26,7 @@ template<typename baseT> class dialog; // friend forward declarations
 template<typename baseT> class window;
 
 template<typename retT>
-class w_inventory : public hwnd_base {
+class w_message : public hwnd_base {
 	friend class subclass;
 	template<typename baseT> friend class dialog;
 	template<typename baseT> friend class window;
@@ -41,7 +41,7 @@ private:
 	bool              _canAdd = true;
 
 protected:
-	w_inventory() = default;
+	w_message() = default;
 
 private:
 	std::pair<bool, retT> _process_msg(UINT msg, WPARAM wp, LPARAM lp) noexcept {
@@ -82,91 +82,49 @@ private:
 	}
 
 public:
-	void trigger_command(WORD cmd) const noexcept {
-		SendMessageW(this->hwnd(), WM_COMMAND, MAKEWPARAM(cmd, 0),
-			reinterpret_cast<LPARAM>(GetDlgItem(this->hwnd(), cmd)));
-	}
-	void trigger_command(const hwnd_base& ctrl) const noexcept {
-		SendMessageW(this->hwnd(), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(ctrl.hwnd()), 0),
-			reinterpret_cast<LPARAM>(ctrl.hwnd()));
-	}
-
-	void trigger_notify(UINT_PTR idFrom, UINT code) const noexcept {
-		NMHDR nmhdr{GetDlgItem(this->hwnd(), static_cast<int>(idFrom)), idFrom, code};
-		SendMessageW(this->hwnd(), WM_NOTIFY, idFrom,
-			reinterpret_cast<LPARAM>(&nmhdr));
-	}
-	void trigger_notify(const hwnd_base& ctrl, UINT code) const noexcept {
-		UINT_PTR idFrom = static_cast<UINT_PTR>(GetDlgCtrlID(ctrl.hwnd()));
-		NMHDR nmhdr{ctrl.hwnd(), idFrom, code};
-		SendMessageW(this->hwnd(), WM_NOTIFY, idFrom,
-			reinterpret_cast<LPARAM>(&nmhdr));
-	}
-
+	// Assigns a lambda to handle a window message.
 	template<typename lambdaT>
 	void on_message(UINT msg, lambdaT&& func) {
 		this->_check_can_add();
 		this->_msgs.add(msg, std::move(func));
 	}
+	// Assigns a lambda to handle a window message.
 	template<typename lambdaT>
 	void on_message(std::initializer_list<UINT> msgs, lambdaT&& func) {
 		this->_check_can_add();
 		this->_msgs.add(msgs, std::move(func));
 	}
-	template<typename memberfuncT, typename finalclassT>
-	void on_message(UINT msg, memberfuncT&& memberFuncPtr, finalclassT* pThis) {
-		this->on_message(msg, std::bind(std::move(memberFuncPtr), pThis, std::placeholders::_1));
-	}
-	template<typename memberfuncT, typename finalclassT>
-	void on_message(std::initializer_list<UINT> msgs, memberfuncT&& memberFuncPtr, finalclassT* pThis) {
-		this->on_message(msgs, std::bind(std::move(memberFuncPtr), pThis, std::placeholders::_1));
-	}
 
+	// Assigns a lambda to handle a WM_COMMAND message.
 	template<typename lambdaT>
 	void on_command(WORD cmd, lambdaT&& func) {
 		this->_check_can_add();
 		this->_cmds.add(cmd, std::move(func));
 	}
+	// Assigns a lambda to handle a WM_COMMAND message.
 	template<typename lambdaT>
 	void on_command(std::initializer_list<WORD> cmds, lambdaT&& func) {
 		this->_check_can_add();
 		this->_cmds.add(cmds, std::move(func));
 	}
-	template<typename memberfuncT, typename finalclassT>
-	void on_command(WORD cmd, memberfuncT&& memberFuncPtr, finalclassT* pThis) {
-		this->on_command(cmd, std::bind(std::move(memberFuncPtr), pThis, std::placeholders::_1));
-	}
-	template<typename memberfuncT, typename finalclassT>
-	void on_command(std::initializer_list<WORD> cmds, memberfuncT&& memberFuncPtr, finalclassT* pThis) {
-		this->on_command(cmds, std::bind(std::move(memberFuncPtr), pThis, std::placeholders::_1));
-	}
 
+	// Assigns a lambda to handle a WM_NOTIFY message.
 	template<typename lambdaT>
 	void on_notify(UINT_PTR idFrom, UINT code, lambdaT&& func) {
 		this->_check_can_add();
 		this->_ntfs.add({idFrom, code}, std::move(func));
 	}
+	// Assigns a lambda to handle a WM_NOTIFY message.
 	template<typename lambdaT>
 	void on_notify(ntfT idFromAndCode, lambdaT&& func) {
 		this->_check_can_add();
 		this->_ntfs.add(idFromAndCode, std::move(func));
 	}
+	// Assigns a lambda to handle a WM_NOTIFY message.
 	template<typename lambdaT>
 	void on_notify(std::initializer_list<ntfT> idFromAndCodes, lambdaT&& func) {
 		this->_check_can_add();
 		this->_ntfs.add(idFromAndCodes, std::move(func));
-	}
-	template<typename memberfuncT, typename finalclassT>
-	void on_notify(UINT_PTR idFrom, UINT code, memberfuncT&& memberFuncPtr, finalclassT* pThis) {
-		this->on_notify(idFrom, code, std::bind(std::move(memberFuncPtr), pThis, std::placeholders::_1));
-	}
-	template<typename memberfuncT, typename finalclassT>
-	void on_notify(ntfT idFromAndCode, memberfuncT&& memberFuncPtr, finalclassT* pThis) {
-		this->on_notify(idFromAndCode, std::bind(std::move(memberFuncPtr), pThis, std::placeholders::_1));
-	}
-	template<typename memberfuncT, typename finalclassT>
-	void on_notify(std::initializer_list<ntfT> idFromAndCodes, memberfuncT&& memberFuncPtr, finalclassT* pThis) {
-		this->on_notify(idFromAndCodes, std::bind(std::move(memberFuncPtr), pThis, std::placeholders::_1));
 	}
 	
 private:
