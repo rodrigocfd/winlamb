@@ -74,7 +74,7 @@ public:
 		return date.QuadPart / 10000; // to milliseconds; to printf use %I64u
 	}
 
-	size_t minus(const datetime& other) const noexcept {
+	size_t ms_diff_from(const datetime& other) const noexcept {
 		LARGE_INTEGER liUs, liThem;
 		_st_to_li(this->_st, liUs);
 		_st_to_li(other._st, liThem);
