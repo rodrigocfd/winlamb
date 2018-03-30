@@ -82,6 +82,27 @@ private:
 	}
 
 public:
+	void trigger_command(WORD cmd) const noexcept {
+		SendMessageW(this->hwnd(), WM_COMMAND, MAKEWPARAM(cmd, 0),
+			reinterpret_cast<LPARAM>(GetDlgItem(this->hwnd(), cmd)));
+	}
+	void trigger_command(const hwnd_base& ctrl) const noexcept {
+		SendMessageW(this->hwnd(), WM_COMMAND, MAKEWPARAM(GetDlgCtrlID(ctrl.hwnd()), 0),
+			reinterpret_cast<LPARAM>(ctrl.hwnd()));
+	}
+
+	void trigger_notify(UINT_PTR idFrom, UINT code) const noexcept {
+		NMHDR nmhdr{GetDlgItem(this->hwnd(), static_cast<int>(idFrom)), idFrom, code};
+		SendMessageW(this->hwnd(), WM_NOTIFY, idFrom,
+			reinterpret_cast<LPARAM>(&nmhdr));
+	}
+	void trigger_notify(const hwnd_base& ctrl, UINT code) const noexcept {
+		UINT_PTR idFrom = static_cast<UINT_PTR>(GetDlgCtrlID(ctrl.hwnd()));
+		NMHDR nmhdr{ctrl.hwnd(), idFrom, code};
+		SendMessageW(this->hwnd(), WM_NOTIFY, idFrom,
+			reinterpret_cast<LPARAM>(&nmhdr));
+	}
+
 	template<typename lambdaT>
 	void on_message(UINT msg, lambdaT&& func) {
 		this->_check_can_add();
