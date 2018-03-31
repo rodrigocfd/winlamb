@@ -2,7 +2,7 @@
 
 A lightweight modern C++ library for [Win32 API](https://en.wikipedia.org/wiki/Windows_API), using [C++11 lambdas](https://www.cprogramming.com/c++11/c++11-lambda-closures.html) to handle Windows messages.
 
-### Overview
+## 1. Overview
 
 As far as I can remember, around 2002 I started wrapping all my Win32 routines in classes, to make them reusable to myself, to save my time. Through all these years it took the form of a real library, a thin abstraction layer over raw Win32. People who saw it often commented that it was good, so in 2017 I decided to publish it on GitHub.
 
@@ -12,60 +12,63 @@ Beyond dialog/window message handling, WinLamb also has wrappers for most native
 
 WinLamb by no means covers the whole Win32 API, simply because it's too huge. It just wraps some things. New features are constantly being added, though.
 
-### Setup
+## 2. Setup
 
 WinLamb is a header-only library. You can clone the repository or simply download the files; once referenced in your source code, it should work right away.
 
 It has been tested with Visual C++ 2017.
 
-#### Windows 10 manifest file
+### 2.1. Windows 10 manifest file
 
-There's an included `win10.exe.manifest` file, which you can [add to your Visual Studio project](https://stackoverflow.com/a/18115255/6923555). This manifest includes Common Controls and [Windows 10 support](https://msdn.microsoft.com/en-us/library/windows/desktop/dn481241(v=vs.85).aspx).
+There's an included `win10.exe.manifest` file, which you can [add to your Visual Studio project](https://stackoverflow.com/a/18115255/6923555). This manifest includes Common Controls and gives you [Windows 10 support](https://msdn.microsoft.com/en-us/library/windows/desktop/dn481241(v=vs.85).aspx).
 
-### Example
+## 3. Example
 
 This is a simple Win32 program written with WinLamb. Each window has a class, and messages are handled with C++11 lambdas. There's no need to write a message loop or window registering.
 
-````cpp
-// Declaration: SimpleMainWindow.h
+*Declaration:* My_Window.h
 
+````cpp
 #include "winlamb/window_main.h"
 
-class SimpleMainWindow : public wl::window_main {
+class My_Window : public wl::window_main {
 public:
-  SimpleMainWindow();
+    My_Window();
 };
 ````
 
+*Implementation:* My_Window.cpp
+
 ````cpp
-// Implementation: SimpleMainWindow.cpp
+#include "My_Window.h"
 
-#include "SimpleMainWindow.h"
-RUN(SimpleMainWindow); // wraps WinMain call
+RUN(My_Window) // optional, generate WinMain call and instantiate My_Window
 
-SimpleMainWindow::SimpleMainWindow()
+My_Window::My_Window()
 {
-  setup.wndClassEx.lpszClassName = L"SOME_CLASS_NAME";
-  setup.title = L"This is my window";
-  setup.style |= WS_MINIMIZEBOX;
+    setup.wndClassEx.lpszClassName = L"SOME_CLASS_NAME"; // class name to be registered
+    setup.title = L"This is my window";
+    setup.style |= WS_MINIMIZEBOX;
 
-  on_message(WM_CREATE, [this](wl::wm::create p)->LRESULT
-  {
-    set_text(L"A new title for the window");
-    return 0;
-  });
+    on_message(WM_CREATE, [this](wl::wm::create p)->LRESULT
+    {
+        set_text(L"A new title for the window");
+        return 0;
+    });
 
-  on_message(WM_LBUTTONDOWN, [](wl::wm::lbuttondown p)->LRESULT
-  {
-    bool isCtrlDown = p.has_ctrl();
-    long xPos = p.pos().x;
-    return 0;
-  });
+    on_message(WM_LBUTTONDOWN, [](wl::wm::lbuttondown p)->LRESULT
+    {
+        bool isCtrlDown = p.has_ctrl();
+        long xPos = p.pos().x;
+        return 0;
+    });
 }
 ````
 
+### 3.1. Project examples
+
 Full real-world projects can be seen browsing [winlamb topic](https://github.com/topics/winlamb).
 
-### License
+## 4. License
 
 Licensed under [MIT license](https://opensource.org/licenses/MIT), see LICENSE.txt for details.
