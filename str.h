@@ -195,19 +195,29 @@ public:
 	}
 
 	// Finds index of substring within string, case insensitive.
-	static size_t findi(const std::wstring& s, const wchar_t* what, size_t offset = 0) {
-		std::wstring s2 = upper(s);
-		std::wstring what2 = what;
-		CharUpperBuffW(&what2[0], static_cast<DWORD>(what2.length()));
-		return s2.find(what2, offset);
+	static size_t findi(const std::wstring& haystack, const wchar_t* needle, size_t offset = 0) {
+		std::wstring haystack2 = upper(haystack);
+		std::wstring needle2 = needle;
+		CharUpperBuffW(&needle2[0], static_cast<DWORD>(needle2.length()));
+		return haystack2.find(needle2, offset);
+	}
+
+	// Finds index of substring within string, case insensitive.
+	static size_t findi(const std::wstring& haystack, const std::wstring& needle, size_t offset = 0) {
+		return findi(haystack, needle.c_str(), offset);
 	}
 
 	// Finds index of substring within string, case insensitive, reverse search.
-	static size_t rfindi(const std::wstring& s, const wchar_t* what, size_t offset = 0) {
-		std::wstring s2 = upper(s);
-		std::wstring what2 = what;
-		CharUpperBuffW(&what2[0], static_cast<DWORD>(what2.length()));
-		return s2.rfind(what2, offset);
+	static size_t rfindi(const std::wstring& haystack, const wchar_t* needle, size_t offset = 0) {
+		std::wstring haystack2 = upper(haystack);
+		std::wstring needle2 = needle;
+		CharUpperBuffW(&needle2[0], static_cast<DWORD>(needle2.length()));
+		return haystack2.rfind(needle2, offset);
+	}
+
+	// Finds index of substring within string, case insensitive, reverse search.
+	static size_t rfindi(const std::wstring& haystack, const std::wstring& needle, size_t offset = 0) {
+		return rfindi(haystack, needle, offset);
 	}
 
 	static std::wstring& replace(std::wstring& haystack, const std::wstring& needle, const std::wstring& replacement) {
