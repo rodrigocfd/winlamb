@@ -17,6 +17,7 @@ protected:
 	w_focus() = default;
 
 public:
+	// Simple wrapper to SetFocus.
 	derivedT& set_focus() noexcept {
 		SetFocus(this->hwnd());
 		return *static_cast<derivedT*>(this);

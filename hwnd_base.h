@@ -31,6 +31,7 @@ protected:
 	hwnd_base() = default;
 
 public:
+	// Returns the HWND of the window, which can be used in normal Win32 functions.
 	HWND hwnd() const noexcept {
 		return this->_hWnd;
 	}

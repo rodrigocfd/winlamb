@@ -17,10 +17,12 @@ protected:
 	w_enable() = default;
 
 public:
+	// Simple wrapper to IsWindowEnabled.
 	bool is_enabled() const noexcept {
 		return IsWindowEnabled(this->hwnd());
 	}
 
+	// Simple wrapper to EnableWindow.
 	derivedT& set_enable(bool doEnable) noexcept {
 		EnableWindow(this->hwnd(), doEnable);
 		return *static_cast<derivedT*>(this);

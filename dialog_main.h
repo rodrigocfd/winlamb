@@ -54,6 +54,7 @@ protected:
 	}
 
 public:
+	// Runs the dialog as the main program window; intended to be called in WinMain.
 	int winmain_run(HINSTANCE hInst, int cmdShow) {
 		InitCommonControls();
 		this->_basic_initial_checks(this->setup);

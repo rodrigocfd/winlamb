@@ -56,6 +56,7 @@ public:
 		return static_cast<int>(ret); // value passed to EndDialog()
 	}
 
+	// Shows the modal dialog, returning only after the modal is closed.
 	int show(const hwnd_base* parent) {
 		return this->show(parent->hwnd());
 	}

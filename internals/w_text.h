@@ -18,15 +18,18 @@ protected:
 	w_text() = default;
 
 public:
+	// Simple wrapper to SetWindowText.
 	derivedT& set_text(const wchar_t* s) noexcept {
 		SetWindowTextW(this->hwnd(), s);
 		return *static_cast<derivedT*>(this);
 	}
 
+	// Simple wrapper to SetWindowText.
 	derivedT& set_text(const std::wstring& s) noexcept {
 		return this->set_text(s.c_str());
 	}
 
+	// Simple wrapper to GetWindowText.
 	std::wstring get_text() const {
 		std::wstring buf;
 		int len = GetWindowTextLengthW(this->hwnd());

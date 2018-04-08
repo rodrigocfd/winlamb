@@ -62,6 +62,7 @@ protected:
 	}
 
 public:
+	// Runs the window as the main program window; intended to be called in WinMain.
 	int winmain_run(HINSTANCE hInst, int cmdShow) {
 		InitCommonControls();
 		this->_register_create(this->setup, nullptr, hInst);

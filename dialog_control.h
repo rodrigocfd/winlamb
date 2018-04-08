@@ -27,6 +27,7 @@ protected:
 	setup_vars setup;
 
 public:
+	// Creates the control dialog, returning immediately.
 	void create(HWND hParent, int ctrlId, POINT position, SIZE size) {
 		// Dialog styles to be set on the resource editor:
 		// - Border: none
@@ -53,6 +54,7 @@ public:
 			size.cx, size.cy, SWP_NOZORDER);
 	}
 
+	// Creates the control dialog, returning immediately.
 	void create(const hwnd_base* parent, int ctrlId, POINT position, SIZE size) {
 		this->create(parent->hwnd(), ctrlId, position, size);
 	}

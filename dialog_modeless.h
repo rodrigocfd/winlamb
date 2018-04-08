@@ -49,8 +49,9 @@ protected:
 	}
 
 public:
+	// Creates the modeless dialog, returning immediately.
 	template<typename has_loopT>
-	void show(has_loopT* parent) {
+	void create(has_loopT* parent) {
 		this->_basic_initial_checks(this->setup);
 
 		this->_parent = parent;
@@ -69,9 +70,10 @@ public:
 		ShowWindow(this->hwnd(), SW_SHOW);
 	}
 
+	// Creates the modeless dialog, returning immediately.
 	template<typename has_loopT>
-	void show(has_loopT* parent, POINT clientPos) {
-		this->show(parent);
+	void create(has_loopT* parent, POINT clientPos) {
+		this->create(parent);
 		POINT parentPos = clientPos;
 		ClientToScreen(parent->hwnd(), &parentPos); // now relative to parent
 		SetWindowPos(this->hwnd(), nullptr,

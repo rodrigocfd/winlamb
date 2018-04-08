@@ -39,6 +39,7 @@ protected:
 	}
 
 public:
+	// Creates the control window, returning immediately.
 	void create(HWND hParent, int ctrlId, POINT position, SIZE size) {
 		this->setup.position = position;
 		this->setup.size = size;
@@ -46,6 +47,7 @@ public:
 		this->_register_create(this->setup, hParent);
 	}
 
+	// Creates the control window, returning immediately.
 	void create(const hwnd_base* parent, int ctrlId, POINT position, SIZE size) {
 		this->create(parent->hwnd(), ctrlId, position, size);
 	}
