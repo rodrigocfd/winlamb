@@ -9,7 +9,7 @@
 #include <functional>
 #include "internals/download_session.h"
 #include "internals/download_url.h"
-#include "held_map.h"
+#include "insert_order_map.h"
 #include "str.h"
 
 namespace wl {
@@ -20,13 +20,13 @@ public:
 	using url_crack = wli::download_url;
 
 private:
-	const session&                       _session;
-	HINTERNET                            _hConnect = nullptr, _hRequest = nullptr;
-	size_t                               _contentLength = 0, _totalGot = 0;
-	std::wstring                         _url, _verb, _referrer;
-	held_map<std::wstring, std::wstring> _requestHeaders;
-	held_map<std::wstring, std::wstring> _responseHeaders;
-	std::function<void()>                _startCallback, _progressCallback;
+	const session& _session;
+	HINTERNET      _hConnect = nullptr, _hRequest = nullptr;
+	size_t         _contentLength = 0, _totalGot = 0;
+	std::wstring   _url, _verb, _referrer;
+	insert_order_map<std::wstring, std::wstring> _requestHeaders;
+	insert_order_map<std::wstring, std::wstring> _responseHeaders;
+	std::function<void()> _startCallback, _progressCallback;
 
 public:
 	std::vector<BYTE> data;
@@ -107,10 +107,10 @@ public:
 		return this->abort(); // cleanup
 	}
 
-	const held_map<std::wstring, std::wstring>& get_request_headers() const noexcept  { return this->_requestHeaders; }
-	const held_map<std::wstring, std::wstring>& get_response_headers() const noexcept { return this->_responseHeaders; }
-	size_t                                      get_content_length() const noexcept   { return this->_contentLength; }
-	size_t                                      get_total_downloaded() const noexcept { return this->_totalGot; }
+	const insert_order_map<std::wstring, std::wstring>& get_request_headers() const noexcept  { return this->_requestHeaders; }
+	const insert_order_map<std::wstring, std::wstring>& get_response_headers() const noexcept { return this->_responseHeaders; }
+	size_t get_content_length() const noexcept   { return this->_contentLength; }
+	size_t get_total_downloaded() const noexcept { return this->_totalGot; }
 
 	// If server informed content length, returns a value between 0 and 100.
 	float get_percent() const noexcept {
@@ -151,7 +151,7 @@ private:
 		// Add the request headers to request handle.
 		std::wstring rhTmp;
 		rhTmp.reserve(20);
-		for (const held_map<std::wstring, std::wstring>::entry& rh : this->_requestHeaders) {
+		for (const insert_order_map<std::wstring, std::wstring>::entry& rh : this->_requestHeaders) {
 			rhTmp = rh.key;
 			rhTmp += L": ";
 			rhTmp += rh.value;

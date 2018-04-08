@@ -7,7 +7,7 @@
 
 #pragma once
 #include "file_mapped.h"
-#include "held_map.h"
+#include "insert_order_map.h"
 #include "str.h"
 
 namespace wl {
@@ -15,20 +15,20 @@ namespace wl {
 // Wrapper to INI file.
 class file_ini final {
 public:
-	held_map<std::wstring, held_map<std::wstring, std::wstring>> sections;
+	insert_order_map<std::wstring, insert_order_map<std::wstring, std::wstring>> sections;
 
-	const held_map<std::wstring, std::wstring>& operator[](const std::wstring& sectionName) const {
+	const insert_order_map<std::wstring, std::wstring>& operator[](const std::wstring& sectionName) const {
 		return this->sections.operator[](sectionName);
 	}
 
-	held_map<std::wstring, std::wstring>& operator[](const std::wstring& sectionName) noexcept {
+	insert_order_map<std::wstring, std::wstring>& operator[](const std::wstring& sectionName) noexcept {
 		return this->sections.operator[](sectionName);
 	}
 
 	file_ini& load_from_file(const wchar_t* filePath) {
 		std::wstring content = str::to_wstring(file_mapped::util::read(filePath));
 		std::vector<std::wstring> lines = str::explode(content, str::get_linebreak(content));
-		held_map<std::wstring, std::wstring>* curSection = nullptr; // section-less keys will be ignored
+		insert_order_map<std::wstring, std::wstring>* curSection = nullptr; // section-less keys will be ignored
 		std::wstring tmpName, tmpValue; // temporary buffers
 
 		for (std::wstring& line : lines) {
@@ -66,8 +66,8 @@ public:
 		std::wstring out;
 		bool isFirst = true;
 
-		using sectionT = held_map<std::wstring, held_map<std::wstring, std::wstring>>::entry;
-		using entryT = held_map<std::wstring, std::wstring>::entry;
+		using sectionT = insert_order_map<std::wstring, insert_order_map<std::wstring, std::wstring>>::entry;
+		using entryT = insert_order_map<std::wstring, std::wstring>::entry;
 
 		for (const sectionT& sectionEntry : this->sections) {
 			if (isFirst) {
@@ -87,9 +87,9 @@ public:
 
 	// Checks INI file structure against "[section1]keyA,keyB,keyC[section2]keyX,keyY".
 	bool structure_is(const std::wstring& structure) const {
-		using strvec = std::vector<std::wstring>;
-		for (const held_map<std::wstring, strvec>::entry& descrSectionEntry : this->_parse_structure(structure)) {
-			const held_map<std::wstring, std::wstring>* pCurSection = this->sections.get_if_exists(descrSectionEntry.key);
+		using strvecT = std::vector<std::wstring>;
+		for (const insert_order_map<std::wstring, strvecT>::entry& descrSectionEntry : this->_parse_structure(structure)) {
+			const insert_order_map<std::wstring, std::wstring>* pCurSection = this->sections.get_if_exists(descrSectionEntry.key);
 			if (!pCurSection) return false; // section name not found
 			for (const std::wstring& descrKeyEntry : descrSectionEntry.value) {
 				if (!pCurSection->has(descrKeyEntry)) return false; // key name not found
@@ -99,14 +99,14 @@ public:
 	}
 
 private:
-	held_map<std::wstring, std::vector<std::wstring>> _parse_structure(const std::wstring& structure) const {
-		using strvec = std::vector<std::wstring>;
-		held_map<std::wstring, strvec> parsed;
-		strvec secBlocks = str::explode(structure, L"[");
+	insert_order_map<std::wstring, std::vector<std::wstring>> _parse_structure(const std::wstring& structure) const {
+		using strvecT = std::vector<std::wstring>;
+		insert_order_map<std::wstring, strvecT> parsed;
+		strvecT secBlocks = str::explode(structure, L"[");
 		for (std::wstring& secBlock : secBlocks) {
 			if (secBlock.empty()) continue;
 			size_t endSecIdx = secBlock.find_first_of(L']');
-			strvec& curSec = parsed[secBlock.substr(0, endSecIdx)];
+			strvecT& curSec = parsed[secBlock.substr(0, endSecIdx)];
 			secBlock.erase(0, endSecIdx + 1);
 			curSec = str::explode(secBlock, L",");
 		}

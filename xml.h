@@ -8,7 +8,7 @@
 #pragma once
 #include <string>
 #include "com.h"
-#include "held_map.h"
+#include "insert_order_map.h"
 #include <MsXml2.h>
 #pragma comment(lib, "msxml2.lib")
 
@@ -21,7 +21,7 @@ public:
 	public:
 		std::wstring name;
 		std::wstring value;
-		held_map<std::wstring, std::wstring> attrs;
+		insert_order_map<std::wstring, std::wstring> attrs;
 		std::vector<node> children;
 
 		void clear() noexcept {
@@ -157,7 +157,7 @@ private:
 		return ret;
 	}
 
-	static held_map<std::wstring, std::wstring> _read_attrs(com::ptr<IXMLDOMNode>& xmlnode) {
+	static insert_order_map<std::wstring, std::wstring> _read_attrs(com::ptr<IXMLDOMNode>& xmlnode) {
 		// Read attribute collection.
 		com::ptr<IXMLDOMNamedNodeMap> attrs;
 		xmlnode->get_attributes(&attrs);
@@ -165,7 +165,7 @@ private:
 		long attrCount = 0;
 		attrs->get_length(&attrCount);
 
-		held_map<std::wstring, std::wstring> ret;
+		insert_order_map<std::wstring, std::wstring> ret;
 		ret.reserve(attrCount);
 
 		for (long i = 0; i < attrCount; ++i) {

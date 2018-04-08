@@ -10,9 +10,9 @@
 
 namespace wl {
 
-// Vector-based associative container which holds the insertion order.
+// Vector-based associative container which keeps the insertion order.
 template<typename keyT, typename valueT>
-class held_map final {
+class insert_order_map final {
 public:
 	struct entry final {
 		keyT   key;
@@ -27,16 +27,16 @@ private:
 	std::vector<entry> _entries;
 
 public:
-	held_map() = default;
-	held_map(held_map&& other) noexcept : _entries{std::move(other._entries)} { }
-	held_map(std::initializer_list<entry> entries) : _entries{entries} { }
+	insert_order_map() = default;
+	insert_order_map(insert_order_map&& other) noexcept : _entries{std::move(other._entries)} { }
+	insert_order_map(std::initializer_list<entry> entries) : _entries{entries} { }
 
-	size_t    size() const noexcept      { return this->_entries.size(); }
-	bool      empty() const noexcept     { return this->_entries.empty(); }
-	held_map& clear() noexcept           { this->_entries.clear(); return *this; }
-	held_map& reserve(size_t numEntries) { this->_entries.reserve(numEntries); return *this; }
+	size_t            size() const noexcept      { return this->_entries.size(); }
+	bool              empty() const noexcept     { return this->_entries.empty(); }
+	insert_order_map& clear() noexcept           { this->_entries.clear(); return *this; }
+	insert_order_map& reserve(size_t numEntries) { this->_entries.reserve(numEntries); return *this; }
 
-	held_map& operator=(held_map&& other) noexcept {
+	insert_order_map& operator=(insert_order_map&& other) noexcept {
 		this->empty();
 		this->_entries.swap(other._entries);
 		return *this;
@@ -79,7 +79,7 @@ public:
 		return this->_find(key) != this->_entries.cend();
 	}
 
-	held_map& remove(const keyT& key) {
+	insert_order_map& remove(const keyT& key) {
 		std::vector<entry>::iterator ite = this->_find(key);
 		if (ite != this->_entries.end()) { // won't fail if inexistent
 			this->_entries.erase(ite);
