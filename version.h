@@ -108,7 +108,7 @@ public:
 		wchar_t buf[MAX_PATH + 1]{};
 		if (!GetModuleFileNameW(nullptr, buf, ARRAYSIZE(buf))) {
 			throw std::system_error(GetLastError(), std::system_category(),
-				"GetModuleFileName failed for control dialog");
+				"GetModuleFileName failed");
 		}
 		return this->read(buf);
 	}
