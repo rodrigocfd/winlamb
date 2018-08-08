@@ -105,7 +105,8 @@ private:
 			hInst = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hParent, GWLP_HINSTANCE));
 		}
 
-		ATOM atom = this->_register_class(this->_gen_wndclassex(setup.wndClassEx, hInst), setup);
+		WNDCLASSEXW wcx = this->_gen_wndclassex(setup.wndClassEx, hInst);
+		ATOM atom = this->_register_class(wcx, setup);
 
 		if (!CreateWindowExW(setup.exStyle,
 			MAKEINTATOM(atom), setup.title, setup.style,
