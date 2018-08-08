@@ -14,6 +14,7 @@
 
 namespace wl {
 
+// Automates internet download operations.
 class download final {
 public:
 	using session = wli::download_session;

@@ -13,6 +13,7 @@
 
 namespace wl {
 
+// Parses version information from an EXE or DLL.
 class version final {
 public:
 	std::array<UINT, 4> num;

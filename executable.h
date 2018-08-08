@@ -11,10 +11,10 @@
 
 namespace wl {
 
-// Utilities to process-related stuff.
-class process final {
+// Utilities to executable-related stuff.
+class executable final {
 private:
-	process() = delete;
+	executable() = delete;
 
 public:
 	// Retrieves the program's command line, tokenized.
