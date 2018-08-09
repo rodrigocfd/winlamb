@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "internals/path_get.h"
+#include "str.h"
 
 namespace wl {
 
@@ -16,8 +16,6 @@ private:
 	path() = delete;
 
 public:
-	using get = wli::path_get;
-
 	static std::wstring& trim_backslash(std::wstring& filePath) {
 		while (filePath.back() == L'\\') {
 			filePath.resize(filePath.length() - 1);

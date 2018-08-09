@@ -17,6 +17,24 @@ private:
 	executable() = delete;
 
 public:
+	// Retrieves path to current running EXE itself.
+	static std::wstring get_own_path() {
+		wchar_t buf[MAX_PATH + 1]{};
+		if (!GetModuleFileNameW(nullptr, buf, ARRAYSIZE(buf))) { // full path name
+			throw std::system_error(GetLastError(), std::system_category(),
+				"GetModuleFileName failed");
+		}
+		std::wstring ret = buf;
+		ret.resize(ret.find_last_of(L'\\')); // truncate removing EXE filename and trailing backslash
+#ifdef _DEBUG
+		ret.resize(ret.find_last_of(L'\\')); // bypass "Debug" folder, remove trailing backslash too
+#ifdef _WIN64
+		ret.resize(ret.find_last_of(L'\\')); // bypass "x64" folder, remove trailing backslash again
+#endif
+#endif
+		return ret;
+	}
+
 	// Retrieves the program's command line, tokenized.
 	static std::vector<std::wstring> get_cmd_line() {
 		return str::explode_quoted(GetCommandLineW());
@@ -37,7 +55,7 @@ public:
 		DWORD dwExitCode = 1; // returned by executed program
 
 		std::wstring cmdLine2 = cmdLine; // http://blogs.msdn.com/b/oldnewthing/archive/2009/06/01/9673254.aspx
-		
+
 		if (!CreateProcessW(nullptr, &cmdLine2[0], &sa, nullptr, FALSE,
 			0, nullptr, nullptr, &si, &pi))
 		{
