@@ -83,12 +83,12 @@ To create your windows, you inherit from these classes below. See the [article](
 
 | Class | Description |
 | :--- | :--- |
-| [`dialog_control`](dialog_control.h) | Inherit from this class to have a dialog to be used as a control within a parent window. |
-| [`dialog_main`](dialog_main.h) | Inherit from this class to have a dialog as the main window for your application. |
-| [`dialog_modal`](dialog_modal.h) | Inherit from this class to have a modal dialog popup. |
-| [`dialog_modeless`](dialog_modeless.h) | Inherit from this class to have a dialog modeless popup. |
-| [`window_control`](window_control.h) | Inherit from this class to have an user-custom window control. |
-| [`window_main`](window_main.h) | Inherit from this class to have an ordinary main window for your application. |
+| [`dialog_control`](dialog_control.h) | Inherit from this class to have a dialog to be used [as a control](https://www.codeproject.com/Articles/1184175/WinLamb-using-Cplusplus-lambdas-to-handle-Win-mess#section3.8) within a parent window. |
+| [`dialog_main`](dialog_main.h) | Inherit from this class to have a dialog as the [main window](https://www.codeproject.com/Articles/1184175/WinLamb-using-Cplusplus-lambdas-to-handle-Win-mess#section3.3) for your application. |
+| [`dialog_modal`](dialog_modal.h) | Inherit from this class to have a [modal dialog popup](https://www.codeproject.com/Articles/1184175/WinLamb-using-Cplusplus-lambdas-to-handle-Win-mess#section3.5). |
+| [`dialog_modeless`](dialog_modeless.h) | Inherit from this class to have a [dialog modeless popup](https://www.codeproject.com/Articles/1184175/WinLamb-using-Cplusplus-lambdas-to-handle-Win-mess#section3.6). |
+| [`window_control`](window_control.h) | Inherit from this class to have an [user-custom window control](https://www.codeproject.com/Articles/1184175/WinLamb-using-Cplusplus-lambdas-to-handle-Win-mess#section3.7). |
+| [`window_main`](window_main.h) | Inherit from this class to have an ordinary [main window](https://www.codeproject.com/Articles/1184175/WinLamb-using-Cplusplus-lambdas-to-handle-Win-mess#section3.1) for your application. |
 
 Wrappers and utility classes:
 
