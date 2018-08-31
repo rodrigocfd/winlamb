@@ -13,6 +13,7 @@
 namespace wl {
 namespace wli {
 
+// Generic storage for message identifiers and their respective lambda handlers.
 template<typename idT, typename retT>
 class store final {
 public:

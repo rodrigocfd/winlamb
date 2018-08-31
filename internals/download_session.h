@@ -15,6 +15,7 @@
 namespace wl {
 namespace wli {
 
+// Wrapper to HINTERNET handle.
 class download_session final {
 private:
 	HINTERNET _hSession = nullptr;

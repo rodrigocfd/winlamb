@@ -16,6 +16,7 @@
 namespace wl {
 namespace wli {
 
+// Base class to native Windows controls.
 template<typename derivedT>
 class native_control : public hwnd_base {
 protected:

@@ -12,6 +12,7 @@
 namespace wl {
 namespace wli {
 
+// Wrapper to device context HPEN.
 class pen final {
 public:
 	enum class style : int {
@@ -48,6 +49,7 @@ public:
 	}
 };
 
+// Wrapper to device context HBRUSH.
 class brush final {
 public:
 	enum class pattern : int {

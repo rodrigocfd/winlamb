@@ -15,6 +15,7 @@
 namespace wl {
 namespace wli {
 
+// Wrapper to WinHttpCrackUrl function.
 class download_url final {
 private:
 	URL_COMPONENTS _uc{};

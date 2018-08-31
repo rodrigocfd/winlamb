@@ -11,6 +11,7 @@
 namespace wl {
 namespace wli {
 
+// Wraps window style changes with Get/SetWindowLongPtr, and allows custom methods.
 template<typename wndT>
 class styler {
 private:

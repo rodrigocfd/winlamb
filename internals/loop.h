@@ -13,6 +13,7 @@
 namespace wl {
 namespace wli {
 
+// Wraps the main program loop.
 class loop final {
 private:
 	std::vector<HWND> _modelessChildren;
