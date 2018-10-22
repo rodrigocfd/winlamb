@@ -581,9 +581,9 @@ namespace wm {
 	struct settingchange : public params {
 		settingchange(const params& p) noexcept : params(p) { }
 		const wchar_t* string_id() const noexcept           { return reinterpret_cast<const wchar_t*>(this->lParam); }
-		bool           is_policy() const noexcept           { return !lstrcmp(this->string_id(), L"Policy"); }
-		bool           is_locale() const noexcept           { return !lstrcmp(this->string_id(), L"intl"); }
-		bool           is_environment_vars() const noexcept { return !lstrcmp(this->string_id(), L"Environment"); }
+		bool           is_policy() const noexcept           { return !lstrcmpW(this->string_id(), L"Policy"); }
+		bool           is_locale() const noexcept           { return !lstrcmpW(this->string_id(), L"intl"); }
+		bool           is_environment_vars() const noexcept { return !lstrcmpW(this->string_id(), L"Environment"); }
 	};
 	struct showwindow : public params {
 		showwindow(const params& p) noexcept : params(p) { }

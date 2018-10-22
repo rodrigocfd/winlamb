@@ -42,7 +42,7 @@ private:
 
 	class _styler final : public wli::styler<window> {
 	public:
-		explicit _styler(window* pWindow) noexcept : styler(pWindow) { }
+		explicit _styler(window* pWindow) noexcept : wli::styler<window>(pWindow) { }
 	};
 
 protected:
@@ -109,7 +109,8 @@ private:
 		ATOM atom = this->_register_class(wcx, setup);
 
 		if (!CreateWindowExW(setup.exStyle,
-			MAKEINTATOM(atom), setup.title, setup.style,
+			reinterpret_cast<LPCWSTR>(static_cast<ULONG_PTR>(static_cast<WORD>(atom))), // from MAKEINTATOM macro
+			setup.title, setup.style,
 			setup.position.x, setup.position.y, setup.size.cx, setup.size.cy,
 			hParent, setup.menu, hInst, static_cast<LPVOID>(this)) )
 		{

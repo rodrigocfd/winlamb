@@ -83,12 +83,12 @@ To create your windows, you inherit from these classes below. See the [article](
 
 | Class | Description |
 | :--- | :--- |
-| [`dialog_control`](dialog_control.h) | Inherit from this class to have a dialog to be used [as a control](https://www.codeproject.com/Articles/1184175/WinLamb-using-Cplusplus-lambdas-to-handle-Win-mess#section3.8) within a parent window. |
-| [`dialog_main`](dialog_main.h) | Inherit from this class to have a dialog as the [main window](https://www.codeproject.com/Articles/1184175/WinLamb-using-Cplusplus-lambdas-to-handle-Win-mess#section3.3) for your application. |
-| [`dialog_modal`](dialog_modal.h) | Inherit from this class to have a [modal dialog popup](https://www.codeproject.com/Articles/1184175/WinLamb-using-Cplusplus-lambdas-to-handle-Win-mess#section3.5). |
-| [`dialog_modeless`](dialog_modeless.h) | Inherit from this class to have a [dialog modeless popup](https://www.codeproject.com/Articles/1184175/WinLamb-using-Cplusplus-lambdas-to-handle-Win-mess#section3.6). |
-| [`window_control`](window_control.h) | Inherit from this class to have an [user-custom window control](https://www.codeproject.com/Articles/1184175/WinLamb-using-Cplusplus-lambdas-to-handle-Win-mess#section3.7). |
-| [`window_main`](window_main.h) | Inherit from this class to have an ordinary [main window](https://www.codeproject.com/Articles/1184175/WinLamb-using-Cplusplus-lambdas-to-handle-Win-mess#section3.1) for your application. |
+| [`dialog_control`](dialog_control.h) | Inherit from this class to have a dialog to be used as a control within a parent window. |
+| [`dialog_main`](dialog_main.h) | Inherit from this class to have a dialog as the main window for your application. |
+| [`dialog_modal`](dialog_modal.h) | Inherit from this class to have a modal dialog popup. |
+| [`dialog_modeless`](dialog_modeless.h) | Inherit from this class to have a dialog modeless popup. |
+| [`window_control`](window_control.h) | Inherit from this class to have an user-custom window control. |
+| [`window_main`](window_main.h) | Inherit from this class to have an ordinary main window for your application. |
 
 Wrappers and utility classes:
 
@@ -115,7 +115,7 @@ Wrappers and utility classes:
 | [`image_list`](image_list.h) | Wrapper to image list object from Common Controls library. |
 | [`insert_order_map`](insert_order_map.h) | Vector-based associative container which keeps the insertion order. |
 | [`label`](label.h) | Wrapper to native static text control. |
-| [`listview`](listview.h) | Wrapper to listview control from Common Controls library. |
+| [`list_view`](list_view.h) | Wrapper to listview control from Common Controls library. |
 | [`menu`](menu.h) | Wrapper to HMENU handle. |
 | [`path`](path.h) | Utilities to file path operations with std::wstring. |
 | [`progress_taskbar`](progress_taskbar.h) | Allows to show a progress bar in the taskbar button of the window, in green, yellow or red. |
