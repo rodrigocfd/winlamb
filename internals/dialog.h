@@ -42,6 +42,7 @@ private:
 	};
 
 protected:
+	// Variables to be set by user, used only during window creation.
 	struct setup_vars {
 		int dialogId = 0;
 	};

@@ -30,6 +30,7 @@ class window : public baseT {
 	friend class window_main;
 
 private:
+	// Reduced version of WNDCLASSEX to be used within setup_vars.
 	struct _wndclassex_less final {
 		UINT           style = 0;
 		HICON          hIcon = nullptr;
@@ -46,6 +47,7 @@ private:
 	};
 
 protected:
+	// Variables to be set by user, used only during window creation.
 	struct setup_vars {
 		_wndclassex_less wndClassEx;
 		const wchar_t*   title = nullptr;

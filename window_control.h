@@ -31,7 +31,7 @@ protected:
 		this->setup.wndClassEx.style = CS_DBLCLKS;
 		this->setup.style = CS_DBLCLKS | WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
-		// Useful styles to add:
+		// Useful styles to be added by user:
 		// WS_TABSTOP will receive focus on Tab key rotation
 		// WS_HSCROLL adds horizontal scrollbar
 		// WS_VSCROLL adds vertical scrollbar

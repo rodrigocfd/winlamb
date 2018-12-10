@@ -49,7 +49,7 @@ protected:
 		this->setup.size = {CW_USEDEFAULT, CW_USEDEFAULT};
 		this->setup.style = WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_BORDER;
 
-		// Useful styles to add:
+		// Useful styles to be added by user:
 		// WS_SIZEBOX resizable window
 		// WS_MAXIMIZEBOX adds maximize button
 		// WS_MINIMIZEBOX adds minimize button
