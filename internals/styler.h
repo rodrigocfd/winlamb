@@ -29,18 +29,22 @@ protected:
 	wndT& target() const noexcept { return this->_wnd; }
 
 public:
+	// Sets an ordinary window style, wraps SetWindowLongPtr.
 	wndT& set_style(bool addStyle, DWORD styleFlags) noexcept {
 		return this->_change_style_flags(false, addStyle, styleFlags);
 	}
 
+	// Sets an extended window style, wraps SetWindowLongPtr.
 	wndT& set_style_ex(bool addStyle, DWORD styleFlags) noexcept {
 		return this->_change_style_flags(true, addStyle, styleFlags);
 	}
 
+	// Wraps GetWindowLongPtr to retrieve an ordinary window style.
 	bool has_style(DWORD styleFlags) const noexcept {
 		return (GetWindowLongPtrW(this->_wnd.hwnd(), GWL_STYLE) & styleFlags) != 0;
 	}
 
+	// Wraps GetWindowLongPtr to retrieve an extended window style.
 	bool has_style_ex(DWORD styleFlags) const noexcept {
 		return (GetWindowLongPtrW(this->_wnd.hwnd(), GWL_EXSTYLE) & styleFlags) != 0;
 	}

@@ -17,6 +17,7 @@ namespace wl {
 // XML wrapper class to MSXML2 Windows library.
 class xml final {
 public:
+	// A single XML node.
 	class node final {
 	public:
 		std::wstring name;
@@ -63,6 +64,7 @@ private:
 	com::lib _comLib{com::lib::init::LATER};
 
 public:
+	// Root node of this XML document.
 	node root;
 
 	xml() = default;
@@ -77,7 +79,7 @@ public:
 	}
 
 	xml& parse(const wchar_t* str) {
-		this->_comLib.initialize();
+		this->_comLib.initialize(); // init COM library, if not yet
 		this->root.clear();
 
 		// Create COM object for XML document.
@@ -176,7 +178,7 @@ private:
 			attr->get_nodeType(&type);
 			if (type == NODE_ATTRIBUTE) {
 				com::bstr bstrName;
-				attr->get_nodeName(&bstrName); // get attribute name				
+				attr->get_nodeName(&bstrName); // get attribute name
 				com::variant variNodeVal;
 				attr->get_nodeValue(&variNodeVal); // get attribute value
 				ret[bstrName.c_str()] = variNodeVal.get_str(); // add hash entry
