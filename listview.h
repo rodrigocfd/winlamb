@@ -6,36 +6,22 @@
  */
 
 #pragma once
-#include "internals/native_control.h"
-#include "internals/w_enable.h"
-#include "internals/w_focus.h"
+#include "internals/base_native_ctrl_impl.h"
 #include "internals/listview_column_collection.h"
 #include "internals/listview_item_collection.h"
 #include "internals/listview_styler.h"
 #include "internals/member_image_list.h"
-#include "subclass.h"
 #include "menu.h"
-
-/**
- * hwnd_base
- *  native_control
- *   w_focus
- *    w_enable
- *     listview
- */
+#include "subclass.h"
+#include "wnd.h"
 
 namespace wl {
 
 // Wrapper to listview control from Common Controls library.
 class listview final :
-	public wli::w_enable<
-		listview, wli::w_focus<
-			listview, wli::native_control<listview>>>
+	public wnd,
+	public wli::base_native_ctrl_impl<listview>
 {
-private:
-	using _column_collection = wli::listview_column_collection<listview>;
-	using _item_collection = wli::listview_item_collection<listview>;
-
 public:
 	using item = wli::listview_item<listview>;
 
@@ -48,11 +34,18 @@ public:
 	};
 
 private:
-	subclass _subclass;
-	menu     _contextMenu;
+	using _column_collection = wli::listview_column_collection<listview>;
+	using _item_collection = wli::listview_item_collection<listview>;
+
+	HWND                  _hWnd = nullptr;
+	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
+	subclass              _subclass;
+	menu                  _contextMenu;
 
 public:
+	// Wraps window style changes done by Get/SetWindowLongPtr.
 	wli::listview_styler<listview>   style{this};
+
 	_item_collection                 items{this};
 	_column_collection               columns{this};
 	wli::member_image_list<listview> imageList16{this, 16}, imageList32{this, 32};
@@ -61,32 +54,34 @@ public:
 		this->_contextMenu.destroy();
 	}
 
-	listview() {
+	listview() :
+		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl)
+	{
 		this->imageList16.on_create([this]() noexcept->void {
-			ListView_SetImageList(this->hwnd(), this->imageList16.himagelist(), LVSIL_SMALL);
+			ListView_SetImageList(this->_hWnd, this->imageList16.himagelist(), LVSIL_SMALL);
 		});
 
 		this->imageList32.on_create([this]() noexcept->void {
-			ListView_SetImageList(this->hwnd(), this->imageList32.himagelist(), LVSIL_NORMAL);
+			ListView_SetImageList(this->_hWnd, this->imageList32.himagelist(), LVSIL_NORMAL);
 		});
 
 		this->_subclass.on_message(WM_GETDLGCODE, [this](wm::getdlgcode p) noexcept->LRESULT {
 			if (!p.is_query() && p.vkey_code() == 'A' && p.has_ctrl()) { // Ctrl+A to select all items
-				ListView_SetItemState(this->hwnd(), -1, LVIS_SELECTED, LVIS_SELECTED);
+				ListView_SetItemState(this->_hWnd, -1, LVIS_SELECTED, LVIS_SELECTED);
 				return DLGC_WANTCHARS;
 			} else if (!p.is_query() && p.vkey_code() == VK_RETURN) { // send Enter key to parent
 				NMLVKEYDOWN nmlvkd = {
-					{this->hwnd(), static_cast<WORD>(this->control_id()), LVN_KEYDOWN},
+					{this->_hWnd, static_cast<WORD>(this->ctrl_id()), LVN_KEYDOWN},
 					VK_RETURN, 0
 				};
-				SendMessageW(GetAncestor(this->hwnd(), GA_PARENT),
-					WM_NOTIFY, reinterpret_cast<WPARAM>(this->hwnd()),
+				SendMessageW(GetAncestor(this->_hWnd, GA_PARENT),
+					WM_NOTIFY, reinterpret_cast<WPARAM>(this->_hWnd),
 					reinterpret_cast<LPARAM>(&nmlvkd));
 				return DLGC_WANTALLKEYS;
 			} else if (!p.is_query() && p.vkey_code() == VK_APPS) { // context menu keyboard key
 				this->_show_context_menu(false, p.has_ctrl(), p.has_shift());
 			}
-			return DefSubclassProc(this->hwnd(), p.message, p.wParam, p.lParam);
+			return DefSubclassProc(this->_hWnd, p.message, p.wParam, p.lParam);
 		});
 
 		this->_subclass.on_message(WM_RBUTTONDOWN, [this](wm::rbuttondown p) noexcept->LRESULT {
@@ -95,30 +90,25 @@ public:
 		});
 	}
 
+	listview(listview&&) = default;
+	listview& operator=(listview&&) = default; // movable only
+
+	// Ties this class instance to an existing native control.
 	listview& assign(HWND hCtrl) {
-		this->native_control::assign(hCtrl);
+		this->base_native_ctrl_impl::assign(hCtrl); // hides base method
 		return this->_install_subclass();
 	}
 
+	// Ties this class instance to an existing native control.
 	listview& assign(HWND hParent, int ctrlId) {
-		this->native_control::assign(hParent, ctrlId);
+		this->base_native_ctrl_impl::assign(hParent, ctrlId); // hides base method
 		return this->_install_subclass();
 	}
 
-	listview& assign(const hwnd_base* parent, int ctrlId) {
-		this->native_control::assign(parent, ctrlId);
+	// Ties this class instance to an existing native control.
+	listview& assign(const wnd* parent, int ctrlId) {
+		this->base_native_ctrl_impl::assign(parent, ctrlId); // hides base method
 		return this->_install_subclass();
-	}
-
-	listview& create(HWND hParent, int ctrlId, POINT pos, SIZE size, view viewType = view::DETAILS) {
-		this->native_control::create(hParent, ctrlId, nullptr, pos, size, WC_LISTVIEW,
-			WS_CHILD | WS_VISIBLE | WS_TABSTOP | static_cast<DWORD>(viewType),
-			WS_EX_CLIENTEDGE); // for children, WS_BORDER gives old, flat drawing; always use WS_EX_CLIENTEDGE
-		return this->_install_subclass();
-	}
-
-	listview& create(const hwnd_base* parent, int ctrlId, POINT pos, SIZE size, view viewType = view::DETAILS) {
-		return this->create(parent->hwnd(), ctrlId, pos, size, viewType);
 	}
 
 	listview& set_context_menu(int contextMenuId) {
@@ -126,23 +116,23 @@ public:
 			throw std::logic_error("Trying to set listview context menu twice.");
 		}
 		this->_contextMenu.load_from_resource_submenu(contextMenuId, 0,
-			GetParent(this->hwnd()));
+			GetParent(this->_hWnd));
 		return *this;
 	}
 
 	listview& set_redraw(bool doRedraw) noexcept {
-		SendMessageW(this->hwnd(), WM_SETREDRAW,
+		SendMessageW(this->_hWnd, WM_SETREDRAW,
 			static_cast<WPARAM>(static_cast<BOOL>(doRedraw)), 0);
 		return *this;
 	}
 
 	listview& set_view(view viewType) noexcept {
-		ListView_SetView(this->hwnd(), static_cast<DWORD>(viewType));
+		ListView_SetView(this->_hWnd, static_cast<DWORD>(viewType));
 		return *this;
 	}
 
 	view get_view() const noexcept {
-		return static_cast<view>(ListView_GetView(this->hwnd()));
+		return static_cast<view>(ListView_GetView(this->_hWnd));
 	}
 
 private:
@@ -159,28 +149,28 @@ private:
 		if (followCursor) { // usually fired with a right-click
 			LVHITTESTINFO lvhti{};
 			GetCursorPos(&lvhti.pt); // relative to screen
-			ScreenToClient(this->hwnd(), &lvhti.pt); // now relative to listview
-			ListView_HitTest(this->hwnd(), &lvhti); // item below cursor, if any
+			ScreenToClient(this->_hWnd, &lvhti.pt); // now relative to listview
+			ListView_HitTest(this->_hWnd, &lvhti); // item below cursor, if any
 			coords = lvhti.pt;
 			itemBelowCursor = lvhti.iItem; // -1 if none
 			if (itemBelowCursor != -1) { // an item was right-clicked
 				if (!hasCtrl && !hasShift) {
-					if ((ListView_GetItemState(this->hwnd(), itemBelowCursor, LVIS_SELECTED) & LVIS_SELECTED) == 0) {
+					if ((ListView_GetItemState(this->_hWnd, itemBelowCursor, LVIS_SELECTED) & LVIS_SELECTED) == 0) {
 						// If right-clicked item isn't currently selected, unselect all and select just it.
-						ListView_SetItemState(this->hwnd(), -1, 0, LVIS_SELECTED);
-						ListView_SetItemState(this->hwnd(), itemBelowCursor, LVIS_SELECTED, LVIS_SELECTED);
+						ListView_SetItemState(this->_hWnd, -1, 0, LVIS_SELECTED);
+						ListView_SetItemState(this->_hWnd, itemBelowCursor, LVIS_SELECTED, LVIS_SELECTED);
 					}
-					ListView_SetItemState(this->hwnd(), itemBelowCursor, LVIS_FOCUSED, LVIS_FOCUSED); // focus clicked
+					ListView_SetItemState(this->_hWnd, itemBelowCursor, LVIS_FOCUSED, LVIS_FOCUSED); // focus clicked
 				}
 			} else if (!hasCtrl && !hasShift) {
-				ListView_SetItemState(this->hwnd(), -1, 0, LVIS_SELECTED); // unselect all
+				ListView_SetItemState(this->_hWnd, -1, 0, LVIS_SELECTED); // unselect all
 			}
-			this->set_focus(); // because a right-click won't set the focus by default
+			SetFocus(this->_hWnd); // because a right-click won't set the focus by default
 		} else { // usually fired with the context menu keyboard key
-			int itemFocused = ListView_GetNextItem(this->hwnd(), -1, LVNI_FOCUSED);
-			if (itemFocused != -1 && ListView_IsItemVisible(this->hwnd(), itemFocused)) { // item focused and visible
+			int itemFocused = ListView_GetNextItem(this->_hWnd, -1, LVNI_FOCUSED);
+			if (itemFocused != -1 && ListView_IsItemVisible(this->_hWnd, itemFocused)) { // item focused and visible
 				RECT rcItem{};
-				ListView_GetItemRect(this->hwnd(), itemFocused, &rcItem, LVIR_BOUNDS); // relative to listview
+				ListView_GetItemRect(this->_hWnd, itemFocused, &rcItem, LVIR_BOUNDS); // relative to listview
 				coords = {rcItem.left + 16, rcItem.top + (rcItem.bottom - rcItem.top) / 2};
 			} else { // no focused and visible item
 				coords = {6, 10};
@@ -189,7 +179,7 @@ private:
 
 		// The popup menu is created with hDlg as parent, so the menu messages go to it.
 		// The lvhti coordinates are relative to listview, and will be mapped into screen-relative.
-		this->_contextMenu.show_at_point(GetParent(this->hwnd()), coords, this->hwnd());
+		this->_contextMenu.show_at_point(GetParent(this->_hWnd), coords, this->_hWnd);
 		return itemBelowCursor; // -1 if none
 	}
 };

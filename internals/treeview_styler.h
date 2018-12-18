@@ -14,7 +14,7 @@ namespace wli {
 template<typename treeviewT>
 class treeview_styler final : public wli::styler<treeviewT> {
 public:
-	explicit treeview_styler(treeviewT* pTree) noexcept : styler(pTree) { }
+	explicit treeview_styler(treeviewT* pTree) noexcept : styler<treeviewT>(pTree) { }
 
 	treeviewT& always_show_sel(bool doSet) noexcept {
 		return this->set_style(doSet, TVS_SHOWSELALWAYS);
@@ -30,9 +30,9 @@ public:
 	}
 
 	treeviewT& double_buffer(bool doSet) noexcept {
-		TreeView_SetExtendedStyle(this->hwnd(),
+		TreeView_SetExtendedStyle(this->styler<treeviewT>::target.hwnd(),
 			doSet ? TVS_EX_DOUBLEBUFFER : 0, TVS_EX_DOUBLEBUFFER);
-		return this->target();
+		return this->styler<treeviewT>::target;
 	}
 };
 

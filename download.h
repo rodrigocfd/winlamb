@@ -199,8 +199,9 @@ private:
 			if (colonIdx == std::wstring::npos) { // not a key/value pair, probably response line
 				this->_responseHeaders[L""] = line; // empty key
 			} else {
-				this->_responseHeaders[str::trim(line.substr(0, colonIdx))] =
-					str::trim(line.substr(colonIdx + 1, line.length() - (colonIdx + 1)));
+				std::wstring kk = line.substr(0, colonIdx);
+				std::wstring vv = line.substr(colonIdx + 1, line.length() - (colonIdx + 1));
+				this->_responseHeaders[str::trim(kk)] = str::trim(vv);
 			}
 		}
 

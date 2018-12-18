@@ -6,46 +6,52 @@
  */
 
 #pragma once
-#include "internals/dialog.h"
-#include "internals/w_text.h"
-
-/**
- * hwnd_base
- *  w_message
- *   w_thread_capable
- *    dialog
- *     w_text
- *      dialog_modal
- */
+#include "internals/base_dialog.h"
+#include "internals/base_msg_impl.h"
+#include "internals/base_text_impl.h"
+#include "internals/base_thread_impl.h"
+#include "internals/styler.h"
+#include "wnd.h"
 
 namespace wl {
 
 // Inherit from this class to have a modal dialog popup.
 class dialog_modal :
-	public wli::w_text<
-		dialog_modal, wli::dialog_thread_capable>
+	public wnd,
+	public wli::base_msg_impl<INT_PTR>,
+	public wli::base_thread_impl<INT_PTR, TRUE>,
+	public wli::base_text_impl<dialog_modal>
 {
+private:
+	HWND                            _hWnd = nullptr;
+	wli::base_msg<INT_PTR>          _baseMsg{_hWnd};
+	wli::base_thread<INT_PTR, TRUE> _baseThread{_baseMsg};
+	wli::base_dialog                _baseDialog{_hWnd, _baseMsg};
+
+public:
+	// Defines window creation parameters.
+	wli::base_dialog::setup_vars setup;
+
+	// Wraps window style changes done by Get/SetWindowLongPtr.
+	wli::styler<dialog_modal> style{this};
+
 protected:
-	struct setup_vars final : public wli::dialog_thread_capable::setup_vars { };
-
-	setup_vars setup;
-
-	dialog_modal() noexcept {
-		this->on_message(WM_CLOSE, [this](params) noexcept->INT_PTR {
-			EndDialog(this->hwnd(), IDOK);
+	dialog_modal() :
+		wnd(_hWnd), base_msg_impl(_baseMsg), base_thread_impl(_baseThread), base_text_impl(_hWnd)
+	{
+		this->base_msg_impl::on_message(WM_CLOSE, [this](params) noexcept->INT_PTR {
+			EndDialog(this->_hWnd, IDOK);
 			return TRUE;
 		});
 	}
 
 public:
+	dialog_modal(dialog_modal&&) = default;
+	dialog_modal& operator=(dialog_modal&&) = default; // movable only
+
 	// Shows the modal dialog, returning only after the modal is closed.
 	int show(HWND hParent) {
-		this->_basic_initial_checks(this->setup);
-
-		INT_PTR ret = DialogBoxParamW(
-			reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hParent, GWLP_HINSTANCE)),
-			MAKEINTRESOURCEW(this->setup.dialogId), hParent, _dialog_proc,
-			reinterpret_cast<LPARAM>(this));
+		INT_PTR ret = this->_baseDialog.dialog_box_param(this->setup, hParent);
 
 		if (!ret) {
 			throw std::invalid_argument("DialogBoxParam failed for modal dialog, invalid parent.");
@@ -57,7 +63,7 @@ public:
 	}
 
 	// Shows the modal dialog, returning only after the modal is closed.
-	int show(const hwnd_base* parent) {
+	int show(const wnd* parent) {
 		return this->show(parent->hwnd());
 	}
 
@@ -65,9 +71,9 @@ protected:
 	// Centers the modal dialog onto its parent.
 	void center_on_parent() const noexcept {
 		RECT rc{}, rcParent{};
-		GetWindowRect(this->hwnd(), &rc);
-		GetWindowRect(GetParent(this->hwnd()), &rcParent); // both relative to screen
-		SetWindowPos(this->hwnd(), nullptr,
+		GetWindowRect(this->_hWnd, &rc);
+		GetWindowRect(GetParent(this->_hWnd), &rcParent); // both relative to screen
+		SetWindowPos(this->_hWnd, nullptr,
 			rcParent.left + (rcParent.right - rcParent.left)/2 - (rc.right - rc.left)/2,
 			rcParent.top + (rcParent.bottom - rcParent.top)/2 - (rc.bottom - rc.top)/2,
 			0, 0, SWP_NOZORDER | SWP_NOSIZE);

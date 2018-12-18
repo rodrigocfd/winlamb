@@ -35,7 +35,7 @@ public:
 	void swap_with(size_t itemIndex) {
 		this->_list.set_redraw(false);
 
-		item newItem = this->_list.items[itemIndex]; // make a copy
+		listview_item newItem = this->_list.items[itemIndex]; // make a copy
 		size_t numCols = this->_list.columns.count();
 		std::wstring tmpStr;
 		for (size_t c = 0; c < numCols; ++c) { // swap texts of all columns

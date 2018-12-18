@@ -14,13 +14,13 @@ namespace wl {
 // Automates a group of native radio buttons.
 class radio_group final {
 private:
-	size_t _sz = 0;
-	std::unique_ptr<radio[]> _items; // vector requires movable object
+	size_t                   _sz = 0;
+	std::unique_ptr<radio[]> _items; // vector requires movable object, so we use an ordinary array
 
 public:
 	radio_group() = default;
-	radio_group(const radio_group&) = delete;
-	radio_group& operator=(const radio_group&) = delete; // non-copyable, non-movable
+	radio_group(radio_group&&) = default;
+	radio_group& operator=(radio_group&&) = default; // movable only
 
 	radio_group& assign(HWND hParent, std::initializer_list<int> ctrlIds) {
 		if (this->_items) {
@@ -38,7 +38,7 @@ public:
 		return *this;
 	}
 
-	radio_group& assign(const hwnd_base* parent, std::initializer_list<int> ctrlIds) {
+	radio_group& assign(const wnd* parent, std::initializer_list<int> ctrlIds) {
 		return this->assign(parent->hwnd(), ctrlIds);
 	}
 
@@ -56,7 +56,7 @@ public:
 
 	const radio& get_by_id(int ctrlId) const {
 		for (size_t i = 0; i < this->_sz; ++i) {
-			if (this->_items[i].control_id() == ctrlId) {
+			if (this->_items[i].ctrl_id() == ctrlId) {
 				return this->_items[i];
 			}
 		}
@@ -65,7 +65,7 @@ public:
 
 	radio& get_by_id(int ctrlId) {
 		for (size_t i = 0; i < this->_sz; ++i) {
-			if (this->_items[i].control_id() == ctrlId) {
+			if (this->_items[i].ctrl_id() == ctrlId) {
 				return this->_items[i];
 			}
 		}
@@ -74,7 +74,7 @@ public:
 
 	radio_group& set_enable(bool doEnable) noexcept {
 		for (size_t i = 0; i < this->_sz; ++i) {
-			this->_items[i].set_enable(doEnable);
+			EnableWindow(this->_items[i].hwnd(), doEnable ? TRUE : FALSE);
 		}
 		return *this;
 	}
@@ -92,7 +92,7 @@ public:
 	radio_group& set_checked_by_id(int ctrlId) {
 		size_t target = -1;
 		for (size_t i = 0; i < this->_sz; ++i) {
-			if (this->_items[i].control_id() == ctrlId) {
+			if (this->_items[i].ctrl_id() == ctrlId) {
 				target = i;
 			} else {
 				this->_items[i].set_check(false);
@@ -114,7 +114,7 @@ public:
 	int get_checked_id() const {
 		for (size_t i = 0; i < this->_sz; ++i) {
 			if (this->_items[i].is_checked()) {
-				return this->_items[i].control_id();
+				return this->_items[i].ctrl_id();
 			}
 		}
 		throw std::logic_error("Radio group has no assigned value.");

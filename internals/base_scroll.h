@@ -13,7 +13,8 @@
 namespace wl {
 namespace wli {
 
-class scroll_inactive final {
+// Scrolls unfocused window when mousewheel is scrolled over that window.
+class base_scroll final {
 public:
 	static void apply_behavior(HWND hWnd) noexcept {
 		// Scrolling of inative windows has been natively implemented in

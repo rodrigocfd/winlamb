@@ -6,20 +6,21 @@
  */
 
 #pragma once
-#include "hwnd_base.h"
-#include "internals/combinable_flags.h"
+#include <Windows.h>
+#include "internals/enable_bitmask_operators.h"
+#include "wnd.h"
 
 namespace wl {
 
 // Automates SCROLLINFO operations.
 class scrollinfo final {
 public:
-	enum class flags : UINT {
+	// Can be combined with bitmask operators.
+	enum class info : UINT {
 		PAGE  = SIF_PAGE,
 		POS   = SIF_POS,
 		RANGE = SIF_RANGE,
-		TRACK = SIF_TRACKPOS,
-		WINLAMB_COMBINED_FLAGS4(PAGE, POS, RANGE, TRACK)
+		TRACK = SIF_TRACKPOS
 	};
 
 	enum class bar : int {
@@ -39,39 +40,42 @@ public:
 	UINT& pageSz{_si.nPage};
 
 	scrollinfo() = default;
-	explicit scrollinfo(flags whatFlags) noexcept { this->set_flags(whatFlags); }
 
-	scrollinfo& set_flags(flags whatFlags) noexcept {
+	explicit scrollinfo(info whatFlags) noexcept {
+		this->set_flags(whatFlags);
+	}
+
+	scrollinfo& set_flags(info whatFlags) noexcept {
 		this->_si.fMask = static_cast<UINT>(whatFlags);
 		return *this;
 	}
 	
-	flags get_flags() const noexcept {
-		return static_cast<flags>(this->_si.fMask);
+	info get_flags() const noexcept {
+		return static_cast<info>(this->_si.fMask);
 	}
 
 	// Calls GetScrollInfo function.
-	scrollinfo& get(HWND target, bar whatBar) noexcept {
+	scrollinfo& get_scroll(HWND target, bar whatBar) noexcept {
 		GetScrollInfo(target, static_cast<int>(whatBar), &this->_si);
 		return *this;
 	}
 
 	// Calls GetScrollInfo function.
-	scrollinfo& get(const hwnd_base* target, bar whatBar) noexcept {
-		return this->get(target->hwnd(), whatBar);
+	scrollinfo& get_scroll(const wnd* target, bar whatBar) noexcept {
+		return this->get_scroll(target->hwnd(), whatBar);
 	}
 
-	// Calls SetScrollInfo function.
-	int set(HWND target, bar whatBar) noexcept {
-		return SetScrollInfo(target, static_cast<int>(whatBar), &this->_si, TRUE); // returns current position
+	// Calls SetScrollInfo function, returns current position.
+	int set_scroll(HWND target, bar whatBar) noexcept {
+		return SetScrollInfo(target, static_cast<int>(whatBar), &this->_si, TRUE);
 	}
 
-	// Calls SetScrollInfo function.
-	int set(const hwnd_base* target, bar whatBar) noexcept {
-		return this->set(target->hwnd(), whatBar);
+	// Calls SetScrollInfo function, returns current position.
+	int set_scroll(const wnd* target, bar whatBar) noexcept {
+		return this->set_scroll(target->hwnd(), whatBar);
 	}
 };
 
-WINLAMB_COMBINABLE_FLAGS(scrollinfo::flags);
+ENABLE_BITMASK_OPERATORS(scrollinfo::info);
 
 }//namespace wl

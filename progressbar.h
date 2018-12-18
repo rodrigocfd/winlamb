@@ -6,20 +6,18 @@
  */
 
 #pragma once
-#include "internals/native_control.h"
+#include "internals/base_native_ctrl_impl.h"
 #include "internals/styler.h"
+#include "wnd.h"
 #include <CommCtrl.h>
-
-/**
- * hwnd_base
- *  native_control
- *   progressbar
- */
 
 namespace wl {
 
 // Wrapper to progressbar control from Common Controls library.
-class progressbar final : public wli::native_control<progressbar> {
+class progressbar final :
+	public wnd,
+	public wli::base_native_ctrl_impl<progressbar>
+{
 private:
 	class _styler final : public wli::styler<progressbar> {
 	public:
@@ -34,19 +32,34 @@ private:
 		}
 	};
 
+	HWND                  _hWnd = nullptr;
+	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
+
 public:
+	// Wraps window style changes done by Get/SetWindowLongPtr.
 	_styler style{this};
 
-	progressbar& create(HWND hParent, int ctrlId, const wchar_t* caption, POINT pos, SIZE size) {
-		return this->native_control::create(hParent, ctrlId, nullptr, pos, size, PROGRESS_CLASS);
+	progressbar() noexcept :
+		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl) { }
+
+	progressbar(progressbar&&) = default;
+	progressbar& operator=(progressbar&&) = default; // movable only
+
+	progressbar& create(HWND hParent, int ctrlId,
+		const wchar_t* caption, POINT pos, SIZE size)
+	{
+		this->_baseNativeCtrl.create(hParent, ctrlId, nullptr, pos, size, PROGRESS_CLASS);
+		return *this;
 	}
 
-	progressbar& create(const hwnd_base* parent, int ctrlId, const wchar_t* caption, POINT pos, SIZE size) {
+	progressbar& create(const wnd* parent, int ctrlId,
+		const wchar_t* caption, POINT pos, SIZE size)
+	{
 		return this->create(parent->hwnd(), ctrlId, caption, pos, size);
 	}
 
 	progressbar& set_range(int minVal, int maxVal) noexcept {
-		SendMessageW(this->hwnd(), PBM_SETRANGE, 0, MAKELPARAM(minVal, maxVal));
+		SendMessageW(this->_hWnd, PBM_SETRANGE, 0, MAKELPARAM(minVal, maxVal));
 		return *this;
 	}
 
@@ -55,7 +68,7 @@ public:
 	}
 
 	progressbar& set_pos(int pos) noexcept {
-		SendMessageW(this->hwnd(), PBM_SETPOS, pos, 0);
+		SendMessageW(this->_hWnd, PBM_SETPOS, pos, 0);
 		return *this;
 	}
 
@@ -71,7 +84,7 @@ public:
 		if (isWaiting) {
 			this->style.set_style(true, PBS_MARQUEE); // set this on resource editor won't work
 		}
-		SendMessageW(this->hwnd(), PBM_SETMARQUEE, static_cast<WPARAM>(isWaiting), 0);
+		SendMessageW(this->_hWnd, PBM_SETMARQUEE, static_cast<WPARAM>(isWaiting), 0);
 
 		if (!isWaiting) { // http://stackoverflow.com/a/23689663
 			this->style.set_style(false, PBS_MARQUEE);
@@ -80,7 +93,7 @@ public:
 	}
 
 	int get_pos() noexcept {
-		return static_cast<int>(SendMessageW(this->hwnd(), PBM_GETPOS, 0, 0));
+		return static_cast<int>(SendMessageW(this->_hWnd, PBM_GETPOS, 0, 0));
 	}
 };
 

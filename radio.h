@@ -6,29 +6,18 @@
  */
 
 #pragma once
-#include "internals/native_control.h"
-#include "internals/w_enable.h"
-#include "internals/w_focus.h"
-#include "internals/w_text.h"
+#include "internals/base_text_impl.h"
+#include "internals/base_native_ctrl_impl.h"
 #include "internals/styler.h"
-
-/**
- * hwnd_base
- *  native_control
- *   w_text
- *    w_focus
- *     w_enable
- *      radio
- */
+#include "wnd.h"
 
 namespace wl {
 
 // Wrapper to native radio button control.
 class radio final :
-	public wli::w_enable<
-		radio, wli::w_focus<
-			radio, wli::w_text<
-				radio, wli::native_control<radio>>>>
+	public wnd,
+	public wli::base_native_ctrl_impl<radio>,
+	public wli::base_text_impl<radio>
 {
 private:
 	class _styler final : public wli::styler<radio> {
@@ -40,37 +29,48 @@ private:
 		}
 	};
 
+	HWND                  _hWnd = nullptr;
+	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
+
 public:
+	// Wraps window style changes done by Get/SetWindowLongPtr.
 	_styler style{this};
+
+	radio() noexcept :
+		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl), base_text_impl(_hWnd) { }
+
+	radio(radio&&) = default;
+	radio& operator=(radio&&) = default; // movable only
 
 	radio& create(HWND hParent, int ctrlId,
 		const wchar_t* caption, POINT pos, SIZE size)
 	{
-		return this->native_control::create(hParent, ctrlId, caption, pos, size,
+		this->_baseNativeCtrl.create(hParent, ctrlId, caption, pos, size,
 			L"Button", WS_CHILD | WS_VISIBLE | WS_TABSTOP | BS_AUTORADIOBUTTON);
+		return *this;
 	}
 
-	radio& create(const hwnd_base* parent, int ctrlId,
+	radio& create(const wnd* parent, int ctrlId,
 		const wchar_t* caption, POINT pos, SIZE size)
 	{
 		return this->create(parent->hwnd(), ctrlId, caption, pos, size);
 	}
 
 	bool is_checked() const noexcept {
-		return SendMessageW(this->hwnd(), BM_GETCHECK, 0, 0) == BST_CHECKED;
+		return SendMessageW(this->_hWnd, BM_GETCHECK, 0, 0) == BST_CHECKED;
 	}
 
 	radio& set_check(bool checked) noexcept {
-		SendMessageW(this->hwnd(), BM_SETCHECK,
+		SendMessageW(this->_hWnd, BM_SETCHECK,
 			checked ? BST_CHECKED : BST_UNCHECKED, 0);
 		return *this;
 	}
 
 	radio& set_check_and_trigger(bool checked) noexcept {
 		this->set_check(checked);
-		SendMessageW(GetParent(this->hwnd()), WM_COMMAND,
-			MAKEWPARAM(GetDlgCtrlID(this->hwnd()), 0),
-			reinterpret_cast<LPARAM>(this->hwnd()) ); // emulate user click
+		SendMessageW(GetParent(this->_hWnd), WM_COMMAND,
+			MAKEWPARAM(GetDlgCtrlID(this->_hWnd), 0),
+			reinterpret_cast<LPARAM>(this->_hWnd) ); // emulate user click
 		return *this;
 	}
 };

@@ -7,8 +7,8 @@
 
 #pragma once
 #include <stdexcept>
-#include "hwnd_base.h"
 #include "com.h"
+#include "wnd.h"
 #include <ShObjIdl.h>
 
 namespace wl {
@@ -22,9 +22,8 @@ private:
 
 public:
 	progress_taskbar() = default;
-
-	progress_taskbar(const progress_taskbar&) = delete;
-	progress_taskbar& operator=(const progress_taskbar&) = delete; // non-copyable, non-movable
+	progress_taskbar(progress_taskbar&&) = default;
+	progress_taskbar& operator=(progress_taskbar&&) = default; // movable only
 
 	progress_taskbar& init(HWND hOwner) {
 		if (this->_bar) {
@@ -37,24 +36,42 @@ public:
 		return *this;
 	}
 
-	progress_taskbar& init(const hwnd_base* owner) {
+	progress_taskbar& init(const wnd* owner) {
 		return this->init(owner->hwnd());
 	}
 
+	// Value is 0-100.
 	progress_taskbar& set_pos(size_t percent, size_t total) noexcept {
 		this->_bar->SetProgressValue(this->_hWnd, static_cast<ULONGLONG>(percent),
 			static_cast<ULONGLONG>(total));
 		return *this;
 	}
 
-	progress_taskbar& set_pos(double percent) noexcept     { return this->set_pos(static_cast<size_t>(percent + 0.5), 100); }
-	progress_taskbar& set_waiting(bool isWaiting) noexcept { return this->_set_state(isWaiting ? TBPF_INDETERMINATE : TBPF_NORMAL); }
-	progress_taskbar& set_pause(bool isPaused) noexcept    { return this->_set_state(isPaused ? TBPF_PAUSED : TBPF_NORMAL); }
-	progress_taskbar& set_error(bool hasError) noexcept    { return this->_set_state(hasError ? TBPF_ERROR : TBPF_NORMAL); }
-	progress_taskbar& clear() noexcept                     { return this->_set_state(TBPF_NOPROGRESS); }
+	// Value is 0-100.
+	progress_taskbar& set_pos(double percent) noexcept {
+		return this->set_pos(static_cast<size_t>(percent + 0.5), 100);
+	}
+
+	progress_taskbar& set_waiting(bool isWaiting) noexcept {
+		return this->_set_state(isWaiting ? TBPF_INDETERMINATE : TBPF_NORMAL);
+	}
+
+	progress_taskbar& set_pause(bool isPaused) noexcept {
+		return this->_set_state(isPaused ? TBPF_PAUSED : TBPF_NORMAL);
+	}
+
+	progress_taskbar& set_error(bool hasError) noexcept {
+		return this->_set_state(hasError ? TBPF_ERROR : TBPF_NORMAL);
+	}
+
+	// Removes the status from the taskbar button.
+	progress_taskbar& clear() noexcept {
+		return this->_set_state(TBPF_NOPROGRESS);
+	}
 
 private:
 	progress_taskbar& _set_state(TBPFLAG state) noexcept {
+		// Apparently this doesn't work within WM_CREATE processing.
 		this->_bar->SetProgressState(this->_hWnd, state);
 		return *this;
 	}

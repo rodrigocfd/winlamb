@@ -6,65 +6,56 @@
  */
 
 #pragma once
-#include "w_thread_capable.h"
-#include "w_user_control.h"
-#include "scroll_inactive.h"
-#include "styler.h"
+#include "base_msg.h"
+#include "base_scroll.h"
 #include "../font.h"
 
-/**
- * hwnd_base
- *  w_message
- *   w_thread_capable
- *    [w_user_control]
- *     dialog
- */
-
 namespace wl {
-class dialog_control; // friend forward declarations
-class dialog_main;
-class dialog_modal;
-class dialog_modeless;
-
 namespace wli {
 
-template<typename baseT>
-class dialog : public baseT {
-	friend class dialog_control;
-	friend class dialog_main;
-	friend class dialog_modal;
-	friend class dialog_modeless;
-
-private:
-	class _styler final : public wli::styler<dialog> {
-	public:
-		explicit _styler(dialog* pDialog) noexcept : styler(pDialog) { }
-	};
-
-protected:
+// Common ground to all dialog windows.
+class base_dialog final {
+public:
 	// Variables to be set by user, used only during window creation.
 	struct setup_vars {
 		int dialogId = 0;
 	};
 
+private:
+	HWND&              _hWnd;
+	base_msg<INT_PTR>& _baseMsg;
+
 public:
-	~dialog() {
-		if (this->hwnd()) {
-			SetWindowLongPtrW(this->hwnd(), GWLP_USERDATA, 0);
+	~base_dialog() {
+		if (this->_hWnd) {
+			SetWindowLongPtrW(this->_hWnd, GWLP_USERDATA, 0);
 		}
 	}
 
-	dialog(const dialog&) = delete;
-	dialog& operator=(const dialog&) = delete; // non-copyable, non-movable
+	base_dialog(HWND& hWnd, base_msg<INT_PTR>& baseMsg) noexcept :
+		_hWnd(hWnd), _baseMsg(baseMsg) { }
 
-protected:
-	_styler style{this};
+	// Wrapper to CreateDialogParam.
+	HWND create_dialog_param(const setup_vars& setup, HWND hParent) {
+		this->_basic_initial_checks(setup);
+		return CreateDialogParamW(
+			reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hParent, GWLP_HINSTANCE)),
+			MAKEINTRESOURCEW(setup.dialogId), hParent, _dialog_proc,
+			reinterpret_cast<LPARAM>(this));
+	}
 
-	dialog() = default;
+	// Wrapper to DialogBoxParam.
+	INT_PTR dialog_box_param(const setup_vars& setup, HWND hParent) {
+		this->_basic_initial_checks(setup);
+		return DialogBoxParamW(
+			reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hParent, GWLP_HINSTANCE)),
+			MAKEINTRESOURCEW(setup.dialogId), hParent, _dialog_proc,
+			reinterpret_cast<LPARAM>(this));
+	}
 
 private:
 	void _basic_initial_checks(const setup_vars& setup) const {
-		if (this->hwnd()) {
+		if (this->_hWnd) {
 			throw std::logic_error("Tried to create dialog twice.");
 		}
 		if (!setup.dialogId) {
@@ -73,27 +64,27 @@ private:
 	}
 
 	static INT_PTR CALLBACK _dialog_proc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp) noexcept {
-		dialog* pSelf = nullptr;
+		base_dialog* pSelf = nullptr;
 		INT_PTR ret = FALSE; // default for non-processed messages
 
 		if (msg == WM_INITDIALOG) {
-			pSelf = reinterpret_cast<dialog*>(lp);
+			pSelf = reinterpret_cast<base_dialog*>(lp);
 			SetWindowLongPtrW(hDlg, DWLP_USER, reinterpret_cast<LONG_PTR>(pSelf));
 			font::util::set_ui_on_children(hDlg); // if user creates controls manually, font must be set manually on them
 			pSelf->_hWnd = hDlg; // store HWND
 		} else {
-			pSelf = reinterpret_cast<dialog*>(GetWindowLongPtrW(hDlg, DWLP_USER));
+			pSelf = reinterpret_cast<base_dialog*>(GetWindowLongPtrW(hDlg, DWLP_USER));
 		}
 
 		if (pSelf) {
-			std::pair<bool, INT_PTR> procRet = pSelf->_process_msg(msg, wp, lp); // catches all message exceptions internally
+			std::pair<bool, INT_PTR> procRet = pSelf->_baseMsg.process_msg(msg, wp, lp); // catches all message exceptions internally
 			if (procRet.first) {
 				ret = procRet.second; // message was processed
 			}
 		}
 
 		if (msg == WM_INITDIALOG) {
-			wli::scroll_inactive::apply_behavior(pSelf->hwnd());
+			wli::base_scroll::apply_behavior(pSelf->_hWnd);
 		} else if (msg == WM_NCDESTROY) { // cleanup
 			SetWindowLongPtrW(hDlg, DWLP_USER, 0);
 			if (pSelf) {
@@ -104,9 +95,6 @@ private:
 		return ret;
 	}
 };
-
-using dialog_thread_capable = dialog<w_thread_capable<INT_PTR, TRUE>>;
-using dialog_user_control = dialog<w_user_control<INT_PTR, TRUE>>;
 
 }//namespace wli
 }//namespace wl

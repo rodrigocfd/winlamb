@@ -6,32 +6,16 @@
  */
 
 #pragma once
-#include "w_thread_capable.h"
-#include "w_user_control.h"
-#include "styler.h"
-
-/**
- * hwnd_base
- *  w_message
- *   w_thread_capable
- *    [w_user_control]
- *     window
- */
+#include "base_msg.h"
 
 namespace wl {
-class window_control; // friend forward declarations
-class window_main;
-
 namespace wli {
 
-template<typename baseT>
-class window : public baseT {
-	friend class window_control;
-	friend class window_main;
-
-private:
+// Common ground to all non-dialog windows.
+class base_window final {
+public:
 	// Reduced version of WNDCLASSEX to be used within setup_vars.
-	struct _wndclassex_less final {
+	struct wndclassex_less final {
 		UINT           style = 0;
 		HICON          hIcon = nullptr;
 		HCURSOR        hCursor = nullptr;
@@ -41,64 +25,31 @@ private:
 		HICON          hIconSm = nullptr;
 	};
 
-	class _styler final : public wli::styler<window> {
-	public:
-		explicit _styler(window* pWindow) noexcept : wli::styler<window>(pWindow) { }
-	};
-
-protected:
 	// Variables to be set by user, used only during window creation.
 	struct setup_vars {
-		_wndclassex_less wndClassEx;
-		const wchar_t*   title = nullptr;
-		DWORD            style = 0, exStyle = 0;
-		POINT            position{};
-		SIZE             size{};
-		HMENU            menu = nullptr;
+		wndclassex_less wndClassEx;
+		const wchar_t*  title = nullptr;
+		DWORD           style = 0, exStyle = 0;
+		POINT           position{};
+		SIZE            size{};
+		HMENU           menu = nullptr;
 	};
 
-public:
-	~window() {
-		if (this->hwnd()) {
-			SetWindowLongPtrW(this->hwnd(), GWLP_USERDATA, 0);
-		}
-	}
-
-	window(const window&) = delete;
-	window& operator=(const window&) = delete; // non-copyable, non-movable
-
-protected:
-	_styler style{this};
-
-	window() = default;
-
 private:
-	void _basic_initial_checks(const setup_vars& setup) const {
-		if (this->hwnd()) {
-			throw std::logic_error("Tried to create window twice.");
-		}
-		if (!setup.wndClassEx.lpszClassName) {
-			throw std::logic_error("No window class name given on this->setup.wndClassEx.lpszClassName.");
+	HWND&              _hWnd;
+	base_msg<LRESULT>& _baseMsg;
+
+public:
+	~base_window() {
+		if (this->_hWnd) {
+			SetWindowLongPtrW(this->_hWnd, GWLP_USERDATA, 0);
 		}
 	}
 
-	WNDCLASSEXW _gen_wndclassex(const _wndclassex_less& wLess, HINSTANCE hInst) const noexcept {
-		WNDCLASSEXW wcx{};
-		wcx.cbSize = sizeof(WNDCLASSEXW);
-		wcx.lpfnWndProc = _window_proc;
-		wcx.hInstance = hInst;
+	base_window(HWND& hWnd, base_msg<LRESULT>& baseMsg) noexcept :
+		_hWnd(hWnd), _baseMsg(baseMsg) { }
 
-		wcx.style = wLess.style;
-		wcx.hIcon = wLess.hIcon;
-		wcx.hCursor = wLess.hCursor;
-		wcx.hbrBackground = wLess.hbrBackground;
-		wcx.lpszMenuName = wLess.lpszMenuName;
-		wcx.lpszClassName = wLess.lpszClassName;
-		wcx.hIconSm = wLess.hIconSm;
-		return wcx;
-	}
-
-	void _register_create(const setup_vars& setup, HWND hParent, HINSTANCE hInst = nullptr) {
+	void register_create(const setup_vars& setup, HWND hParent, HINSTANCE hInst = nullptr) {
 		this->_basic_initial_checks(setup);
 		if (!hParent && !hInst) {
 			throw std::invalid_argument("To create a window, HINSTANCE or parent HWND must be provided.");
@@ -121,6 +72,16 @@ private:
 		}
 	}
 
+private:
+	void _basic_initial_checks(const setup_vars& setup) const {
+		if (this->_hWnd) {
+			throw std::logic_error("Tried to create window twice.");
+		}
+		if (!setup.wndClassEx.lpszClassName) {
+			throw std::logic_error("No window class name given on this->setup.wndClassEx.lpszClassName.");
+		}
+	}
+
 	ATOM _register_class(WNDCLASSEXW& wcx, const setup_vars& setup) {
 		ATOM atom = RegisterClassExW(&wcx);
 		if (!atom) {
@@ -136,15 +97,31 @@ private:
 		return atom;
 	}
 
+	WNDCLASSEXW _gen_wndclassex(const wndclassex_less& wLess, HINSTANCE hInst) const noexcept {
+		WNDCLASSEXW wcx{};
+		wcx.cbSize = sizeof(WNDCLASSEXW);
+		wcx.lpfnWndProc = _window_proc;
+		wcx.hInstance = hInst;
+
+		wcx.style = wLess.style;
+		wcx.hIcon = wLess.hIcon;
+		wcx.hCursor = wLess.hCursor;
+		wcx.hbrBackground = wLess.hbrBackground;
+		wcx.lpszMenuName = wLess.lpszMenuName;
+		wcx.lpszClassName = wLess.lpszClassName;
+		wcx.hIconSm = wLess.hIconSm;
+		return wcx;
+	}
+
 	static LRESULT CALLBACK _window_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) noexcept {
-		window* pSelf = nullptr;
+		base_window* pSelf = nullptr;
 
 		if (msg == WM_NCCREATE) {
-			pSelf = reinterpret_cast<window*>(reinterpret_cast<CREATESTRUCT*>(lp)->lpCreateParams);
+			pSelf = reinterpret_cast<base_window*>(reinterpret_cast<CREATESTRUCT*>(lp)->lpCreateParams);
 			SetWindowLongPtrW(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pSelf));
 			pSelf->_hWnd = hWnd; // store HWND
 		} else {
-			pSelf = reinterpret_cast<window*>(GetWindowLongPtrW(hWnd, GWLP_USERDATA));
+			pSelf = reinterpret_cast<base_window*>(GetWindowLongPtrW(hWnd, GWLP_USERDATA));
 		}
 
 		auto cleanupIfDestroyed = [&]() noexcept->void {
@@ -157,7 +134,7 @@ private:
 		};
 
 		if (pSelf) {
-			std::pair<bool, LRESULT> procRet = pSelf->_process_msg(msg, wp, lp); // catches all message exceptions internally
+			std::pair<bool, LRESULT> procRet = pSelf->_baseMsg.process_msg(msg, wp, lp); // catches all message exceptions internally
 			if (procRet.first) {
 				cleanupIfDestroyed();
 				return procRet.second; // message was processed
@@ -168,9 +145,6 @@ private:
 		return DefWindowProcW(hWnd, msg, wp, lp); // message was not processed
 	}
 };
-
-using window_thread_capable = window<w_thread_capable<LRESULT, 0>>;
-using window_user_control = window<w_user_control<LRESULT, 0>>;
 
 }//namespace wli
 }//namespace wl

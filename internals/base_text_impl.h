@@ -12,15 +12,19 @@
 namespace wl {
 namespace wli {
 
-template<typename derivedT, typename baseT>
-class w_text : public baseT {
-protected:
-	w_text() = default;
+// Allows set/set window text with std::string.
+template<typename derivedT>
+class base_text_impl {
+private:
+	const HWND& _hWnd;
 
 public:
+	base_text_impl(const HWND& hWnd) noexcept :
+		_hWnd(hWnd) { }
+
 	// Simple wrapper to SetWindowText.
 	derivedT& set_text(const wchar_t* s) noexcept {
-		SetWindowTextW(this->hwnd(), s);
+		SetWindowTextW(this->_hWnd, s);
 		return *static_cast<derivedT*>(this);
 	}
 
@@ -32,10 +36,10 @@ public:
 	// Simple wrapper to GetWindowText.
 	std::wstring get_text() const {
 		std::wstring buf;
-		int len = GetWindowTextLengthW(this->hwnd());
+		int len = GetWindowTextLengthW(this->_hWnd);
 		if (len) {
 			buf.resize(len + 1, L'\0');
-			GetWindowTextW(this->hwnd(), &buf[0], len + 1);
+			GetWindowTextW(this->_hWnd, &buf[0], len + 1);
 			buf.resize(len);
 		}
 		return buf;

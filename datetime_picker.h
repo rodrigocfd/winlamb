@@ -6,28 +6,18 @@
  */
 
 #pragma once
-#include "internals/native_control.h"
-#include "internals/w_enable.h"
-#include "internals/w_focus.h"
+#include "internals/base_native_ctrl_impl.h"
 #include "internals/styler.h"
 #include "datetime.h"
+#include "wnd.h"
 #include <CommCtrl.h>
-
-/**
- * hwnd_base
- *  native_control
- *   w_focus
- *    w_enable
- *     textbox
- */
 
 namespace wl {
 
 // Wrapper to datetime picker control from Common Controls library.
 class datetime_picker final :
-	public wli::w_enable<
-		datetime_picker, wli::w_focus<
-			datetime_picker, wli::native_control<datetime_picker>>>
+	public wnd,
+	public wli::base_native_ctrl_impl<datetime_picker>
 {
 private:
 	class _styler final : public wli::styler<datetime_picker> {
@@ -39,26 +29,37 @@ private:
 		}
 	};
 
+	HWND                  _hWnd = nullptr;
+	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
+
 public:
+	// Wraps window style changes done by Get/SetWindowLongPtr.
 	_styler style{this};
 
+	datetime_picker() noexcept :
+		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl) { }
+
+	datetime_picker(datetime_picker&&) = default;
+	datetime_picker& operator=(datetime_picker&&) = default; // movable only
+
 	datetime_picker& create(HWND hParent, int ctrlId, POINT pos, LONG width) {
-		return this->native_control::create(hParent, ctrlId,
+		this->_baseNativeCtrl.create(hParent, ctrlId,
 			nullptr, pos, {width,21}, DATETIMEPICK_CLASS);
+		return *this;
 	}
 
-	datetime_picker& create(const hwnd_base* parent, int ctrlId, POINT pos, LONG width) {
+	datetime_picker& create(const wnd* parent, int ctrlId, POINT pos, LONG width) {
 		return this->create(parent->hwnd(), ctrlId, pos, width);
 	}
 
 	datetime get_time() const noexcept {
 		SYSTEMTIME st{};
-		DateTime_GetSystemtime(this->hwnd(), &st);
+		DateTime_GetSystemtime(this->_hWnd, &st);
 		return st;
 	}
 
 	datetime_picker& set_time(const datetime& dt) noexcept {
-		DateTime_SetSystemtime(this->hwnd(), GDT_VALID, &dt.systemtime());
+		DateTime_SetSystemtime(this->_hWnd, GDT_VALID, &dt.systemtime());
 		return *this;
 	}
 };

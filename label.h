@@ -6,43 +6,41 @@
  */
 
 #pragma once
-#include "internals/native_control.h"
-#include "internals/w_enable.h"
-#include "internals/w_text.h"
+#include "internals/base_text_impl.h"
+#include "internals/base_native_ctrl_impl.h"
 #include "internals/styler.h"
-
-/**
- * hwnd_base
- *  native_control
- *   w_text
- *     w_enable
- *      label
- */
+#include "wnd.h"
 
 namespace wl {
 
-// Wrapper to native static text control.
+// Wrapper to native label control.
 class label final :
-	public wli::w_enable<
-		label, wli::w_text<
-			label, wli::native_control<label>>>
+	public wnd,
+	public wli::base_native_ctrl_impl<label>,
+	public wli::base_text_impl<label>
 {
 private:
-	class _styler final : public wli::styler<label> {
-	public:
-		explicit _styler(label* pLabel) noexcept : styler(pLabel) { }
-	};
+	HWND                  _hWnd = nullptr;
+	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
 
 public:
-	_styler style{this};
+	// Wraps window style changes done by Get/SetWindowLongPtr.
+	wli::styler<label> style{this};
+
+	label() noexcept :
+		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl), base_text_impl(_hWnd) { }
+
+	label(label&&) = default;
+	label& operator=(label&&) = default; // movable only
 
 	label& create(HWND hParent, int ctrlId,
 		const wchar_t* caption, POINT pos, SIZE size)
 	{
-		return this->native_control::create(hParent, ctrlId, caption, pos, size, L"Static");
+		this->_baseNativeCtrl.create(hParent, ctrlId, caption, pos, size, L"Static");
+		return *this;
 	}
 
-	label& create(const hwnd_base* parent, int ctrlId,
+	label& create(const wnd* parent, int ctrlId,
 		const wchar_t* caption, POINT pos, SIZE size)
 	{
 		return this->create(parent->hwnd(), ctrlId, caption, pos, size);

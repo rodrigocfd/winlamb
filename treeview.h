@@ -6,54 +6,56 @@
  */
 
 #pragma once
-#include "internals/native_control.h"
-#include "internals/w_enable.h"
-#include "internals/w_focus.h"
+#include "internals/base_native_ctrl_impl.h"
+#include "internals/member_image_list.h"
 #include "internals/treeview_item_collection.h"
 #include "internals/treeview_styler.h"
-#include "internals/member_image_list.h"
-
-/**
- * hwnd_base
- *  native_control
- *   w_focus
- *    w_enable
- *     textbox
- */
+#include "wnd.h"
 
 namespace wl {
 
 // Wrapper to treeview control from Common Controls library.
 class treeview final :
-	public wli::w_enable<
-		treeview, wli::w_focus<
-			treeview, wli::native_control<treeview>>>
+	public wnd,
+	public wli::base_native_ctrl_impl<treeview>
 {
-private:
-	using _item_collection = wli::treeview_item_collection<treeview>;
-
 public:
 	using item = wli::treeview_item<treeview>;
 
+private:
+	using _item_collection = wli::treeview_item_collection<treeview>;
+
+	HWND                  _hWnd = nullptr;
+	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
+
+public:
+	// Wraps window style changes done by Get/SetWindowLongPtr.
 	wli::treeview_styler<treeview>   style{this};
+
 	_item_collection                 items{this};
 	wli::member_image_list<treeview> imageList16{this, 16};
 
-	treeview() {
+	treeview() :
+		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl)
+	{
 		this->imageList16.on_create([this]() noexcept->void {
-			TreeView_SetImageList(this->hwnd(), this->imageList16.himagelist(), TVSIL_NORMAL);
+			TreeView_SetImageList(this->_hWnd, this->imageList16.himagelist(), TVSIL_NORMAL);
 		});
 	}
 
+	treeview(treeview&&) = default;
+	treeview& operator=(treeview&&) = default; // movable only
+
 	treeview& create(HWND hParent, int ctrlId, POINT pos, SIZE size) {
-		return this->native_control::create(hParent, ctrlId, nullptr, pos, size, WC_TREEVIEW,
+		this->_baseNativeCtrl.create(hParent, ctrlId, nullptr, pos, size, WC_TREEVIEW,
 			WS_CHILD | WS_VISIBLE | WS_TABSTOP,
 			WS_EX_CLIENTEDGE); // for children, WS_BORDER gives old, flat drawing; always use WS_EX_CLIENTEDGE
+		return *this;
 	}
 
-	treeview& create(const hwnd_base* parent, int ctrlId, POINT pos, SIZE size) {
+	treeview& create(const wnd* parent, int ctrlId, POINT pos, SIZE size) {
 		return this->create(parent->hwnd(), ctrlId, pos, size);
 	}
 };
 
-}//namespace wl
+}//namespace wli

@@ -7,8 +7,8 @@
 
 #pragma once
 #include <vector>
-#include "hwnd_base.h"
 #include "internals/params.h"
+#include "wnd.h"
 
 namespace wl {
 
@@ -37,7 +37,7 @@ public:
 		return this->_add_one(hCtrl, modeHorz, modeVert);
 	}
 
-	resizer& add(const hwnd_base& ctrl, go modeHorz, go modeVert) {
+	resizer& add(const wnd& ctrl, go modeHorz, go modeVert) {
 		return this->add(ctrl.hwnd(), modeHorz, modeVert);
 	}
 
@@ -49,9 +49,9 @@ public:
 		return *this;
 	}
 
-	resizer& add(std::initializer_list<hwnd_base*> ctrls, go modeHorz, go modeVert) {
+	resizer& add(std::initializer_list<wnd*> ctrls, go modeHorz, go modeVert) {
 		this->_ctrls.reserve(this->_ctrls.size() + ctrls.size());
-		for (const hwnd_base* pCtrl : ctrls) {
+		for (const wnd* pCtrl : ctrls) {
 			this->_add_one(pCtrl->hwnd(), modeHorz, modeVert);
 		}
 		return *this;
@@ -61,7 +61,7 @@ public:
 		return this->add(GetDlgItem(hParent, ctrlId), modeHorz, modeVert);
 	}
 
-	resizer& add(const hwnd_base* parent, int ctrlId, go modeHorz, go modeVert) {
+	resizer& add(const wnd* parent, int ctrlId, go modeHorz, go modeVert) {
 		return this->add(parent->hwnd(), ctrlId, modeHorz, modeVert);
 	}
 
@@ -73,7 +73,7 @@ public:
 		return *this;
 	}
 
-	resizer& add(const hwnd_base* parent, std::initializer_list<int> ctrlIds, go modeHorz, go modeVert) {
+	resizer& add(const wnd* parent, std::initializer_list<int> ctrlIds, go modeHorz, go modeVert) {
 		this->_ctrls.reserve(this->_ctrls.size() + ctrlIds.size());
 		for (int ctrlId : ctrlIds) {
 			this->_add_one(GetDlgItem(parent->hwnd(), ctrlId), modeHorz, modeVert);
@@ -82,7 +82,7 @@ public:
 	}
 
 	// Updates controls, intended to be called with parent's WM_SIZE processing.
-	void arrange(const params& p) const noexcept {
+	void adjust(const params& p) const noexcept {
 		int state = static_cast<int>(p.wParam);
 		int cx    = LOWORD(p.lParam);
 		int cy    = HIWORD(p.lParam);

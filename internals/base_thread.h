@@ -6,20 +6,15 @@
  */
 
 #pragma once
-#include "w_message.h"
+#include "base_msg.h"
 #include <process.h>
-
-/**
- * hwnd_base
- *  w_message
- *   w_thread_capable
- */
 
 namespace wl {
 namespace wli {
 
+// Adds multithreading capabilities to the window.
 template<typename retT, retT RET_VAL>
-class w_thread_capable : public w_message<retT> {
+class base_thread final {
 private:
 	struct _callback_pack final {
 		std::function<void()> func;
@@ -29,20 +24,23 @@ private:
 
 	static const UINT WM_THREAD_MESSAGE = WM_APP + 0x3FFF;
 
-protected:
-	w_thread_capable() {
-		this->on_message(WM_THREAD_MESSAGE, [this](params p) noexcept->retT {
+	base_msg<retT>& _baseMsg;
+
+public:
+	base_thread(base_msg<retT>& baseMsg) :
+		_baseMsg(baseMsg)
+	{
+		baseMsg.msgs.add(WM_THREAD_MESSAGE, [this](params p) noexcept->retT {
 			this->_process_thread_ui_msg(p);
 			return RET_VAL; // 0 for windows, TRUE for dialogs
 		});
 	}
 
-public:
 	// Runs code asynchronously in a new detached thread.
 	template<typename funcT>
 	void run_thread_detached(funcT&& func) const noexcept {
 		// Analog to std::thread([](){ ... }).detach(), but exception-safe.
-		_callback_pack* pPack = new _callback_pack{std::move(func), this->hwnd()};
+		_callback_pack* pPack = new _callback_pack{std::move(func), this->_baseMsg.hwnd()};
 
 		uintptr_t hThread = _beginthreadex(nullptr, 0, [](void* ptr) noexcept->unsigned int {
 			_callback_pack* pPack = reinterpret_cast<_callback_pack*>(ptr);
@@ -67,8 +65,8 @@ public:
 		// from another thread, so a callback function can, tunelled by wndproc, run in
 		// the original thread of the window, thus allowing GUI updates. This avoids the
 		// user to deal with a custom WM_ message.
-		_callback_pack* pPack = new _callback_pack{std::move(func), this->hwnd()};
-		SendMessageW(this->hwnd(), WM_THREAD_MESSAGE, 0, reinterpret_cast<LPARAM>(pPack));
+		_callback_pack* pPack = new _callback_pack{std::move(func), this->_baseMsg.hwnd()};
+		SendMessageW(this->_baseMsg.hwnd(), WM_THREAD_MESSAGE, 0, reinterpret_cast<LPARAM>(pPack));
 	}
 
 private:

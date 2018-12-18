@@ -9,7 +9,7 @@
 #include <system_error>
 #include <Windows.h>
 #include <VersionHelpers.h>
-#include "internals/combinable_flags.h"
+#include "internals/enable_bitmask_operators.h"
 
 namespace wl {
 
@@ -19,13 +19,13 @@ private:
 	HFONT _hFont = nullptr;
 
 public:
+	// Can be combined with bitmask operators.
 	enum class deco : BYTE {
 		NONE      = 0b00000000,
 		BOLD      = 0b00000001,
 		ITALIC    = 0b00000010,
 		STRIKEOUT = 0b00000100,
-		UNDERLINE = 0b00001000,
-		WINLAMB_COMBINED_FLAGS4(BOLD, ITALIC, STRIKEOUT, UNDERLINE)
+		UNDERLINE = 0b00001000
 	};
 
 	~font() {
@@ -33,7 +33,10 @@ public:
 	}
 
 	font() = default;
-	font(font&& other) noexcept : _hFont{other._hFont} { other._hFont = nullptr; }
+
+	font(font&& other) noexcept : _hFont{other._hFont} {
+		other._hFont = nullptr;
+	}
 
 	HFONT hfont() const noexcept {
 		return this->_hFont;
@@ -136,6 +139,6 @@ public:
 	};
 };
 
-WINLAMB_COMBINABLE_FLAGS(font::deco);
+ENABLE_BITMASK_OPERATORS(font::deco);
 
 }//namespace wl

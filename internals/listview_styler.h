@@ -14,7 +14,7 @@ namespace wli {
 template<typename listviewT>
 class listview_styler final : public wli::styler<listviewT> {
 public:
-	explicit listview_styler(listviewT* pList) noexcept : styler(pList) { }
+	explicit listview_styler(listviewT* pList) noexcept : styler<listviewT>(pList) { }
 
 	listviewT& always_show_sel(bool doSet) noexcept {
 		return this->set_style(doSet, LVS_SHOWSELALWAYS);
@@ -33,33 +33,33 @@ public:
 	}
 
 	listviewT& checkboxes(bool doSet) noexcept {
-		ListView_SetExtendedListViewStyleEx(this->hwnd(), LVS_EX_CHECKBOXES,
-			doSet ? LVS_EX_CHECKBOXES : 0);
-		return this->target();
+		ListView_SetExtendedListViewStyleEx(this->styler<listviewT>::target.hwnd(),
+			LVS_EX_CHECKBOXES, doSet ? LVS_EX_CHECKBOXES : 0);
+		return this->styler<listviewT>::target;
 	}
 
 	listviewT& double_buffer(bool doSet) noexcept {
-		ListView_SetExtendedListViewStyleEx(this->hwnd(), LVS_EX_DOUBLEBUFFER,
-			doSet ? LVS_EX_DOUBLEBUFFER : 0);
-		return this->target();
+		ListView_SetExtendedListViewStyleEx(this->styler<listviewT>::target.hwnd(),
+			LVS_EX_DOUBLEBUFFER, doSet ? LVS_EX_DOUBLEBUFFER : 0);
+		return this->styler<listviewT>::target;
 	}
 
 	listviewT& full_row_select(bool doSet) noexcept {
-		ListView_SetExtendedListViewStyleEx(this->hwnd(), LVS_EX_FULLROWSELECT,
-			doSet ? LVS_EX_FULLROWSELECT : 0);
-		return this->target();
+		ListView_SetExtendedListViewStyleEx(this->styler<listviewT>::target.hwnd(),
+			LVS_EX_FULLROWSELECT, doSet ? LVS_EX_FULLROWSELECT : 0);
+		return this->styler<listviewT>::target;
 	}
 
 	listviewT& grid_lines(bool doSet) noexcept {
-		ListView_SetExtendedListViewStyleEx(this->hwnd(), LVS_EX_GRIDLINES,
-			doSet ? LVS_EX_GRIDLINES : 0);
-		return this->target();
+		ListView_SetExtendedListViewStyleEx(this->styler<listviewT>::target.hwnd(),
+			LVS_EX_GRIDLINES, doSet ? LVS_EX_GRIDLINES : 0);
+		return this->style<listviewT>::target;
 	}
 
 	listviewT& reorder_header(bool doSet) noexcept {
-		ListView_SetExtendedListViewStyleEx(this->hwnd(), LVS_EX_HEADERDRAGDROP,
-			doSet ? LVS_EX_HEADERDRAGDROP : 0);
-		return this->target();
+		ListView_SetExtendedListViewStyleEx(this->styler<listviewT>::target.hwnd(),
+			LVS_EX_HEADERDRAGDROP, doSet ? LVS_EX_HEADERDRAGDROP : 0);
+		return this->style<listviewT>::target;
 	}
 };
 

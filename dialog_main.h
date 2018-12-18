@@ -6,62 +6,71 @@
  */
 
 #pragma once
-#include "internals/dialog.h"
-#include "internals/loop.h"
-#include "internals/w_text.h"
+#include "internals/base_dialog.h"
+#include "internals/base_loop.h"
+#include "internals/base_msg_impl.h"
+#include "internals/base_text_impl.h"
+#include "internals/base_thread_impl.h"
 #include "internals/run.h"
-
-/**
- * hwnd_base
- *  w_message
- *   w_thread_capable
- *    dialog
- *     w_text
- *      dialog_main
- */
+#include "internals/styler.h"
+#include "wnd.h"
 
 namespace wl {
 namespace wli { class dialog_modeless; } // friend forward declaration
 
 // Inherit from this class to have a dialog as the main window for your application.
 class dialog_main :
-	public wli::w_text<
-		dialog_main, wli::dialog_thread_capable>
+	public wnd,
+	public wli::base_msg_impl<INT_PTR>,
+	public wli::base_thread_impl<INT_PTR, TRUE>,
+	public wli::base_text_impl<dialog_main>
 {
-	friend class wli::dialog_modeless;
+	friend wli::dialog_modeless; // needs to access _baseLoop
 
 protected:
-	struct setup_vars final : public wli::dialog_thread_capable::setup_vars {
+	// Variables to be set by user, used only during window creation.
+	struct setup_vars final : public wli::base_dialog::setup_vars {
 		int iconId = 0;
 		int accelTableId = 0;
 	};
 
 private:
-	wli::loop _loop;
+	HWND                            _hWnd = nullptr;
+	wli::base_msg<INT_PTR>          _baseMsg{_hWnd};
+	wli::base_thread<INT_PTR, TRUE> _baseThread{_baseMsg};
+	wli::base_dialog                _baseDialog{_hWnd, _baseMsg};
+	wli::base_loop                  _baseLoop;
 
-protected:
+public:
+	// Defines window creation parameters.
 	setup_vars setup;
 
-	dialog_main() {
-		this->on_message(WM_CLOSE, [this](params) noexcept->INT_PTR {
-			DestroyWindow(this->hwnd());
+	// Wraps window style changes done by Get/SetWindowLongPtr.
+	wli::styler<dialog_main> style{this};
+
+protected:
+	dialog_main() :
+		wnd(_hWnd), base_msg_impl(_baseMsg), base_thread_impl(_baseThread), base_text_impl(_hWnd)
+	{
+		this->base_msg_impl::on_message(WM_CLOSE, [this](params) noexcept->INT_PTR {
+			DestroyWindow(this->_hWnd);
 			return TRUE;
 		});
-		this->on_message(WM_NCDESTROY, [](params) noexcept->INT_PTR {
+		this->base_msg_impl::on_message(WM_NCDESTROY, [](params) noexcept->INT_PTR {
 			PostQuitMessage(0);
 			return TRUE;
 		});
 	}
 
 public:
+	dialog_main(dialog_main&&) = default;
+	dialog_main& operator=(dialog_main&&) = default; // movable only
+
 	// Runs the dialog as the main program window; intended to be called in WinMain.
 	int winmain_run(HINSTANCE hInst, int cmdShow) {
 		InitCommonControls();
-		this->_basic_initial_checks(this->setup);
 
-		if (!CreateDialogParamW(hInst, MAKEINTRESOURCEW(this->setup.dialogId),
-			nullptr, _dialog_proc, reinterpret_cast<LPARAM>(this)) )
-		{
+		if (!this->_baseDialog.create_dialog_param(this->setup, nullptr)) {
 			throw std::system_error(GetLastError(), std::system_category(),
 				"CreateDialogParam failed for main dialog");
 		}
@@ -76,18 +85,18 @@ public:
 		}
 
 		this->_set_icon(hInst);
-		ShowWindow(this->hwnd(), cmdShow);
-		return this->_loop.run_loop(this->hwnd(), hAccel); // can be used as program return value
+		ShowWindow(this->_hWnd, cmdShow);
+		return this->_baseLoop.run_loop(this->_hWnd, hAccel); // can be used as program return value
 	}
 
 private:
 	void _set_icon(HINSTANCE hInst) const noexcept {
 		if (this->setup.iconId) {
-			SendMessageW(this->hwnd(), WM_SETICON, ICON_SMALL,
+			SendMessageW(this->_hWnd, WM_SETICON, ICON_SMALL,
 				reinterpret_cast<LPARAM>(reinterpret_cast<HICON>(LoadImageW(hInst,
 					MAKEINTRESOURCEW(this->setup.iconId),
 					IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR))));
-			SendMessageW(this->hwnd(), WM_SETICON, ICON_BIG,
+			SendMessageW(this->_hWnd, WM_SETICON, ICON_BIG,
 				reinterpret_cast<LPARAM>(reinterpret_cast<HICON>(LoadImageW(hInst,
 					MAKEINTRESOURCEW(this->setup.iconId),
 					IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR))));

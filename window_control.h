@@ -6,27 +6,66 @@
  */
 
 #pragma once
-#include "internals/window.h"
-
-/**
- * hwnd_base
- *  w_message
- *   w_thread_capable
- *    w_user_control
- *     window
- *      window_control
- */
+#include "internals/base_msg_impl.h"
+#include "internals/base_thread_impl.h"
+#include "internals/base_user_ctrl.h"
+#include "internals/base_window.h"
+#include "internals/styler.h"
+#include "wnd.h"
 
 namespace wl {
 
 // Inherit from this class to have an user-custom window control.
-class window_control : public wli::window_user_control {
+class window_control :
+	public wnd,
+	public wli::base_msg_impl<LRESULT>,
+	public wli::base_thread_impl<LRESULT, 0>
+{
+private:
+	HWND                            _hWnd = nullptr;
+	wli::base_msg<LRESULT>          _baseMsg{_hWnd};
+	wli::base_thread<LRESULT, 0>    _baseThread{_baseMsg};
+	wli::base_window                _baseWindow{_hWnd, _baseMsg};
+	wli::base_user_ctrl<LRESULT, 0> _baseUserCtrl{_baseMsg};
+
+public:
+	// Defines window creation parameters.
+	wli::base_window::setup_vars setup;
+
+	// Wraps window style changes done by Get/SetWindowLongPtr.
+	wli::styler<window_control> style{this};
+
 protected:
-	struct setup_vars final : public wli::window_user_control::setup_vars { };
+	window_control() :
+		wnd(_hWnd), base_msg_impl(_baseMsg), base_thread_impl(_baseThread)
+	{
+		this->_init_setup_styles();
+	}
 
-	setup_vars setup;
+public:
+	window_control(window_control&&) = default;
+	window_control& operator=(window_control&&) = default; // movable only
 
-	window_control() noexcept {
+	// Returns the control ID.
+	int ctrl_id() const noexcept {
+		return GetDlgCtrlID(this->_hWnd);
+	}
+
+	// Creates the control window, returning immediately.
+	void create(HWND hParent, int ctrlId, POINT position, SIZE size) {
+		this->setup.position = position;
+		this->setup.size = size;
+		this->setup.menu = reinterpret_cast<HMENU>(static_cast<INT_PTR>(ctrlId));
+		this->_baseWindow.register_create(this->setup, hParent);
+	}
+
+	// Creates the control window, returning immediately.
+	void create(const wnd* parent, int ctrlId, POINT position, SIZE size) {
+		this->create(parent->hwnd(), ctrlId, position, size);
+	}
+
+private:
+	void _init_setup_styles() noexcept {
 		this->setup.wndClassEx.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
 		this->setup.wndClassEx.style = CS_DBLCLKS;
 		this->setup.style = CS_DBLCLKS | WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
@@ -36,20 +75,6 @@ protected:
 		// WS_HSCROLL adds horizontal scrollbar
 		// WS_VSCROLL adds vertical scrollbar
 		// WS_EX_CLIENTEDGE adds border (extended style, add on exStyle)
-	}
-
-public:
-	// Creates the control window, returning immediately.
-	void create(HWND hParent, int ctrlId, POINT position, SIZE size) {
-		this->setup.position = position;
-		this->setup.size = size;
-		this->setup.menu = reinterpret_cast<HMENU>(static_cast<INT_PTR>(ctrlId));
-		this->_register_create(this->setup, hParent);
-	}
-
-	// Creates the control window, returning immediately.
-	void create(const hwnd_base* parent, int ctrlId, POINT position, SIZE size) {
-		this->create(parent->hwnd(), ctrlId, position, size);
 	}
 };
 

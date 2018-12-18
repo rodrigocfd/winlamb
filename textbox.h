@@ -6,29 +6,18 @@
  */
 
 #pragma once
-#include "internals/native_control.h"
-#include "internals/w_enable.h"
-#include "internals/w_focus.h"
-#include "internals/w_text.h"
+#include "internals/base_text_impl.h"
+#include "internals/base_native_ctrl_impl.h"
 #include "internals/styler.h"
-
-/**
- * hwnd_base
- *  native_control
- *   w_text
- *    w_focus
- *     w_enable
- *      textbox
- */
+#include "wnd.h"
 
 namespace wl {
 
 // Wrapper to native edit box control.
 class textbox final :
-	public wli::w_enable<
-		textbox, wli::w_focus<
-			textbox, wli::w_text<
-				textbox, wli::native_control<textbox>>>>
+	public wnd,
+	public wli::base_native_ctrl_impl<textbox>,
+	public wli::base_text_impl<textbox>
 {
 private:
 	class _styler final : public wli::styler<textbox> {
@@ -40,6 +29,9 @@ private:
 		}
 	};
 
+	HWND                  _hWnd = nullptr;
+	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
+
 public:
 	enum class type { NORMAL, PASSWORD, MULTILINE };
 
@@ -49,7 +41,14 @@ public:
 		int len = 0;
 	};
 
+	// Wraps window style changes done by Get/SetWindowLongPtr.
 	_styler style{this};
+
+	textbox() noexcept :
+		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl), base_text_impl(_hWnd) { }
+
+	textbox(textbox&&) = default;
+	textbox& operator=(textbox&&) = default; // movable only
 
 	textbox& create(HWND hParent, int ctrlId,
 		type t, POINT pos, LONG width, LONG height = 21)
@@ -60,41 +59,43 @@ public:
 		case type::PASSWORD:  styles |= ES_AUTOHSCROLL | ES_PASSWORD; break;
 		case type::MULTILINE: styles |= ES_MULTILINE | ES_WANTRETURN;
 		}
-		return this->native_control::create(hParent, ctrlId, nullptr,
+
+		this->_baseNativeCtrl.create(hParent, ctrlId, nullptr,
 			pos, {width, height}, L"Edit",
 			WS_CHILD | WS_VISIBLE | styles, WS_EX_CLIENTEDGE);
+		return *this;
 	}
 
-	textbox& create(const hwnd_base* parent, int ctrlId,
+	textbox& create(const wnd* parent, int ctrlId,
 		type t, POINT pos, LONG width, LONG height = 21)
 	{
 		return this->create(parent->hwnd(), ctrlId, t, pos, width, height);
 	}
 
-	textbox& textbox::selection_set(selection selec) noexcept {
-		SendMessageW(this->hwnd(), EM_SETSEL, selec.start, selec.start + selec.len);
+	textbox& select(selection selec) noexcept {
+		SendMessageW(this->_hWnd, EM_SETSEL, selec.start, selec.start + selec.len);
 		return *this;
 	}
 
-	textbox& selection_set_all() noexcept {
-		return this->selection_set({0, -1});
+	textbox& select_all() noexcept {
+		return this->select({0, -1});
 	}
 
-	selection selection_get() const noexcept {
+	selection get_selected() const noexcept {
 		int p0 = 0, p1 = 0;
-		SendMessageW(this->hwnd(), EM_GETSEL,
+		SendMessageW(this->_hWnd, EM_GETSEL,
 			reinterpret_cast<WPARAM>(&p0), reinterpret_cast<LPARAM>(&p1));
 		return {p0, p1 - p0}; // start, length
 	}
 
-	textbox& selection_replace(const wchar_t* t) noexcept {
-		SendMessageW(this->hwnd(), EM_REPLACESEL,
+	textbox& replace_selected(const wchar_t* t) noexcept {
+		SendMessageW(this->_hWnd, EM_REPLACESEL,
 			TRUE, reinterpret_cast<LPARAM>(t));
 		return *this;
 	}
 
-	textbox& selection_replace(const std::wstring& t) noexcept {
-		return this->selection_replace(t.c_str());
+	textbox& replace_selected(const std::wstring& t) noexcept {
+		return this->replace_selected(t.c_str());
 	}
 };
 

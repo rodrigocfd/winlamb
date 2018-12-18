@@ -19,8 +19,8 @@ private:
 	treeviewT& _tree;
 
 public:
-	treeview_item_collection(const treeview_item_collection&) = delete;
-	treeview_item_collection& operator=(const treeview_item_collection&) = delete; // non-copyable, non-movable
+	treeview_item_collection(treeview_item_collection&&) = default;
+	treeview_item_collection& operator=(treeview_item_collection&&) = default; // movable only
 
 	explicit treeview_item_collection(treeviewT* ptree) noexcept
 		: _tree(*ptree) { }

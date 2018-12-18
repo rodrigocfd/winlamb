@@ -20,8 +20,8 @@ private:
 	listviewT& _list;
 
 public:
-	listview_item_collection(const listview_item_collection&) = delete;
-	listview_item_collection& operator=(const listview_item_collection&) = delete; // non-copyable, non-movable
+	listview_item_collection(listview_item_collection&&) = default;
+	listview_item_collection& operator=(listview_item_collection&&) = default; // movable only
 
 	explicit listview_item_collection(listviewT* pList) noexcept
 		: _list(*pList) { }

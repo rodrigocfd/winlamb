@@ -16,15 +16,14 @@ namespace wli {
 // Generic storage for message identifiers and their respective lambda handlers.
 template<typename idT, typename retT>
 class store final {
-public:
-	using funcT = std::function<retT(params)>; // retT is LRESULT or INT_PTR
-
 private:
 	struct _msg_unit final {
-		idT   id;
-		funcT func;
+		idT                         id;   // UINT, WORD or {UINT_PTR, UINT}
+		std::function<retT(params)> func; // retT is LRESULT or INT_PTR
+
 		_msg_unit() = default;
-		_msg_unit(idT id, funcT&& func) noexcept : id(id), func(std::move(func)) { }
+		_msg_unit(idT id, std::function<retT(params)>&& func) noexcept :
+			id(id), func(std::move(func)) { }
 	};
 
 	std::vector<_msg_unit> _msgUnits;
@@ -43,13 +42,11 @@ public:
 		this->_msgUnits.reserve(msgsReserve + 1); // +1 because sentinel
 	}
 
-	template<typename handlerT>
-	void add(idT id, handlerT&& func) {
+	void add(idT id, std::function<retT(params)>&& func) {
 		this->_msgUnits.emplace_back(id, std::move(func)); // reverse search: messages can be overwritten by a later one
 	}
 
-	template<typename handlerT>
-	void add(std::initializer_list<idT> ids, handlerT&& func) {
+	void add(std::initializer_list<idT> ids, std::function<retT(params)>&& func) {
 		const idT* pIds = ids.begin();
 		this->add(pIds[0], std::move(func)); // store user func once
 		size_t funcIdx = this->_msgUnits.size() - 1;
@@ -62,7 +59,7 @@ public:
 		}
 	}
 
-	funcT* find(idT id) {
+	std::function<retT(params)>* find(idT id) {
 		this->_msgUnits[0].id = id; // sentinel for reverse linear search
 		_msg_unit* revRunner = &this->_msgUnits.back(); // pointer to last element
 		while (revRunner->id != id) --revRunner;

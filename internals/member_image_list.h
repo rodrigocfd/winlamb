@@ -25,8 +25,8 @@ public:
 	member_image_list(controlT* pOwner, WORD resolution) noexcept
 		: _owner(*pOwner), _resolution({resolution, resolution}) { }
 
-	member_image_list(const member_image_list&) = delete;
-	member_image_list& operator=(const member_image_list&) = delete; // non-copyable, non-movable
+	member_image_list(member_image_list&&) = default;
+	member_image_list& operator=(member_image_list&&) = default; // movable only
 
 	HIMAGELIST himagelist() const noexcept {
 		return this->_imageList.himagelist();

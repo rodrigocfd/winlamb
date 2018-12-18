@@ -8,8 +8,8 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "hwnd_base.h"
 #include "internals/device_context_objects.h"
+#include "wnd.h"
 
 namespace wl {
 
@@ -34,7 +34,7 @@ public:
 		this->_sz.cy = rcClient.bottom;
 	}
 
-	explicit device_context(const hwnd_base* wnd, HDC hDC = nullptr) noexcept
+	explicit device_context(const wnd* wnd, HDC hDC = nullptr) noexcept
 		: device_context(wnd->hwnd(), hDC) { }
 
 	HDC     hdc() const noexcept                { return this->_hDC; }
@@ -218,7 +218,7 @@ public:
 	explicit device_context_simple(HWND hWnd) noexcept
 		: device_context(hWnd, BeginPaint(hWnd, &this->_ps)) { }
 
-	explicit device_context_simple(const hwnd_base* wnd) noexcept
+	explicit device_context_simple(const wnd* wnd) noexcept
 		: device_context_simple(wnd->hwnd()) { }
 };
 
@@ -252,7 +252,7 @@ public:
 			reinterpret_cast<HBRUSH>(GetClassLongPtrW(this->_hWnd, GCLP_HBRBACKGROUND)) );
 	}
 
-	explicit device_context_buffered(const hwnd_base* wnd) noexcept
+	explicit device_context_buffered(const wnd* wnd) noexcept
 		: device_context_buffered(wnd->hwnd()) { }
 };
 

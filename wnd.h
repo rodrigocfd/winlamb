@@ -9,20 +9,19 @@
 #include <Windows.h>
 
 namespace wl {
-namespace wli {
 
-template<typename derivedT, typename baseT>
-class w_focus : public baseT {
-protected:
-	w_focus() = default;
+// Common ground to everything which has a HWND.
+class wnd {
+private:
+	const HWND& _hWnd;
 
 public:
-	// Simple wrapper to SetFocus.
-	derivedT& set_focus() noexcept {
-		SetFocus(this->hwnd());
-		return *static_cast<derivedT*>(this);
+	wnd(const HWND& hWnd) noexcept : _hWnd(hWnd) { }
+
+	// Returns the window handle.
+	HWND hwnd() const noexcept {
+		return this->_hWnd;
 	}
 };
 
-}//namespace wli
 }//namespace wl

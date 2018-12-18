@@ -7,21 +7,19 @@
 
 #pragma once
 #include <vector>
-#include "internals/native_control.h"
+#include "internals/base_native_ctrl_impl.h"
 #include "internals/params.h"
 #include "internals/styler.h"
 #include "icon.h"
-
-/**
- * hwnd_base
- *  native_control
- *   statusbar
- */
+#include "wnd.h"
 
 namespace wl {
 
 // Wrapper to status control from Common Controls library.
-class statusbar final : public wli::native_control<statusbar> {
+class statusbar final :
+	public wnd,
+	public wli::base_native_ctrl_impl<statusbar>
+{
 private:
 	class _styler final : public wli::styler<statusbar> {
 	public:
@@ -41,33 +39,43 @@ private:
 		UINT resizeWeight = 0;
 	};
 
-	std::vector<_part> _parts;
-	std::vector<int>   _rightEdges;
+	HWND                  _hWnd = nullptr;
+	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
+	std::vector<_part>    _parts;
+	std::vector<int>      _rightEdges;
 
 public:
+	// Wraps window style changes done by Get/SetWindowLongPtr.
 	_styler style{this};
 
+	statusbar() noexcept :
+		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl) { }
+
+	statusbar(statusbar&&) = default;
+	statusbar& operator=(statusbar&&) = default; // movable only
+
 	statusbar& create(HWND hParent) {
-		if (this->hwnd()) {
+		if (this->_hWnd) {
 			throw std::logic_error("Trying to create a statusbar twice.");
 		}
 
 		DWORD parentStyle = static_cast<DWORD>(GetWindowLongPtrW(hParent, GWL_STYLE));
 		bool canStretch = (parentStyle & WS_MAXIMIZEBOX) != 0 ||
 			(parentStyle & WS_SIZEBOX) != 0;
-		return this->native_control::create(hParent, 0, nullptr, {0,0}, {0,0}, STATUSCLASSNAME,
+		this->_baseNativeCtrl.create(hParent, 0, nullptr, {0,0}, {0,0}, STATUSCLASSNAME,
 			(WS_CHILD | WS_VISIBLE) | (canStretch ? SBARS_SIZEGRIP : 0), 0);
+		return *this;
 	}
 
-	statusbar& create(const hwnd_base* parent) {
+	statusbar& create(const wnd* parent) {
 		return this->create(parent->hwnd());
 	}
 
+	// Intended to be called with parent's WM_SIZE processing, to fit statusbar into window.
 	void adjust(const params& p) noexcept {
-		// Intended to be called with parent's WM_SIZE processing.
-		if (p.wParam != SIZE_MINIMIZED && this->hwnd()) {
+		if (p.wParam != SIZE_MINIMIZED && this->_hWnd) {
 			int cx = LOWORD(p.lParam); // available width
-			SendMessageW(this->hwnd(), WM_SIZE, 0, 0); // tell statusbar to fit parent
+			SendMessageW(this->_hWnd, WM_SIZE, 0, 0); // tell statusbar to fit parent
 
 			// Find the space to be divided among variable-width parts,
 			// and total weight of variable-width parts.
@@ -89,13 +97,13 @@ public:
 					this->_parts[i].sizePixels :
 					static_cast<int>( (cxVariable / totalWeight) * this->_parts[i].resizeWeight );
 			}
-			SendMessageW(this->hwnd(), SB_SETPARTS, this->_rightEdges.size(),
+			SendMessageW(this->_hWnd, SB_SETPARTS, this->_rightEdges.size(),
 				reinterpret_cast<LPARAM>(&this->_rightEdges[0]));
 		}
 	}
 
 	statusbar& add_fixed_part(UINT sizePixels) {
-		if (this->hwnd()) {
+		if (this->_hWnd) {
 			this->_parts.push_back({sizePixels, 0});
 			this->_rightEdges.emplace_back(0);
 			this->adjust(params{WM_SIZE, SIZE_RESTORED, MAKELPARAM(this->_get_parent_cx(), 0)});
@@ -108,7 +116,7 @@ public:
 		// Suppose you have 3 parts, respectively with weights of 1, 1 and 2.
 		// If available client area is 400px, respective part widths will be 100, 100 and 200px.
 		// Zero weight means a fixed-width part, which internally should have sizePixels set.
-		if (this->hwnd()) {
+		if (this->_hWnd) {
 			this->_parts.push_back({0, resizeWeight});
 			this->_rightEdges.emplace_back(0);
 			this->adjust(params{WM_SIZE, SIZE_RESTORED, MAKELPARAM(this->_get_parent_cx(), 0)});
@@ -117,7 +125,7 @@ public:
 	}
 
 	statusbar& set_text(const wchar_t* text, size_t iPart) noexcept {
-		SendMessageW(this->hwnd(), SB_SETTEXT, MAKEWPARAM(MAKEWORD(iPart, 0), 0),
+		SendMessageW(this->_hWnd, SB_SETTEXT, MAKEWPARAM(MAKEWORD(iPart, 0), 0),
 			reinterpret_cast<LPARAM>(text));
 		return *this;
 	}
@@ -128,10 +136,10 @@ public:
 
 	std::wstring get_text(size_t iPart) const {
 		std::wstring buf;
-		int len = LOWORD(SendMessageW(this->hwnd(), SB_GETTEXTLENGTH, iPart, 0));
+		int len = LOWORD(SendMessageW(this->_hWnd, SB_GETTEXTLENGTH, iPart, 0));
 		if (len) {
 			buf.resize(len + 1, L'\0');
-			SendMessageW(this->hwnd(), SB_GETTEXT, iPart, reinterpret_cast<LPARAM>(&buf[0]));
+			SendMessageW(this->_hWnd, SB_GETTEXT, iPart, reinterpret_cast<LPARAM>(&buf[0]));
 			buf.resize(len);
 		}
 		return buf;
@@ -139,7 +147,7 @@ public:
 
 	statusbar& set_icon(HICON hIcon, size_t iPart) noexcept {
 		// Pass nullptr to clear icon.
-		SendMessageW(this->hwnd(), SB_SETICON, iPart, reinterpret_cast<LPARAM>(hIcon));
+		SendMessageW(this->_hWnd, SB_SETICON, iPart, reinterpret_cast<LPARAM>(hIcon));
 		return *this;
 	}
 
@@ -150,9 +158,9 @@ public:
 private:
 	int _get_parent_cx() noexcept {
 		static int cx = 0; // cache, since parts are intended to be added during window creation only
-		if (!cx && this->hwnd()) {
+		if (!cx && this->_hWnd) {
 			RECT rc{};
-			GetClientRect(GetParent(this->hwnd()), &rc);
+			GetClientRect(GetParent(this->_hWnd), &rc);
 			cx = rc.right;
 		}
 		return cx;

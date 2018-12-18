@@ -6,31 +6,35 @@
  */
 
 #pragma once
-#include "internals/w_thread_capable.h"
+#include "internals/base_msg_impl.h"
+#include "internals/base_thread_impl.h"
+#include "wnd.h"
 #include <CommCtrl.h>
-
-/**
- * hwnd_base
- *  w_message
- *   w_thread_capable
- *    subclass
- */
 
 namespace wl {
 
 // Manages window subclassing for a window.
-class subclass final : public wli::w_thread_capable<LRESULT, 0> {
+class subclass final :
+	public wnd,
+	public wli::base_msg_impl<LRESULT>,
+	public wli::base_thread_impl<LRESULT, 0>
+{
 private:
-	UINT _subclassId = -1;
+	HWND                         _hWnd = nullptr;
+	UINT                         _subclassId = -1;
+	wli::base_msg<LRESULT>       _baseMsg{_hWnd};
+	wli::base_thread<LRESULT, 0> _baseThread{_baseMsg};
 
 public:
 	~subclass() {
 		this->remove_subclass();
 	}
 
-	subclass() = default;
-	subclass(const subclass&) = delete;
-	subclass& operator=(const subclass&) = delete; // non-copyable, non-movable
+	subclass() :
+		wnd(_hWnd), base_msg_impl(_baseMsg), base_thread_impl(_baseThread) { }
+
+	subclass(subclass&&) = default;
+	subclass& operator=(subclass&&) = default; // movable only
 
 	void remove_subclass() noexcept {
 		if (this->hwnd()) {
@@ -54,9 +58,17 @@ public:
 		}
 	}
 
-	void install_subclass(const hwnd_base& ctrl)               { this->install_subclass(ctrl.hwnd()); }
-	void install_subclass(HWND hParent, int ctrlId)            { this->install_subclass(GetDlgItem(hParent, ctrlId)); }
-	void install_subclass(const hwnd_base* parent, int ctrlId) { this->install_subclass(GetDlgItem(parent->hwnd(), ctrlId)); }
+	void install_subclass(HWND hParent, int ctrlId) {
+		this->install_subclass(GetDlgItem(hParent, ctrlId));
+	}
+
+	void install_subclass(const wnd& ctrl) {
+		this->install_subclass(ctrl.hwnd());
+	}
+
+	void install_subclass(const wnd& parent, int ctrlId) {
+		this->install_subclass(GetDlgItem(parent.hwnd(), ctrlId));
+	}
 
 private:
 	static LRESULT CALLBACK _subclass_proc(HWND hWnd, UINT msg,
@@ -66,7 +78,9 @@ private:
 
 		if (pSelf) {
 			if (pSelf->hwnd()) {
-				std::pair<bool, LRESULT> procRet = pSelf->_process_msg(msg, wp, lp); // catches all message exceptions internally
+				std::pair<bool, LRESULT> procRet =
+					pSelf->_baseMsg.process_msg(msg, wp, lp); // catches all message exceptions internally
+
 				if (msg == WM_NCDESTROY) {
 					pSelf->remove_subclass();
 				}

@@ -19,8 +19,8 @@ private:
 	listviewT& _list;
 
 public:
-	listview_column_collection(const listview_column_collection&) = delete;
-	listview_column_collection& operator=(const listview_column_collection&) = delete; // non-copyable, non-movable
+	listview_column_collection(listview_column_collection&&) = default;
+	listview_column_collection& operator=(listview_column_collection&&) = default; // movable only
 
 	explicit listview_column_collection(listviewT* pList) noexcept
 		: _list(*pList) { }

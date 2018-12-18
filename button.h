@@ -6,47 +6,42 @@
  */
 
 #pragma once
-#include "internals/native_control.h"
-#include "internals/w_enable.h"
-#include "internals/w_focus.h"
-#include "internals/w_text.h"
+#include "internals/base_text_impl.h"
+#include "internals/base_native_ctrl_impl.h"
 #include "internals/styler.h"
-
-/**
- * hwnd_base
- *  native_control
- *   w_text
- *    w_focus
- *     w_enable
- *      button
- */
+#include "wnd.h"
 
 namespace wl {
 
 // Wrapper to native button control.
 class button final :
-	public wli::w_enable<
-		button, wli::w_focus<
-			button, wli::w_text<
-				button, wli::native_control<button>>>>
+	public wnd,
+	public wli::base_native_ctrl_impl<button>,
+	public wli::base_text_impl<button>
 {
 private:
-	class _styler final : public wli::styler<button> {
-	public:
-		explicit _styler(button* pButton) noexcept : styler(pButton) { }
-	};
+	HWND                  _hWnd = nullptr;
+	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
 
 public:
-	_styler style{this};
+	// Wraps window style changes done by Get/SetWindowLongPtr.
+	wli::styler<button> style{this};
+
+	button() noexcept :
+		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl), base_text_impl(_hWnd) { }
+
+	button(button&&) = default;
+	button& operator=(button&&) = default; // movable only
 
 	button& create(HWND hParent, int ctrlId,
-		const wchar_t* caption, POINT pos, SIZE size = {75,23})
+		const wchar_t* caption, POINT pos, SIZE size = {75, 23})
 	{
-		return this->native_control::create(hParent, ctrlId, caption, pos, size, L"Button");
+		this->_baseNativeCtrl.create(hParent, ctrlId, caption, pos, size, L"Button");
+		return *this;
 	}
 
-	button& create(const hwnd_base* parent, int ctrlId,
-		const wchar_t* caption, POINT pos, SIZE size = {75,23})
+	button& create(const wnd* parent, int ctrlId,
+		const wchar_t* caption, POINT pos, SIZE size = {75, 23})
 	{
 		return this->create(parent->hwnd(), ctrlId, caption, pos, size);
 	}
