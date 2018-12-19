@@ -54,7 +54,7 @@ namespace wm {
 		UINT     szbuffer() const noexcept { return static_cast<UINT>(this->wParam); }
 		wchar_t* buffer() const noexcept   { return reinterpret_cast<wchar_t*>(this->lParam); }
 	};
-	WINLAMB_EMPTYWM(cancelmodel);
+	WINLAMB_EMPTYWM(cancelmode);
 	struct capturechanged : public params {
 		capturechanged(const params& p) noexcept : params(p) { }
 		HWND window_gaining_mouse() const noexcept { return reinterpret_cast<HWND>(this->lParam); }
