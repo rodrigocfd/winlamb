@@ -7,6 +7,9 @@
 
 #pragma once
 #include "base_msg.h"
+#include "wc.h"
+#include "ws.h"
+#include "wsx.h"
 
 namespace wl {
 namespace wli {
@@ -16,7 +19,7 @@ class base_window final {
 public:
 	// Reduced version of WNDCLASSEX to be used within setup_vars.
 	struct wndclassex_less final {
-		UINT           style = 0;
+		wc             style = wc::NONE;
 		HICON          hIcon = nullptr;
 		HCURSOR        hCursor = nullptr;
 		HBRUSH         hbrBackground = nullptr;
@@ -29,7 +32,8 @@ public:
 	struct setup_vars {
 		wndclassex_less wndClassEx;
 		const wchar_t*  title = nullptr;
-		DWORD           style = 0, exStyle = 0;
+		ws              style = ws::NONE;
+		wsx             exStyle = wsx::NONE;
 		POINT           position{};
 		SIZE            size{};
 		HMENU           menu = nullptr;
@@ -61,9 +65,9 @@ public:
 		WNDCLASSEXW wcx = this->_gen_wndclassex(setup.wndClassEx, hInst);
 		ATOM atom = this->_register_class(wcx, setup);
 
-		if (!CreateWindowExW(setup.exStyle,
+		if (!CreateWindowExW(static_cast<DWORD>(setup.exStyle),
 			reinterpret_cast<LPCWSTR>(static_cast<ULONG_PTR>(static_cast<WORD>(atom))), // from MAKEINTATOM macro
-			setup.title, setup.style,
+			setup.title, static_cast<DWORD>(setup.style),
 			setup.position.x, setup.position.y, setup.size.cx, setup.size.cy,
 			hParent, setup.menu, hInst, static_cast<LPVOID>(this)) )
 		{
@@ -103,7 +107,7 @@ private:
 		wcx.lpfnWndProc = _window_proc;
 		wcx.hInstance = hInst;
 
-		wcx.style = wLess.style;
+		wcx.style = static_cast<UINT>(wLess.style);
 		wcx.hIcon = wLess.hIcon;
 		wcx.hCursor = wLess.hCursor;
 		wcx.hbrBackground = wLess.hbrBackground;

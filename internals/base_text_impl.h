@@ -12,7 +12,7 @@
 namespace wl {
 namespace wli {
 
-// Allows set/set window text with std::string.
+// Allows set/set window text with std::wstring.
 template<typename derivedT>
 class base_text_impl {
 private:

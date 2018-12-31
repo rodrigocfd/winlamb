@@ -67,8 +67,8 @@ public:
 private:
 	void _init_setup_styles() noexcept {
 		this->setup.wndClassEx.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
-		this->setup.wndClassEx.style = CS_DBLCLKS;
-		this->setup.style = CS_DBLCLKS | WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+		this->setup.wndClassEx.style = wc::DBLCLKS;
+		this->setup.style = ws::CHILD | ws::VISIBLE | ws::CLIPCHILDREN | ws::CLIPSIBLINGS;
 
 		// Useful styles to be added by user:
 		// WS_TABSTOP will receive focus on Tab key rotation
