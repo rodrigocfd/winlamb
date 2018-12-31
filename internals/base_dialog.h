@@ -39,7 +39,9 @@ public:
 	HWND create_dialog_param(const setup_vars& setup, HWND hParent) {
 		this->_basic_initial_checks(setup);
 		return CreateDialogParamW(
-			reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hParent, GWLP_HINSTANCE)),
+			hParent ?
+				reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hParent, GWLP_HINSTANCE)) :
+				GetModuleHandle(nullptr),
 			MAKEINTRESOURCEW(setup.dialogId), hParent, _dialog_proc,
 			reinterpret_cast<LPARAM>(this));
 	}
@@ -48,7 +50,9 @@ public:
 	INT_PTR dialog_box_param(const setup_vars& setup, HWND hParent) {
 		this->_basic_initial_checks(setup);
 		return DialogBoxParamW(
-			reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hParent, GWLP_HINSTANCE)),
+			hParent ?
+				reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hParent, GWLP_HINSTANCE)) :
+				GetModuleHandle(nullptr),
 			MAKEINTRESOURCEW(setup.dialogId), hParent, _dialog_proc,
 			reinterpret_cast<LPARAM>(this));
 	}
