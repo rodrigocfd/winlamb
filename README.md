@@ -12,9 +12,9 @@ A lightweight modern C++ library for [Win32 API](https://en.wikipedia.org/wiki/W
 
 As far as I can remember, around 2002 I started wrapping all my Win32 routines in classes, to make them reusable to myself, to save my time. Through all these years it took the form of a real library, a thin abstraction layer over raw Win32. People who saw it often commented that it was good, so in 2017 I decided to publish it on GitHub.
 
-Then I wrote [CodeProject - WinLamb: using C++11 lambdas to handle Win32 messages](https://www.codeproject.com/Articles/1184175/WinLamb-using-Cplusplus-lambdas-to-handle-Win-mess), a comprehensive article explaining WinLamb's message handling model, with [dialogs](https://msdn.microsoft.com/en-us/library/windows/desktop/ms632588(v=vs.85).aspx) and also [ordinary windows](https://msdn.microsoft.com/en-us/library/windows/desktop/ms632595(v=vs.85).aspx). Actually, features from C++14 and C++17 are used as well, as much as my compiler (Visual C++) allows it.
+Then I wrote [CodeProject - WinLamb: using C++11 lambdas to handle Win32 messages](https://www.codeproject.com/Articles/1184175/WinLamb-using-Cplusplus-lambdas-to-handle-Win-mess), a comprehensive article explaining WinLamb's message handling model, with [dialogs](https://docs.microsoft.com/pt-br/windows/desktop/dlgbox/dialog-boxes) and also [ordinary windows](https://docs.microsoft.com/pt-br/windows/desktop/winmsg/windows). Actually, features from C++14 and C++17 are used as well, as much as my compiler (Visual C++) allows it.
 
-Beyond dialog/window message handling, WinLamb also has wrappers for most native Windows controls ([textbox](https://msdn.microsoft.com/en-us/library/windows/desktop/bb775458(v=vs.85).aspx), [listview](https://msdn.microsoft.com/en-us/library/windows/desktop/bb774737(v=vs.85).aspx), etc.), along with other utility classes (strings, file I/O, COM wrappers, etc.) which play nice together. These controls and utilities, however, are _not_ mandatory: you can use your own classes upon the basic dialog/window infrastructure.
+Beyond dialog/window message handling, WinLamb also has wrappers for most native Windows controls ([textbox](https://docs.microsoft.com/pt-br/windows/desktop/Controls/edit-controls), [listview](https://docs.microsoft.com/pt-br/windows/desktop/Controls/list-view-control-reference), etc.), along with other utility classes (strings, file I/O, COM wrappers, etc.) which play nice together. These controls and utilities, however, are _not_ mandatory: you can use your own classes upon the basic dialog/window infrastructure.
 
 WinLamb by no means covers the whole Win32 API, simply because it's too huge. It just wraps some things. New features are constantly being added, though.
 
@@ -26,7 +26,7 @@ It has been tested with Visual C++ 2017.
 
 ### 2.1. Windows 10 manifest file
 
-There's an included `win10.exe.manifest` file, which you can [add to your Visual Studio project](https://stackoverflow.com/a/18115255/6923555). This manifest includes Common Controls and gives you [Windows 10 support](https://msdn.microsoft.com/en-us/library/windows/desktop/dn481241(v=vs.85).aspx).
+There's an included `win10.exe.manifest` file, which you can [add to your Visual Studio project](https://stackoverflow.com/a/18115255/6923555). This manifest includes Common Controls and gives you [Windows 10 support](https://docs.microsoft.com/pt-br/windows/desktop/SysInfo/targeting-your-application-at-windows-8-1).
 
 ## 3. Example
 
@@ -110,7 +110,6 @@ Wrappers and utility classes:
 | [`file_ini`](file_ini.h) | Wrapper to INI file. |
 | [`file_mapped`](file_mapped.h) | Wrapper to a memory-mapped file. |
 | [`font`](font.h) | Wrapper to HFONT handle. |
-| [`hwnd_base`](hwnd_base.h) | Simple HWND wrapper, base to all dialog and window classes. |
 | [`icon`](icon.h) | Wrapper to HICON handle. |
 | [`image_list`](image_list.h) | Wrapper to image list object from Common Controls library. |
 | [`insert_order_map`](insert_order_map.h) | Vector-based associative container which keeps the insertion order. |
@@ -133,6 +132,7 @@ Wrappers and utility classes:
 | [`treeview`](treeview.h) | Wrapper to treeview control from Common Controls library. |
 | [`vec`](vec.h) | Utilities to std::vector. |
 | [`version`](version.h) | Parses version information from an EXE or DLL. |
+| [`wnd`](wnd.h) | Simple HWND wrapper, base to all dialog and window classes. |
 | [`xml`](xml.h) | XML wrapper class to MSXML2 Windows library. |
 | [`zip`](zip.h) | Utilities to work with zipped files. |
 
