@@ -19,6 +19,7 @@ private:
 	str() = delete;
 
 public:
+	// Trims the string using std::iswspace to validate spaces.
 	static std::wstring& trim(std::wstring& s) {
 		if (s.empty()) return s;
 		trim_nulls(s);
@@ -89,11 +90,13 @@ private:
 	}
 
 public:
+	// Type-safe sprintf.
 	template<typename ...argsT>
 	static std::wstring format(const wchar_t* strFormat, const argsT&... args) {
 		return _raw_format(lstrlenW(strFormat), strFormat, std::forward<const argsT&>(args)...);
 	}
 
+	// Type-safe sprintf.
 	template<typename ...argsT>
 	static std::wstring format(const std::wstring& strFormat, const argsT&... args) {
 		return _raw_format(strFormat.length(), strFormat.c_str(), std::forward<const argsT&>(args)...);
@@ -121,6 +124,7 @@ private:
 	}
 
 public:
+	// Checks, case sensitive, if the string ends with the given text.
 	static bool ends_with(const std::wstring& s, const wchar_t* what) noexcept {
 		size_t whatLen = 0;
 		if (!_ends_begins_first_check(s, what, whatLen)) {
@@ -129,6 +133,7 @@ public:
 		return !lstrcmpW(s.c_str() + s.length() - whatLen, what);
 	}
 
+	// Checks, case insensitive, if the string ends with the given text.
 	static bool ends_withi(const std::wstring& s, const wchar_t* what) noexcept {
 		size_t whatLen = 0;
 		if (!_ends_begins_first_check(s, what, whatLen)) {
@@ -137,6 +142,7 @@ public:
 		return !lstrcmpiW(s.c_str() + s.length() - whatLen, what);
 	}
 
+	// Checks, case sensitive, if the string begins with the given text.
 	static bool begins_with(const std::wstring& s, const wchar_t* what) noexcept {
 		size_t whatLen = 0;
 		if (!_ends_begins_first_check(s, what, whatLen)) {
@@ -145,6 +151,7 @@ public:
 		return !wcsncmp(s.c_str(), what, whatLen);
 	}
 
+	// Checks, case insensitive, if the string begins with the given text.
 	static bool begins_withi(const std::wstring& s, const wchar_t* what) noexcept {
 		size_t whatLen = 0;
 		if (!_ends_begins_first_check(s, what, whatLen)) {
@@ -153,18 +160,21 @@ public:
 		return !_wcsnicmp(s.c_str(), what, whatLen);
 	}
 
+	// Converts string to uppercase.
 	static std::wstring upper(const std::wstring& s) {
 		std::wstring ret = s;
 		CharUpperBuffW(&ret[0], static_cast<DWORD>(ret.length()));
 		return ret;
 	}
 
+	// Converts string to lowercase.
 	static std::wstring lower(const std::wstring& s) {
 		std::wstring ret = s;
 		CharLowerBuffW(&ret[0], static_cast<DWORD>(ret.length()));
 		return ret;
 	}
 
+	// Reverses the string.
 	static std::wstring& reverse(std::wstring& s) noexcept {
 		size_t lim = (s.length() - (s.length() % 2)) / 2;
 		for (size_t i = 0; i < lim; ++i) {
@@ -173,6 +183,7 @@ public:
 		return s;
 	}
 
+	// Reverses the string.
 	static std::wstring reverse(const wchar_t* s) {
 		std::wstring ret = s;
 		return reverse(s);
@@ -220,6 +231,7 @@ public:
 		return rfindi(haystack, needle, offset);
 	}
 
+	// Finds all occurrences of a substring, case sensitive, and replaces them all.
 	static std::wstring& replace(std::wstring& haystack, const std::wstring& needle, const std::wstring& replacement) {
 		if (haystack.empty() || needle.empty()) return haystack;
 
@@ -242,6 +254,7 @@ public:
 		return haystack;
 	}
 
+	// Finds all occurrences of a substring, case insensitive, and replaces them all.
 	static std::wstring& replacei(std::wstring& haystack, const std::wstring& needle, const std::wstring& replacement) {
 		if (haystack.empty() || needle.empty()) return haystack;
 
@@ -445,6 +458,7 @@ public:
 		size_t   bomSize = 0;
 	};
 
+	// Encoding information about the given string.
 	static encoding_info get_encoding(const BYTE* data, size_t sz) noexcept {
 		auto match = [&](const BYTE* pBom, int szBom) noexcept->bool {
 			return (sz >= static_cast<size_t>(szBom)) &&
@@ -490,10 +504,12 @@ public:
 		return {(canBeWin1252 ? encoding::WIN1252 : encoding::ASCII), 0};
 	}
 
+	// Encoding information about the given string.
 	static encoding_info get_encoding(const std::vector<BYTE>& data) noexcept {
 		return get_encoding(&data[0], data.size());
 	}
 
+	// What linebreak is being used on a given string (unknown, N, R, RN or NR).
 	static const wchar_t* get_linebreak(const std::wstring& s) noexcept {
 		for (size_t i = 0; i < s.length() - 1; ++i) {
 			if (s[i] == L'\r') {
@@ -507,6 +523,7 @@ public:
 
 	enum class write_bom { YES, NO };
 
+	// Converts a string to an UTF-8 blob, ready to be written to a file.
 	static std::vector<BYTE> to_utf8_blob(const std::wstring& s, write_bom writeBom) {
 		std::vector<BYTE> ret;
 		if (!s.empty()) {
@@ -569,6 +586,7 @@ private:
 	}
 
 public:
+	// Conversion to wstring.
 	static std::wstring to_wstring(const BYTE* data, size_t sz) {
 		if (!data || !sz) return {};
 
@@ -590,14 +608,17 @@ public:
 		}
 	}
 
+	// Conversion to wstring.
 	static std::wstring to_wstring(const std::vector<BYTE>& data) {
 		return to_wstring(&data[0], data.size());
 	}
 
+	// Conversion to wstring.
 	static std::wstring to_wstring(const char* s) {
 		return _parse_ascii(reinterpret_cast<const BYTE*>(s), lstrlenA(s));
 	}
 
+	// Conversion to wstring.
 	static std::wstring to_wstring(const std::string& s) {
 		return to_wstring(s.c_str());
 	}
