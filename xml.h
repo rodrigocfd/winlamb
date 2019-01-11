@@ -32,17 +32,17 @@ public:
 			this->children.clear();
 		}
 
-		std::vector<node*> children_by_name(const wchar_t* elemName) {
-			std::vector<node*> nodeBuf;
+		std::vector<std::reference_wrapper<node>> children_by_name(const wchar_t* elemName) {
+			std::vector<std::reference_wrapper<node>> nodeBuf;
 			for (node& node : this->children) {
 				if (!lstrcmpiW(node.name.c_str(), elemName)) { // case-insensitive match
-					nodeBuf.emplace_back(&node);
+					nodeBuf.emplace_back(node);
 				}
 			}
 			return nodeBuf;
 		}
 
-		std::vector<node*> children_by_name(const std::wstring& elemName) {
+		std::vector<std::reference_wrapper<node>> children_by_name(const std::wstring& elemName) {
 			return this->children_by_name(elemName.c_str());
 		}
 
