@@ -17,8 +17,10 @@ namespace wl {
 // Wrapper to a low-level HANDLE of a file.
 class file final {
 public:
+	// File access type.
 	enum class access { READONLY, READWRITE };
 
+	// Date information of a file.
 	struct dates final {
 		datetime creation;
 		datetime lastAccess;
@@ -46,6 +48,7 @@ public:
 		return *this;
 	}
 
+	// Returns the handle to the file.
 	HANDLE hfile() const noexcept {
 		return this->_hFile;
 	}
@@ -55,6 +58,7 @@ public:
 		return this->_access;
 	}
 
+	// Closes the file, wrapper to CloseHandle.
 	file& close() noexcept {
 		if (this->_hFile) {
 			CloseHandle(this->_hFile);
@@ -198,6 +202,7 @@ public:
 		return buf;
 	}
 
+	// Writes content to file, wrapper to WriteFile.
 	file& write(const BYTE* pData, size_t sz) {
 		this->_check_file_opened();
 		this->_check_file_read_only();
@@ -212,11 +217,12 @@ public:
 		return *this;
 	}
 
+	// Writes content to file, wrapper to WriteFile.
 	file& write(const std::vector<BYTE>& data) {
 		return this->write(&data[0], data.size());
 	}
 
-	// Gets creation, last access and last write dates.
+	// Gets creation, last access and last write dates, wrapper to GetFileTime.
 	dates get_dates() const {
 		this->_check_file_opened();
 		FILETIME ftCreation{}, ftLastAccess{}, ftLastWrite{};
@@ -228,26 +234,37 @@ public:
 	}
 
 public:
+	// File utilities.
 	class util final {
 	private:
 		util() = delete;
 
 	public:
+		// Reads all file content at once into a buffer.
 		static void read_to_buffer(const wchar_t* filePath, std::vector<BYTE>& buf) {
 			file fin;
 			fin.open_existing(filePath, access::READONLY);
 			fin.read_to_buffer(buf);
 		}
 
+		// Reads all file content at once into a buffer.
+		static void read_to_buffer(const std::wstring& filePath, std::vector<BYTE>& buf) {
+			read_to_buffer(filePath.c_str(), buf);
+		}
+
+		// Retrieves all file content at once.
 		static std::vector<BYTE> read(const wchar_t* filePath) {
 			std::vector<BYTE> buf;
 			read_to_buffer(filePath, buf);
 			return buf;
 		}
 
-		static void              read_to_buffer(const std::wstring& filePath, std::vector<BYTE>& buf) { read_to_buffer(filePath.c_str(), buf); }
-		static std::vector<BYTE> read(const std::wstring& filePath)                                   { return read(filePath.c_str()); }
+		// Retrieves all file content at once.
+		static std::vector<BYTE> read(const std::wstring& filePath) {
+			return read(filePath.c_str());
+		}
 
+		// Writes all content to file at once.
 		static void write(const wchar_t* filePath, const BYTE* pData, size_t sz) {
 			file fout;
 			fout.open_or_create(filePath);
@@ -255,19 +272,32 @@ public:
 			fout.write(pData, sz);
 		}
 
-		static void write(const std::wstring& filePath, const BYTE* pData, size_t sz)  { write(filePath.c_str(), pData, sz); }
-		static void write(const wchar_t* filePath, const std::vector<BYTE>& data)      { write(filePath, &data[0], data.size()); }
-		static void write(const std::wstring& filePath, const std::vector<BYTE>& data) { write(filePath.c_str(), &data[0], data.size()); }
+		// Writes all content to file at once.
+		static void write(const std::wstring& filePath, const BYTE* pData, size_t sz) {
+			write(filePath.c_str(), pData, sz);
+		}
 
-		// Retrieve the file size in bytes.
+		// Writes all content to file at once.
+		static void write(const wchar_t* filePath, const std::vector<BYTE>& data) {
+			write(filePath, &data[0], data.size());
+		}
+
+		// Writes all content to file at once.
+		static void write(const std::wstring& filePath, const std::vector<BYTE>& data) {
+			write(filePath.c_str(), &data[0], data.size());
+		}
+
+		// Retrieves the file size in bytes.
 		static size_t get_size(const wchar_t* filePath) {
 			file ff;
 			ff.open_existing(filePath, file::access::READONLY);
 			return ff.size();
 		}
 
-		// Retrieve the file size in bytes.
-		static size_t get_size(const std::wstring& filePath) { return get_size(filePath.c_str()); }
+		// Retrieves the file size in bytes.
+		static size_t get_size(const std::wstring& filePath) {
+			return get_size(filePath.c_str());
+		}
 
 		// Gets creation, last access and last write dates.
 		static dates get_dates(const wchar_t* filePath) {
@@ -277,23 +307,39 @@ public:
 		}
 
 		// Gets creation, last access and last write dates.
-		static dates get_dates(const std::wstring& filePath) { return get_dates(filePath.c_str()); }
+		static dates get_dates(const std::wstring& filePath) {
+			return get_dates(filePath.c_str());
+		}
 
+		// Does the file exist on disk?
 		static bool exists(const wchar_t* fileOrFolder) noexcept {
 			return GetFileAttributesW(fileOrFolder) != INVALID_FILE_ATTRIBUTES;
 		}
 
+		// Does the file exist on disk?
+		static bool exists(const std::wstring& fileOrFolder) noexcept {
+			return exists(fileOrFolder.c_str());
+		}
+
+		// Is this path a directory?
 		static bool is_dir(const wchar_t* thePath) noexcept {
 			return (GetFileAttributesW(thePath) & FILE_ATTRIBUTE_DIRECTORY) != 0;
 		}
 
+		// Is this path a directory?
+		static bool is_dir(const std::wstring& thePath) noexcept {
+			return is_dir(thePath.c_str());
+		}
+
+		// Is the file hidden?
 		static bool is_hidden(const wchar_t* thePath) noexcept {
 			return (GetFileAttributesW(thePath) & FILE_ATTRIBUTE_HIDDEN) != 0;
 		}
 
-		static bool exists(const std::wstring& fileOrFolder) noexcept { return exists(fileOrFolder.c_str()); }
-		static bool is_dir(const std::wstring& thePath) noexcept      { return is_dir(thePath.c_str()); }
-		static bool is_hidden(const std::wstring& thePath) noexcept   { return is_hidden(thePath.c_str()); }
+		// Is the file hidden?
+		static bool is_hidden(const std::wstring& thePath) noexcept {
+			return is_hidden(thePath.c_str());
+		}
 
 		// Deletes a file, or a directory recursively.
 		static void del(const std::wstring& fileOrFolder) {
@@ -319,6 +365,7 @@ public:
 			}
 		}
 
+		// Creates a new directory.
 		static void create_dir(const wchar_t* thePath) {
 			if (!CreateDirectoryW(thePath, nullptr)) {
 				throw std::system_error(GetLastError(), std::system_category(),
@@ -326,6 +373,7 @@ public:
 			}
 		}
 
+		// Creates a new directory.
 		static void create_dir(const std::wstring& thePath) {
 			create_dir(thePath.c_str());
 		}
