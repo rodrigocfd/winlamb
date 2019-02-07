@@ -55,9 +55,17 @@ public:
 		return *this;
 	}
 
+	device_context& move_to(const POINT& pt) noexcept {
+		return this->move_to(pt.x, pt.y);
+	}
+
 	device_context& line_to(int x, int y) noexcept {
 		LineTo(this->_hDC, x, y);
 		return *this;
+	}
+
+	device_context& line_to(const POINT& pt) noexcept {
+		return this->line_to(pt.x, pt.y);
 	}
 
 	device_context& line_rect(int left, int top, int right, int bottom) noexcept {
@@ -67,7 +75,7 @@ public:
 			.line_to(left, bottom);
 	}
 
-	device_context& line_rect(RECT rc) noexcept {
+	device_context& line_rect(const RECT& rc) noexcept {
 		return this->line_rect(rc.left, rc.top, rc.right, rc.bottom);
 	}
 
