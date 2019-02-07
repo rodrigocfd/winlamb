@@ -73,7 +73,13 @@ My_Window::My_Window()
 
 ### 3.1. Project examples
 
-Full real-world projects can be seen browsing [winlamb topic](https://github.com/topics/winlamb).
+I've written the following examples showcasing different things:
+
+* [Click lines](https://github.com/rodrigocfd/click-lines)
+* [FLAC/LAME frontend](https://github.com/rodrigocfd/flac-lame-frontend)
+* [Chromium Peeker](https://github.com/rodrigocfd/chromium-peeker)
+
+More projects can be seen browsing [winlamb topic](https://github.com/topics/winlamb).
 
 ## 4. Classes summary
 
