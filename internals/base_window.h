@@ -7,9 +7,9 @@
 
 #pragma once
 #include "base_msg.h"
-#include "wc.h"
-#include "ws.h"
-#include "wsx.h"
+#include "styles_wc.h"
+#include "styles_ws.h"
+#include "styles_wsx.h"
 
 namespace wl {
 namespace wli {
