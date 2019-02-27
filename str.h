@@ -328,10 +328,16 @@ public:
 		return true;
 	}
 
-	// Splits the string at the given characters.
-	static std::vector<std::wstring> explode(const std::wstring& s, const wchar_t* delimiter) {
+	// Splits the string at the given characters. The characters themselves
+	// will be removed.
+	static std::vector<std::wstring> split(const std::wstring& s, const wchar_t* delimiter) {
 		std::vector<std::wstring> ret;
-		if (s.empty() || !delimiter) return ret;
+		if (s.empty()) return ret;
+
+		if (!delimiter) {
+			ret.emplace_back(s); // one single line
+			return ret;
+		}
 
 		size_t base = 0, head = 0;
 
@@ -349,13 +355,19 @@ public:
 		return ret;
 	}
 
-	// Splits the string at the given characters.
-	static std::vector<std::wstring> explode(const std::wstring& s, const std::wstring& delimiter) {
-		return explode(s, delimiter.c_str());
+	// Splits the string at the given characters. The characters themselves
+	// will be removed.
+	static std::vector<std::wstring> split(const std::wstring& s, const std::wstring& delimiter) {
+		return split(s, delimiter.c_str());
+	}
+
+	// Splits a string line by line.
+	static std::vector<std::wstring> split_lines(const std::wstring& s) {
+		return split(s, get_linebreak(s));
 	}
 
 	// Splits a zero-delimited multi-string.
-	static std::vector<std::wstring> explode_multi_zero(const wchar_t* s) {
+	static std::vector<std::wstring> split_multi_zero(const wchar_t* s) {
 		// Example multi-zero string:
 		// L"first one\0second one\0third one\0"
 		// Assumes a well-formed multiStr, which ends with two nulls.
@@ -382,7 +394,7 @@ public:
 	}
 
 	// Splits string into tokens, which may be enclosed in double quotes.
-	static std::vector<std::wstring> explode_quoted(const wchar_t* s) {
+	static std::vector<std::wstring> split_quoted(const wchar_t* s) {
 		// Example quoted string:
 		// "First one" NoQuoteSecond "Third one"
 
@@ -452,6 +464,11 @@ public:
 		return ret;
 	}
 
+	// Splits string into tokens, which may be enclosed in double quotes.
+	static std::vector<std::wstring> split_quoted(const std::wstring& s) {
+		return split_quoted(s.c_str());
+	}
+
 	enum class encoding { UNKNOWN, ASCII, WIN1252, UTF8, UTF16BE, UTF16LE, UTF32BE, UTF32LE, SCSU, BOCU1 };
 	struct encoding_info final {
 		encoding encType = encoding::UNKNOWN;
@@ -509,7 +526,8 @@ public:
 		return get_encoding(&data[0], data.size());
 	}
 
-	// What linebreak is being used on a given string (unknown, N, R, RN or NR).
+	// What linebreak is being used on a given string (unknown, N, R, RN or NR). If different
+	// linebreaks are used, only the first one is reported.
 	static const wchar_t* get_linebreak(const std::wstring& s) noexcept {
 		for (size_t i = 0; i < s.length() - 1; ++i) {
 			if (s[i] == L'\r') {

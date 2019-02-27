@@ -66,7 +66,7 @@ public:
 
 	combobox& add(const wchar_t* entries, wchar_t delimiter = L'|') {
 		wchar_t delim[2]{delimiter, L'\0'};
-		std::vector<std::wstring> vals = str::explode(entries, delim);
+		std::vector<std::wstring> vals = str::split(entries, delim);
 		for (const std::wstring& s : vals) {
 			SendMessageW(this->_hWnd, CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(s.c_str()));
 		}

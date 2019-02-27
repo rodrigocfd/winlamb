@@ -37,7 +37,7 @@ public:
 
 	// Retrieves the program's command line, tokenized.
 	static std::vector<std::wstring> get_cmd_line() {
-		return str::explode_quoted(GetCommandLineW());
+		return str::split_quoted(GetCommandLineW());
 	}
 
 	// Synchronous execution of a command line in a separated process.

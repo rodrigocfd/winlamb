@@ -143,7 +143,7 @@ public:
 			return false;
 		}
 
-		std::vector<std::wstring> strs = str::explode_multi_zero(&multiBuf[0]);
+		std::vector<std::wstring> strs = str::split_multi_zero(&multiBuf[0]);
 		if (strs.empty()) {
 			throw std::runtime_error("GetOpenFileName didn't return multiple strings.");
 		}

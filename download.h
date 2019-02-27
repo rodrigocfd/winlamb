@@ -189,7 +189,7 @@ private:
 
 		// Parse the raw response headers into an associative array.
 		this->_responseHeaders.clear();
-		std::vector<std::wstring> lines = str::explode(rawReh, str::get_linebreak(rawReh));
+		std::vector<std::wstring> lines = str::split_lines(rawReh);
 
 		for (const std::wstring& line : lines) {
 			if (line.empty()) {

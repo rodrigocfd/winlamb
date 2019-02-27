@@ -27,7 +27,7 @@ public:
 
 	file_ini& load_from_file(const wchar_t* filePath) {
 		std::wstring content = str::to_wstring(file_mapped::util::read(filePath));
-		std::vector<std::wstring> lines = str::explode(content, str::get_linebreak(content));
+		std::vector<std::wstring> lines = str::split_lines(content);
 		insert_order_map<std::wstring, std::wstring>* curSection = nullptr; // section-less keys will be ignored
 		std::wstring tmpName, tmpValue; // temporary buffers
 
@@ -95,20 +95,20 @@ public:
 				if (!pCurSection->has(descrKeyEntry)) return false; // key name not found
 			}
 		}
-		return true;		
+		return true;
 	}
 
 private:
 	insert_order_map<std::wstring, std::vector<std::wstring>> _parse_structure(const std::wstring& structure) const {
 		using strvecT = std::vector<std::wstring>;
 		insert_order_map<std::wstring, strvecT> parsed;
-		strvecT secBlocks = str::explode(structure, L"[");
+		strvecT secBlocks = str::split(structure, L"[");
 		for (std::wstring& secBlock : secBlocks) {
 			if (secBlock.empty()) continue;
 			size_t endSecIdx = secBlock.find_first_of(L']');
 			strvecT& curSec = parsed[secBlock.substr(0, endSecIdx)];
 			secBlock.erase(0, endSecIdx + 1);
-			curSec = str::explode(secBlock, L",");
+			curSec = str::split(secBlock, L",");
 		}
 		return parsed;
 	}

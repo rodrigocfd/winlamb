@@ -21,7 +21,7 @@ public:
 	version() = default;
 	explicit version(UINT major, UINT minor = 0, UINT build = 0, UINT revision = 0) noexcept
 		: num{major, minor, build, revision} { }
-	
+
 	version(const version&) = default;
 	version& operator=(const version&) = default;
 
@@ -54,7 +54,7 @@ public:
 	}
 
 	bool parse(const std::wstring& text) {
-		std::vector<std::wstring> fields = str::explode(text, L".");
+		std::vector<std::wstring> fields = str::split(text, L".");
 		for (size_t i = 0; i < fields.size() && i <= 4; ++i) {
 			if (!str::is_uint(fields[i])) {
 				return false;
