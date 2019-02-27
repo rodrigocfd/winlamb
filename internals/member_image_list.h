@@ -36,9 +36,8 @@ public:
 		return this->_imageList.size();
 	}
 
-	template<typename callbackT>
-	controlT& on_create(callbackT&& func) noexcept {
-		this->_onCreate = std::move(func);
+	controlT& on_create(std::function<void()>&& callback) noexcept {
+		this->_onCreate = std::move(callback);
 		return this->_owner;
 	}
 
