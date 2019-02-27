@@ -20,7 +20,7 @@ WinLamb by no means covers the whole Win32 API, simply because it's too huge. It
 
 ## 2. Setup
 
-WinLamb is a header-only library. You can clone the repository or simply download the files; once referenced in your source code, it should work right away.
+WinLamb is a header-only library. You can clone the repository or simply [download](https://github.com/rodrigocfd/winlamb/archive/master.zip) the files; once referenced in your source code, it should work right away.
 
 It has been tested with Visual C++ 2017.
 
