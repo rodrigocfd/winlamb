@@ -52,11 +52,11 @@ protected:
 	dialog_main() :
 		wnd(_hWnd), base_msg_impl(_baseMsg), base_thread_impl(_baseThread), base_text_impl(_hWnd)
 	{
-		this->base_msg_impl::on_message(WM_CLOSE, [this](params) noexcept->INT_PTR {
+		this->base_msg_impl::on_message(WM_CLOSE, [this](params) noexcept -> INT_PTR {
 			DestroyWindow(this->_hWnd);
 			return TRUE;
 		});
-		this->base_msg_impl::on_message(WM_NCDESTROY, [](params) noexcept->INT_PTR {
+		this->base_msg_impl::on_message(WM_NCDESTROY, [](params) noexcept -> INT_PTR {
 			PostQuitMessage(0);
 			return TRUE;
 		});

@@ -41,11 +41,11 @@ protected:
 	dialog_modeless() :
 		wnd(_hWnd), base_msg_impl(_baseMsg), base_thread_impl(_baseThread), base_text_impl(_hWnd)
 	{
-		this->base_msg_impl::on_message(WM_CLOSE, [this](params) noexcept->INT_PTR {
+		this->base_msg_impl::on_message(WM_CLOSE, [this](params) noexcept -> INT_PTR {
 			DestroyWindow(this->_hWnd);
 			return TRUE;
 		});
-		this->base_msg_impl::on_message(WM_NCDESTROY, [this](params)->INT_PTR {
+		this->base_msg_impl::on_message(WM_NCDESTROY, [this](params) -> INT_PTR {
 			if (this->_pParentBaseLoop) {
 				this->_pParentBaseLoop->remove_modeless(this->_hWnd);
 			}

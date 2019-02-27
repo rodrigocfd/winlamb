@@ -30,7 +30,7 @@ public:
 	base_thread(base_msg<retT>& baseMsg) :
 		_baseMsg(baseMsg)
 	{
-		baseMsg.msgs.add(WM_THREAD_MESSAGE, [this](params p) noexcept->retT {
+		baseMsg.msgs.add(WM_THREAD_MESSAGE, [this](params p) noexcept -> retT {
 			this->_process_thread_ui_msg(p);
 			return RET_VAL; // 0 for windows, TRUE for dialogs
 		});
@@ -42,7 +42,7 @@ public:
 		// Analog to std::thread([](){ ... }).detach(), but exception-safe.
 		_callback_pack* pPack = new _callback_pack{std::move(func), this->_baseMsg.hwnd()};
 
-		uintptr_t hThread = _beginthreadex(nullptr, 0, [](void* ptr) noexcept->unsigned int {
+		uintptr_t hThread = _beginthreadex(nullptr, 0, [](void* ptr) noexcept -> unsigned int {
 			_callback_pack* pPack = reinterpret_cast<_callback_pack*>(ptr);
 			try {
 				pPack->func(); // invoke user callback

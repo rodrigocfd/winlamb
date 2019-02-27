@@ -72,7 +72,7 @@ public:
 		lstrcpyW(lf.lfFaceName, fontName);
 		lf.lfHeight = -(size + 3);
 
-		auto hasDeco = [=](deco yourDeco) noexcept->BOOL {
+		auto hasDeco = [=](deco yourDeco) noexcept -> BOOL {
 			return (static_cast<BYTE>(style) &
 				static_cast<BYTE>(yourDeco)) != 0 ? TRUE : FALSE;
 		};
@@ -110,7 +110,7 @@ public:
 			SendMessageW(hParent, WM_SETFONT,
 				reinterpret_cast<WPARAM>(oneFont._hFont),
 				MAKELPARAM(FALSE, 0));
-			EnumChildWindows(hParent, [](HWND hWnd, LPARAM lp) noexcept->BOOL {
+			EnumChildWindows(hParent, [](HWND hWnd, LPARAM lp) noexcept -> BOOL {
 				SendMessageW(hWnd, WM_SETFONT,
 					reinterpret_cast<WPARAM>(reinterpret_cast<HFONT>(lp)),
 					MAKELPARAM(FALSE, 0)); // will run on each child
@@ -128,7 +128,7 @@ public:
 					"GetDC failed when checking if font exists");
 			}
 			EnumFontFamiliesW(hdc, fontName,
-				[](const LOGFONT* lpelf, const TEXTMETRIC* lpntm, DWORD fontType, LPARAM lp) noexcept->int {
+				[](const LOGFONT* lpelf, const TEXTMETRIC* lpntm, DWORD fontType, LPARAM lp) noexcept -> int {
 					bool* pIsInstalled = reinterpret_cast<bool*>(lp);
 					*pIsInstalled = true; // if we're here, font does exist
 					return 0;

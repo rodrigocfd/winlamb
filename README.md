@@ -56,13 +56,13 @@ My_Window::My_Window()
     setup.title = L"This is my window";
     setup.style |= wl::ws::MINIMIZEBOX;
 
-    on_message(WM_CREATE, [this](wl::wm::create p)->LRESULT
+    on_message(WM_CREATE, [this](wl::wm::create p) -> LRESULT
     {
         set_text(L"A new title for the window");
         return 0;
     });
 
-    on_message(WM_LBUTTONDOWN, [](wl::wm::lbuttondown p)->LRESULT
+    on_message(WM_LBUTTONDOWN, [](wl::wm::lbuttondown p) -> LRESULT
     {
         bool isCtrlDown = p.has_ctrl();
         long xPos = p.pos().x;

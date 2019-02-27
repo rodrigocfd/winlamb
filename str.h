@@ -477,7 +477,7 @@ public:
 
 	// Encoding information about the given string.
 	static encoding_info get_encoding(const BYTE* data, size_t sz) noexcept {
-		auto match = [&](const BYTE* pBom, int szBom) noexcept->bool {
+		auto match = [&](const BYTE* pBom, int szBom) noexcept -> bool {
 			return (sz >= static_cast<size_t>(szBom)) &&
 				!memcmp(data, pBom, sizeof(BYTE) * szBom);
 		};

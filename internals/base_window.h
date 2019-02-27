@@ -128,7 +128,7 @@ private:
 			pSelf = reinterpret_cast<base_window*>(GetWindowLongPtrW(hWnd, GWLP_USERDATA));
 		}
 
-		auto cleanupIfDestroyed = [&]() noexcept->void {
+		auto cleanupIfDestroyed = [&]() noexcept -> void {
 			if (msg == WM_NCDESTROY) {
 				SetWindowLongPtrW(hWnd, GWLP_USERDATA, 0);
 				if (pSelf) {

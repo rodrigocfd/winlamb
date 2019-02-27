@@ -150,7 +150,7 @@ public:
 		this->_check_file_read_only();
 		if (this->size() == numBytes) return *this; // nothing to do
 
-		auto tooBad = [this](DWORD err, const char* msg)->void {
+		auto tooBad = [this](DWORD err, const char* msg) -> void {
 			this->close();
 			throw std::system_error(err, std::system_category(), msg);
 		};

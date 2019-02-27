@@ -57,7 +57,7 @@ public:
 		// Open file.
 		this->_file.open_existing(filePath, accessType);
 
-		auto tooBad = [this](DWORD err, const char* msg)->void {
+		auto tooBad = [this](DWORD err, const char* msg) -> void {
 			this->close();
 			throw std::system_error(err, std::system_category(), msg);
 		};
@@ -102,7 +102,7 @@ public:
 		// Truncate/expand file, probably fail if file was opened as read-only.
 		this->_file.set_new_size(newSize);
 
-		auto tooBad = [this](DWORD err, const char* msg)->void {
+		auto tooBad = [this](DWORD err, const char* msg) -> void {
 			this->close();
 			throw std::system_error(err, std::system_category(), msg);
 		};

@@ -54,7 +54,7 @@ public:
 		// https://stackoverflow.com/a/9053941/6923555
 		// Usage example:
 		// vector<wstring> de = {L"a", L"b", L"c"};
-		// vec::remove_if(de, [](const wstring& d)->bool {
+		// vec::remove_if(de, [](const wstring& d) -> bool {
 		//		return d == L"a";
 		// });
 		v.erase(

@@ -38,7 +38,7 @@ public:
 	treeview() :
 		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl)
 	{
-		this->imageList16.on_create([this]() noexcept->void {
+		this->imageList16.on_create([this]() noexcept -> void {
 			TreeView_SetImageList(this->_hWnd, this->imageList16.himagelist(), TVSIL_NORMAL);
 		});
 	}

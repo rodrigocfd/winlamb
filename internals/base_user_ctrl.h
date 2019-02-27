@@ -24,7 +24,7 @@ public:
 	base_user_ctrl(base_msg<retT>& baseMsg) :
 		_baseMsg(baseMsg)
 	{
-		baseMsg.msgs.add(WM_NCPAINT, [this](params p) noexcept->retT {
+		baseMsg.msgs.add(WM_NCPAINT, [this](params p) noexcept -> retT {
 			this->_paint_themed_borders(p);
 			return RET_VAL; // 0 for windows, TRUE for dialogs
 		});

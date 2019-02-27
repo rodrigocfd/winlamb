@@ -54,7 +54,7 @@ protected:
 	{
 		this->_init_setup_styles();
 
-		this->base_msg_impl::on_message(WM_NCDESTROY, [](params) noexcept->LRESULT {
+		this->base_msg_impl::on_message(WM_NCDESTROY, [](params) noexcept -> LRESULT {
 			PostQuitMessage(0);
 			return 0;
 		});

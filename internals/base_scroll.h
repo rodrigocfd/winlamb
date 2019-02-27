@@ -21,7 +21,7 @@ public:
 		// Windows 10, so we don't need to implement it here.
 		if (IsWindows10OrGreater()) return;
 
-		EnumChildWindows(hWnd, [](HWND hChild, LPARAM lp) noexcept->BOOL {
+		EnumChildWindows(hWnd, [](HWND hChild, LPARAM lp) noexcept -> BOOL {
 			static UINT_PTR uniqueSubclassId = 1;
 			if (GetWindowLongPtrW(hChild, GWL_STYLE) & WS_TABSTOP) {
 				SetWindowSubclass(hChild, _scroll_proc, uniqueSubclassId++,

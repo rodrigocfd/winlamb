@@ -57,15 +57,15 @@ public:
 	listview() :
 		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl)
 	{
-		this->imageList16.on_create([this]() noexcept->void {
+		this->imageList16.on_create([this]() noexcept -> void {
 			ListView_SetImageList(this->_hWnd, this->imageList16.himagelist(), LVSIL_SMALL);
 		});
 
-		this->imageList32.on_create([this]() noexcept->void {
+		this->imageList32.on_create([this]() noexcept -> void {
 			ListView_SetImageList(this->_hWnd, this->imageList32.himagelist(), LVSIL_NORMAL);
 		});
 
-		this->_subclass.on_message(WM_GETDLGCODE, [this](wm::getdlgcode p) noexcept->LRESULT {
+		this->_subclass.on_message(WM_GETDLGCODE, [this](wm::getdlgcode p) noexcept -> LRESULT {
 			if (!p.is_query() && p.vkey_code() == 'A' && p.has_ctrl()) { // Ctrl+A to select all items
 				ListView_SetItemState(this->_hWnd, -1, LVIS_SELECTED, LVIS_SELECTED);
 				return DLGC_WANTCHARS;
@@ -84,7 +84,7 @@ public:
 			return DefSubclassProc(this->_hWnd, p.message, p.wParam, p.lParam);
 		});
 
-		this->_subclass.on_message(WM_RBUTTONDOWN, [this](wm::rbuttondown p) noexcept->LRESULT {
+		this->_subclass.on_message(WM_RBUTTONDOWN, [this](wm::rbuttondown p) noexcept -> LRESULT {
 			this->_show_context_menu(true, p.has_ctrl(), p.has_shift());
 			return 0;
 		});

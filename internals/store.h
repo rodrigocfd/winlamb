@@ -52,7 +52,7 @@ public:
 		size_t funcIdx = this->_msgUnits.size() - 1;
 		for (size_t i = 1; i < ids.size(); ++i) {
 			if (pIds[i] != pIds[0]) { // avoid overwriting
-				this->add(pIds[i], [this, funcIdx](params p)->retT {
+				this->add(pIds[i], [this, funcIdx](params p) -> retT {
 					return this->_msgUnits[funcIdx].func(p); // store light wrapper to 1st func
 				});
 			}

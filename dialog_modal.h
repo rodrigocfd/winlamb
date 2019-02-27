@@ -39,7 +39,7 @@ protected:
 	dialog_modal() :
 		wnd(_hWnd), base_msg_impl(_baseMsg), base_thread_impl(_baseThread), base_text_impl(_hWnd)
 	{
-		this->base_msg_impl::on_message(WM_CLOSE, [this](params) noexcept->INT_PTR {
+		this->base_msg_impl::on_message(WM_CLOSE, [this](params) noexcept -> INT_PTR {
 			EndDialog(this->_hWnd, IDOK);
 			return TRUE;
 		});
