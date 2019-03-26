@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#include "internals/base_text_impl.h"
-#include "internals/base_native_ctrl_impl.h"
+#include "internals/base_text_pubm.h"
+#include "internals/base_native_ctrl_pubm.h"
 #include "internals/styler.h"
 #include "wnd.h"
 
@@ -16,8 +16,8 @@ namespace wl {
 // Wrapper to native button control.
 class button final :
 	public wnd,
-	public wli::base_native_ctrl_impl<button>,
-	public wli::base_text_impl<button>
+	public wli::base_native_ctrl_pubm<button>,
+	public wli::base_text_pubm<button>
 {
 private:
 	HWND                  _hWnd = nullptr;
@@ -28,7 +28,7 @@ public:
 	wli::styler<button> style{this};
 
 	button() noexcept :
-		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl), base_text_impl(_hWnd) { }
+		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl), base_text_pubm(_hWnd) { }
 
 	button(button&&) = default;
 	button& operator=(button&&) = default; // movable only

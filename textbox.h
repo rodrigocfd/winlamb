@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#include "internals/base_text_impl.h"
-#include "internals/base_native_ctrl_impl.h"
+#include "internals/base_text_pubm.h"
+#include "internals/base_native_ctrl_pubm.h"
 #include "internals/styler.h"
 #include "wnd.h"
 
@@ -16,8 +16,8 @@ namespace wl {
 // Wrapper to native edit box control.
 class textbox final :
 	public wnd,
-	public wli::base_native_ctrl_impl<textbox>,
-	public wli::base_text_impl<textbox>
+	public wli::base_native_ctrl_pubm<textbox>,
+	public wli::base_text_pubm<textbox>
 {
 private:
 	class _styler final : public wli::styler<textbox> {
@@ -45,7 +45,7 @@ public:
 	_styler style{this};
 
 	textbox() noexcept :
-		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl), base_text_impl(_hWnd) { }
+		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl), base_text_pubm(_hWnd) { }
 
 	textbox(textbox&&) = default;
 	textbox& operator=(textbox&&) = default; // movable only

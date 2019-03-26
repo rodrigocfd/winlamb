@@ -7,8 +7,8 @@
 
 #pragma once
 #include "internals/base_dialog.h"
-#include "internals/base_msg_impl.h"
-#include "internals/base_thread_impl.h"
+#include "internals/base_msg_pubm.h"
+#include "internals/base_thread_pubm.h"
 #include "internals/base_user_ctrl.h"
 #include "internals/styler.h"
 #include "wnd.h"
@@ -18,8 +18,8 @@ namespace wl {
 // Inherit from this class to have a dialog to be used as a control within a parent window.
 class dialog_control :
 	public wnd,
-	public wli::base_msg_impl<INT_PTR>,
-	public wli::base_thread_impl<INT_PTR, TRUE>
+	public wli::base_msg_pubm<INT_PTR>,
+	public wli::base_thread_pubm<INT_PTR, TRUE>
 {
 private:
 	HWND                               _hWnd = nullptr;
@@ -37,7 +37,7 @@ public:
 
 protected:
 	dialog_control() :
-		wnd(_hWnd), base_msg_impl(_baseMsg), base_thread_impl(_baseThread) { }
+		wnd(_hWnd), base_msg_pubm(_baseMsg), base_thread_pubm(_baseThread) { }
 
 public:
 	dialog_control(dialog_control&&) = default;

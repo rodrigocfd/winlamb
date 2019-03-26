@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "internals/base_native_ctrl_impl.h"
+#include "internals/base_native_ctrl_pubm.h"
 #include "internals/styler.h"
 #include "wnd.h"
 #include <CommCtrl.h>
@@ -16,7 +16,7 @@ namespace wl {
 // Wrapper to progressbar control from Common Controls library.
 class progressbar final :
 	public wnd,
-	public wli::base_native_ctrl_impl<progressbar>
+	public wli::base_native_ctrl_pubm<progressbar>
 {
 private:
 	class _styler final : public wli::styler<progressbar> {
@@ -40,7 +40,7 @@ public:
 	_styler style{this};
 
 	progressbar() noexcept :
-		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl) { }
+		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl) { }
 
 	progressbar(progressbar&&) = default;
 	progressbar& operator=(progressbar&&) = default; // movable only

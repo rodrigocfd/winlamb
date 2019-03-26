@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#include "internals/base_text_impl.h"
-#include "internals/base_native_ctrl_impl.h"
+#include "internals/base_text_pubm.h"
+#include "internals/base_native_ctrl_pubm.h"
 #include "internals/styler.h"
 #include "wnd.h"
 
@@ -16,8 +16,8 @@ namespace wl {
 // Wrapper to native radio button control.
 class radio final :
 	public wnd,
-	public wli::base_native_ctrl_impl<radio>,
-	public wli::base_text_impl<radio>
+	public wli::base_native_ctrl_pubm<radio>,
+	public wli::base_text_pubm<radio>
 {
 private:
 	class _styler final : public wli::styler<radio> {
@@ -37,7 +37,7 @@ public:
 	_styler style{this};
 
 	radio() noexcept :
-		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl), base_text_impl(_hWnd) { }
+		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl), base_text_pubm(_hWnd) { }
 
 	radio(radio&&) = default;
 	radio& operator=(radio&&) = default; // movable only

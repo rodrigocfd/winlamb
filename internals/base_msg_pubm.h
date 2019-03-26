@@ -13,12 +13,12 @@ namespace wli {
 
 // Provides public methods for base_msg class.
 template<typename retT>
-class base_msg_impl {
+class base_msg_pubm {
 private:
 	base_msg<retT>& _baseMsg;
 
 public:
-	base_msg_impl(base_msg<retT>& baseMsg) noexcept :
+	base_msg_pubm(base_msg<retT>& baseMsg) noexcept :
 		_baseMsg(baseMsg) { }
 
 	// Assigns a lambda to handle a window message.

@@ -7,7 +7,7 @@
 
 #pragma once
 #include <vector>
-#include "internals/base_native_ctrl_impl.h"
+#include "internals/base_native_ctrl_pubm.h"
 #include "internals/params.h"
 #include "internals/styler.h"
 #include "icon.h"
@@ -18,7 +18,7 @@ namespace wl {
 // Wrapper to status control from Common Controls library.
 class statusbar final :
 	public wnd,
-	public wli::base_native_ctrl_impl<statusbar>
+	public wli::base_native_ctrl_pubm<statusbar>
 {
 private:
 	class _styler final : public wli::styler<statusbar> {
@@ -49,7 +49,7 @@ public:
 	_styler style{this};
 
 	statusbar() noexcept :
-		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl) { }
+		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl) { }
 
 	statusbar(statusbar&&) = default;
 	statusbar& operator=(statusbar&&) = default; // movable only

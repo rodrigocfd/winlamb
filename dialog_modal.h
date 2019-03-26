@@ -7,9 +7,9 @@
 
 #pragma once
 #include "internals/base_dialog.h"
-#include "internals/base_msg_impl.h"
-#include "internals/base_text_impl.h"
-#include "internals/base_thread_impl.h"
+#include "internals/base_msg_pubm.h"
+#include "internals/base_text_pubm.h"
+#include "internals/base_thread_pubm.h"
 #include "internals/styler.h"
 #include "wnd.h"
 
@@ -18,9 +18,9 @@ namespace wl {
 // Inherit from this class to have a modal dialog popup.
 class dialog_modal :
 	public wnd,
-	public wli::base_msg_impl<INT_PTR>,
-	public wli::base_thread_impl<INT_PTR, TRUE>,
-	public wli::base_text_impl<dialog_modal>
+	public wli::base_msg_pubm<INT_PTR>,
+	public wli::base_thread_pubm<INT_PTR, TRUE>,
+	public wli::base_text_pubm<dialog_modal>
 {
 private:
 	HWND                            _hWnd = nullptr;
@@ -37,9 +37,9 @@ public:
 
 protected:
 	dialog_modal() :
-		wnd(_hWnd), base_msg_impl(_baseMsg), base_thread_impl(_baseThread), base_text_impl(_hWnd)
+		wnd(_hWnd), base_msg_pubm(_baseMsg), base_thread_pubm(_baseThread), base_text_pubm(_hWnd)
 	{
-		this->base_msg_impl::on_message(WM_CLOSE, [this](params) noexcept -> INT_PTR {
+		this->base_msg_pubm::on_message(WM_CLOSE, [this](params) noexcept -> INT_PTR {
 			EndDialog(this->_hWnd, IDOK);
 			return TRUE;
 		});

@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#include "internals/base_msg_impl.h"
-#include "internals/base_thread_impl.h"
+#include "internals/base_msg_pubm.h"
+#include "internals/base_thread_pubm.h"
 #include "wnd.h"
 #include <CommCtrl.h>
 
@@ -16,8 +16,8 @@ namespace wl {
 // Manages window subclassing for a window.
 class subclass final :
 	public wnd,
-	public wli::base_msg_impl<LRESULT>,
-	public wli::base_thread_impl<LRESULT, 0>
+	public wli::base_msg_pubm<LRESULT>,
+	public wli::base_thread_pubm<LRESULT, 0>
 {
 private:
 	HWND                         _hWnd = nullptr;
@@ -31,7 +31,7 @@ public:
 	}
 
 	subclass() :
-		wnd(_hWnd), base_msg_impl(_baseMsg), base_thread_impl(_baseThread) { }
+		wnd(_hWnd), base_msg_pubm(_baseMsg), base_thread_pubm(_baseThread) { }
 
 	subclass(subclass&&) = default;
 	subclass& operator=(subclass&&) = default; // movable only

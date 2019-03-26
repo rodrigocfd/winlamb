@@ -7,10 +7,10 @@
 
 #pragma once
 #include "internals/base_loop.h"
-#include "internals/base_msg_impl.h"
+#include "internals/base_msg_pubm.h"
 #include "internals/base_scroll.h"
-#include "internals/base_text_impl.h"
-#include "internals/base_thread_impl.h"
+#include "internals/base_text_pubm.h"
+#include "internals/base_thread_pubm.h"
 #include "internals/base_window.h"
 #include "internals/run.h"
 #include "internals/styler.h"
@@ -22,9 +22,9 @@ namespace wli { class dialog_modeless; } // friend forward declaration
 // Inherit from this class to have an ordinary main window for your application.
 class window_main :
 	public wnd,
-	public wli::base_msg_impl<LRESULT>,
-	public wli::base_thread_impl<LRESULT, 0>,
-	public wli::base_text_impl<window_main>
+	public wli::base_msg_pubm<LRESULT>,
+	public wli::base_thread_pubm<LRESULT, 0>,
+	public wli::base_text_pubm<window_main>
 {
 	friend wli::dialog_modeless; // needs to access _baseLoop
 
@@ -50,11 +50,11 @@ public:
 
 protected:
 	window_main() :
-		wnd(_hWnd), base_msg_impl(_baseMsg), base_thread_impl(_baseThread), base_text_impl(_hWnd)
+		wnd(_hWnd), base_msg_pubm(_baseMsg), base_thread_pubm(_baseThread), base_text_pubm(_hWnd)
 	{
 		this->_init_setup_styles();
 
-		this->base_msg_impl::on_message(WM_NCDESTROY, [](params) noexcept -> LRESULT {
+		this->base_msg_pubm::on_message(WM_NCDESTROY, [](params) noexcept -> LRESULT {
 			PostQuitMessage(0);
 			return 0;
 		});

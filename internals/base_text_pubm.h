@@ -12,14 +12,14 @@
 namespace wl {
 namespace wli {
 
-// Allows set/set window text with std::wstring.
+// Public methods that allow get/set window text with std::wstring.
 template<typename derivedT>
-class base_text_impl {
+class base_text_pubm {
 private:
 	const HWND& _hWnd;
 
 public:
-	base_text_impl(const HWND& hWnd) noexcept :
+	base_text_pubm(const HWND& hWnd) noexcept :
 		_hWnd(hWnd) { }
 
 	// Simple wrapper to SetWindowText.

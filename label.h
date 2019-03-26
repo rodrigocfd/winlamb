@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#include "internals/base_text_impl.h"
-#include "internals/base_native_ctrl_impl.h"
+#include "internals/base_text_pubm.h"
+#include "internals/base_native_ctrl_pubm.h"
 #include "internals/styler.h"
 #include "wnd.h"
 
@@ -16,8 +16,8 @@ namespace wl {
 // Wrapper to native label control.
 class label final :
 	public wnd,
-	public wli::base_native_ctrl_impl<label>,
-	public wli::base_text_impl<label>
+	public wli::base_native_ctrl_pubm<label>,
+	public wli::base_text_pubm<label>
 {
 private:
 	HWND                  _hWnd = nullptr;
@@ -28,7 +28,7 @@ public:
 	wli::styler<label> style{this};
 
 	label() noexcept :
-		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl), base_text_impl(_hWnd) { }
+		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl), base_text_pubm(_hWnd) { }
 
 	label(label&&) = default;
 	label& operator=(label&&) = default; // movable only

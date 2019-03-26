@@ -13,12 +13,12 @@ namespace wli {
 
 // Provides public methods for base_thread class.
 template<typename retT, retT RET_VAL>
-class base_thread_impl {
+class base_thread_pubm {
 private:
 	base_thread<retT, RET_VAL>& _baseThread;
 
 public:
-	base_thread_impl(base_thread<retT, RET_VAL>& baseThread) :
+	base_thread_pubm(base_thread<retT, RET_VAL>& baseThread) :
 		_baseThread(baseThread) { }
 
 	// Runs code asynchronously in a new detached thread.

@@ -6,8 +6,8 @@
  */
 
 #pragma once
-#include "internals/base_msg_impl.h"
-#include "internals/base_thread_impl.h"
+#include "internals/base_msg_pubm.h"
+#include "internals/base_thread_pubm.h"
 #include "internals/base_user_ctrl.h"
 #include "internals/base_window.h"
 #include "internals/styler.h"
@@ -18,8 +18,8 @@ namespace wl {
 // Inherit from this class to have an user-custom window control.
 class window_control :
 	public wnd,
-	public wli::base_msg_impl<LRESULT>,
-	public wli::base_thread_impl<LRESULT, 0>
+	public wli::base_msg_pubm<LRESULT>,
+	public wli::base_thread_pubm<LRESULT, 0>
 {
 private:
 	HWND                            _hWnd = nullptr;
@@ -37,7 +37,7 @@ public:
 
 protected:
 	window_control() :
-		wnd(_hWnd), base_msg_impl(_baseMsg), base_thread_impl(_baseThread)
+		wnd(_hWnd), base_msg_pubm(_baseMsg), base_thread_pubm(_baseThread)
 	{
 		this->_init_setup_styles();
 	}

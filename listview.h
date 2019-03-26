@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "internals/base_native_ctrl_impl.h"
+#include "internals/base_native_ctrl_pubm.h"
 #include "internals/listview_column_collection.h"
 #include "internals/listview_item_collection.h"
 #include "internals/listview_styler.h"
@@ -20,7 +20,7 @@ namespace wl {
 // Wrapper to listview control from Common Controls library.
 class listview final :
 	public wnd,
-	public wli::base_native_ctrl_impl<listview>
+	public wli::base_native_ctrl_pubm<listview>
 {
 public:
 	using item = wli::listview_item<listview>;
@@ -55,7 +55,7 @@ public:
 	}
 
 	listview() :
-		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl)
+		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl)
 	{
 		this->imageList16.on_create([this]() noexcept -> void {
 			ListView_SetImageList(this->_hWnd, this->imageList16.himagelist(), LVSIL_SMALL);
@@ -95,19 +95,19 @@ public:
 
 	// Ties this class instance to an existing native control.
 	listview& assign(HWND hCtrl) {
-		this->base_native_ctrl_impl::assign(hCtrl); // hides base method
+		this->base_native_ctrl_pubm::assign(hCtrl); // hides base method
 		return this->_install_subclass();
 	}
 
 	// Ties this class instance to an existing native control.
 	listview& assign(HWND hParent, int ctrlId) {
-		this->base_native_ctrl_impl::assign(hParent, ctrlId); // hides base method
+		this->base_native_ctrl_pubm::assign(hParent, ctrlId); // hides base method
 		return this->_install_subclass();
 	}
 
 	// Ties this class instance to an existing native control.
 	listview& assign(const wnd* parent, int ctrlId) {
-		this->base_native_ctrl_impl::assign(parent, ctrlId); // hides base method
+		this->base_native_ctrl_pubm::assign(parent, ctrlId); // hides base method
 		return this->_install_subclass();
 	}
 

@@ -14,12 +14,12 @@ namespace wli {
 
 // Provides public methods for base_native_ctrl class.
 template<typename derivedT>
-class base_native_ctrl_impl {
+class base_native_ctrl_pubm {
 private:
 	base_native_ctrl& _baseNativeCtrl;
 
 public:
-	base_native_ctrl_impl(base_native_ctrl& baseNativeCtrl) noexcept :
+	base_native_ctrl_pubm(base_native_ctrl& baseNativeCtrl) noexcept :
 		_baseNativeCtrl(baseNativeCtrl) { }
 
 	// Returns the control ID.

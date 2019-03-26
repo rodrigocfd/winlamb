@@ -6,7 +6,7 @@
  */
 
 #pragma once
-#include "internals/base_native_ctrl_impl.h"
+#include "internals/base_native_ctrl_pubm.h"
 #include "internals/styler.h"
 #include "str.h"
 #include "wnd.h"
@@ -16,7 +16,7 @@ namespace wl {
 // Wrapper to native combobox control.
 class combobox final :
 	public wnd,
-	public wli::base_native_ctrl_impl<combobox>
+	public wli::base_native_ctrl_pubm<combobox>
 {
 public:
 	enum class sort { SORTED, UNSORTED };
@@ -30,7 +30,7 @@ public:
 	wli::styler<combobox> style{this};
 
 	combobox() noexcept :
-		wnd(_hWnd), base_native_ctrl_impl(_baseNativeCtrl) { }
+		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl) { }
 
 	combobox(combobox&&) = default;
 	combobox& operator=(combobox&&) = default; // movable only
