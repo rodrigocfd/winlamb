@@ -37,8 +37,7 @@ public:
 	}
 
 	// Runs code asynchronously in a new detached thread.
-	template<typename funcT>
-	void run_thread_detached(funcT&& func) const noexcept {
+	void run_thread_detached(std::function<void()>&& func) const noexcept {
 		// Analog to std::thread([](){ ... }).detach(), but exception-safe.
 		_callback_pack* pPack = new _callback_pack{std::move(func), this->_baseMsg.hwnd()};
 
@@ -59,8 +58,7 @@ public:
 	}
 
 	// Runs code synchronously in the UI thread.
-	template<typename funcT>
-	void run_thread_ui(funcT&& func) const noexcept {
+	void run_thread_ui(std::function<void()>&& func) const noexcept {
 		// This method is analog to SendMessage (synchronous), but intended to be called
 		// from another thread, so a callback function can, tunelled by wndproc, run in
 		// the original thread of the window, thus allowing GUI updates. This avoids the
