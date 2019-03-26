@@ -110,6 +110,8 @@ Wrappers and utility classes:
 | [`datetime`](datetime.h) | Wrapper to SYSTEMTIME structure. |
 | [`datetime_picker`](datetime_picker.h) | Wrapper to datetime picker control from Common Controls library. |
 | [`device_context`](device_context.h) | Wrapper to HDC. |
+| [`device_context_simple`](device_context.h) | Wrapper to HDC which calls BeginPaint/EndPaint automatically. |
+| [`device_context_buffered`](device_context.h) | Wrapper to HDC which calls BeginPaint/EndPaint automatically with double-buffer. |
 | [`download`](download.h) | Automates internet download operations. |
 | [`executable`](executable.h) | Utilities to executable-related stuff. |
 | [`file`](file.h) | Wrapper to a low-level HANDLE of a file. |

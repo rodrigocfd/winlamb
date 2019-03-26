@@ -13,12 +13,12 @@
 
 namespace wl {
 
-// Wrapper to HDC.
+// Wrapper to HDC, BeginPaint/EndPaint must be called manually.
 class device_context {
 public:
 	using brush = wli::brush;
 	using pen = wli::pen;
-	
+
 protected:
 	HWND _hWnd;
 	HDC  _hDC;
@@ -29,7 +29,7 @@ public:
 		: _hWnd(hWnd), _hDC(hDC)
 	{
 		RECT rcClient{};
-		GetClientRect(hWnd, &rcClient); // let's keep available width & height
+		GetClientRect(hWnd, &rcClient); // cache width & height
 		this->_sz.cx = rcClient.right;
 		this->_sz.cy = rcClient.bottom;
 	}
@@ -213,7 +213,7 @@ public:
 };
 
 
-// Wrapper to HDC within WM_PAINT, uses BeginPaint/EndPaint.
+// Wrapper to HDC, BeginPaint/EndPaint automatically called.
 class device_context_simple : public device_context {
 protected:
 	PAINTSTRUCT _ps;
@@ -231,7 +231,7 @@ public:
 };
 
 
-// Wrapper to HDC within WM_PAINT, uses BeginPaint/EndPaint with double-buffer.
+// Wrapper to HDC, BeginPaint/EndPaint automatically called with double-buffer.
 class device_context_buffered final : public device_context_simple {
 private:
 	HBITMAP _hBmp, _hBmpOld;
