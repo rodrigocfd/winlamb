@@ -16,18 +16,18 @@ namespace wl {
 // Wrapper to native combobox control.
 class combobox final :
 	public wnd,
-	public wli::base_native_ctrl_pubm<combobox>
+	public _wli::base_native_ctrl_pubm<combobox>
 {
 public:
 	enum class sort { SORTED, UNSORTED };
 
 private:
-	HWND                  _hWnd = nullptr;
-	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
+	HWND                   _hWnd = nullptr;
+	_wli::base_native_ctrl _baseNativeCtrl{_hWnd};
 
 public:
 	// Wraps window style changes done by Get/SetWindowLongPtr.
-	wli::styler<combobox> style{this};
+	_wli::styler<combobox> style{this};
 
 	combobox() noexcept :
 		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl) { }

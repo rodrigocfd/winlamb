@@ -9,7 +9,7 @@
 #include "base_thread.h"
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Provides public methods for base_thread class.
 template<typename retT, retT RET_VAL>
@@ -32,5 +32,5 @@ public:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

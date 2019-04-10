@@ -16,16 +16,16 @@ namespace wl {
 // Wrapper to native button control.
 class button final :
 	public wnd,
-	public wli::base_native_ctrl_pubm<button>,
-	public wli::base_text_pubm<button>
+	public _wli::base_native_ctrl_pubm<button>,
+	public _wli::base_text_pubm<button>
 {
 private:
-	HWND                  _hWnd = nullptr;
-	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
+	HWND                   _hWnd = nullptr;
+	_wli::base_native_ctrl _baseNativeCtrl{_hWnd};
 
 public:
 	// Wraps window style changes done by Get/SetWindowLongPtr.
-	wli::styler<button> style{this};
+	_wli::styler<button> style{this};
 
 	button() noexcept :
 		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl), base_text_pubm(_hWnd) { }

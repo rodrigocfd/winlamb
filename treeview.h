@@ -17,23 +17,23 @@ namespace wl {
 // Wrapper to treeview control from Common Controls library.
 class treeview final :
 	public wnd,
-	public wli::base_native_ctrl_pubm<treeview>
+	public _wli::base_native_ctrl_pubm<treeview>
 {
 public:
-	using item = wli::treeview_item<treeview>;
+	using item = _wli::treeview_item<treeview>;
 
 private:
-	using _item_collection = wli::treeview_item_collection<treeview>;
+	using _item_collection = _wli::treeview_item_collection<treeview>;
 
 	HWND                  _hWnd = nullptr;
-	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
+	_wli::base_native_ctrl _baseNativeCtrl{_hWnd};
 
 public:
 	// Wraps window style changes done by Get/SetWindowLongPtr.
-	wli::treeview_styler<treeview>   style{this};
+	_wli::treeview_styler<treeview>   style{this};
 
-	_item_collection                 items{this};
-	wli::member_image_list<treeview> imageList16{this, 16};
+	_item_collection                  items{this};
+	_wli::member_image_list<treeview> imageList16{this, 16};
 
 	treeview() :
 		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl)
@@ -58,4 +58,4 @@ public:
 	}
 };
 
-}//namespace wli
+}//namespace _wli

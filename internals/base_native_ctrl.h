@@ -10,7 +10,7 @@
 #include <Windows.h>
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Common ground to all native controls.
 class base_native_ctrl final {
@@ -47,5 +47,5 @@ public:
 	}
 };
 
-}//namespace wli
+}//namespace _wli
 }//namespace wl

@@ -16,16 +16,16 @@ namespace wl {
 // Wrapper to native label control.
 class label final :
 	public wnd,
-	public wli::base_native_ctrl_pubm<label>,
-	public wli::base_text_pubm<label>
+	public _wli::base_native_ctrl_pubm<label>,
+	public _wli::base_text_pubm<label>
 {
 private:
-	HWND                  _hWnd = nullptr;
-	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
+	HWND                   _hWnd = nullptr;
+	_wli::base_native_ctrl _baseNativeCtrl{_hWnd};
 
 public:
 	// Wraps window style changes done by Get/SetWindowLongPtr.
-	wli::styler<label> style{this};
+	_wli::styler<label> style{this};
 
 	label() noexcept :
 		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl), base_text_pubm(_hWnd) { }

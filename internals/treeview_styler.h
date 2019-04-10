@@ -9,10 +9,10 @@
 #include "styler.h"
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 template<typename treeviewT>
-class treeview_styler final : public wli::styler<treeviewT> {
+class treeview_styler final : public _wli::styler<treeviewT> {
 public:
 	explicit treeview_styler(treeviewT* pTree) noexcept : styler<treeviewT>(pTree) { }
 
@@ -36,5 +36,5 @@ public:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

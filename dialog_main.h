@@ -16,37 +16,37 @@
 #include "wnd.h"
 
 namespace wl {
-namespace wli { class dialog_modeless; } // friend forward declaration
+namespace _wli { class dialog_modeless; } // friend forward declaration
 
 // Inherit from this class to have a dialog as the main window for your application.
 class dialog_main :
 	public wnd,
-	public wli::base_msg_pubm<INT_PTR>,
-	public wli::base_thread_pubm<INT_PTR, TRUE>,
-	public wli::base_text_pubm<dialog_main>
+	public _wli::base_msg_pubm<INT_PTR>,
+	public _wli::base_thread_pubm<INT_PTR, TRUE>,
+	public _wli::base_text_pubm<dialog_main>
 {
-	friend wli::dialog_modeless; // needs to access _baseLoop
+	friend _wli::dialog_modeless; // needs to access _baseLoop
 
 protected:
 	// Variables to be set by user, used only during window creation.
-	struct setup_vars final : public wli::base_dialog::setup_vars {
+	struct setup_vars final : public _wli::base_dialog::setup_vars {
 		int iconId = 0;
 		int accelTableId = 0;
 	};
 
 private:
-	HWND                            _hWnd = nullptr;
-	wli::base_msg<INT_PTR>          _baseMsg{_hWnd};
-	wli::base_thread<INT_PTR, TRUE> _baseThread{_baseMsg};
-	wli::base_dialog                _baseDialog{_hWnd, _baseMsg};
-	wli::base_loop                  _baseLoop;
+	HWND                             _hWnd = nullptr;
+	_wli::base_msg<INT_PTR>          _baseMsg{_hWnd};
+	_wli::base_thread<INT_PTR, TRUE> _baseThread{_baseMsg};
+	_wli::base_dialog                _baseDialog{_hWnd, _baseMsg};
+	_wli::base_loop                  _baseLoop;
 
 public:
 	// Defines window creation parameters.
 	setup_vars setup;
 
 	// Wraps window style changes done by Get/SetWindowLongPtr.
-	wli::styler<dialog_main> style{this};
+	_wli::styler<dialog_main> style{this};
 
 protected:
 	dialog_main() :

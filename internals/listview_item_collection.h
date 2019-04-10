@@ -10,7 +10,7 @@
 #include "listview_item.h"
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 template<typename listviewT>
 class listview_item_collection final {
@@ -170,5 +170,5 @@ public:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

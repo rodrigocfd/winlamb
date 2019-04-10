@@ -9,10 +9,10 @@
 #include "styler.h"
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 template<typename listviewT>
-class listview_styler final : public wli::styler<listviewT> {
+class listview_styler final : public _wli::styler<listviewT> {
 public:
 	explicit listview_styler(listviewT* pList) noexcept : styler<listviewT>(pList) { }
 
@@ -63,5 +63,5 @@ public:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

@@ -9,7 +9,7 @@
 #include "treeview_item.h"
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 template<typename treeviewT>
 class treeview_item_collection final {
@@ -77,5 +77,5 @@ public:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

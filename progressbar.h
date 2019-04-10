@@ -16,10 +16,10 @@ namespace wl {
 // Wrapper to progressbar control from Common Controls library.
 class progressbar final :
 	public wnd,
-	public wli::base_native_ctrl_pubm<progressbar>
+	public _wli::base_native_ctrl_pubm<progressbar>
 {
 private:
-	class _styler final : public wli::styler<progressbar> {
+	class _styler final : public _wli::styler<progressbar> {
 	public:
 		explicit _styler(progressbar* pPb) noexcept : styler(pPb) { }
 
@@ -32,8 +32,8 @@ private:
 		}
 	};
 
-	HWND                  _hWnd = nullptr;
-	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
+	HWND                   _hWnd = nullptr;
+	_wli::base_native_ctrl _baseNativeCtrl{_hWnd};
 
 public:
 	// Wraps window style changes done by Get/SetWindowLongPtr.

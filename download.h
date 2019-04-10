@@ -17,8 +17,8 @@ namespace wl {
 // Automates internet download operations.
 class download final {
 public:
-	using session = wli::download_session;
-	using url_crack = wli::download_url;
+	using session = _wli::download_session;
+	using url_crack = _wli::download_url;
 
 private:
 	const session& _session;

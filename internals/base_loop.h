@@ -11,7 +11,7 @@
 #include <Windows.h>
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Wraps the main program loop.
 class base_loop final {
@@ -61,5 +61,5 @@ private:
 	}
 };
 
-}//namespace wli
+}//namespace _wli
 }//namespace wl

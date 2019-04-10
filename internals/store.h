@@ -11,7 +11,7 @@
 #include "params.h"
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Generic storage for message identifiers and their respective lambda handlers.
 template<typename idT, typename retT>
@@ -68,5 +68,5 @@ public:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

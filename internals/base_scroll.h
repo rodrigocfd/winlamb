@@ -11,7 +11,7 @@
 #include <VersionHelpers.h>
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Scrolls unfocused window when mousewheel is scrolled over that window.
 class base_scroll final {
@@ -57,5 +57,5 @@ private:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

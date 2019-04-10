@@ -13,7 +13,7 @@
 #pragma comment(lib, "Winhttp.lib")
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Wrapper to WinHttpCrackUrl function.
 class download_url final {
@@ -62,5 +62,5 @@ public:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

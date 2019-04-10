@@ -10,7 +10,7 @@
 #include "../image_list.h"
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Wrapper to image_list so it can be exposed as a public member of a control, like listview.
 template<typename controlT>
@@ -88,5 +88,5 @@ private:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

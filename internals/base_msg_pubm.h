@@ -9,7 +9,7 @@
 #include "base_msg.h"
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Provides public methods for base_msg class.
 template<typename retT>
@@ -71,5 +71,5 @@ public:
 	}
 };
 
-}//namespace wli
+}//namespace _wli
 }//namespace wl

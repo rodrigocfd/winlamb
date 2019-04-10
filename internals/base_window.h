@@ -12,7 +12,7 @@
 #include "styles_wsx.h"
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Common ground to all non-dialog windows.
 class base_window final {
@@ -150,5 +150,5 @@ private:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

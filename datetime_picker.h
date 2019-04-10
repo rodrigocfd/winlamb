@@ -17,10 +17,10 @@ namespace wl {
 // Wrapper to datetime picker control from Common Controls library.
 class datetime_picker final :
 	public wnd,
-	public wli::base_native_ctrl_pubm<datetime_picker>
+	public _wli::base_native_ctrl_pubm<datetime_picker>
 {
 private:
-	class _styler final : public wli::styler<datetime_picker> {
+	class _styler final : public _wli::styler<datetime_picker> {
 	public:
 		explicit _styler(datetime_picker* pDtp) noexcept : styler(pDtp) { }
 
@@ -29,8 +29,8 @@ private:
 		}
 	};
 
-	HWND                  _hWnd = nullptr;
-	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
+	HWND                   _hWnd = nullptr;
+	_wli::base_native_ctrl _baseNativeCtrl{_hWnd};
 
 public:
 	// Wraps window style changes done by Get/SetWindowLongPtr.

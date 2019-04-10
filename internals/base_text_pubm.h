@@ -10,7 +10,7 @@
 #include <Windows.h>
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Public methods that allow get/set window text with std::wstring.
 template<typename derivedT>
@@ -46,5 +46,5 @@ public:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

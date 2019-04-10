@@ -11,7 +11,7 @@
 #include <objbase.h>
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Smart class to automate CoInitialize and CoUninitialize calls.
 class com_lib {
@@ -69,5 +69,5 @@ inline void check_hr(HRESULT hr, const char* exceptionMsg) {
 	}
 }
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

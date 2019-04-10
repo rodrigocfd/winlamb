@@ -12,7 +12,7 @@
 #include <CommCtrl.h>
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 template<typename treeviewT>
 class treeview_item final {
@@ -151,5 +151,5 @@ public:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

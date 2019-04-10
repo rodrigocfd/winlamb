@@ -13,7 +13,7 @@
 #pragma comment(lib, "Winhttp.lib")
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Wrapper to HINTERNET handle.
 class download_session final {
@@ -65,5 +65,5 @@ public:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

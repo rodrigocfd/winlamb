@@ -12,7 +12,7 @@
 #include "store.h"
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Stores and processes window messages.
 template<typename retT>
@@ -77,5 +77,5 @@ public:
 	}
 };
 
-}//namespace wli
+}//namespace _wli
 }//namespace wl

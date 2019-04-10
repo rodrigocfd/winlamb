@@ -11,7 +11,7 @@
 #include <OleAuto.h>
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Wrapper to BSTR string, used with COM.
 class com_bstr final {
@@ -61,5 +61,5 @@ public:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

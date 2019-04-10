@@ -18,10 +18,10 @@ namespace wl {
 // Wrapper to status control from Common Controls library.
 class statusbar final :
 	public wnd,
-	public wli::base_native_ctrl_pubm<statusbar>
+	public _wli::base_native_ctrl_pubm<statusbar>
 {
 private:
-	class _styler final : public wli::styler<statusbar> {
+	class _styler final : public _wli::styler<statusbar> {
 	public:
 		explicit _styler(statusbar* pSb) noexcept : styler(pSb) { }
 
@@ -39,10 +39,10 @@ private:
 		UINT resizeWeight = 0;
 	};
 
-	HWND                  _hWnd = nullptr;
-	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
-	std::vector<_part>    _parts;
-	std::vector<int>      _rightEdges;
+	HWND                   _hWnd = nullptr;
+	_wli::base_native_ctrl _baseNativeCtrl{_hWnd};
+	std::vector<_part>     _parts;
+	std::vector<int>       _rightEdges;
 
 public:
 	// Wraps window style changes done by Get/SetWindowLongPtr.

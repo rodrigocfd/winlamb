@@ -20,10 +20,10 @@ namespace wl {
 // Wrapper to listview control from Common Controls library.
 class listview final :
 	public wnd,
-	public wli::base_native_ctrl_pubm<listview>
+	public _wli::base_native_ctrl_pubm<listview>
 {
 public:
-	using item = wli::listview_item<listview>;
+	using item = _wli::listview_item<listview>;
 
 	enum class view : WORD {
 		DETAILS   = LV_VIEW_DETAILS,
@@ -34,21 +34,21 @@ public:
 	};
 
 private:
-	using _column_collection = wli::listview_column_collection<listview>;
-	using _item_collection = wli::listview_item_collection<listview>;
+	using _column_collection = _wli::listview_column_collection<listview>;
+	using _item_collection = _wli::listview_item_collection<listview>;
 
-	HWND                  _hWnd = nullptr;
-	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
-	subclass              _subclass;
-	menu                  _contextMenu;
+	HWND                   _hWnd = nullptr;
+	_wli::base_native_ctrl _baseNativeCtrl{_hWnd};
+	subclass               _subclass;
+	menu                   _contextMenu;
 
 public:
 	// Wraps window style changes done by Get/SetWindowLongPtr.
-	wli::listview_styler<listview>   style{this};
+	_wli::listview_styler<listview>   style{this};
 
-	_item_collection                 items{this};
-	_column_collection               columns{this};
-	wli::member_image_list<listview> imageList16{this, 16}, imageList32{this, 32};
+	_item_collection                  items{this};
+	_column_collection                columns{this};
+	_wli::member_image_list<listview> imageList16{this, 16}, imageList32{this, 32};
 
 	~listview() {
 		this->_contextMenu.destroy();

@@ -9,7 +9,7 @@
 #include "com_lib.h"
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Wrapper to a COM pointer.
 template<typename ptrT>
@@ -97,5 +97,5 @@ private:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

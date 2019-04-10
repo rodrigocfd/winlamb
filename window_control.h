@@ -18,22 +18,22 @@ namespace wl {
 // Inherit from this class to have an user-custom window control.
 class window_control :
 	public wnd,
-	public wli::base_msg_pubm<LRESULT>,
-	public wli::base_thread_pubm<LRESULT, 0>
+	public _wli::base_msg_pubm<LRESULT>,
+	public _wli::base_thread_pubm<LRESULT, 0>
 {
 private:
-	HWND                            _hWnd = nullptr;
-	wli::base_msg<LRESULT>          _baseMsg{_hWnd};
-	wli::base_thread<LRESULT, 0>    _baseThread{_baseMsg};
-	wli::base_window                _baseWindow{_hWnd, _baseMsg};
-	wli::base_user_ctrl<LRESULT, 0> _baseUserCtrl{_baseMsg};
+	HWND                             _hWnd = nullptr;
+	_wli::base_msg<LRESULT>          _baseMsg{_hWnd};
+	_wli::base_thread<LRESULT, 0>    _baseThread{_baseMsg};
+	_wli::base_window                _baseWindow{_hWnd, _baseMsg};
+	_wli::base_user_ctrl<LRESULT, 0> _baseUserCtrl{_baseMsg};
 
 public:
 	// Defines window creation parameters.
-	wli::base_window::setup_vars setup;
+	_wli::base_window::setup_vars setup;
 
 	// Wraps window style changes done by Get/SetWindowLongPtr.
-	wli::styler<window_control> style{this};
+	_wli::styler<window_control> style{this};
 
 protected:
 	window_control() :

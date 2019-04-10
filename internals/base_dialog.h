@@ -11,7 +11,7 @@
 #include "../font.h"
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Common ground to all dialog windows.
 class base_dialog final {
@@ -88,7 +88,7 @@ private:
 		}
 
 		if (msg == WM_INITDIALOG) {
-			wli::base_scroll::apply_behavior(pSelf->_hWnd);
+			base_scroll::apply_behavior(pSelf->_hWnd);
 		} else if (msg == WM_NCDESTROY) { // cleanup
 			SetWindowLongPtrW(hDlg, DWLP_USER, 0);
 			if (pSelf) {
@@ -100,5 +100,5 @@ private:
 	}
 };
 
-}//namespace wli
+}//namespace _wli
 }//namespace wl

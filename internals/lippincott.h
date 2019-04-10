@@ -10,7 +10,7 @@
 #include <Windows.h>
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 inline void lippincott() noexcept {
 	const char* caption = "Oops... unknown error";
@@ -28,5 +28,5 @@ inline void lippincott() noexcept {
 	MessageBoxA(nullptr, msg, caption, MB_ICONERROR);
 }
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

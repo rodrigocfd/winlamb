@@ -12,7 +12,7 @@
 #pragma comment(lib, "UxTheme.lib")
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Common ground to all user-custom controls.
 template<typename retT, retT RET_VAL>
@@ -63,5 +63,5 @@ private:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

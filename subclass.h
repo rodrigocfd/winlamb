@@ -16,14 +16,14 @@ namespace wl {
 // Manages window subclassing for a window.
 class subclass final :
 	public wnd,
-	public wli::base_msg_pubm<LRESULT>,
-	public wli::base_thread_pubm<LRESULT, 0>
+	public _wli::base_msg_pubm<LRESULT>,
+	public _wli::base_thread_pubm<LRESULT, 0>
 {
 private:
-	HWND                         _hWnd = nullptr;
-	UINT                         _subclassId = -1;
-	wli::base_msg<LRESULT>       _baseMsg{_hWnd};
-	wli::base_thread<LRESULT, 0> _baseThread{_baseMsg};
+	HWND                          _hWnd = nullptr;
+	UINT                          _subclassId = -1;
+	_wli::base_msg<LRESULT>       _baseMsg{_hWnd};
+	_wli::base_thread<LRESULT, 0> _baseThread{_baseMsg};
 
 public:
 	~subclass() {

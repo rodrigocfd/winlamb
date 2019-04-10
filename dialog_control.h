@@ -18,22 +18,22 @@ namespace wl {
 // Inherit from this class to have a dialog to be used as a control within a parent window.
 class dialog_control :
 	public wnd,
-	public wli::base_msg_pubm<INT_PTR>,
-	public wli::base_thread_pubm<INT_PTR, TRUE>
+	public _wli::base_msg_pubm<INT_PTR>,
+	public _wli::base_thread_pubm<INT_PTR, TRUE>
 {
 private:
-	HWND                               _hWnd = nullptr;
-	wli::base_msg<INT_PTR>             _baseMsg{_hWnd};
-	wli::base_thread<INT_PTR, TRUE>    _baseThread{_baseMsg};
-	wli::base_dialog                   _baseDialog{_hWnd, _baseMsg};
-	wli::base_user_ctrl<INT_PTR, TRUE> _baseUserCtrl{_baseMsg};
+	HWND                                _hWnd = nullptr;
+	_wli::base_msg<INT_PTR>             _baseMsg{_hWnd};
+	_wli::base_thread<INT_PTR, TRUE>    _baseThread{_baseMsg};
+	_wli::base_dialog                   _baseDialog{_hWnd, _baseMsg};
+	_wli::base_user_ctrl<INT_PTR, TRUE> _baseUserCtrl{_baseMsg};
 
 public:
 	// Defines window creation parameters.
-	wli::base_dialog::setup_vars setup;
+	_wli::base_dialog::setup_vars setup;
 
 	// Wraps window style changes done by Get/SetWindowLongPtr.
-	wli::styler<dialog_control> style{this};
+	_wli::styler<dialog_control> style{this};
 
 protected:
 	dialog_control() :

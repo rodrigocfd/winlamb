@@ -11,7 +11,7 @@
 #include "com_ptr.h"
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Wrapper to VARIANT object, used with COM.
 class com_variant final {
@@ -82,5 +82,5 @@ public:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

@@ -11,7 +11,7 @@
 #include <CommCtrl.h>
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 template<typename listviewT>
 class listview_column_collection final {
@@ -89,5 +89,5 @@ public:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

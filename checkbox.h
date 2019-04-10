@@ -16,16 +16,16 @@ namespace wl {
 // Wrapper to native checkbox control.
 class checkbox final :
 	public wnd,
-	public wli::base_native_ctrl_pubm<checkbox>,
-	public wli::base_text_pubm<checkbox>
+	public _wli::base_native_ctrl_pubm<checkbox>,
+	public _wli::base_text_pubm<checkbox>
 {
 private:
-	HWND                  _hWnd = nullptr;
-	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
+	HWND                   _hWnd = nullptr;
+	_wli::base_native_ctrl _baseNativeCtrl{_hWnd};
 
 public:
 	// Wraps window style changes done by Get/SetWindowLongPtr.
-	wli::styler<checkbox> style{this};
+	_wli::styler<checkbox> style{this};
 
 	checkbox() noexcept :
 		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl), base_text_pubm(_hWnd) { }

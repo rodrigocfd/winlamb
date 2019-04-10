@@ -16,11 +16,11 @@ namespace wl {
 // Wrapper to native edit box control.
 class textbox final :
 	public wnd,
-	public wli::base_native_ctrl_pubm<textbox>,
-	public wli::base_text_pubm<textbox>
+	public _wli::base_native_ctrl_pubm<textbox>,
+	public _wli::base_text_pubm<textbox>
 {
 private:
-	class _styler final : public wli::styler<textbox> {
+	class _styler final : public _wli::styler<textbox> {
 	public:
 		explicit _styler(textbox* pTextbox) noexcept : styler(pTextbox) { }
 
@@ -29,8 +29,8 @@ private:
 		}
 	};
 
-	HWND                  _hWnd = nullptr;
-	wli::base_native_ctrl _baseNativeCtrl{_hWnd};
+	HWND                   _hWnd = nullptr;
+	_wli::base_native_ctrl _baseNativeCtrl{_hWnd};
 
 public:
 	enum class type { NORMAL, PASSWORD, MULTILINE };

@@ -10,7 +10,7 @@
 #include "styles_wsx.h"
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Wraps window style changes done by Get/SetWindowLongPtr, and allows custom methods.
 template<typename wndT>
@@ -76,5 +76,5 @@ private:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

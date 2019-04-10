@@ -19,23 +19,23 @@ namespace wl {
 // Inherit from this class to have a dialog modeless popup.
 class dialog_modeless :
 	public wnd,
-	public wli::base_msg_pubm<INT_PTR>,
-	public wli::base_thread_pubm<INT_PTR, TRUE>,
-	public wli::base_text_pubm<dialog_modeless>
+	public _wli::base_msg_pubm<INT_PTR>,
+	public _wli::base_thread_pubm<INT_PTR, TRUE>,
+	public _wli::base_text_pubm<dialog_modeless>
 {
 private:
-	HWND                            _hWnd = nullptr;
-	wli::base_msg<INT_PTR>          _baseMsg{_hWnd};
-	wli::base_thread<INT_PTR, TRUE> _baseThread{_baseMsg};
-	wli::base_dialog                _baseDialog{_hWnd, _baseMsg};
-	wli::base_loop*                 _pParentBaseLoop = nullptr;
+	HWND                             _hWnd = nullptr;
+	_wli::base_msg<INT_PTR>          _baseMsg{_hWnd};
+	_wli::base_thread<INT_PTR, TRUE> _baseThread{_baseMsg};
+	_wli::base_dialog                _baseDialog{_hWnd, _baseMsg};
+	_wli::base_loop*                 _pParentBaseLoop = nullptr;
 
 public:
 	// Defines window creation parameters.
-	wli::base_dialog::setup_vars setup;
+	_wli::base_dialog::setup_vars setup;
 
 	// Wraps window style changes done by Get/SetWindowLongPtr.
-	wli::styler<dialog_modeless> style{this};
+	_wli::styler<dialog_modeless> style{this};
 
 protected:
 	dialog_modeless() :

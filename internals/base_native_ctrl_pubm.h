@@ -10,7 +10,7 @@
 #include "../wnd.h"
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Provides public methods for base_native_ctrl class.
 template<typename derivedT>
@@ -44,5 +44,5 @@ public:
 	}
 };
 
-}//namespace wli
+}//namespace _wli
 }//namespace wl

@@ -10,7 +10,7 @@
 #include <process.h>
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 // Adds multithreading capabilities to the window.
 template<typename retT, retT RET_VAL>
@@ -89,5 +89,5 @@ private:
 	}
 };
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl

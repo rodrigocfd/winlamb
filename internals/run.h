@@ -12,7 +12,7 @@
 #pragma comment(lib, "Comctl32.lib")
 
 namespace wl {
-namespace wli {
+namespace _wli {
 
 template<typename wnd_mainT>
 int run_main(HINSTANCE hInst, int cmdShow) noexcept {
@@ -28,11 +28,11 @@ int run_main(HINSTANCE hInst, int cmdShow) noexcept {
 	return ret;
 }
 
-}//namespace wli
+}//namepace _wli
 }//namespace wl
 
 // Instantiates your main class into a generic WinMain function.
 #define RUN(wnd_mainT) \
 int APIENTRY wWinMain(HINSTANCE hInst, HINSTANCE, LPWSTR, int cmdShow) { \
-	return wl::wli::run_main<wnd_mainT>(hInst, cmdShow); \
+	return wl::_wli::run_main<wnd_mainT>(hInst, cmdShow); \
 }
