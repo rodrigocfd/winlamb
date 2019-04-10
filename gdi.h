@@ -8,7 +8,7 @@
 #pragma once
 #include <string>
 #include <vector>
-#include "internals/device_context_objects.h"
+#include "internals/gdi_objects.h"
 #include "wnd.h"
 
 namespace wl {
