@@ -11,30 +11,30 @@
 #include <objbase.h>
 
 namespace wl {
-namespace _wli {
+namespace com {
 
-// Smart class to automate CoInitialize and CoUninitialize calls.
-class com_lib {
+// Smart class to automate CoInitialize and CoUninitialize COM calls.
+class lib {
 private:
 	HRESULT _hr = -1;
 
 public:
 	enum class init { NOW, LATER };
 
-	~com_lib() {
+	~lib() {
 		// https://stackoverflow.com/q/47123650/6923555
 		this->un_initialize();
 	}
 
-	explicit com_lib(init when) noexcept {
+	explicit lib(init when) noexcept {
 		if (when == init::NOW) {
 			this->initialize();
 		}
 	}
 
-	com_lib(com_lib&& other) noexcept : _hr{other._hr} { other._hr = -1; }
+	lib(lib&& other) noexcept : _hr{other._hr} { other._hr = -1; }
 
-	com_lib& operator=(com_lib&& other) noexcept {
+	lib& operator=(lib&& other) noexcept {
 		this->un_initialize();
 		std::swap(this->_hr, other._hr);
 		return *this;
@@ -63,11 +63,12 @@ public:
 };
 
 
+// COM utility which calls FAILED() macro upon HRESULT; if failed, throws a system_error.
 inline void check_hr(HRESULT hr, const char* exceptionMsg) {
 	if (FAILED(hr)) {
 		throw std::system_error(hr, std::system_category(), exceptionMsg);
 	}
 }
 
-}//namepace _wli
+}//namepace com
 }//namespace wl

@@ -122,7 +122,7 @@ Wrappers and utility classes:
 | [`image_list`](image_list.h) | Wrapper to image list object from Common Controls library. |
 | [`insert_order_map`](insert_order_map.h) | Vector-based associative container which keeps the insertion order. |
 | [`label`](label.h) | Wrapper to native static text control. |
-| [`list_view`](list_view.h) | Wrapper to listview control from Common Controls library. |
+| [`listview`](listview.h) | Wrapper to listview control from Common Controls library. |
 | [`menu`](menu.h) | Wrapper to HMENU handle. |
 | [`path`](path.h) | Utilities to file path operations with std::wstring. |
 | [`progress_taskbar`](progress_taskbar.h) | Allows to show a progress bar in the taskbar button of the window, in green, yellow or red. |

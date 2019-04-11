@@ -11,76 +11,76 @@
 #include "com_ptr.h"
 
 namespace wl {
-namespace _wli {
+namespace com {
 
 // Wrapper to VARIANT object, used with COM.
-class com_variant final {
+class variant final {
 private:
-	VARIANT _variant{};
+	VARIANT _variantObj{};
 
 public:
-	~com_variant() {
+	~variant() {
 		this->clear();
 	}
 
-	com_variant() = default;
-	com_variant(com_variant&& other) noexcept { this->operator=(std::move(other)); }
+	variant() = default;
+	variant(variant&& other) noexcept { this->operator=(std::move(other)); }
 
-	operator const VARIANT&() const noexcept  { return this->_variant; }
-	const VARIANT* operator&() const noexcept { return &this->_variant; }
-	VARIANT* operator&() noexcept             { return &this->_variant; }
+	operator const VARIANT&() const noexcept  { return this->_variantObj; }
+	const VARIANT* operator&() const noexcept { return &this->_variantObj; }
+	VARIANT* operator&() noexcept             { return &this->_variantObj; }
 
-	com_variant& operator=(com_variant&& other) noexcept {
+	variant& operator=(variant&& other) noexcept {
 		this->clear();
-		std::swap(this->_variant, other._variant);
+		std::swap(this->_variantObj, other._variantObj);
 		return *this;
 	}
 
-	com_variant& clear() noexcept {
-		if (this->_variant.vt != VT_EMPTY) {
-			VariantClear(&this->_variant); // will set VT_EMPTY
+	variant& clear() noexcept {
+		if (this->_variantObj.vt != VT_EMPTY) {
+			VariantClear(&this->_variantObj); // will set VT_EMPTY
 		}
 		return *this;
 	}
 
-	com_variant& set_str(const wchar_t* s) noexcept {
+	variant& set_str(const wchar_t* s) noexcept {
 		this->clear();
-		this->_variant.vt = VT_BSTR;
-		this->_variant.bstrVal = SysAllocString(s);
+		this->_variantObj.vt = VT_BSTR;
+		this->_variantObj.bstrVal = SysAllocString(s);
 		return *this;
 	}
 
-	com_variant& set_str(const std::wstring& s) noexcept {
+	variant& set_str(const std::wstring& s) noexcept {
 		return this->set_str(s.c_str());
 	}
 
 	const wchar_t* get_str() const noexcept {
-		return static_cast<wchar_t*>(this->_variant.bstrVal);
+		return static_cast<wchar_t*>(this->_variantObj.bstrVal);
 	}
 
-	com_variant& set_int4(long n) noexcept {
+	variant& set_int4(long n) noexcept {
 		this->clear();
-		this->_variant.vt = VT_I4;
-		this->_variant.lVal = n;
+		this->_variantObj.vt = VT_I4;
+		this->_variantObj.lVal = n;
 		return *this;
 	}
 
 	long get_int4() const noexcept {
-		return this->_variant.lVal;
+		return this->_variantObj.lVal;
 	}
 
 	template<typename idispatch_derivedT>
-	com_variant& set_idispatch(com_ptr<idispatch_derivedT>& objToQueryFrom) {
+	variant& set_idispatch(ptr<idispatch_derivedT>& objToQueryFrom) {
 		this->clear();
-		this->_variant.vt = VT_DISPATCH;
-		objToQueryFrom.query_interface(IID_IDispatch, &this->_variant.pdispVal);
+		this->_variantObj.vt = VT_DISPATCH;
+		objToQueryFrom.query_interface(IID_IDispatch, &this->_variantObj.pdispVal);
 		return *this;
 	}
 
 	IDispatch* get_idispatch() const noexcept {
-		return this->_variant.pdispVal;
+		return this->_variantObj.pdispVal;
 	}
 };
 
-}//namepace _wli
+}//namepace com
 }//namespace wl

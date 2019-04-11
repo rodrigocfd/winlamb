@@ -11,55 +11,55 @@
 #include <OleAuto.h>
 
 namespace wl {
-namespace _wli {
+namespace com {
 
 // Wrapper to BSTR string, used with COM.
-class com_bstr final {
+class bstr final {
 private:
-	BSTR _bstr = nullptr;
+	BSTR _bstrObj = nullptr;
 
 public:
-	~com_bstr() {
+	~bstr() {
 		this->free();
 	}
 
-	com_bstr() = default;
-	com_bstr(com_bstr&& other) noexcept      : _bstr{other._bstr} { other._bstr = nullptr; }
-	com_bstr(const wchar_t* s) noexcept      : _bstr{SysAllocString(s)} { }
-	com_bstr(const std::wstring& s) noexcept : com_bstr(s.c_str()) { }
+	bstr() = default;
+	bstr(bstr&& other) noexcept          : _bstrObj{other._bstrObj} { other._bstrObj = nullptr; }
+	bstr(const wchar_t* s) noexcept      : _bstrObj{SysAllocString(s)} { }
+	bstr(const std::wstring& s) noexcept : bstr(s.c_str()) { }
 
-	operator const BSTR&() const noexcept  { return this->_bstr; }
-	const BSTR* operator&() const noexcept { return &this->_bstr; }
-	BSTR* operator&() noexcept             { return &this->_bstr; }
+	operator const BSTR&() const noexcept  { return this->_bstrObj; }
+	const BSTR* operator&() const noexcept { return &this->_bstrObj; }
+	BSTR* operator&() noexcept             { return &this->_bstrObj; }
 
-	com_bstr& operator=(com_bstr&& other) noexcept {
+	bstr& operator=(bstr&& other) noexcept {
 		this->free();
-		std::swap(this->_bstr, other._bstr);
+		std::swap(this->_bstrObj, other._bstrObj);
 		return *this;
 	}
 	
-	com_bstr& operator=(const wchar_t* s) noexcept {
+	bstr& operator=(const wchar_t* s) noexcept {
 		this->free();
-		this->_bstr = SysAllocString(s);
+		this->_bstrObj = SysAllocString(s);
 		return *this;
 	}
 
-	com_bstr& operator=(const std::wstring& s) noexcept {
+	bstr& operator=(const std::wstring& s) noexcept {
 		return this->operator=(s.c_str());
 	}
 
-	com_bstr& free() noexcept {
-		if (this->_bstr) {
-			SysFreeString(this->_bstr);
-			this->_bstr = nullptr;
+	bstr& free() noexcept {
+		if (this->_bstrObj) {
+			SysFreeString(this->_bstrObj);
+			this->_bstrObj = nullptr;
 		}
 		return *this;
 	}
 
 	const wchar_t* c_str() const noexcept {
-		return static_cast<wchar_t*>(this->_bstr);
+		return static_cast<wchar_t*>(this->_bstrObj);
 	}
 };
 
-}//namepace _wli
+}//namespace com
 }//namespace wl
