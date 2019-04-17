@@ -75,7 +75,7 @@ My_Window::My_Window()
 
 I've written the following examples showcasing different things:
 
-* [Click lines](https://github.com/rodrigocfd/click-lines)
+* [Click lines](https://github.com/rodrigocfd/click-lines) (very simple example)
 * [FLAC/LAME frontend](https://github.com/rodrigocfd/flac-lame-frontend)
 * [Chromium Peeker](https://github.com/rodrigocfd/chromium-peeker)
 
@@ -102,16 +102,16 @@ Wrappers and utility classes:
 | :--- |:--- |
 | [`button`](button.h) | Wrapper to native button control. |
 | [`checkbox`](checkbox.h) | Wrapper to native checkbox control. |
-| [`com::bstr`](internals/com_bstr.h) | Wrapper to BSTR string, used with COM. |
-| [`com::lib`](internals/com_lib.h) | Smart class to automate CoInitialize and CoUninitialize calls. |
-| [`com::ptr`](internals/com_ptr.h) | Wrapper to a COM pointer. |
-| [`com::variant`](internals/com_variant.h) | Wrapper to VARIANT object, used with COM. |
+| [`com::bstr`](internals/com_bstr.h#L16) | Wrapper to BSTR string, used with COM. |
+| [`com::lib`](internals/com_lib.h#L16) | Smart class to automate CoInitialize and CoUninitialize calls. |
+| [`com::ptr`](internals/com_ptr.h#L14) | Wrapper to a COM pointer. |
+| [`com::variant`](internals/com_variant.h#L16) | Wrapper to VARIANT object, used with COM. |
 | [`combobox`](combobox.h) | Wrapper to native combobox control. |
 | [`datetime`](datetime.h) | Wrapper to SYSTEMTIME structure. |
 | [`datetime_picker`](datetime_picker.h) | Wrapper to datetime picker control from Common Controls library. |
-| [`gdi::dc`](device_context.h) | Wrapper to device context. |
-| [`gdi::dc_painter`](device_context.h) | Wrapper to device context which calls BeginPaint/EndPaint automatically. |
-| [`gdi::dc_painter_buffered`](device_context.h) | Wrapper to device context which calls BeginPaint/EndPaint automatically with double-buffer. |
+| [`gdi::dc`](gdi.h#L17) | Wrapper to device context. |
+| [`gdi::dc_painter`](gdi.h#L250) | Wrapper to device context which calls BeginPaint/EndPaint automatically. |
+| [`gdi::dc_painter_buffered`](gdi.h#L304) | Wrapper to device context which calls BeginPaint/EndPaint automatically with double-buffer. |
 | [`download`](download.h) | Automates internet download operations. |
 | [`executable`](executable.h) | Utilities to executable-related stuff. |
 | [`file`](file.h) | Wrapper to a low-level HANDLE of a file. |
