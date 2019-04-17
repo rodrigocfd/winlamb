@@ -30,7 +30,7 @@ There's an included `win10.exe.manifest` file, which you can [add to your Visual
 
 ## 3. Example
 
-This is a simple Win32 program written with WinLamb. Each window has a class, and messages are handled with C++11 lambdas. There's no need to write a message loop or window registering.
+This is a simple Win32 program written with WinLamb. Each window has a class, and messages are handled with C++11 lambdas using [message crackers](internals/params_wm.h#L20). There's no need to write a message loop or window registering.
 
 *Declaration:* My_Window.h
 
@@ -83,7 +83,7 @@ More projects can be seen browsing [winlamb topic](https://github.com/topics/win
 
 ## 4. Classes summary
 
-Each file is named after the class it contains; for example, file "button.h" contains `button` class.
+Most files are named after the class they contain; for example, file "button.h" contains `button` class.
 
 To create your windows, you inherit from these classes below. See the [article](https://www.codeproject.com/Articles/1184175/WinLamb-using-Cplusplus-lambdas-to-handle-Win-mess) and the [examples](#3-example) to learn how to use them:
 
