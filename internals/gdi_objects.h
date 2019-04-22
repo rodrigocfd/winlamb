@@ -10,6 +10,8 @@
 #include <Windows.h>
 
 namespace wl {
+
+// Wrappers to GDI objects.
 namespace gdi {
 
 // Wrapper to device context HPEN.

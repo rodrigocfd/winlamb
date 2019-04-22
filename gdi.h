@@ -12,6 +12,8 @@
 #include "wnd.h"
 
 namespace wl {
+
+// Wrappers to GDI objects.
 namespace gdi {
 
 // Wrapper to device context, BeginPaint/EndPaint must be called manually.

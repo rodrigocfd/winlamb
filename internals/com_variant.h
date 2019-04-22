@@ -11,6 +11,8 @@
 #include "com_ptr.h"
 
 namespace wl {
+
+// Wrappers to COM objects.
 namespace com {
 
 // Wrapper to VARIANT object, used with COM.

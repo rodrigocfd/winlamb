@@ -9,6 +9,8 @@
 #include "com_lib.h"
 
 namespace wl {
+
+// Wrappers to COM objects.
 namespace com {
 
 // Wrapper to a COM pointer.

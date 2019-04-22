@@ -11,6 +11,8 @@
 #include <OleAuto.h>
 
 namespace wl {
+
+// Wrappers to COM objects.
 namespace com {
 
 // Wrapper to BSTR string, used with COM.

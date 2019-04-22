@@ -11,6 +11,8 @@
 #include <objbase.h>
 
 namespace wl {
+
+// Wrappers to COM objects.
 namespace com {
 
 // Smart class to automate CoInitialize and CoUninitialize COM calls.
