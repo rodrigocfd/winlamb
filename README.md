@@ -113,7 +113,7 @@ Wrappers and utility classes:
 | [`gdi::dc_painter`](gdi.h#L250) | Wrapper to device context which calls BeginPaint/EndPaint automatically. |
 | [`gdi::dc_painter_buffered`](gdi.h#L304) | Wrapper to device context which calls BeginPaint/EndPaint automatically with double-buffer. |
 | [`download`](download.h) | Automates internet download operations. |
-| [`executable`](executable.h) | Utilities to executable-related stuff. |
+| [`executable`](executable.h) | Executable-related utilities. |
 | [`file`](file.h) | Wrapper to a low-level HANDLE of a file. |
 | [`file_ini`](file_ini.h) | Wrapper to INI file. |
 | [`file_mapped`](file_mapped.h) | Wrapper to a memory-mapped file. |
@@ -134,7 +134,7 @@ Wrappers and utility classes:
 | [`statusbar`](statusbar.h) | Wrapper to status control from Common Controls library. |
 | [`str`](str.h) | Utilities to std::wstring. |
 | [`subclass`](subclass.h) | Manages window subclassing for a window. |
-| [`sysdlg`](sysdlg.h) | Wrappers system dialogs calls. |
+| [`sysdlg`](sysdlg.h) | Wrappers to system dialogs. |
 | [`syspath`](syspath.h) | Retrieves system paths. |
 | [`textbox`](textbox.h) | Wrapper to native edit box control. |
 | [`treeview`](treeview.h) | Wrapper to treeview control from Common Controls library. |
