@@ -96,7 +96,7 @@ To create your windows, you inherit from these classes below. See the [article](
 | [`window_control`](window_control.h) | Inherit from this class to have an user-custom window control. |
 | [`window_main`](window_main.h) | Inherit from this class to have an ordinary main window for your application. |
 
-Wrappers and utility classes:
+Wrappers and utilities:
 
 | Class | Description |
 | :--- |:--- |
