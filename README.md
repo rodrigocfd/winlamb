@@ -102,16 +102,16 @@ Wrappers and utilities:
 | :--- |:--- |
 | [`button`](button.h) | Wrapper to native button control. |
 | [`checkbox`](checkbox.h) | Wrapper to native checkbox control. |
-| [`com::bstr`](internals/com_bstr.h#L16) | Wrapper to BSTR string, used with COM. |
-| [`com::lib`](internals/com_lib.h#L16) | Smart class to automate CoInitialize and CoUninitialize calls. |
-| [`com::ptr`](internals/com_ptr.h#L14) | Wrapper to a COM pointer. |
-| [`com::variant`](internals/com_variant.h#L16) | Wrapper to VARIANT object, used with COM. |
+| [`com::bstr`](internals/com_bstr.h#L18) | Wrapper to BSTR string, used with COM. |
+| [`com::lib`](internals/com_lib.h#L18) | Smart class to automate CoInitialize and CoUninitialize calls. |
+| [`com::ptr`](internals/com_ptr.h#L16) | Wrapper to a COM pointer. |
+| [`com::variant`](internals/com_variant.h#L18) | Wrapper to VARIANT object, used with COM. |
 | [`combobox`](combobox.h) | Wrapper to native combobox control. |
 | [`datetime`](datetime.h) | Wrapper to SYSTEMTIME structure. |
 | [`datetime_picker`](datetime_picker.h) | Wrapper to datetime picker control from Common Controls library. |
-| [`gdi::dc`](gdi.h#L17) | Wrapper to device context. |
-| [`gdi::dc_painter`](gdi.h#L250) | Wrapper to device context which calls BeginPaint/EndPaint automatically. |
-| [`gdi::dc_painter_buffered`](gdi.h#L304) | Wrapper to device context which calls BeginPaint/EndPaint automatically with double-buffer. |
+| [`gdi::dc`](gdi.h#L19) | Wrapper to device context. |
+| [`gdi::dc_painter`](gdi.h#L252) | Wrapper to device context which calls BeginPaint/EndPaint automatically. |
+| [`gdi::dc_painter_buffered`](gdi.h#L306) | Wrapper to device context which calls BeginPaint/EndPaint automatically with double-buffer. |
 | [`download`](download.h) | Automates internet download operations. |
 | [`executable`](executable.h) | Executable-related utilities. |
 | [`file`](file.h) | Wrapper to a low-level HANDLE of a file. |
