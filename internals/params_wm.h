@@ -366,7 +366,7 @@ namespace wm {
 	};
 	struct menudrag : public params {
 		menudrag(const params& p) noexcept : params(p) { }
-		UINT  initial_pos() const noexcept { static_cast<UINT>(this->wParam); }
+		UINT  initial_pos() const noexcept { return static_cast<UINT>(this->wParam); }
 		HMENU hmenu() const noexcept       { return reinterpret_cast<HMENU>(this->lParam); }
 	};
 	struct menugetobject : public params {
@@ -610,7 +610,7 @@ namespace wm {
 	struct sizing : public params {
 		sizing(const params& p) noexcept : params(p) { }
 		WORD  edge() const noexcept          { return static_cast<WORD>(this->wParam); }
-		RECT& screen_coords() const noexcept { *reinterpret_cast<RECT*>(this->lParam); }
+		RECT& screen_coords() const noexcept { return *reinterpret_cast<RECT*>(this->lParam); }
 	};
 	struct spoolerstatus : public params {
 		spoolerstatus(const params& p) noexcept : params(p) { }
