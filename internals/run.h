@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include <crtdbg.h>
 #include <Windows.h>
 #include <CommCtrl.h>
 #include "lippincott.h"
