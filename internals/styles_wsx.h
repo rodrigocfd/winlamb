@@ -78,9 +78,13 @@ enum class wsx : DWORD {
 	// The child window created with this style does not send the WM_PARENTNOTIFY message to
 	// its parent window when it is created or destroyed.
 	NOPARENTNOTIFY = WS_EX_NOPARENTNOTIFY,
+
+#if(WINVER >= 0x0602)
 	// The window does not render to a redirection surface. This is for windows that do not have
 	// visible content or that use mechanisms other than surfaces to provide their visual.
 	NOREDIRECTIONBITMAP = WS_EX_NOREDIRECTIONBITMAP,
+#endif
+
 	// The window is an overlapped window.
 	OVERLAPPEDWINDOW = WS_EX_OVERLAPPEDWINDOW,
 	// The window is palette window, which is a modeless dialog box that presents an
