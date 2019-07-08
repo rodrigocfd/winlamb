@@ -89,60 +89,60 @@ To create your windows, you inherit from these classes below. See the [article](
 
 | Class | Description |
 | :--- | :--- |
-| [`dialog_control`](dialog_control.h) | Inherit from this class to have a dialog to be used as a control within a parent window. |
-| [`dialog_main`](dialog_main.h) | Inherit from this class to have a dialog as the main window for your application. |
-| [`dialog_modal`](dialog_modal.h) | Inherit from this class to have a modal dialog popup. |
-| [`dialog_modeless`](dialog_modeless.h) | Inherit from this class to have a dialog modeless popup. |
-| [`window_control`](window_control.h) | Inherit from this class to have an user-custom window control. |
-| [`window_main`](window_main.h) | Inherit from this class to have an ordinary main window for your application. |
+| [`dialog_control`](dialog_control.h?ts=4) | Inherit from this class to have a dialog to be used as a control within a parent window. |
+| [`dialog_main`](dialog_main.h?ts=4) | Inherit from this class to have a dialog as the main window for your application. |
+| [`dialog_modal`](dialog_modal.h?ts=4) | Inherit from this class to have a modal dialog popup. |
+| [`dialog_modeless`](dialog_modeless.h?ts=4) | Inherit from this class to have a dialog modeless popup. |
+| [`window_control`](window_control.h?ts=4) | Inherit from this class to have an user-custom window control. |
+| [`window_main`](window_main.h?ts=4) | Inherit from this class to have an ordinary main window for your application. |
 
 Wrappers and utilities:
 
 | Class | Description |
 | :--- |:--- |
-| [`button`](button.h) | Wrapper to native button control. |
-| [`checkbox`](checkbox.h) | Wrapper to native checkbox control. |
-| [`com::bstr`](internals/com_bstr.h#L18) | Wrapper to BSTR string, used with COM. |
-| [`com::lib`](internals/com_lib.h#L18) | Smart class to automate CoInitialize and CoUninitialize calls. |
-| [`com::ptr`](internals/com_ptr.h#L16) | Wrapper to a COM pointer. |
-| [`com::variant`](internals/com_variant.h#L18) | Wrapper to VARIANT object, used with COM. |
-| [`combobox`](combobox.h) | Wrapper to native combobox control. |
-| [`datetime`](datetime.h) | Wrapper to SYSTEMTIME structure. |
-| [`datetime_picker`](datetime_picker.h) | Wrapper to datetime picker control from Common Controls library. |
-| [`gdi::dc`](gdi.h#L19) | Wrapper to device context. |
-| [`gdi::dc_painter`](gdi.h#L252) | Wrapper to device context which calls BeginPaint/EndPaint automatically. |
-| [`gdi::dc_painter_buffered`](gdi.h#L306) | Wrapper to device context which calls BeginPaint/EndPaint automatically with double-buffer. |
-| [`download`](download.h) | Automates internet download operations. |
-| [`executable`](executable.h) | Executable-related utilities. |
-| [`file`](file.h) | Wrapper to a low-level HANDLE of a file. |
-| [`file_ini`](file_ini.h) | Wrapper to INI file. |
-| [`file_mapped`](file_mapped.h) | Wrapper to a memory-mapped file. |
-| [`font`](font.h) | Wrapper to HFONT handle. |
-| [`icon`](icon.h) | Wrapper to HICON handle. |
-| [`image_list`](image_list.h) | Wrapper to image list object from Common Controls library. |
-| [`insert_order_map`](insert_order_map.h) | Vector-based associative container which keeps the insertion order. |
-| [`label`](label.h) | Wrapper to native static text control. |
-| [`listview`](listview.h) | Wrapper to listview control from Common Controls library. |
-| [`menu`](menu.h) | Wrapper to HMENU handle. |
-| [`path`](path.h) | Utilities to file path operations with std::wstring. |
-| [`progress_taskbar`](progress_taskbar.h) | Allows to show a progress bar in the taskbar button of the window, in green, yellow or red. |
-| [`progressbar`](progressbar.h) | Wrapper to progressbar control from Common Controls library. |
-| [`radio`](radio.h) | Wrapper to native radio button control. |
-| [`radio_group`](radio_group.h) | Automates a group of native radio buttons. |
-| [`resizer`](resizer.h) | Allows the resizing of multiple controls when the parent window is resized. |
-| [`scrollinfo`](scrollinfo.h) | Automates SCROLLINFO operations. |
-| [`statusbar`](statusbar.h) | Wrapper to status control from Common Controls library. |
-| [`str`](str.h) | Utilities to std::wstring. |
-| [`subclass`](subclass.h) | Manages window subclassing for a window. |
-| [`sysdlg`](sysdlg.h) | Wrappers to system dialogs. |
-| [`syspath`](syspath.h) | Retrieves system paths. |
-| [`textbox`](textbox.h) | Wrapper to native edit box control. |
-| [`treeview`](treeview.h) | Wrapper to treeview control from Common Controls library. |
-| [`vec`](vec.h) | Utilities to std::vector. |
-| [`version`](version.h) | Parses version information from an EXE or DLL. |
-| [`wnd`](wnd.h) | Simple HWND wrapper, base to all dialog and window classes. |
-| [`xml`](xml.h) | XML wrapper class to MSXML2 Windows library. |
-| [`zip`](zip.h) | Utilities to work with zipped files. |
+| [`button`](button.h?ts=4) | Wrapper to native button control. |
+| [`checkbox`](checkbox.h?ts=4) | Wrapper to native checkbox control. |
+| [`com::bstr`](internals/com_bstr.h?ts=4#L18) | Wrapper to BSTR string, used with COM. |
+| [`com::lib`](internals/com_lib.h?ts=4#L18) | Smart class to automate CoInitialize and CoUninitialize calls. |
+| [`com::ptr`](internals/com_ptr.h?ts=4#L16) | Wrapper to a COM pointer. |
+| [`com::variant`](internals/com_variant.h?ts=4#L18) | Wrapper to VARIANT object, used with COM. |
+| [`combobox`](combobox.h?ts=4) | Wrapper to native combobox control. |
+| [`datetime`](datetime.h?ts=4) | Wrapper to SYSTEMTIME structure. |
+| [`datetime_picker`](datetime_picker.h?ts=4) | Wrapper to datetime picker control from Common Controls library. |
+| [`gdi::dc`](gdi.h?ts=4#L19) | Wrapper to device context. |
+| [`gdi::dc_painter`](gdi.h?ts=4#L252) | Wrapper to device context which calls BeginPaint/EndPaint automatically. |
+| [`gdi::dc_painter_buffered`](gdi.h?ts=4#L306) | Wrapper to device context which calls BeginPaint/EndPaint automatically with double-buffer. |
+| [`download`](download.h?ts=4) | Automates internet download operations. |
+| [`executable`](executable.h?ts=4) | Executable-related utilities. |
+| [`file`](file.h?ts=4) | Wrapper to a low-level HANDLE of a file. |
+| [`file_ini`](file_ini.h?ts=4) | Wrapper to INI file. |
+| [`file_mapped`](file_mapped.h?ts=4) | Wrapper to a memory-mapped file. |
+| [`font`](font.h?ts=4) | Wrapper to HFONT handle. |
+| [`icon`](icon.h?ts=4) | Wrapper to HICON handle. |
+| [`image_list`](image_list.h?ts=4) | Wrapper to image list object from Common Controls library. |
+| [`insert_order_map`](insert_order_map.h?ts=4) | Vector-based associative container which keeps the insertion order. |
+| [`label`](label.h?ts=4) | Wrapper to native static text control. |
+| [`listview`](listview.h?ts=4) | Wrapper to listview control from Common Controls library. |
+| [`menu`](menu.h?ts=4) | Wrapper to HMENU handle. |
+| [`path`](path.h?ts=4) | Utilities to file path operations with std::wstring. |
+| [`progress_taskbar`](progress_taskbar.h?ts=4) | Allows to show a progress bar in the taskbar button of the window, in green, yellow or red. |
+| [`progressbar`](progressbar.h?ts=4) | Wrapper to progressbar control from Common Controls library. |
+| [`radio`](radio.h?ts=4) | Wrapper to native radio button control. |
+| [`radio_group`](radio_group.h?ts=4) | Automates a group of native radio buttons. |
+| [`resizer`](resizer.h?ts=4) | Allows the resizing of multiple controls when the parent window is resized. |
+| [`scrollinfo`](scrollinfo.h?ts=4) | Automates SCROLLINFO operations. |
+| [`statusbar`](statusbar.h?ts=4) | Wrapper to status control from Common Controls library. |
+| [`str`](str.h?ts=4) | Utilities to std::wstring. |
+| [`subclass`](subclass.h?ts=4) | Manages window subclassing for a window. |
+| [`sysdlg`](sysdlg.h?ts=4) | Wrappers to system dialogs. |
+| [`syspath`](syspath.h?ts=4) | Retrieves system paths. |
+| [`textbox`](textbox.h?ts=4) | Wrapper to native edit box control. |
+| [`treeview`](treeview.h?ts=4) | Wrapper to treeview control from Common Controls library. |
+| [`vec`](vec.h?ts=4) | Utilities to std::vector. |
+| [`version`](version.h?ts=4) | Parses version information from an EXE or DLL. |
+| [`wnd`](wnd.h?ts=4) | Simple HWND wrapper, base to all dialog and window classes. |
+| [`xml`](xml.h?ts=4) | XML wrapper class to MSXML2 Windows library. |
+| [`zip`](zip.h?ts=4) | Utilities to work with zipped files. |
 
 ## 5. License
 
