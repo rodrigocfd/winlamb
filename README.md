@@ -30,7 +30,7 @@ There's an included `win10.exe.manifest` file, which you can [add to your Visual
 
 ## 3. Example
 
-This is a simple Win32 program written with WinLamb. Each window has a class, and messages are handled with C++11 lambdas using [message crackers](internals/params_wm.h#L20). There's no need to write a message loop or window registering.
+This is a simple Win32 program written with WinLamb. Each window has a class, and messages are handled with C++11 lambdas using [message crackers](internals/params_wm.h?ts=4#L20). There's no need to write a message loop or window registering.
 
 *Declaration:* My_Window.h
 
