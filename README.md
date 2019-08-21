@@ -1,6 +1,6 @@
 # WinLamb
 
-A lightweight modern C++ library for [Win32 API](https://en.wikipedia.org/wiki/Windows_API), using [C++11 lambdas](https://www.cprogramming.com/c++11/c++11-lambda-closures.html) to handle Windows messages.
+A lightweight modern C++11 library for [Win32 API](https://en.wikipedia.org/wiki/Windows_API), using [lambdas](https://www.cprogramming.com/c++11/c++11-lambda-closures.html) to handle Windows messages.
 
 1. [Overview](#1-overview)
 2. [Setup](#2-setup)
