@@ -15,13 +15,13 @@ namespace _wli {
 
 class listview_column_collection final {
 private:
-	const HWND& _hList; // the listview must outlive us
+	std::reference_wrapper<HWND> _hList; // the listview must outlive us
 
 public:
 	listview_column_collection(listview_column_collection&&) = default;
 	listview_column_collection& operator=(listview_column_collection&&) = default; // movable only
 
-	explicit listview_column_collection(const HWND& hList) noexcept
+	explicit listview_column_collection(HWND& hList) noexcept
 		: _hList(hList) { }
 
 	size_t count() const noexcept {

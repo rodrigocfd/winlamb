@@ -20,19 +20,18 @@ class treeview final :
 	public _wli::base_native_ctrl_pubm<treeview>
 {
 public:
-	using item = _wli::treeview_item<treeview>;
+	using item            = _wli::treeview_item;
+	using item_collection = _wli::treeview_item_collection;
 
 private:
-	using _item_collection = _wli::treeview_item_collection<treeview>;
-
-	HWND                  _hWnd = nullptr;
+	HWND                   _hWnd = nullptr;
 	_wli::base_native_ctrl _baseNativeCtrl{_hWnd};
 
 public:
 	// Wraps window style changes done by Get/SetWindowLongPtr.
 	_wli::treeview_styler<treeview>   style{this};
 
-	_item_collection                  items{this};
+	item_collection                   items{this->_hWnd};
 	_wli::member_image_list<treeview> imageList16{this, 16};
 
 	treeview() :

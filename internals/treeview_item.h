@@ -14,24 +14,23 @@
 namespace wl {
 namespace _wli {
 
-template<typename treeviewT>
 class treeview_item final {
 public:
 private:
-	HTREEITEM  _hTreeItem = nullptr;
-	treeviewT& _tree = nullptr;
+	std::reference_wrapper<HWND> _hTree; // the treeview must outlive us
+	HTREEITEM                    _hTreeItem;
 
 public:
-	treeview_item(HTREEITEM hTreeItem, treeviewT* pTree) noexcept
-		: _hTreeItem(hTreeItem), _tree(*pTree) { }
+	treeview_item(HTREEITEM hTreeItem, HWND& hTree) noexcept
+		: _hTreeItem(hTreeItem), _hTree(hTree) { }
 
 	HTREEITEM htreeitem() const noexcept {
 		return this->_hTreeItem;
 	}
 
 	treeview_item get_parent() const noexcept {
-		return {TreeView_GetParent(this->_tree.hwnd(), this->_hTreeItem),
-			&this->_tree};
+		return {TreeView_GetParent(this->_hTree, this->_hTreeItem),
+			this->_hTree};
 	}
 
 	bool is_root() const noexcept {
@@ -39,8 +38,8 @@ public:
 	}
 
 	treeview_item get_first_child() const noexcept {
-		return {TreeView_GetChild(this->_tree.hwnd(), this->_hTreeItem),
-			&this->_tree};
+		return {TreeView_GetChild(this->_hTree, this->_hTreeItem),
+			this->_hTree};
 	}
 
 	std::vector<treeview_item> get_children() const {
@@ -54,8 +53,8 @@ public:
 	}
 
 	treeview_item get_next_sibling() const noexcept {
-		return {TreeView_GetNextSibling(this->_tree.hwnd(), this->_hTreeItem),
-			&this->_tree};
+		return {TreeView_GetNextSibling(this->_hTree, this->_hTreeItem),
+			this->_hTree};
 	}
 
 	treeview_item add_child(const wchar_t* text, int imagelistIconIndex = -1) noexcept {
@@ -67,8 +66,8 @@ public:
 		tvi.itemex.iImage = imagelistIconIndex;
 		tvi.itemex.iSelectedImage = imagelistIconIndex;
 
-		return {TreeView_InsertItem(this->_tree.hwnd(), &tvi),
-			&this->_tree}; // return newly added item
+		return {TreeView_InsertItem(this->_hTree, &tvi),
+			this->_hTree}; // return newly added item
 	}
 
 	treeview_item add_child(const std::wstring& caption, int imagelistIconIndex = -1) noexcept {
@@ -76,12 +75,12 @@ public:
 	}
 
 	treeview_item& set_select() noexcept {
-		TreeView_SelectItem(this->_tree.hwnd(), this->_hTreeItem);
+		TreeView_SelectItem(this->_hTree, this->_hTreeItem);
 		return *this;
 	}
 
 	bool is_expanded() const noexcept {
-		return (TreeView_GetItemState(this->_tree.hwnd(), this->_hTreeItem, TVIS_EXPANDED) &
+		return (TreeView_GetItemState(this->_hTree, this->_hTreeItem, TVIS_EXPANDED) &
 			TVIS_EXPANDED) != 0;
 	}
 
@@ -93,7 +92,7 @@ public:
 		tvi.cchTextMax = ARRAYSIZE(tmpBuf);
 		tvi.pszText = tmpBuf;
 
-		TreeView_GetItem(this->_tree.hwnd(), &tvi);
+		TreeView_GetItem(this->_hTree, &tvi);
 		return tvi.pszText;
 	}
 
@@ -103,7 +102,7 @@ public:
 		tvi.mask = TVIF_TEXT;
 		tvi.pszText = const_cast<wchar_t*>(text);
 
-		TreeView_SetItem(this->_tree.hwnd(), &tvi);
+		TreeView_SetItem(this->_hTree, &tvi);
 		return *this;
 	}
 
@@ -116,7 +115,7 @@ public:
 		tvi.hItem = this->_hTreeItem;
 		tvi.mask = TVIF_PARAM;
 
-		TreeView_GetItem(this->_tree.hwnd(), &tvi);
+		TreeView_GetItem(this->_hTree, &tvi);
 		return tvi.lParam;
 	}
 
@@ -126,7 +125,7 @@ public:
 		tvi.mask = TVIF_PARAM;
 		tvi.lParam = lp;
 
-		TreeView_SetItem(this->_tree.hwnd(), &tvi);
+		TreeView_SetItem(this->_hTree, &tvi);
 		return *this;
 	}
 
@@ -135,7 +134,7 @@ public:
 		tvi.hItem = this->_hTreeItem;
 		tvi.mask = TVIF_IMAGE;
 
-		TreeView_GetItem(this->_tree->hwnd(), &tvi);
+		TreeView_GetItem(this->_hTree, &tvi);
 		return tvi.iImage; // return index of icon within image_list
 	}
 
@@ -146,7 +145,7 @@ public:
 		tvi.iImage = imagelistIconIndex;
 		tvi.iSelectedImage = imagelistIconIndex;
 
-		TreeView_SetItem(this->_tree.hwnd(), &tvi);
+		TreeView_SetItem(this->_hTree, &tvi);
 		return *this;
 	}
 };

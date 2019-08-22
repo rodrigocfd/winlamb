@@ -14,13 +14,13 @@ namespace _wli {
 
 class listview_item_collection final {
 private:
-	const HWND& _hList; // the listview must outlive us
+	std::reference_wrapper<HWND> _hList; // the listview must outlive us
 
 public:
 	listview_item_collection(listview_item_collection&&) = default;
 	listview_item_collection& operator=(listview_item_collection&&) = default; // movable only
 
-	explicit listview_item_collection(const HWND& hList) noexcept
+	explicit listview_item_collection(HWND& hList) noexcept
 		: _hList(hList) { }
 
 	listview_item operator[](size_t itemIndex) const noexcept {

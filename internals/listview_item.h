@@ -18,13 +18,13 @@ public:
 	static const size_t npos = -1;
 
 private:
-	const HWND& _hList; // the listview must outlive us
-	size_t      _index;
+	std::reference_wrapper<HWND> _hList; // the listview must outlive us
+	size_t                       _index;
 
 public:
 	const size_t& index;
 
-	listview_item(size_t itemIndex, const HWND& hList) noexcept
+	listview_item(size_t itemIndex, HWND& hList) noexcept
 		: _index(itemIndex), _hList(hList), index(_index) { }
 
 	void remove() const noexcept {
