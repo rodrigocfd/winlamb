@@ -22,7 +22,8 @@ class textbox final :
 private:
 	class _styler final : public _wli::styler<textbox> {
 	public:
-		explicit _styler(textbox* pTextbox) noexcept : styler(pTextbox) { }
+		explicit _styler(textbox* pTextbox) noexcept :
+			styler(pTextbox) { }
 
 		textbox& password(bool doSet) noexcept {
 			return this->set_style(doSet, ES_PASSWORD);

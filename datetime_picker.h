@@ -22,7 +22,8 @@ class datetime_picker final :
 private:
 	class _styler final : public _wli::styler<datetime_picker> {
 	public:
-		explicit _styler(datetime_picker* pDtp) noexcept : styler(pDtp) { }
+		explicit _styler(datetime_picker* pDtp) noexcept :
+			styler(pDtp) { }
 
 		datetime_picker& up_down_control(bool doSet) noexcept {
 			return this->set_style(doSet, DTS_UPDOWN);

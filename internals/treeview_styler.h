@@ -14,7 +14,8 @@ namespace _wli {
 template<typename treeviewT>
 class treeview_styler final : public _wli::styler<treeviewT> {
 public:
-	explicit treeview_styler(treeviewT* pTree) noexcept : styler<treeviewT>(pTree) { }
+	explicit treeview_styler(treeviewT* pTree) noexcept :
+		styler<treeviewT>(pTree) { }
 
 	treeviewT& always_show_sel(bool doSet) noexcept {
 		return this->set_style(doSet, TVS_SHOWSELALWAYS);

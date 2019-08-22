@@ -21,8 +21,8 @@ public:
 	listview_column_collection(listview_column_collection&&) = default;
 	listview_column_collection& operator=(listview_column_collection&&) = default; // movable only
 
-	explicit listview_column_collection(HWND& hList) noexcept
-		: _hList(hList) { }
+	explicit listview_column_collection(HWND& hList) noexcept :
+		_hList(hList) { }
 
 	size_t count() const noexcept {
 		return Header_GetItemCount(ListView_GetHeader(this->_hList));

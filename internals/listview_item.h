@@ -24,8 +24,8 @@ private:
 public:
 	const size_t& index;
 
-	listview_item(size_t itemIndex, HWND& hList) noexcept
-		: _index(itemIndex), _hList(hList), index(_index) { }
+	listview_item(size_t itemIndex, HWND& hList) noexcept :
+		_index(itemIndex), _hList(hList), index(_index) { }
 
 	void remove() const noexcept {
 		ListView_DeleteItem(this->_hList, this->_index);

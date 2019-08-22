@@ -19,8 +19,8 @@ public:
 	std::array<UINT, 4> num;
 
 	version() = default;
-	explicit version(UINT major, UINT minor = 0, UINT build = 0, UINT revision = 0) noexcept
-		: num{major, minor, build, revision} { }
+	explicit version(UINT major, UINT minor = 0, UINT build = 0, UINT revision = 0) noexcept :
+		num{major, minor, build, revision} { }
 
 	version(const version&) = default;
 	version& operator=(const version&) = default;

@@ -22,8 +22,8 @@ protected:
 	HDC _hDC = nullptr;
 
 public:
-	explicit dc(HDC hDC) noexcept
-		: _hDC(hDC) { }
+	explicit dc(HDC hDC) noexcept :
+		_hDC(hDC) { }
 
 	HDC hdc() const noexcept {
 		return this->_hDC;
@@ -270,8 +270,8 @@ public:
 		this->_sz.cy = rcClient.bottom;
 	}
 
-	explicit dc_painter(const wnd* w) noexcept
-		: dc_painter(w->hwnd()) { }
+	explicit dc_painter(const wnd* w) noexcept :
+		dc_painter(w->hwnd()) { }
 
 	// Returns the handle to the window being repainted.
 	HWND hwnd() const noexcept {
@@ -319,7 +319,9 @@ public:
 		DeleteDC(this->_hDC);
 	}
 
-	explicit dc_painter_buffered(HWND hWnd) noexcept : dc_painter(hWnd) {
+	explicit dc_painter_buffered(HWND hWnd) noexcept :
+		dc_painter(hWnd)
+	{
 		// In order to make the double-buffer work, you must
 		// return zero on WM_ERASEBKGND message handling.
 		this->_hDC = CreateCompatibleDC(this->ps().hdc); // overwrite our painting HDC
@@ -331,8 +333,8 @@ public:
 			reinterpret_cast<HBRUSH>(GetClassLongPtrW(this->hwnd(), GCLP_HBRBACKGROUND)) );
 	}
 
-	explicit dc_painter_buffered(const wnd* w) noexcept
-		: dc_painter_buffered(w->hwnd()) { }
+	explicit dc_painter_buffered(const wnd* w) noexcept :
+		dc_painter_buffered(w->hwnd()) { }
 };
 
 }//namespace gdi

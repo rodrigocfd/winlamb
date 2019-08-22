@@ -18,7 +18,8 @@ class styler {
 public:
 	wndT& target;
 
-	explicit styler(wndT* targetWnd) noexcept : target(*targetWnd) { }
+	explicit styler(wndT* targetWnd) noexcept :
+		target(*targetWnd) { }
 
 	styler(styler&&) = default;
 	styler& operator=(styler&&) = default; // movable only

@@ -16,7 +16,8 @@ private:
 	const HWND& _hWnd;
 
 public:
-	wnd(const HWND& hWnd) noexcept : _hWnd(hWnd) { }
+	wnd(const HWND& hWnd) noexcept :
+		_hWnd(hWnd) { }
 
 	// Returns the window handle.
 	HWND hwnd() const noexcept {

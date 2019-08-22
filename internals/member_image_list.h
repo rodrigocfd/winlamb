@@ -22,8 +22,8 @@ private:
 	image_list            _imageList;
 
 public:
-	member_image_list(controlT* pOwner, WORD resolution) noexcept
-		: _owner(*pOwner), _resolution({resolution, resolution}) { }
+	member_image_list(controlT* pOwner, WORD resolution) noexcept :
+		_owner(*pOwner), _resolution({resolution, resolution}) { }
 
 	member_image_list(member_image_list&&) = default;
 	member_image_list& operator=(member_image_list&&) = default; // movable only

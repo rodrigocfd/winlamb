@@ -36,8 +36,8 @@ public:
 		this->abort();
 	}
 
-	download(const session& sess, std::wstring url, std::wstring verb = L"GET")
-		: _session{sess}, _url{url}, _verb{verb} { }
+	download(const session& sess, std::wstring url, std::wstring verb = L"GET") :
+		_session{sess}, _url{url}, _verb{verb} { }
 
 	download& abort() noexcept {
 		if (this->_hRequest) {

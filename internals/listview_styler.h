@@ -14,7 +14,8 @@ namespace _wli {
 template<typename listviewT>
 class listview_styler final : public _wli::styler<listviewT> {
 public:
-	explicit listview_styler(listviewT* pList) noexcept : styler<listviewT>(pList) { }
+	explicit listview_styler(listviewT* pList) noexcept :
+		styler<listviewT>(pList) { }
 
 	listviewT& always_show_sel(bool doSet) noexcept {
 		return this->set_style(doSet, LVS_SHOWSELALWAYS);
