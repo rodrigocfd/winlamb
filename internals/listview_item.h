@@ -13,30 +13,29 @@
 namespace wl {
 namespace _wli {
 
-template<typename listviewT>
 class listview_item final {
 public:
 	static const size_t npos = -1;
 
 private:
-	listviewT& _list;
-	size_t     _index;
+	const HWND& _hList; // the listview must outlive us
+	size_t      _index;
 
 public:
 	const size_t& index;
 
-	listview_item(size_t itemIndex, listviewT& list) noexcept
-		: _index(itemIndex), _list(list), index(_index) { }
+	listview_item(size_t itemIndex, const HWND& hList) noexcept
+		: _index(itemIndex), _hList(hList), index(_index) { }
 
 	void remove() const noexcept {
-		ListView_DeleteItem(this->_list.hwnd(), this->_index);
+		ListView_DeleteItem(this->_hList, this->_index);
 	}
 
 	void swap_with(size_t itemIndex) {
-		this->_list.set_redraw(false);
+		SendMessageW(this->_hList, WM_SETREDRAW, static_cast<WPARAM>(FALSE), 0);
 
-		listview_item newItem = this->_list.items[itemIndex]; // make a copy
-		size_t numCols = this->_list.columns.count();
+		listview_item newItem{itemIndex, this->_hList}; // make a copy
+		size_t numCols = Header_GetItemCount(ListView_GetHeader(this->_hList));
 		std::wstring tmpStr;
 		for (size_t c = 0; c < numCols; ++c) { // swap texts of all columns
 			tmpStr = this->get_text(c);
@@ -52,68 +51,68 @@ public:
 		this->set_icon_index(newItem.get_icon_index());
 		newItem.set_icon_index(oldi);
 
-		this->_list.set_redraw(true);
+		SendMessageW(this->_hList, WM_SETREDRAW, static_cast<WPARAM>(TRUE), 0);
 	}
 
 	listview_item& ensure_visible() noexcept {
-		if (this->_list.get_view() == listviewT::view::DETAILS) {
+		if (ListView_GetView(this->_hList) == LV_VIEW_DETAILS) {
 			// In details view, ListView_EnsureVisible() won't center the item vertically.
 			// This new implementation has this behavior.
 			RECT rc{};
-			GetClientRect(this->_list.hwnd(), &rc);
+			GetClientRect(this->_hList, &rc);
 			int cyList = rc.bottom; // total height of list
 
 			SecureZeroMemory(&rc, sizeof(rc));
 			LVITEMINDEX lvii{};
-			lvii.iItem = ListView_GetTopIndex(this->_list.hwnd()); // 1st visible item
-			ListView_GetItemIndexRect(this->_list.hwnd(), &lvii, 0, LVIR_BOUNDS, &rc);
+			lvii.iItem = ListView_GetTopIndex(this->_hList); // 1st visible item
+			ListView_GetItemIndexRect(this->_hList, &lvii, 0, LVIR_BOUNDS, &rc);
 			int cyItem = rc.bottom - rc.top; // height of a single item
 			int xTop = rc.top; // topmost X of 1st visible item
 
 			SecureZeroMemory(&rc, sizeof(rc));
 			SecureZeroMemory(&lvii, sizeof(lvii));
 			lvii.iItem = static_cast<int>(this->_index);
-			ListView_GetItemIndexRect(this->_list.hwnd(), &lvii, 0, LVIR_BOUNDS, &rc);
+			ListView_GetItemIndexRect(this->_hList, &lvii, 0, LVIR_BOUNDS, &rc);
 			int xUs = rc.top; // our current X
 
 			if (xUs < xTop || xUs > xTop + cyList) { // if we're not visible
-				ListView_Scroll(this->_list.hwnd(), 0, xUs - xTop - cyList / 2 + cyItem * 2);
+				ListView_Scroll(this->_hList, 0, xUs - xTop - cyList / 2 + cyItem * 2);
 			}
 		} else {
-			ListView_EnsureVisible(this->_list.hwnd(), this->_index, FALSE);
+			ListView_EnsureVisible(this->_hList, this->_index, FALSE);
 		}
 		return *this;
 	}
 
 	bool is_visible() const noexcept {
-		return ListView_IsItemVisible(this->_list.hwnd(), this->_index) == TRUE;
+		return ListView_IsItemVisible(this->_hList, this->_index) == TRUE;
 	}
 
 	listview_item& set_select(bool select) noexcept {
-		ListView_SetItemState(this->_list.hwnd(), this->_index,
+		ListView_SetItemState(this->_hList, this->_index,
 			select ? LVIS_SELECTED : 0, LVIS_SELECTED);
 		return *this;
 	}
 
 	bool is_selected() const noexcept {
-		return (ListView_GetItemState(this->_list.hwnd(),
+		return (ListView_GetItemState(this->_hList,
 			this->_index, LVIS_SELECTED) & LVIS_SELECTED) != 0;
 	}
 
 	listview_item& set_focus() noexcept {
-		ListView_SetItemState(this->_list.hwnd(),
+		ListView_SetItemState(this->_hList,
 			this->_index, LVIS_FOCUSED, LVIS_FOCUSED);
 		return *this;
 	}
 
 	bool is_focused() const noexcept {
-		return (ListView_GetItemState(this->_list.hwnd(),
+		return (ListView_GetItemState(this->_hList,
 			this->_index, LVIS_FOCUSED) & LVIS_FOCUSED) != 0;
 	}
 
 	RECT get_rect() const noexcept {
 		RECT rc{};
-		ListView_GetItemRect(this->_list.hwnd(), this->_index, &rc, LVIR_BOUNDS);
+		ListView_GetItemRect(this->_hList, this->_index, &rc, LVIR_BOUNDS);
 		return rc;
 	}
 
@@ -136,7 +135,7 @@ public:
 			lvi.cchTextMax = baseBufLen;
 			lvi.pszText = &buf[0];
 			charsWrittenWithoutNull = static_cast<int>(
-				SendMessageW(this->_list.hwnd(), LVM_GETITEMTEXT,
+				SendMessageW(this->_hList, LVM_GETITEMTEXT,
 					this->_index, reinterpret_cast<LPARAM>(&lvi)) );
 		} while (charsWrittenWithoutNull == baseBufLen - 1); // to break, must have at least 1 char gap
 
@@ -145,7 +144,7 @@ public:
 	}
 
 	listview_item& set_text(const wchar_t* text, size_t columnIndex = 0) noexcept {
-		ListView_SetItemText(this->_list.hwnd(), this->_index,
+		ListView_SetItemText(this->_hList, this->_index,
 			static_cast<int>(columnIndex), const_cast<wchar_t*>(text));
 		return *this;
 	}
@@ -159,7 +158,7 @@ public:
 		lvi.iItem = static_cast<int>(this->_index);
 		lvi.mask = LVIF_PARAM;
 
-		ListView_GetItem(this->_list.hwnd(), &lvi);
+		ListView_GetItem(this->_hList, &lvi);
 		return lvi.lParam;
 	}
 
@@ -169,7 +168,7 @@ public:
 		lvi.mask = LVIF_PARAM;
 		lvi.lParam = lp;
 
-		ListView_SetItem(this->_list.hwnd(), &lvi);
+		ListView_SetItem(this->_hList, &lvi);
 		return *this;
 	}
 
@@ -178,7 +177,7 @@ public:
 		lvi.iItem = static_cast<int>(this->_index);
 		lvi.mask = LVIF_IMAGE;
 
-		ListView_GetItem(this->_list.hwnd(), &lvi);
+		ListView_GetItem(this->_hList, &lvi);
 		return lvi.iImage; // return index of icon within image_list
 	}
 
@@ -188,7 +187,7 @@ public:
 		lvi.mask = LVIF_IMAGE;
 		lvi.iImage = imagelistIconIndex;
 
-		ListView_SetItem(this->_list.hwnd(), &lvi);
+		ListView_SetItem(this->_hList, &lvi);
 		return *this;
 	}
 };

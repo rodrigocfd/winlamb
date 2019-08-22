@@ -23,7 +23,9 @@ class listview final :
 	public _wli::base_native_ctrl_pubm<listview>
 {
 public:
-	using item = _wli::listview_item<listview>;
+	using item              = _wli::listview_item;
+	using item_collection   = _wli::listview_item_collection;
+	using column_collection = _wli::listview_column_collection;
 
 	enum class view : WORD {
 		DETAILS   = LV_VIEW_DETAILS,
@@ -34,9 +36,6 @@ public:
 	};
 
 private:
-	using _column_collection = _wli::listview_column_collection<listview>;
-	using _item_collection = _wli::listview_item_collection<listview>;
-
 	HWND                   _hWnd = nullptr;
 	_wli::base_native_ctrl _baseNativeCtrl{_hWnd};
 	subclass               _subclass;
@@ -46,8 +45,8 @@ public:
 	// Wraps window style changes done by Get/SetWindowLongPtr.
 	_wli::listview_styler<listview>   style{this};
 
-	_item_collection                  items{this};
-	_column_collection                columns{this};
+	item_collection                   items{this->_hWnd};
+	column_collection                 columns{this->_hWnd};
 	_wli::member_image_list<listview> imageList16{this, 16}, imageList32{this, 32};
 
 	~listview() {

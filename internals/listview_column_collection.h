@@ -13,68 +13,67 @@
 namespace wl {
 namespace _wli {
 
-template<typename listviewT>
 class listview_column_collection final {
 private:
-	listviewT& _list;
+	const HWND& _hList; // the listview must outlive us
 
 public:
 	listview_column_collection(listview_column_collection&&) = default;
 	listview_column_collection& operator=(listview_column_collection&&) = default; // movable only
 
-	explicit listview_column_collection(listviewT* pList) noexcept
-		: _list(*pList) { }
+	explicit listview_column_collection(const HWND& hList) noexcept
+		: _hList(hList) { }
 
 	size_t count() const noexcept {
-		return Header_GetItemCount(ListView_GetHeader(this->_list.hwnd()));
+		return Header_GetItemCount(ListView_GetHeader(this->_hList));
 	}
 
-	listviewT& add(const wchar_t* text, size_t width) noexcept {
+	listview_column_collection& add(const wchar_t* text, size_t width) noexcept {
 		LVCOLUMNW lvc{};
 		lvc.mask = LVCF_TEXT | LVCF_WIDTH;
 		lvc.pszText = const_cast<wchar_t*>(text);
 		lvc.cx = static_cast<int>(width);
-		ListView_InsertColumn(this->_list.hwnd(), 0xFFFF, &lvc);
-		return this->_list;
+		ListView_InsertColumn(this->_hList, 0xFFFF, &lvc);
+		return *this;
 	}
 
-	listviewT& add(const std::wstring& text, size_t width) noexcept {
+	listview_column_collection& add(const std::wstring& text, size_t width) noexcept {
 		return this->add(text.c_str(), width);
 	}
 
-	listviewT& set_width(size_t columnIndex, size_t width) noexcept {
-		ListView_SetColumnWidth(this->_list.hwnd(), columnIndex, width);
-		return this->_list;
+	listview_column_collection& set_width(size_t columnIndex, size_t width) noexcept {
+		ListView_SetColumnWidth(this->_hList, columnIndex, width);
+		return *this;
 	}
 
-	listviewT& set_width_to_fill(size_t columnIndex) noexcept {
+	listview_column_collection& set_width_to_fill(size_t columnIndex) noexcept {
 		size_t numCols = this->count();
 		int cxUsed = 0;
 		for (size_t i = 0; i < numCols; ++i) {
 			if (i != columnIndex) {
 				LVCOLUMNW lvc{};
 				lvc.mask = LVCF_WIDTH;
-				ListView_GetColumn(this->_list.hwnd(), i, &lvc); // retrieve cx of each column, except stretchee
+				ListView_GetColumn(this->_hList, i, &lvc); // retrieve cx of each column, except stretchee
 				cxUsed += lvc.cx; // sum up
 			}
 		}
 
 		RECT rc{};
-		GetClientRect(this->_list.hwnd(), &rc); // listview client area
-		ListView_SetColumnWidth(this->_list.hwnd(), columnIndex,
+		GetClientRect(this->_hList, &rc); // listview client area
+		ListView_SetColumnWidth(this->_hList, columnIndex,
 			rc.right /*- GetSystemMetrics(SM_CXVSCROLL)*/ - cxUsed); // fit the rest of available space
-		return this->_list;
+		return *this;
 	}
 
-	listviewT& set_text(size_t columnIndex, const wchar_t* text) noexcept {
+	listview_column_collection& set_text(size_t columnIndex, const wchar_t* text) noexcept {
 		LVCOLUMNW lvc{};
 		lvc.mask = LVCF_TEXT;
 		lvc.pszText = const_cast<wchar_t*>(text);
-		ListView_SetColumn(this->_list.hwnd(), columnIndex, &lvc);
-		return this->_list;
+		ListView_SetColumn(this->_hList, columnIndex, &lvc);
+		return *this;
 	}
 
-	listviewT& set_text(size_t columnIndex, const std::wstring& text) noexcept {
+	listview_column_collection& set_text(size_t columnIndex, const std::wstring& text) noexcept {
 		return this->set_text(columnIndex, text.c_str());
 	}
 
@@ -84,7 +83,7 @@ public:
 		lvc.mask = LVCF_TEXT;
 		lvc.pszText = buf;
 		lvc.cchTextMax = ARRAYSIZE(buf);
-		ListView_GetColumn(this->_list.hwnd(), columnIndex, &lvc);
+		ListView_GetColumn(this->_hList, columnIndex, &lvc);
 		return buf;
 	}
 };
