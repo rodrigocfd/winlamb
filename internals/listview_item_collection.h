@@ -148,6 +148,7 @@ public:
 			ListView_DeleteItem(this->_hList, i);
 		}
 		SendMessageW(this->_hList, WM_SETREDRAW, static_cast<WPARAM>(TRUE), 0);
+		return *this;
 	}
 
 	listview_item get_last() const noexcept {
