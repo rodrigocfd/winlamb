@@ -72,9 +72,9 @@ public:
 		throw std::out_of_range("Radio ID doesn't exist.");
 	}
 
-	radio_group& set_enable(bool doEnable) noexcept {
+	radio_group& set_enabled(bool enabled) noexcept {
 		for (size_t i = 0; i < this->_sz; ++i) {
-			EnableWindow(this->_items[i].hwnd(), doEnable ? TRUE : FALSE);
+			EnableWindow(this->_items[i].hwnd(), enabled);
 		}
 		return *this;
 	}
