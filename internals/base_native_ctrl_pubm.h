@@ -42,6 +42,17 @@ public:
 	derivedT& assign(const wnd* parent, int ctrlId) {
 		return this->assign(parent->hwnd(), ctrlId);
 	}
+
+	// Simple wrapper to IsWindowEnabled.
+	bool is_enabled() const noexcept {
+		return IsWindowEnabled(this->_baseNativeCtrl.hwnd());
+	}
+
+	// Simple wrapper to EnableWindow.
+	derivedT& set_enabled(bool enabled) noexcept {
+		EnableWindow(this->_baseNativeCtrl.hwnd(), enabled);
+		return *static_cast<derivedT*>(this);
+	}
 };
 
 }//namespace _wli
