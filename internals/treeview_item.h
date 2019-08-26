@@ -57,21 +57,33 @@ public:
 			this->_hTree};
 	}
 
-	treeview_item add_child(const wchar_t* text, int imagelistIconIndex = -1) noexcept {
+	// Adds a new child to the item, with a given image list icon.
+	treeview_item add_child_with_icon(const wchar_t* text, int imageListIconIndex = -1) noexcept {
 		TVINSERTSTRUCTW tvi{};
 		tvi.hParent = this->_hTreeItem;
 		tvi.hInsertAfter = TVI_LAST;
-		tvi.itemex.mask = TVIF_TEXT | (imagelistIconIndex == -1 ? 0 : (TVIF_IMAGE | TVIF_SELECTEDIMAGE));
+		tvi.itemex.mask = TVIF_TEXT | (imageListIconIndex == -1 ? 0 : (TVIF_IMAGE | TVIF_SELECTEDIMAGE));
 		tvi.itemex.pszText = const_cast<wchar_t*>(text);
-		tvi.itemex.iImage = imagelistIconIndex;
-		tvi.itemex.iSelectedImage = imagelistIconIndex;
+		tvi.itemex.iImage = imageListIconIndex;
+		tvi.itemex.iSelectedImage = imageListIconIndex;
 
 		return {TreeView_InsertItem(this->_hTree, &tvi),
 			this->_hTree}; // return newly added item
 	}
 
-	treeview_item add_child(const std::wstring& caption, int imagelistIconIndex = -1) noexcept {
-		return this->add_child(caption.c_str(), imagelistIconIndex);
+	// Adds a new child to the item, with a given image list icon.
+	treeview_item add_child_with_icon(const std::wstring& caption, int imagelistIconIndex = -1) noexcept {
+		return this->add_child_with_icon(caption.c_str(), imagelistIconIndex);
+	}
+
+	// Adds a new child to the item.
+	treeview_item add_child(const wchar_t* caption) noexcept {
+		return this->add_child_with_icon(caption, -1);
+	}
+
+	// Adds a new child to the item.
+	treeview_item add_child(const std::wstring& caption) noexcept {
+		return this->add_child_with_icon(caption, -1);
 	}
 
 	treeview_item& set_select() noexcept {

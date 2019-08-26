@@ -31,23 +31,56 @@ public:
 		return ListView_GetItemCount(this->_hList);
 	}
 
-	listview_item add(const wchar_t* caption, int imagelistIconIndex = -1,
-		size_t positionIndex = listview_item::npos) noexcept
+	// Adds a new item to the listview, at a given position, with a given image list icon.
+	listview_item add_at_pos_with_icon(const wchar_t* caption, size_t positionIndex,
+		int imageListIconIndex) noexcept
 	{
 		LVITEMW lvi{};
 		lvi.iItem = static_cast<int>(positionIndex == -1 ? 0x0FFFFFFF : positionIndex);
-		lvi.mask = LVIF_TEXT | (imagelistIconIndex == -1 ? 0 : LVIF_IMAGE);
+		lvi.mask = LVIF_TEXT | (imageListIconIndex == -1 ? 0 : LVIF_IMAGE);
 		lvi.pszText = const_cast<wchar_t*>(caption);
-		lvi.iImage = imagelistIconIndex;
+		lvi.iImage = imageListIconIndex;
 
 		return {static_cast<size_t>(ListView_InsertItem(this->_hList, &lvi)),
 			this->_hList}; // return newly inserted item
 	}
 
-	listview_item add(const std::wstring& caption, int imagelistIconIndex = -1,
-		size_t positionIndex = listview_item::npos) noexcept
+	// Adds a new item to the listview, at a given position, with a given image list icon.
+	listview_item add_at_pos_with_icon(const std::wstring& caption, size_t positionIndex,
+		int imageListIconIndex) noexcept
 	{
-		return this->add(caption.c_str(), imagelistIconIndex, positionIndex);
+		return this->add_at_pos_with_icon(caption.c_str(),
+			positionIndex, imageListIconIndex);
+	}
+
+	// Adds a new item to the listview, with a given image list icon.
+	listview_item add_with_icon(const wchar_t* caption, int imageListIconIndex) noexcept {
+		return this->add_at_pos_with_icon(caption, -1, imageListIconIndex);
+	}
+
+	// Adds a new item to the listview, with a given image list icon.
+	listview_item add_with_icon(const std::wstring& caption, int imageListIconIndex) noexcept {
+		return this->add_at_pos_with_icon(caption, -1, imageListIconIndex);
+	}
+
+	// Adds a new item to the listview, at a given position.
+	listview_item add_at_pos(const wchar_t* caption, size_t positionIndex) noexcept {
+		return this->add_at_pos_with_icon(caption, positionIndex, -1);
+	}
+
+	// Adds a new item to the listview, at a given position.
+	listview_item add_at_pos(const std::wstring& caption, size_t positionIndex) noexcept {
+		return this->add_at_pos_with_icon(caption, positionIndex, -1);
+	}
+
+	// Adds a new item to the listview.
+	listview_item add(const wchar_t* caption) noexcept {
+		return this->add_at_pos_with_icon(caption, -1, -1);
+	}
+
+	// Adds a new item to the listview.
+	listview_item add(const std::wstring& caption) noexcept {
+		return this->add_at_pos_with_icon(caption, -1, -1);
 	}
 
 	std::vector<listview_item> get_all() const {
