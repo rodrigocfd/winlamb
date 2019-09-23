@@ -54,7 +54,7 @@ My_Window::My_Window()
 {
     setup.wndClassEx.lpszClassName = L"SOME_CLASS_NAME"; // class name to be registered
     setup.title = L"This is my window";
-    setup.style |= wl::ws::MINIMIZEBOX;
+    setup.style |= WS_MINIMIZEBOX;
 
     on_message(WM_CREATE, [this](wl::wm::create p) -> LRESULT
     {

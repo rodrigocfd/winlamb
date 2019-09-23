@@ -7,9 +7,6 @@
 
 #pragma once
 #include "base_msg.h"
-#include "styles_wc.h"
-#include "styles_ws.h"
-#include "styles_wsx.h"
 
 namespace wl {
 namespace _wli {
@@ -19,7 +16,7 @@ class base_window final {
 public:
 	// Reduced version of WNDCLASSEX to be used within setup_vars.
 	struct wndclassex_less final {
-		wc             style = wc::NONE;
+		UINT           style = 0;
 		HICON          hIcon = nullptr;
 		HCURSOR        hCursor = nullptr;
 		HBRUSH         hbrBackground = nullptr;
@@ -31,12 +28,12 @@ public:
 	// Variables to be set by user, used only during window creation.
 	struct setup_vars {
 		wndclassex_less wndClassEx;
-		const wchar_t*  title = nullptr;
-		ws              style = ws::NONE;
-		wsx             exStyle = wsx::NONE;
-		POINT           position{};
-		SIZE            size{};
-		HMENU           menu = nullptr;
+		const wchar_t* title = nullptr;
+		DWORD          style = 0;
+		DWORD          exStyle = 0;
+		POINT          position{};
+		SIZE           size{};
+		HMENU          menu = nullptr;
 	};
 
 private:
@@ -65,9 +62,9 @@ public:
 		WNDCLASSEXW wcx = this->_gen_wndclassex(setup.wndClassEx, hInst);
 		ATOM atom = this->_register_class(wcx, setup);
 
-		if (!CreateWindowExW(static_cast<DWORD>(setup.exStyle),
+		if (!CreateWindowExW(setup.exStyle,
 			reinterpret_cast<LPCWSTR>(static_cast<ULONG_PTR>(static_cast<WORD>(atom))), // from MAKEINTATOM macro
-			setup.title, static_cast<DWORD>(setup.style),
+			setup.title, setup.style,
 			setup.position.x, setup.position.y, setup.size.cx, setup.size.cy,
 			hParent, setup.menu, hInst, static_cast<LPVOID>(this)) )
 		{
@@ -107,7 +104,7 @@ private:
 		wcx.lpfnWndProc = _window_proc;
 		wcx.hInstance = hInst;
 
-		wcx.style = static_cast<UINT>(wLess.style);
+		wcx.style = wLess.style;
 		wcx.hIcon = wLess.hIcon;
 		wcx.hCursor = wLess.hCursor;
 		wcx.hbrBackground = wLess.hbrBackground;
