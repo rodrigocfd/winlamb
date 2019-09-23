@@ -22,49 +22,40 @@ public:
 		_baseMsg(baseMsg) { }
 
 	// Assigns a lambda to handle a window message.
-	void on_message(UINT msg, std::function<retT(params)>&& func) {
+	void on_message(UINT msg, std::function<retT(params)> func) {
 		this->_baseMsg.throw_if_cant_add();
 		this->_baseMsg.msgs.add(msg, std::move(func));
 	}
 	// Assigns a lambda to handle a window message.
-	void on_message(std::initializer_list<UINT> msgs,
-		std::function<retT(params)>&& func)
-	{
+	void on_message(std::initializer_list<UINT> msgs, std::function<retT(params)> func) {
 		this->_baseMsg.throw_if_cant_add();
 		this->_baseMsg.msgs.add(msgs, std::move(func));
 	}
 
 	// Assigns a lambda to handle a WM_COMMAND message.
-	void on_command(WORD cmd, std::function<retT(params)>&& func) {
+	void on_command(WORD cmd, std::function<retT(params)> func) {
 		this->_baseMsg.throw_if_cant_add();
 		this->_baseMsg.cmds.add(cmd, std::move(func));
 	}
 	// Assigns a lambda to handle a WM_COMMAND message.
-	void on_command(std::initializer_list<WORD> cmds,
-		std::function<retT(params)>&& func)
-	{
+	void on_command(std::initializer_list<WORD> cmds, std::function<retT(params)> func) {
 		this->_baseMsg.throw_if_cant_add();
 		this->_baseMsg.cmds.add(cmds, std::move(func));
 	}
 
 	// Assigns a lambda to handle a WM_NOTIFY message.
-	void on_notify(UINT_PTR idFrom, UINT code,
-		std::function<retT(params)>&& func)
-	{
+	void on_notify(UINT_PTR idFrom, UINT code, std::function<retT(params)> func) {
 		this->_baseMsg.throw_if_cant_add();
 		this->_baseMsg.ntfs.add({idFrom, code}, std::move(func));
 	}
 	// Assigns a lambda to handle a WM_NOTIFY message.
-	void on_notify(std::pair<UINT_PTR, UINT> idFromAndCode,
-		std::function<retT(params)>&& func)
-	{
+	void on_notify(std::pair<UINT_PTR, UINT> idFromAndCode, std::function<retT(params)> func) {
 		this->_baseMsg.throw_if_cant_add();
 		this->_baseMsg.ntfs.add(idFromAndCode, std::move(func));
 	}
 	// Assigns a lambda to handle a WM_NOTIFY message.
-	void on_notify(
-		std::initializer_list<std::pair<UINT_PTR, UINT>> idFromAndCodes,
-		std::function<retT(params)>&& func)
+	void on_notify(std::initializer_list<std::pair<UINT_PTR, UINT>> idFromAndCodes,
+		std::function<retT(params)> func)
 	{
 		this->_baseMsg.throw_if_cant_add();
 		this->_baseMsg.ntfs.add(idFromAndCodes, std::move(func));

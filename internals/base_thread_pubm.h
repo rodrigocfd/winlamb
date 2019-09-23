@@ -22,12 +22,12 @@ public:
 		_baseThread(baseThread) { }
 
 	// Runs code asynchronously in a new detached thread.
-	void run_thread_detached(std::function<void()>&& func) const noexcept {
+	void run_thread_detached(std::function<void()> func) const noexcept {
 		return this->_baseThread.run_thread_detached(std::move(func));
 	}
 
 	// Runs code synchronously in the UI thread.
-	void run_thread_ui(std::function<void()>&& func) const noexcept {
+	void run_thread_ui(std::function<void()> func) const noexcept {
 		return this->_baseThread.run_thread_ui(std::move(func));
 	}
 };

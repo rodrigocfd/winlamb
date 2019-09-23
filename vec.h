@@ -14,30 +14,31 @@ namespace wl {
 // Utilities to std::vector.
 namespace vec {
 
-// Returns index of first element which is equal to value, otherwise -1.
+// Wrapper to std::find. Returns index of first element which is equal to value, otherwise -1.
 template<typename T>
 inline size_t find(const std::vector<T>& v, const T& value) {
 	std::vector<T>::const_iterator it = std::find(v.cbegin(), v.cend(), value);
 	return it == v.cend() ? -1 : it - v.cbegin();
 }
 
-// Returns index of first element which predicate matches, otherwise -1.
+// Wrapper to std::find_if. Returns index of first element which is equal to value, otherwise -1.
 template<typename T, typename predicateT>
 inline size_t find_if(const std::vector<T>& v, predicateT&& func) {
-	std::vector<T>::const_iterator it = std::find_if(v.cbegin(), v.cend(), std::move(func));
+	std::vector<T>::const_iterator it = std::find_if(v.cbegin(), v.cend(),
+		std::forward<predicateT>(func));
 	return it == v.cend() ? -1 : it - v.cbegin();
 }
 
-// Returns true if element exists.
+// Wrapper to std::find. Returns true if element exists.
 template<typename T>
 inline bool exists(const std::vector<T>& v, const T& value) {
 	return find(v, value) != -1;
 }
 
-// Returns true if predicate matches an element.
+// Wrapper to std::find_if. Returns true if predicate matches an element.
 template<typename T, typename predicateT>
 inline bool exists_if(const std::vector<T>& v, predicateT&& func) {
-	return find_if(v, std::move(func)) != -1;
+	return find_if(v, std::forward<predicateT>(func)) != -1;
 }
 
 // Appends a vector onto another.
@@ -52,7 +53,7 @@ inline void remove(std::vector<T>& v, size_t index) {
 	v.erase(v.begin() + index);
 }
 
-// Removes all elements which match the predicate.
+// Wrapper to std::remove_if. Removes all elements which match the predicate.
 template<typename T, typename predicateT>
 inline void remove_if(std::vector<T>& v, predicateT&& func) {
 	// https://stackoverflow.com/a/9053941/6923555
@@ -62,7 +63,7 @@ inline void remove_if(std::vector<T>& v, predicateT&& func) {
 	//		return d == L"a";
 	// });
 	v.erase(
-		std::remove_if(v.begin(), v.end(), std::move(func)),
+		std::remove_if(v.begin(), v.end(), std::forward<predicateT>(func)),
 		v.end()
 	);
 }

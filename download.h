@@ -63,13 +63,13 @@ public:
 	}
 
 	// Defines a lambda to be called once, right after the download starts.
-	download& on_start(std::function<void()>&& callback) noexcept {
+	download& on_start(std::function<void()> callback) noexcept {
 		this->_startCallback = std::move(callback);
 		return *this;
 	}
 
 	// Defines a lambda do be called each time a chunk of bytes is received.
-	download& on_progress(std::function<void()>&& callback) noexcept {
+	download& on_progress(std::function<void()> callback) noexcept {
 		this->_progressCallback = std::move(callback);
 		return *this;
 	}

@@ -22,7 +22,7 @@ private:
 		std::function<retT(params)> func; // retT is LRESULT or INT_PTR
 
 		_msg_unit() = default;
-		_msg_unit(idT id, std::function<retT(params)>&& func) noexcept :
+		_msg_unit(idT id, std::function<retT(params)> func) noexcept :
 			id(id), func(std::move(func)) { }
 	};
 
@@ -42,11 +42,11 @@ public:
 		this->_msgUnits.reserve(msgsReserve + 1); // +1 because sentinel
 	}
 
-	void add(idT id, std::function<retT(params)>&& func) {
+	void add(idT id, std::function<retT(params)> func) {
 		this->_msgUnits.emplace_back(id, std::move(func)); // reverse search: messages can be overwritten by a later one
 	}
 
-	void add(std::initializer_list<idT> ids, std::function<retT(params)>&& func) {
+	void add(std::initializer_list<idT> ids, std::function<retT(params)> func) {
 		const idT* pIds = ids.begin();
 		this->add(pIds[0], std::move(func)); // store user func once
 		size_t funcIdx = this->_msgUnits.size() - 1;

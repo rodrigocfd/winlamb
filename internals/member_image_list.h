@@ -36,7 +36,7 @@ public:
 		return this->_imageList.size();
 	}
 
-	controlT& on_create(std::function<void()>&& callback) noexcept {
+	controlT& on_create(std::function<void()> callback) noexcept {
 		this->_onCreate = std::move(callback);
 		return this->_owner;
 	}
