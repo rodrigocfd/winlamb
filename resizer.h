@@ -49,10 +49,12 @@ public:
 		return *this;
 	}
 
-	resizer& add(std::initializer_list<wnd*> ctrls, go modeHorz, go modeVert) {
+	resizer& add(std::initializer_list<std::reference_wrapper<const wnd>> ctrls,
+		go modeHorz, go modeVert)
+	{
 		this->_ctrls.reserve(this->_ctrls.size() + ctrls.size());
-		for (const wnd* pCtrl : ctrls) {
-			this->_add_one(pCtrl->hwnd(), modeHorz, modeVert);
+		for (const wnd& pCtrl : ctrls) {
+			this->_add_one(pCtrl.hwnd(), modeHorz, modeVert);
 		}
 		return *this;
 	}
