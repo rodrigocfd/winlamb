@@ -7,6 +7,7 @@
 
 #pragma once
 #include <memory>
+#include <vector>
 #include "radio.h"
 
 namespace wl {
@@ -46,6 +47,15 @@ public:
 		return this->_sz;
 	}
 
+	std::vector<int> get_all_ids() const {
+		std::vector<int> ids;
+		ids.reserve(this->_sz);
+		for (size_t i = 0; i < this->_sz; ++i) {
+			ids.emplace_back(this->_items[i].ctrl_id());
+		}
+		return ids;
+	}
+
 	const radio& get_by_pos(size_t index) const {
 		return this->_items[index];
 	}
@@ -74,7 +84,7 @@ public:
 
 	radio_group& set_enabled(bool enabled) noexcept {
 		for (size_t i = 0; i < this->_sz; ++i) {
-			EnableWindow(this->_items[i].hwnd(), enabled);
+			this->_items[i].set_enabled(enabled);
 		}
 		return *this;
 	}
