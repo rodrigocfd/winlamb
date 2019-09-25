@@ -11,6 +11,7 @@
 namespace wl {
 
 // Common ground to everything which has a HWND.
+// Actually, to follow the convention, it should be named base_wnd_pubm.
 class wnd {
 private:
 	const HWND& _hWnd;

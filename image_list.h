@@ -27,6 +27,7 @@ public:
 	image_list() = default;
 	image_list(image_list&& other) noexcept : _hImgList{other._hImgList} { other._hImgList = nullptr; }
 
+	// Returns the handle to the image list.
 	HIMAGELIST himagelist() const noexcept {
 		return this->_hImgList;
 	}
@@ -45,7 +46,10 @@ public:
 		return *this;
 	}
 
-	image_list& create(SIZE resolution, UINT flags = ILC_COLOR32, WORD szInitial = 1, WORD szGrow = 1) {
+	// Creates the image list; if was already created, it's destroyed first.
+	image_list& create(SIZE resolution, UINT flags = ILC_COLOR32,
+		WORD szInitial = 1, WORD szGrow = 1)
+	{
 		this->destroy();
 		this->_hImgList = ImageList_Create(resolution.cx, resolution.cy, flags,
 			static_cast<int>(szInitial), static_cast<int>(szGrow));
@@ -56,6 +60,7 @@ public:
 		return *this;
 	}
 
+	// Loads an icon into the image list.
 	image_list& load(HICON hIcon) {
 		if (!this->_hImgList) {
 			throw std::logic_error("Can't add icon before create image list.");
@@ -64,16 +69,19 @@ public:
 		return *this;
 	}
 
+	// Loads an icon into the image list.
 	image_list& load(const icon& ico) {
 		return this->load(ico.hicon());
 	}
 
+	// Loads an icon from resource into the image list.
 	image_list& load_from_resource(int iconId, HINSTANCE hInst = nullptr) {
 		icon tmpIco;
 		tmpIco.load_from_resource(iconId, this->resolution(), hInst);
 		return this->load(tmpIco);
 	}
 
+	// Loads an icon from resource into the image list.
 	image_list& load_from_resource(std::initializer_list<int> iconIds, HINSTANCE hInst = nullptr) {
 		for (const int iconId : iconIds) {
 			this->load_from_resource(iconId, hInst);
@@ -81,11 +89,13 @@ public:
 		return *this;
 	}
 
+	// Loads an icon from resource into the image list.
 	image_list& load_from_resource(int iconId, HWND hParent) {
 		return this->load_from_resource(iconId,
 			reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hParent, GWLP_HINSTANCE)));
 	}
 
+	// Loads an icon from resource into the image list.
 	image_list& load_from_resource(std::initializer_list<int> iconIds, HWND hParent) {
 		return this->load_from_resource(iconIds,
 			reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hParent, GWLP_HINSTANCE)));
@@ -110,6 +120,7 @@ public:
 		return *this;
 	}
 
+	// Returns the icon resolution, in pixels, of this image list.
 	SIZE resolution() const noexcept {
 		SIZE buf{};
 		if (this->_hImgList) {
@@ -119,6 +130,7 @@ public:
 		return buf;
 	}
 
+	// Returns how many images this image list has.
 	size_t size() const noexcept {
 		return this->_hImgList ? ImageList_GetImageCount(this->_hImgList) : 0;
 	}
