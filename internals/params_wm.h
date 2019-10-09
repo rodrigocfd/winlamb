@@ -27,10 +27,14 @@ namespace wm {
 
 	struct command : public params {
 		command(const params& p) noexcept : params(p) { }
-		WORD control_id() const noexcept          { return LOWORD(this->wParam); }
-		HWND control_hwnd() const noexcept        { return reinterpret_cast<HWND>(this->lParam); }
 		bool is_from_menu() const noexcept        { return HIWORD(this->wParam) == 0; }
 		bool is_from_accelerator() const noexcept { return HIWORD(this->wParam) == 1; }
+		bool is_from_control() const noexcept     { return !this->is_from_menu() && !this->is_from_accelerator(); }
+		WORD menu_id() const noexcept             { return this->control_id(); }
+		WORD accelerator_id() const noexcept      { return this->control_id(); }
+		WORD control_id() const noexcept          { return LOWORD(this->wParam); }
+		WORD control_notif_code() const noexcept  { return HIWORD(this->wParam); }
+		HWND control_hwnd() const noexcept        { return reinterpret_cast<HWND>(this->lParam); }
 	};
 	struct notify : public params {
 		notify(const params& p) noexcept : params(p) { }
