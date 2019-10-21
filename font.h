@@ -7,8 +7,8 @@
 
 #pragma once
 #include <system_error>
-#include <Windows.h>
 #include <VersionHelpers.h>
+#include "wnd.h"
 #include "internals/enable_bitmask_operators.h"
 
 namespace wl {
@@ -83,6 +83,19 @@ public:
 		lf.lfStrikeOut = hasDeco(deco::STRIKEOUT);
 
 		return this->create(lf);
+	}
+
+	// Sets the font on the given control.
+	void set_on(wnd& control) const noexcept {
+		SendMessageW(control.hwnd(), WM_SETFONT,
+			reinterpret_cast<WPARAM>(_hFont), TRUE);
+	}
+
+	// Sets the font on the given control.
+	void set_on(std::initializer_list<std::reference_wrapper<wnd>> ctrls) const noexcept {
+		for (wnd& ctrl : ctrls) {
+			this->set_on(ctrl);
+		}
 	}
 
 	// Create the same exact font used by UI, like Tahoma or Segoe UI.
