@@ -67,6 +67,7 @@ public:
 private:
 	void _init_setup_styles() noexcept {
 		this->setup.wndClassEx.hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
+		this->setup.wndClassEx.hCursor = LoadCursorW(nullptr, IDC_ARROW);
 		this->setup.wndClassEx.style = CS_DBLCLKS;
 		this->setup.style = WS_CHILD | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 
