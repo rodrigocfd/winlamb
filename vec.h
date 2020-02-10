@@ -17,14 +17,14 @@ namespace vec {
 // Wrapper to std::find. Returns index of first element which is equal to value, otherwise -1.
 template<typename T>
 inline size_t find(const std::vector<T>& v, const T& value) {
-	std::vector<T>::const_iterator it = std::find(v.cbegin(), v.cend(), value);
+	typedef std::vector<T>::const_iterator it = std::find(v.cbegin(), v.cend(), value);
 	return it == v.cend() ? -1 : it - v.cbegin();
 }
 
 // Wrapper to std::find_if. Returns index of first element which is equal to value, otherwise -1.
 template<typename T, typename predicateT>
 inline size_t find_if(const std::vector<T>& v, predicateT&& func) {
-	std::vector<T>::const_iterator it = std::find_if(v.cbegin(), v.cend(),
+	typedef std::vector<T>::const_iterator it = std::find_if(v.cbegin(), v.cend(),
 		std::forward<predicateT>(func));
 	return it == v.cend() ? -1 : it - v.cbegin();
 }
