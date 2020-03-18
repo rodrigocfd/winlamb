@@ -378,9 +378,8 @@ public:
 			create_dir(thePath.c_str());
 		}
 
-		// List files within a directory according to a pattern, like "C:\\files\\*.txt".
+		// List files within a directory according to a pattern, like "C:\\files\\*.txt". "*" will bring all.
 		static std::vector<std::wstring> list_dir(const std::wstring& pathAndPattern) {
-			// Entry example: "C:\\myfolder\\*.mp3"
 			std::vector<std::wstring> files;
 
 			WIN32_FIND_DATA wfd{};
@@ -398,7 +397,10 @@ public:
 			std::wstring pathPat = pathAndPattern.substr(0,
 				pathAndPattern.find_last_of(L'\\')); // no trailing backslash
 			do {
-				if (*wfd.cFileName) {
+				if (*wfd.cFileName
+					&& lstrcmpiW(wfd.cFileName, L".") // do not add current and parent paths
+					&& lstrcmpiW(wfd.cFileName, L".."))
+				{
 					files.emplace_back(pathPat);
 					files.back().append(L"\\").append(wfd.cFileName);
 				}
