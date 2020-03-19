@@ -14,6 +14,26 @@ namespace wl {
 // Utilities to std::vector.
 namespace vec {
 
+// Wrapper to std::for_each. Iterates over all elements, executing the lambda for each one.
+template<typename T, typename predicateT>
+inline void for_each(const std::vector<T>& v, predicateT&& func) {
+	// vector<wstring> ss = {L"a", L"b", L"c"};
+	// vec::for_each(ss, [](const wstring& c) -> void {
+	//   size_t sz = c.length();
+	// });
+	std::for_each(v.cbegin(), v.cend(), std::forward<predicateT>(func));
+}
+
+// Wrapper to std::for_each. Iterates over all elements, executing the lambda for each one.
+template<typename T, typename predicateT>
+inline void for_each(std::vector<T>& v, predicateT&& func) {
+	// vector<wstring> ss = {L"a", L"b", L"c"};
+	// vec::for_each(ss, [](wstring& c) -> void {
+	//   c.append(L"x");
+	// });
+	std::for_each(v.begin(), v.end(), std::forward<predicateT>(func));
+}
+
 // Wrapper to std::find. Returns index of first element which is equal to value, otherwise -1.
 template<typename T>
 inline size_t find(const std::vector<T>& v, const T& value) {
