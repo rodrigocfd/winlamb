@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "internals/base_focus_pubm.h"
 #include "internals/base_text_pubm.h"
 #include "internals/base_native_ctrl_pubm.h"
 #include "internals/styler.h"
@@ -17,6 +18,7 @@ namespace wl {
 class radio final :
 	public wnd,
 	public _wli::base_native_ctrl_pubm<radio>,
+	public _wli::base_focus_pubm<radio>,
 	public _wli::base_text_pubm<radio>
 {
 private:
@@ -37,7 +39,8 @@ public:
 	_styler style{this};
 
 	radio() noexcept :
-		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl), base_text_pubm(_hWnd) { }
+		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl),
+		base_focus_pubm(_hWnd), base_text_pubm(_hWnd) { }
 
 	radio(radio&&) = default;
 	radio& operator=(radio&&) = default; // movable only

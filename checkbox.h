@@ -6,8 +6,9 @@
  */
 
 #pragma once
-#include "internals/base_text_pubm.h"
+#include "internals/base_focus_pubm.h"
 #include "internals/base_native_ctrl_pubm.h"
+#include "internals/base_text_pubm.h"
 #include "internals/styler.h"
 #include "wnd.h"
 
@@ -17,6 +18,7 @@ namespace wl {
 class checkbox final :
 	public wnd,
 	public _wli::base_native_ctrl_pubm<checkbox>,
+	public _wli::base_focus_pubm<checkbox>,
 	public _wli::base_text_pubm<checkbox>
 {
 private:
@@ -28,7 +30,8 @@ public:
 	_wli::styler<checkbox> style{this};
 
 	checkbox() noexcept :
-		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl), base_text_pubm(_hWnd) { }
+		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl),
+		base_focus_pubm(_hWnd), base_text_pubm(_hWnd) { }
 
 	checkbox(checkbox&&) = default;
 	checkbox& operator=(checkbox&&) = default; // movable only

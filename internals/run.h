@@ -29,7 +29,7 @@ int run_main(HINSTANCE hInst, int cmdShow) noexcept {
 	return ret;
 }
 
-}//namepace _wli
+}//namespace _wli
 }//namespace wl
 
 // Instantiates your main class into a generic WinMain function.

@@ -72,5 +72,5 @@ inline void check_hr(HRESULT hr, const char* exceptionMsg) {
 	}
 }
 
-}//namepace com
+}//namespace com
 }//namespace wl

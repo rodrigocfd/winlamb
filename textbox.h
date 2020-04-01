@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "internals/base_focus_pubm.h"
 #include "internals/base_text_pubm.h"
 #include "internals/base_native_ctrl_pubm.h"
 #include "internals/styler.h"
@@ -17,6 +18,7 @@ namespace wl {
 class textbox final :
 	public wnd,
 	public _wli::base_native_ctrl_pubm<textbox>,
+	public _wli::base_focus_pubm<textbox>,
 	public _wli::base_text_pubm<textbox>
 {
 private:
@@ -46,7 +48,8 @@ public:
 	_styler style{this};
 
 	textbox() noexcept :
-		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl), base_text_pubm(_hWnd) { }
+		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl),
+		base_focus_pubm(_hWnd), base_text_pubm(_hWnd) { }
 
 	textbox(textbox&&) = default;
 	textbox& operator=(textbox&&) = default; // movable only

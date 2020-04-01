@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "internals/base_focus_pubm.h"
 #include "internals/base_native_ctrl_pubm.h"
 #include "internals/listview_column_collection.h"
 #include "internals/listview_item_collection.h"
@@ -20,7 +21,8 @@ namespace wl {
 // Wrapper to listview control from Common Controls library.
 class listview final :
 	public wnd,
-	public _wli::base_native_ctrl_pubm<listview>
+	public _wli::base_native_ctrl_pubm<listview>,
+	public _wli::base_focus_pubm<listview>
 {
 public:
 	using item              = _wli::listview_item;
@@ -62,7 +64,7 @@ public:
 	}
 
 	listview() :
-		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl)
+		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl), base_focus_pubm(_hWnd)
 	{
 		this->imageList16.on_create([this]() noexcept -> void {
 			ListView_SetImageList(this->_hWnd, this->imageList16.himagelist(), LVSIL_SMALL);

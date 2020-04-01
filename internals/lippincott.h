@@ -28,5 +28,5 @@ inline void lippincott() noexcept {
 	MessageBoxA(nullptr, msg, caption, MB_ICONERROR);
 }
 
-}//namepace _wli
+}//namespace _wli
 }//namespace wl

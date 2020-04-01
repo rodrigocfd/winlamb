@@ -6,6 +6,7 @@
  */
 
 #pragma once
+#include "internals/base_focus_pubm.h"
 #include "internals/base_native_ctrl_pubm.h"
 #include "internals/styler.h"
 #include "datetime.h"
@@ -17,7 +18,8 @@ namespace wl {
 // Wrapper to datetime picker control from Common Controls library.
 class datetime_picker final :
 	public wnd,
-	public _wli::base_native_ctrl_pubm<datetime_picker>
+	public _wli::base_native_ctrl_pubm<datetime_picker>,
+	public _wli::base_focus_pubm<datetime_picker>
 {
 private:
 	class _styler final : public _wli::styler<datetime_picker> {
@@ -38,7 +40,7 @@ public:
 	_styler style{this};
 
 	datetime_picker() noexcept :
-		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl) { }
+		wnd(_hWnd), base_native_ctrl_pubm(_baseNativeCtrl), base_focus_pubm(_hWnd) { }
 
 	datetime_picker(datetime_picker&&) = default;
 	datetime_picker& operator=(datetime_picker&&) = default; // movable only

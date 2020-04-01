@@ -84,5 +84,5 @@ public:
 	}
 };
 
-}//namepace com
+}//namespace com
 }//namespace wl

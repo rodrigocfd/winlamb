@@ -65,5 +65,5 @@ public:
 	}
 };
 
-}//namepace _wli
+}//namespace _wli
 }//namespace wl
