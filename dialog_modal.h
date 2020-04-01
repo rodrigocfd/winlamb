@@ -40,7 +40,7 @@ protected:
 		wnd(_hWnd), base_msg_pubm(_baseMsg), base_thread_pubm(_baseThread), base_text_pubm(_hWnd)
 	{
 		this->base_msg_pubm::on_message(WM_CLOSE, [this](params) noexcept -> INT_PTR {
-			EndDialog(this->_hWnd, IDOK);
+			EndDialog(this->_hWnd, IDCANCEL);
 			return TRUE;
 		});
 	}
