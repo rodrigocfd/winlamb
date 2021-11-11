@@ -1,7 +1,7 @@
 
 #include <memory>
 #include <stdexcept>
-#include "window_base.h"
+#include "base_parent.h"
 #include "run_funcs.h"
 #include <process.h>
 using namespace _wli;
@@ -17,7 +17,9 @@ struct thread_pack {
 	std::exception_ptr cur_except;
 };
 
-window_base::window_base(creation_type creation_ty)
+base_parent::~base_parent() { }
+
+base_parent::base_parent(creation_type creation_ty)
 	: _creation_type{creation_ty}
 {
 	_events.any(WM_UI_THREAD, [this](WPARAM, LPARAM lp) -> LRESULT {
@@ -45,7 +47,7 @@ window_base::window_base(creation_type creation_ty)
 	});
 }
 
-events& window_base::on()
+events& base_parent::on()
 {
 	if (_hwnd != nullptr) {
 		throw std::logic_error("Cannot add events after window creation.");
@@ -53,7 +55,7 @@ events& window_base::on()
 	return _events;
 }
 
-void window_base::run_detached_thread(function<void()> fun) const
+void base_parent::run_detached_thread(function<void()> fun) const
 {
 	unique_ptr<thread_pack> pack = std::make_unique<thread_pack>(std::move(fun), _hwnd, nullptr);
 
@@ -73,7 +75,7 @@ void window_base::run_detached_thread(function<void()> fun) const
 	if (hthread) CloseHandle(reinterpret_cast<HANDLE>(hthread));
 }
 
-void window_base::run_ui_thread(function<void()> fun) const
+void base_parent::run_ui_thread(function<void()> fun) const
 {
 	// This method is analog to SendMessage (synchronous), but intended to be called
 	// from another thread, so a callback function can, tunelled by wndproc, run in

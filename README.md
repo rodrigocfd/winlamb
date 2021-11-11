@@ -19,9 +19,9 @@ This is a simple native Windows program written with WinLamb. Each window has a 
 * Declaration: `MyWindow.h`
 
 ```cpp
-#include <winlamb/window_raw_main.h>
+#include <winlamb/window_main.h>
 
-class MyWindow final : public wl::window_raw_main {
+class MyWindow final : public wl::window_main {
 public:
     MyWindow();
 };
@@ -35,8 +35,11 @@ public:
 RUN(MyWindow) // optional, generate WinMain
 
 MyWindow::MyWindow()
+    : window_main{window_main::opts{ // initialization options
+
+    }}
 {
-    on().create([this]() -> LRESULT {
+    on().create([this]() -> LRESULT { // WM_CREATE handling
         return 0;
     });
 }
@@ -49,9 +52,9 @@ Dialog resources are great because you can design them with a WYSIWYG resource e
 * Declaration: `MyWindow.h`
 
 ```cpp
-#include <winlamb/window_dlg_main.h>
+#include <winlamb/dialog_main.h>
 
-class MyWindow final : public wl::window_dlg_main {
+class MyWindow final : public wl::dialog_main {
 public:
     MyWindow();
 };
@@ -65,8 +68,11 @@ public:
 RUN(MyWindow) // optional, generate WinMain
 
 MyWindow::MyWindow()
+    : dialog_main{dialog_main::opts{ // initialization options
+        dialog_id = IDD_DIALOG1,
+    }}
 {
-    on().init_dialog([this]() -> bool {
+    on().init_dialog([this]() -> bool { // WM_INITDIALOG handling
         return true;
     });
 }

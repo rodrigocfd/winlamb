@@ -5,13 +5,15 @@
 #include <vector>
 #include <Windows.h>
 
-namespace _wli { class window_dlg; } // friend forward declaration
+namespace _wli { class base_dlg; } // friend forward declaration
+namespace _wli { class base_raw; }
 
 namespace _wli {
 
 class events {
 private:
-	friend window_dlg;
+	friend base_dlg;
+	friend base_raw;
 
 	struct msg_elem {
 		UINT msg;

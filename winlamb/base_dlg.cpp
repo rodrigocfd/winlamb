@@ -1,11 +1,18 @@
 
 #include <system_error>
-#include "window_dlg.h"
+#include "base_dlg.h"
 #include "run_funcs.h"
 using namespace _wli;
 using namespace wl;
 
-void window_dlg::_create_dialog(HINSTANCE hinst, HWND hparent) const
+base_dlg::~base_dlg()
+{
+	if (hwnd() != nullptr) {
+		SetWindowLongPtrW(hwnd(), DWLP_USER, 0);
+	}
+}
+
+void base_dlg::_create_dialog(HINSTANCE hinst, HWND hparent) const
 {
 	if (hwnd() != nullptr) {
 		throw std::logic_error("Dialog already created.");
@@ -19,7 +26,7 @@ void window_dlg::_create_dialog(HINSTANCE hinst, HWND hparent) const
 	}
 }
 
-void window_dlg::_dialog_box(HINSTANCE hinst, HWND hparent) const
+void base_dlg::_dialog_box(HINSTANCE hinst, HWND hparent) const
 {
 	if (hwnd() != nullptr) {
 		throw std::logic_error("Dialog already created.");
@@ -29,16 +36,16 @@ void window_dlg::_dialog_box(HINSTANCE hinst, HWND hparent) const
 		_dlg_proc, reinterpret_cast<LPARAM>(this));
 }
 
-INT_PTR window_dlg::_dlg_proc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
+INT_PTR base_dlg::_dlg_proc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
 {
-	window_dlg* _this = nullptr;
+	base_dlg* _this = nullptr;
 
 	if (msg == WM_INITDIALOG) {
-		_this = reinterpret_cast<window_dlg*>(lp);
-		_this->_hwnd = hdlg; // assign actual HWND
+		_this = reinterpret_cast<base_dlg*>(lp);
+		_this->set_hwnd(hdlg); // assign actual HWND
 		SetWindowLongPtrW(hdlg, DWLP_USER, reinterpret_cast<LONG_PTR>(_this));
 	} else {
-		_this = reinterpret_cast<window_dlg*>(GetWindowLongPtrW(hdlg, DWLP_USER));
+		_this = reinterpret_cast<base_dlg*>(GetWindowLongPtrW(hdlg, DWLP_USER));
 	}
 
 	// If object pointer is not stored, then no processing is done.
@@ -66,7 +73,7 @@ INT_PTR window_dlg::_dlg_proc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
 		// No further messages processed after this one.
 		if (msg == WM_NCDESTROY) {
 			SetWindowLongPtrW(hdlg, DWLP_USER, 0);
-			_this->_hwnd = nullptr; // clear actual HWND
+			_this->set_hwnd(nullptr); // clear actual HWND
 		}
 
 		if (was_handled) {

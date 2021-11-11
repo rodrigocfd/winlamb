@@ -1,31 +1,29 @@
 
 #pragma once
+#include "base.h"
 #include "events.h"
 #include "resizer_children.h"
 
-namespace _wli { class window_dlg; } // friend forward declaration
+namespace _wli { class base_dlg; } // friend forward declaration
+namespace _wli { class base_raw; }
 
 namespace _wli {
 
-// Base to window_dlg and window_raw.
-class window_base {
+// Base to all parent windows.
+class base_parent : public base {
 public:
 	enum class creation_type { raw, dialog };
 
 private:
-	friend window_dlg;
-	HWND _hwnd = nullptr;
+	friend base_dlg;
+	friend base_raw;
 	events _events_internal, _events;
 	creation_type _creation_type;
 	resizer_children _resizer;
 
 public:
-	virtual ~window_base() { }
-	explicit window_base(creation_type creation_ty);
-
-	// Returns the underlying handle to the window.
-	// Note that this handle is initially NULL, receiving its value upon creation.
-	[[nodiscard]] constexpr HWND hwnd() const { return _hwnd; }
+	virtual ~base_parent() = 0;
+	explicit base_parent(creation_type creation_ty);
 
 	// Exposes the window events that can be handled.
 	// Each event corresponds to a standard window message.
@@ -40,6 +38,9 @@ public:
 	// Runs a lambda synchronously in the UI thread.
 	// This is useful if you are in a detached thread and need to update the UI.
 	void run_ui_thread(std::function<void()> fun) const;
+
+private:
+	void set_hwnd(HWND h) { _hwnd = h; }
 };
 
 }
