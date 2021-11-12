@@ -2,6 +2,7 @@
 #pragma once
 #include <functional>
 #include <optional>
+#include <variant>
 #include <vector>
 #include <Windows.h>
 
@@ -80,7 +81,11 @@ public:
 	void init_dialog(std::function<bool(HWND hFocus)> fun);
 	void init_menu_popup(std::function<void(HMENU hmenu, WORD pos, bool is_window)> fun);
 	void key_down(std::function<void(WORD vkey_code, DWORD flags)> fun);
+	void nc_activate(std::function<bool(bool active, HRGN hrgn)> fun);
+	void nc_calc_size(std::function<WORD(std::variant<NCCALCSIZE_PARAMS*, RECT*> s)> fun);
 	void nc_destroy(std::function<void()> fun);
+	void query_open(std::function<bool()> fun);
+	void show_window(std::function<void(bool being_shown, WORD status)> fun);
 	void size(std::function<void(WORD request, SIZE client_area)> fun);
 	void sizing(std::function<void(WORD edge, RECT& drag)> fun);
 };

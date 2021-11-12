@@ -7,6 +7,7 @@ using std::function;
 using std::optional;
 using std::pair;
 using std::shared_ptr;
+using std::variant;
 using std::vector;
 
 void events::_add_msg(UINT msg, function<optional<LRESULT>(WPARAM, LPARAM)> fun)
@@ -214,10 +215,42 @@ void events::key_down(function<void(WORD vkey_code, DWORD flags)> fun)
 	});
 }
 
+void events::nc_activate(function<bool(bool active, HRGN hrgn)> fun)
+{
+	_add_msg(WM_NCACTIVATE, [fun = std::move(fun)](WPARAM wp, LPARAM lp) -> optional<LRESULT> {
+		return {fun(wp != 0, reinterpret_cast<HRGN>(lp)) ? TRUE : FALSE};
+	});
+}
+
+void events::nc_calc_size(function<WORD(variant<NCCALCSIZE_PARAMS*, RECT*> s)> fun)
+{
+	_add_msg(WM_NCCALCSIZE, [fun = std::move(fun)](WPARAM wp, LPARAM lp) -> optional<LRESULT> {
+		auto s = wp
+			? variant<NCCALCSIZE_PARAMS*, RECT*>{reinterpret_cast<NCCALCSIZE_PARAMS*>(lp)}
+			: variant<NCCALCSIZE_PARAMS*, RECT*>{reinterpret_cast<RECT*>(lp)};
+		return {static_cast<WORD>(fun(s))};
+	});
+}
+
 void events::nc_destroy(function<void()> fun)
 {
 	_add_msg(WM_NCDESTROY, [fun = std::move(fun)](WPARAM, LPARAM) -> optional<LRESULT> {
 		fun();
+		return std::nullopt;
+	});
+}
+
+void events::query_open(function<bool()> fun)
+{
+	_add_msg(WM_QUERYOPEN, [fun = std::move(fun)](WPARAM, LPARAM) -> optional<LRESULT> {
+		return {fun() ? TRUE : FALSE};
+	});
+}
+
+void events::show_window(function<void(bool being_shown, WORD status)> fun)
+{
+	_add_msg(WM_SHOWWINDOW, [fun = std::move(fun)](WPARAM wp, LPARAM lp) -> optional<LRESULT> {
+		fun(wp != 0, static_cast<WORD>(lp));
 		return std::nullopt;
 	});
 }

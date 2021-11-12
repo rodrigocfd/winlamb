@@ -8,11 +8,12 @@ namespace wl {
 class window_main : public _wli::base_raw {
 public:
 	// Window creation options.
+	// Aggregate initialization: fields are in alphabetical order.
 	struct opts {
 		UINT class_style = 0;
-		HICON hicon = nullptr;
-		HCURSOR hcursor = nullptr;
 		HBRUSH hbrush_bg = nullptr;
+		HCURSOR hcursor = nullptr;
+		int icon_id = 0;
 	};
 
 private:
