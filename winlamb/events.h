@@ -73,21 +73,42 @@ public:
 
 	void activate(std::function<void(WORD state, bool is_minimized, HWND hwnd)> fun);
 	void activate_app(std::function<void(bool being_activated, DWORD thread_id)> fun);
+	void cancel_mode(std::function<void()> fun);
 	void char_(std::function<void(WORD char_code, DWORD flags)> fun);
+	void child_activate(std::function<void()> fun);
 	void close(std::function<void()> fun);
 	void create(std::function<int(CREATESTRUCT& c)> fun);
 	void destroy(std::function<void()> fun);
+	void display_change(std::function<void(DWORD bpp, SIZE screen)> fun);
 	void enable(std::function<void(bool being_enabled)> fun);
+	void enter_size_move(std::function<void()> fun);
+	void exit_size_move(std::function<void()> fun);
+	void font_change(std::function<void()> fun);
+	void get_icon(std::function<HICON(DWORD icon_type, DWORD dpi)> fun);
+	void get_min_max_info(std::function<void(MINMAXINFO&)> fun);
 	void init_dialog(std::function<bool(HWND hFocus)> fun);
 	void init_menu_popup(std::function<void(HMENU hmenu, WORD pos, bool is_window)> fun);
 	void key_down(std::function<void(WORD vkey_code, DWORD flags)> fun);
+	void menu_char(std::function<WORD(WORD char_code, WORD menu_type, HMENU hmenu)> fun);
+	void menu_select(std::function<void(WORD index, WORD flags, HMENU hmenu)> fun);
+	void move(std::function<void(POINT)> fun);
+	void moving(std::function<void(RECT&)> fun);
 	void nc_activate(std::function<bool(bool active, HRGN hrgn)> fun);
 	void nc_calc_size(std::function<WORD(std::variant<NCCALCSIZE_PARAMS*, RECT*> s)> fun);
 	void nc_destroy(std::function<void()> fun);
+	void nc_paint(std::function<void(HRGN hrgn)> fun);
+	void paint(std::function<void()> fun);
+	void print(std::function<void(HDC hdc, WORD opts)> fun);
+	void print_client(std::function<void(HDC hdc, WORD opts)> fun);
 	void query_open(std::function<bool()> fun);
+	void set_redraw(std::function<void(bool can_redraw)> fun);
 	void show_window(std::function<void(bool being_shown, WORD status)> fun);
 	void size(std::function<void(WORD request, SIZE client_area)> fun);
 	void sizing(std::function<void(WORD edge, RECT& drag)> fun);
+	void sync_paint(std::function<void()> fun);
+	void sys_char(std::function<void(WORD char_code, DWORD flags)> fun);
+	void sys_command(std::function<void(WORD cmd, POINT pos)> fun);
+	void time_change(std::function<void()> fun);
 };
 
 }

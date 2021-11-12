@@ -153,10 +153,26 @@ void events::activate_app(function<void(bool being_activated, DWORD thread_id)> 
 	});
 }
 
+void events::cancel_mode(function<void()> fun)
+{
+	_add_msg(WM_CANCELMODE, [fun = std::move(fun)](WPARAM, LPARAM) -> optional<LRESULT> {
+		fun();
+		return std::nullopt;
+	});
+}
+
 void events::char_(function<void(WORD char_code, DWORD flags)> fun)
 {
 	_add_msg(WM_CHAR, [fun = std::move(fun)](WPARAM wp, LPARAM lp) -> optional<LRESULT> {
 		fun(static_cast<WORD>(wp), static_cast<DWORD>(lp));
+		return std::nullopt;
+	});
+}
+
+void events::child_activate(function<void()> fun)
+{
+	_add_msg(WM_CHILDACTIVATE, [fun = std::move(fun)](WPARAM, LPARAM) -> optional<LRESULT> {
+		fun();
 		return std::nullopt;
 	});
 }
@@ -184,10 +200,57 @@ void events::destroy(function<void()> fun)
 	});
 }
 
+void events::display_change(function<void(DWORD bpp, SIZE screen)> fun)
+{
+	_add_msg(WM_DISPLAYCHANGE, [fun = std::move(fun)](WPARAM wp, LPARAM lp) -> optional<LRESULT> {
+		fun(static_cast<DWORD>(wp), SIZE{LOWORD(lp), HIWORD(lp)});
+		return std::nullopt;
+	});
+}
+
 void events::enable(function<void(bool being_enabled)> fun)
 {
-	_add_msg(WM_ENABLE, [fun = std::move(fun)](WPARAM wp, LPARAM)->optional<LRESULT> {
+	_add_msg(WM_ENABLE, [fun = std::move(fun)](WPARAM wp, LPARAM) -> optional<LRESULT> {
 		fun(wp != 0);
+		return std::nullopt;
+	});
+}
+
+void events::enter_size_move(function<void()> fun)
+{
+	_add_msg(WM_ENTERSIZEMOVE, [fun = std::move(fun)](WPARAM, LPARAM) -> optional<LRESULT> {
+		fun();
+		return std::nullopt;
+	});
+}
+
+void events::exit_size_move(function<void()> fun)
+{
+	_add_msg(WM_EXITSIZEMOVE, [fun = std::move(fun)](WPARAM, LPARAM) -> optional<LRESULT> {
+		fun();
+		return std::nullopt;
+	});
+}
+
+void events::font_change(function<void()> fun)
+{
+	_add_msg(WM_FONTCHANGE, [fun = std::move(fun)](WPARAM, LPARAM) -> optional<LRESULT> {
+		fun();
+		return std::nullopt;
+	});
+}
+
+void events::get_icon(function<HICON(DWORD icon_type, DWORD dpi)> fun)
+{
+	_add_msg(WM_GETICON, [fun = std::move(fun)](WPARAM wp, LPARAM lp) -> optional<LRESULT> {
+		return {reinterpret_cast<LRESULT>(fun(static_cast<DWORD>(wp), static_cast<DWORD>(lp)))};
+	});
+}
+
+void events::get_min_max_info(function<void(MINMAXINFO&)> fun)
+{
+	_add_msg(WM_GETMINMAXINFO, [fun = std::move(fun)](WPARAM, LPARAM lp) -> optional<LRESULT> {
+		fun(*reinterpret_cast<MINMAXINFO*>(lp));
 		return std::nullopt;
 	});
 }
@@ -212,6 +275,37 @@ void events::key_down(function<void(WORD vkey_code, DWORD flags)> fun)
 	_add_msg(WM_KEYDOWN, [fun = std::move(fun)](WPARAM wp, LPARAM lp) -> optional<LRESULT> {
 		fun(static_cast<WORD>(wp), static_cast<DWORD>(lp));
 		return std::nullopt;
+	});
+}
+
+void events::menu_char(function<WORD(WORD char_code, WORD menu_type, HMENU hmenu)> fun)
+{
+	_add_msg(WM_MENUCHAR, [fun = std::move(fun)](WPARAM wp, LPARAM lp) -> optional<LRESULT> {
+		return {fun(LOWORD(wp), HIWORD(lp), reinterpret_cast<HMENU>(lp))};
+	});
+}
+
+void events::menu_select(function<void(WORD index, WORD flags, HMENU hmenu)> fun)
+{
+	_add_msg(WM_MENUSELECT, [fun = std::move(fun)](WPARAM wp, LPARAM lp) -> optional<LRESULT> {
+		fun(LOWORD(wp), HIWORD(lp), reinterpret_cast<HMENU>(lp));
+		return std::nullopt;
+	});
+}
+
+void events::move(function<void(POINT)> fun)
+{
+	_add_msg(WM_MOVE, [fun = std::move(fun)](WPARAM, LPARAM lp) -> optional<LRESULT> {
+		fun(POINT{LOWORD(lp), HIWORD(lp)});
+		return std::nullopt;
+	});
+}
+
+void events::moving(function<void(RECT&)> fun)
+{
+	_add_msg(WM_MOVING, [fun = std::move(fun)](WPARAM, LPARAM lp) -> optional<LRESULT> {
+		fun(*reinterpret_cast<RECT*>(lp));
+		return {TRUE};
 	});
 }
 
@@ -240,10 +334,50 @@ void events::nc_destroy(function<void()> fun)
 	});
 }
 
+void events::nc_paint(function<void(HRGN hrgn)> fun)
+{
+	_add_msg(WM_NCPAINT, [fun = std::move(fun)](WPARAM wp, LPARAM) -> optional<LRESULT> {
+		fun(reinterpret_cast<HRGN>(wp));
+		return std::nullopt;
+	});
+}
+
+void events::paint(function<void()> fun)
+{
+	_add_msg(WM_PAINT, [fun = std::move(fun)](WPARAM, LPARAM) -> optional<LRESULT> {
+		fun();
+		return std::nullopt;
+	});
+}
+
+void events::print(function<void(HDC hdc, WORD opts)> fun)
+{
+	_add_msg(WM_PRINT, [fun = std::move(fun)](WPARAM wp, LPARAM lp) -> optional<LRESULT> {
+		fun(reinterpret_cast<HDC>(wp), static_cast<WORD>(lp));
+		return std::nullopt;
+	});
+}
+
+void events::print_client(function<void(HDC hdc, WORD opts)> fun)
+{
+	_add_msg(WM_PRINTCLIENT, [fun = std::move(fun)](WPARAM wp, LPARAM lp) -> optional<LRESULT> {
+		fun(reinterpret_cast<HDC>(wp), static_cast<WORD>(lp));
+		return std::nullopt;
+	});
+}
+
 void events::query_open(function<bool()> fun)
 {
 	_add_msg(WM_QUERYOPEN, [fun = std::move(fun)](WPARAM, LPARAM) -> optional<LRESULT> {
 		return {fun() ? TRUE : FALSE};
+	});
+}
+
+void events::set_redraw(function<void(bool can_redraw)> fun)
+{
+	_add_msg(WM_SETREDRAW, [fun = std::move(fun)](WPARAM wp, LPARAM) -> optional<LRESULT> {
+		fun(wp != 0);
+		return std::nullopt;
 	});
 }
 
@@ -265,8 +399,40 @@ void events::size(function<void(WORD request, SIZE client_area)> fun)
 
 void events::sizing(function<void(WORD edge, RECT& drag)> fun)
 {
-	_add_msg(WM_SIZING, [fun = std::move(fun)](WPARAM wp, LPARAM lp)->optional<LRESULT> {
+	_add_msg(WM_SIZING, [fun = std::move(fun)](WPARAM wp, LPARAM lp) -> optional<LRESULT> {
 		fun(static_cast<WORD>(wp), *reinterpret_cast<RECT*>(lp));
+		return {TRUE};
+	});
+}
+
+void events::sync_paint(function<void()> fun)
+{
+	_add_msg(WM_SYNCPAINT, [fun = std::move(fun)](WPARAM, LPARAM) -> optional<LRESULT> {
+		fun();
+		return std::nullopt;
+	});
+}
+
+void events::sys_char(function<void(WORD char_code, DWORD flags)> fun)
+{
+	_add_msg(WM_SYSCHAR, [fun = std::move(fun)](WPARAM wp, LPARAM lp) -> optional<LRESULT> {
+		fun(static_cast<WORD>(wp), static_cast<DWORD>(lp));
+		return std::nullopt;
+	});
+}
+
+void events::sys_command(function<void(WORD cmd, POINT pos)> fun)
+{
+	_add_msg(WM_SYSCOMMAND, [fun = std::move(fun)](WPARAM wp, LPARAM lp) -> optional<LRESULT> {
+		fun(static_cast<WORD>(wp), POINT{LOWORD(lp), HIWORD(lp)});
+		return std::nullopt;
+	});
+}
+
+void events::time_change(function<void()> fun)
+{
+	_add_msg(WM_TIMECHANGE, [fun = std::move(fun)](WPARAM, LPARAM) -> optional<LRESULT> {
+		fun();
 		return std::nullopt;
 	});
 }
