@@ -7,15 +7,15 @@ using namespace wl;
 
 base_dlg::~base_dlg()
 {
-	if (hwnd() != nullptr) {
+	if (hwnd()) {
 		SetWindowLongPtrW(hwnd(), DWLP_USER, 0);
 	}
 }
 
 void base_dlg::_create_dialog(HINSTANCE hinst, HWND hparent) const
 {
-	if (hwnd() != nullptr) {
-		throw std::logic_error("Dialog already created.");
+	if (hwnd()) {
+		throw std::logic_error("Dialog already created");
 	}
 
 	if (!CreateDialogParamW(hinst, MAKEINTRESOURCEW(_dialog_id), hparent,
@@ -28,8 +28,8 @@ void base_dlg::_create_dialog(HINSTANCE hinst, HWND hparent) const
 
 void base_dlg::_dialog_box(HINSTANCE hinst, HWND hparent) const
 {
-	if (hwnd() != nullptr) {
-		throw std::logic_error("Dialog already created.");
+	if (hwnd()) {
+		throw std::logic_error("Dialog already created");
 	}
 
 	DialogBoxParamW(hinst, MAKEINTRESOURCEW(_dialog_id), hparent,
@@ -50,7 +50,7 @@ INT_PTR base_dlg::_dlg_proc(HWND hdlg, UINT msg, WPARAM wp, LPARAM lp)
 
 	// If object pointer is not stored, then no processing is done.
 	// Prevents processing before WM_INITDIALOG and after WM_NCDESTROY.
-	if (_this != nullptr) {
+	if (_this) {
 		// Process all internal events.
 		_this->_events_internal._process_all(msg, wp, lp);
 

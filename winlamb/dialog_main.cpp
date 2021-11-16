@@ -10,11 +10,11 @@ dialog_main::~dialog_main() { }
 dialog_main::dialog_main(opts creation_opts)
 	: base_dlg{creation_opts.dialog_id}, _opts{creation_opts}
 {
-	on().close([this]() {
+	on().wm_close([this]() {
 		DestroyWindow(hwnd());
 	});
 
-	on().nc_destroy([]() {
+	on().wm_nc_destroy([]() {
 		PostQuitMessage(ERROR_SUCCESS);
 	});
 }
@@ -25,7 +25,7 @@ int dialog_main::run_main(HINSTANCE hinst, int cmd_show) const
 	_create_dialog(hinst, nullptr);
 
 	HACCEL haccel = nullptr;
-	if (_opts.accel_table_id != 0) {
+	if (_opts.accel_table_id) {
 		haccel = LoadAcceleratorsW(hinst, MAKEINTRESOURCEW(_opts.accel_table_id));
 		if (haccel == nullptr) {
 			throw std::system_error(GetLastError(), std::system_category(),
@@ -33,7 +33,7 @@ int dialog_main::run_main(HINSTANCE hinst, int cmd_show) const
 		}
 	}
 
-	if (_opts.icon_id != 0) {
+	if (_opts.icon_id) {
 		SendMessageW(hwnd(), WM_SETICON, ICON_SMALL,
 			reinterpret_cast<LPARAM>(reinterpret_cast<HICON>(
 				LoadImageW(hinst, MAKEINTRESOURCEW(_opts.icon_id), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR))));

@@ -14,7 +14,7 @@ font::~font()
 font::font(const LOGFONT& lf)
 	: _hfont(CreateFontIndirectW(&lf))
 {
-	if (_hfont == nullptr) {
+	if (!_hfont) {
 		throw std::system_error(GetLastError(), std::system_category(),
 			"CreateFontIndirect failed");
 	}

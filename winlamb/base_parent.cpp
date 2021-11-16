@@ -22,7 +22,7 @@ base_parent::~base_parent() { }
 base_parent::base_parent(creation_type creation_ty)
 	: _creation_type{creation_ty}
 {
-	_events.any(WM_UI_THREAD, [this](WPARAM, LPARAM lp) -> LRESULT {
+	_events.wm(WM_UI_THREAD, [this](WPARAM, LPARAM lp) -> LRESULT {
 		unique_ptr<thread_pack> pack{reinterpret_cast<thread_pack*>(lp)}; // take ownership
 		if (pack->cur_except) { // an exception was thrown in run_detached_thread()
 			try {
@@ -42,15 +42,15 @@ base_parent::base_parent(creation_type creation_ty)
 		return _creation_type == creation_type::raw ? 0 : TRUE;
 	});
 
-	_events.size([this](WORD request, SIZE client_area) {
+	_events.wm_size([this](WORD request, SIZE client_area) {
 		_resizer.resize(request, client_area);
 	});
 }
 
 events& base_parent::on()
 {
-	if (_hwnd != nullptr) {
-		throw std::logic_error("Cannot add events after window creation.");
+	if (_hwnd) {
+		throw std::logic_error("Cannot add events after window creation");
 	}
 	return _events;
 }

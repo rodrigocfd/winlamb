@@ -7,7 +7,7 @@ dialog_modal::~dialog_modal() { }
 dialog_modal::dialog_modal(opts creation_opts)
 	: base_dlg{creation_opts.dialog_id}, _opts{creation_opts}
 {
-	on().close([this]() {
+	on().wm_close([this]() {
 		EndDialog(hwnd(), IDCANCEL);
 	});
 }

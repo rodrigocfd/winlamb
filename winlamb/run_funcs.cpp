@@ -43,11 +43,28 @@ void _wli::lippincott()
 	MessageBoxA(nullptr, msg, caption, MB_ICONERROR);
 }
 
+void _wli::multiply_dpi(POINT* pos, SIZE* sz)
+{
+	static POINT global_dpi = {0, 0};
+	if (global_dpi.x == 0) { // not initialized yet?
+		HDC hdc = GetDC(nullptr);
+		global_dpi = {GetDeviceCaps(hdc, LOGPIXELSX), GetDeviceCaps(hdc, LOGPIXELSY)};
+		ReleaseDC(nullptr, hdc);
+	}
+
+	if (pos) {
+		*pos = {MulDiv(pos->x, global_dpi.x, 96), MulDiv(pos->y, global_dpi.y, 96)};
+	}
+	if (sz) {
+		*sz = {MulDiv(sz->cx, global_dpi.x, 96), MulDiv(sz->cy, global_dpi.y, 96)};
+	}
+}
+
 const font& _wli::ui_font()
 {
 	static font ui_font;
 
-	if (ui_font.hfont() == nullptr) { // not created yet?
+	if (!ui_font.hfont()) { // not created yet?
 		NONCLIENTMETRICSW ncm = { sizeof(NONCLIENTMETRICSW) };
 		if (!SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0)) {
 			throw std::system_error(GetLastError(), std::system_category(),
