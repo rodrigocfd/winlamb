@@ -18,6 +18,8 @@ Beyond dialog/window message handling, WinLamb also has wrappers for most native
 
 WinLamb by no means covers the whole Win32 API, simply because it's too huge. It just wraps some things. New features are constantly being added, though.
 
+There is a great WinLamb presentation from *Utah C++ Programmers* here: https://youtu.be/2K52YX-vHv4
+
 ## 2. Setup
 
 WinLamb is a header-only library. You can clone the repository or simply [download](https://github.com/rodrigocfd/winlamb/archive/master.zip) the files; once referenced in your source code, it should work right away.
