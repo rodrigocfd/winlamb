@@ -102,6 +102,15 @@ public:
 	listview(listview&&) = default;
 	listview& operator=(listview&&) = default; // movable only
 
+	listview& create(HWND hParent, int ctrlId, POINT pos, SIZE size, DWORD styles, DWORD exStyles) {
+		this->_baseNativeCtrl.create(hParent, ctrlId, nullptr, pos, size, WC_LISTVIEWW, styles, exStyles);
+		return *this;
+	}
+
+	listview& create(const wnd* parent, int ctrlId, POINT pos, SIZE size, DWORD styles, DWORD exStyles) {
+		return this->create(parent->hwnd(), ctrlId, pos, size, styles, exStyles);
+	}
+
 	// Ties this class instance to an existing native control.
 	listview& assign(HWND hCtrl) {
 		this->base_native_ctrl_pubm::assign(hCtrl); // hides base method
