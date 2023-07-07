@@ -54,13 +54,13 @@ public:
 	listviewT& grid_lines(bool doSet) noexcept {
 		ListView_SetExtendedListViewStyleEx(this->styler<listviewT>::target.hwnd(),
 			LVS_EX_GRIDLINES, doSet ? LVS_EX_GRIDLINES : 0);
-		return this->style<listviewT>::target;
+		return this->styler<listviewT>::target;
 	}
 
 	listviewT& reorder_header(bool doSet) noexcept {
 		ListView_SetExtendedListViewStyleEx(this->styler<listviewT>::target.hwnd(),
 			LVS_EX_HEADERDRAGDROP, doSet ? LVS_EX_HEADERDRAGDROP : 0);
-		return this->style<listviewT>::target;
+		return this->styler<listviewT>::target;
 	}
 };
 
