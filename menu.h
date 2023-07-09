@@ -36,6 +36,31 @@ public:
 		return *this;
 	}
 
+	menu& create() {
+		if (!this->_hMenu) {	
+			this->_hMenu = CreateMenu();
+			if (!this->_hMenu) {
+				throw std::system_error(GetLastError(), std::system_category(),
+					"CreateMenu failed");
+			}
+		}
+		else
+			throw std::logic_error("Trying to create a menu twice.");
+		return *this;
+	}
+
+	menu& show(HWND parent) {
+		if (!SetMenu(parent, this->_hMenu)){
+			throw std::system_error(GetLastError(), std::system_category(),
+				"SetMenu failed");
+		}
+		return *this;
+	}
+
+	menu& show(wl::wnd* parent) {
+		return show(parent->hwnd());
+	}
+	
 	void destroy() noexcept {
 		// Since HMENU resource can be shared, destroy() won't be called on destructor.
 		if (this->_hMenu) {
