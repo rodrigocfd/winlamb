@@ -60,13 +60,27 @@ public:
 		}
 
 		WNDCLASSEXW wcx = this->_gen_wndclassex(setup.wndClassEx, hInst);
-		ATOM atom = this->_register_class(wcx, setup);
+        const wchar_t* class_name = nullptr;
 
-		if (!CreateWindowExW(setup.exStyle,
-			reinterpret_cast<LPCWSTR>(static_cast<ULONG_PTR>(static_cast<WORD>(atom))), // from MAKEINTATOM macro
+		if (hParent)
+		{
+			// This is a child window, and the caller expects the class name to be unchanged (GRX)
+            class_name = setup.wndClassEx.lpszClassName;
+		}
+        else
+        {
+			// Unsure why this is needed, but I won't risk a breaking change here (GRX)
+            ATOM atom = this->_register_class(wcx, setup);
+            class_name = reinterpret_cast<LPCWSTR>(static_cast<ULONG_PTR>(static_cast<WORD>(atom)));// from MAKEINTATOM macro
+        }
+
+		// Storing the newly created window
+		this->_hWnd = CreateWindowExW(setup.exStyle,
+			class_name, 
 			setup.title, setup.style,
 			setup.position.x, setup.position.y, setup.size.cx, setup.size.cy,
-			hParent, setup.menu, hInst, static_cast<LPVOID>(this)) )
+                                      hParent, setup.menu, hInst, static_cast<LPVOID>(this));
+        if (!this->_hWnd)
 		{
 			throw std::system_error(GetLastError(), std::system_category(),
 				"CreateWindowEx failed");
