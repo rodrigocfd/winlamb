@@ -1,0 +1,449 @@
+#include <algorithm>
+#include <cwctype>
+#include <stdexcept>
+#include <Windows.h>
+#include "str.h"
+
+int wl::str::cmp(const std::wstring& a, WStrPtr b) {
+	return lstrcmpW(a.c_str(), b);
+}
+
+int wl::str::cmp_i(const std::wstring& a, WStrPtr b) {
+	return lstrcmpiW(a.c_str(), b);
+}
+
+bool wl::str::contains(const std::wstring& s, WStrPtr what, size_t off) {
+	return s.find(what, off) != std::wstring::npos;
+}
+
+bool wl::str::ends_with(const std::wstring& s, WStrPtr theEnd) {
+	int lenEnd = lstrlenW(theEnd);
+	if (!lenEnd) return true;
+	if (s.empty() || lenEnd > s.length()) return false;
+	return !lstrcmpW(s.c_str() + s.length() - lenEnd, theEnd);
+}
+
+bool wl::str::ends_with_i(const std::wstring& s, WStrPtr theEnd) {
+	int lenEnd = lstrlenW(theEnd);
+	if (!lenEnd) return true;
+	if (s.empty() || lenEnd > s.length()) return false;
+	return !lstrcmpiW(s.c_str() + s.length() - lenEnd, theEnd);
+}
+
+bool wl::str::eq(const std::wstring& a, WStrPtr b) {
+	return !lstrcmpW(a.c_str(), b);
+}
+
+bool wl::str::eq_i(const std::wstring& a, WStrPtr b) {
+	return !lstrcmpiW(a.c_str(), b);
+}
+
+std::wstring wl::str::fmt(WStrPtr format, ...) {
+	va_list args = nullptr;
+	va_start(args, format);
+	int len = std::vswprintf(nullptr, 0, format, args); // include terminating null
+
+	std::wstring buf(len + 1, L'\0'); // alloc receiving buffer
+	std::vswprintf(buf.data(), buf.size(), format, args);
+	va_end(args);
+	return buf;
+}
+
+static constexpr size_t ten_pow(BYTE exponent) {
+	size_t val = 1;
+	for (BYTE i = 0; i < exponent; ++i) val *= 10;
+	return val;
+}
+
+std::wstring wl::str::fmt_bytes(size_t numBytes) {
+	constexpr size_t sz = 40;
+	if (numBytes < ten_pow(3))
+		return fmt(L"%zu bytes", numBytes);
+	else if (numBytes < ten_pow(6))
+		return fmt(L"%.2f KB", numBytes / static_cast<float>(ten_pow(3)));
+	else if (numBytes < ten_pow(9))
+		return fmt(L"%.2f MB", numBytes / static_cast<float>(ten_pow(6)));
+	else if (numBytes < ten_pow(12))
+		return fmt(L"%.2f GB", numBytes / static_cast<float>(ten_pow(9)));
+	else if (numBytes < ten_pow(15))
+		return fmt(L"%.2f TB", numBytes / static_cast<float>(ten_pow(12)));
+	else if (numBytes < ten_pow(18))
+		return fmt(L"%.2f PB", numBytes / static_cast<float>(ten_pow(15)));
+	else
+		return fmt(L"%.2f EB", numBytes / static_cast<float>(ten_pow(18)));
+}
+
+LPCWSTR wl::str::guess_line_break(std::wstring_view s) {
+	for (size_t i = 0; i < s.length() - 1; ++i) {
+		if (s[i] == L'\r') {
+			return s[i + 1] == L'\n' ? L"\r\n" : L"\r"; // report the first one
+		} else if (s[i] == L'\n') {
+			return s[i + 1] == L'\r' ? L"\n\r" : L"\n";
+		}
+	}
+	return nullptr; // unknown
+}
+
+std::wstring wl::str::join(std::span<std::wstring> all, WStrPtr separator) {
+	size_t count = 0;
+	int lenSep = lstrlenW(separator);
+	bool first = true;
+
+	for (const std::wstring& s : all) {
+		if (first) {
+			first = false;
+		} else {
+			count += lenSep;
+		}
+		count += s.length();
+	}
+
+	std::wstring buf;
+	buf.reserve(count);
+	first = true;
+
+	for (const std::wstring& s : all) {
+		if (first) {
+			first = false;
+		} else {
+			buf.append(separator);
+		}
+		buf.append(s);
+	}
+	return buf;
+}
+
+std::wstring wl::str::new_reserved(size_t numReserve) {
+	std::wstring s;
+	s.reserve(numReserve);
+	return s;
+}
+
+std::wstring wl::str::new_resized(size_t numResize, WCHAR ch) {
+	std::wstring s;
+	s.resize(numResize, ch);
+	return s;
+}
+
+std::optional<size_t> wl::str::position(const std::wstring& s, WStrPtr what, size_t off) {
+	size_t pos = s.find(what, off);
+	return pos == std::wstring::npos ? std::nullopt : std::make_optional(pos);
+}
+
+std::optional<size_t> wl::str::position_rev(const std::wstring& s, WStrPtr what, size_t off) {
+	size_t pos = s.rfind(what, off);
+	return pos == std::wstring::npos ? std::nullopt : std::make_optional(pos);
+}
+
+static std::wstring parse_ansi(std::span<BYTE> src) {
+	std::wstring ret;
+	if (!src.empty()) {
+		ret.resize(src.size());
+		for (size_t i = 0; i < src.size(); ++i) {
+			if (src[i] == 0x00) { // found terminating null
+				ret.resize(i);
+				return ret;
+			}
+			ret[i] = static_cast<wchar_t>(src[i]); // brute-force conversion
+		}
+	}
+	return ret; // data didn't have a terminating null
+}
+
+static std::wstring parse_encoded(std::span<BYTE> src, UINT codePage) {
+	std::wstring ret;
+	if (!src.empty()) {
+		int neededLen = MultiByteToWideChar(codePage, 0,
+			reinterpret_cast<const char*>(src.data()), static_cast<int>(src.size()), nullptr, 0);
+		ret.resize(neededLen);
+		MultiByteToWideChar(codePage, 0, reinterpret_cast<const char*>(src.data()),
+			static_cast<int>(src.size()), &ret[0], neededLen);
+		wl::str::trim_nulls(ret);
+	}
+	return ret;
+}
+
+std::wstring wl::str::parse(std::span<BYTE> src) {
+	if (src.empty()) return {};
+
+	enc::Info encInfo = enc::guess(src);
+	src = src.subspan(encInfo.bomSize); // skip BOM, if any
+
+	switch (encInfo.encType) {
+	using enum enc::Type;
+		case Unknown:
+		case Ansi:    return parse_ansi(src);
+		case Win1252: return parse_encoded(src, 1252);
+		case Utf8:    return parse_encoded(src, CP_UTF8);
+		case Utf16be: throw std::invalid_argument("UTF-16 big endian: encoding not implemented.");
+		case Utf16le: throw std::invalid_argument("UTF-16 little endian: encoding not implemented.");
+		case Utf32be: throw std::invalid_argument("UTF-32 big endian: encoding not implemented.");
+		case Utf32le: throw std::invalid_argument("UTF-32 little endian: encoding not implemented.");
+		case Scsu:    throw std::invalid_argument("Standard compression scheme for Unicode: encoding not implemented.");
+		case Bocu1:   throw std::invalid_argument("Binary ordered compression for Unicode: encoding not implemented.");
+		default:      throw std::invalid_argument("Unknown encoding.");
+	}
+}
+
+void wl::str::remove_diacritics(std::wstring& s) {
+	LPCWSTR diacritics   = L"ÁáÀàÃãÂâÄäÉéÈèÊêËëÍíÌìÎîÏïÓóÒòÕõÔôÖöÚúÙùÛûÜüÇçÅåÐðÑñØøÝýÿ";
+	LPCWSTR replacements = L"AaAaAaAaAaEeEeEeEeIiIiIiIiOoOoOoOoOoUuUuUuUuCcAaDdNnOoYyy";
+
+	for (WCHAR& ch : s) {
+		LPCWSTR pDiac = diacritics;
+		LPCWSTR pRepl = replacements;
+		while (*pDiac) {
+			if (ch == *pDiac) ch = *pRepl; // in-place replacement
+			++pDiac;
+			++pRepl;
+		}
+	}
+}
+
+std::vector<std::wstring> wl::str::split(const std::wstring_view& s, WStrPtr delimiter) {
+	if (s.empty()) return {};
+
+	int lenDelim = lstrlenW(delimiter);
+	if (!lenDelim)
+		return {std::wstring{s}}; // one single element
+
+	size_t count = 1, base = 0, head = 0;
+	for (;;) { // 1st pass counts the occurrences to prealloc; benchmarks proved that this is about 2.7x faster
+		head = s.find(delimiter, head);
+		if (head == std::wstring::npos) break;
+		++count;
+		head += lenDelim;
+		base = head;
+	}
+
+	std::vector<std::wstring> ret;
+	ret.reserve(count); // prealloc the number of substrings
+
+	base = head = 0;
+	for (;;) { // 2nd pass will append the substrings
+		head = s.find(delimiter, head);
+		if (head == std::wstring::npos) break;
+		ret.emplace_back(); // append empty string to vector
+		ret.back().insert(0, s, base, head - base); // insert chars into last appended string
+		head += lenDelim;
+		base = head;
+	}
+
+	ret.emplace_back();
+	ret.back().insert(0, s, base, s.length() - base); // append the rest
+	return ret;
+}
+
+std::vector<std::wstring> wl::str::split_lines(const std::wstring& s) {
+	return split(s, guess_line_break(s));
+}
+
+bool wl::str::starts_with(const std::wstring_view& s, WStrPtr theStart) {
+	int lenStart = lstrlenW(theStart);
+	if (!lenStart) return true;
+	if (s.empty() || lenStart > s.length()) return false;
+	for (size_t i = 0; i < lenStart; ++i)
+		if (s[i] != theStart[i]) return false;
+	return true;
+}
+
+bool wl::str::starts_with_i(const std::wstring_view& s, WStrPtr theStart) {
+	int lenStart = lstrlenW(theStart);
+	if (!lenStart) return true;
+	if (s.empty() || lenStart > s.length()) return false;
+	std::wstring s2{s};
+	s2.resize(lenStart);
+	return !lstrcmpiW(s2.data(), theStart);
+}
+
+std::string wl::str::to_ansi(const std::wstring& s) {
+	std::string ansi(s.length(), '\0');
+	for (size_t i = 0; i < s.length(); ++i) {
+		ansi[i] = static_cast<char>(s[i]); // brute-force conversion
+	}
+	return ansi;
+}
+
+std::wstring wl::str::to_lower(const std::wstring& s) {
+	std::wstring ret{s};
+	CharLowerBuffW(ret.data(), static_cast<DWORD>(ret.length()));
+	return ret;
+}
+
+std::wstring wl::str::to_upper(const std::wstring& s) {
+	std::wstring ret{s};
+	CharUpperBuffW(ret.data(), static_cast<DWORD>(ret.length()));
+	return ret;
+}
+
+std::vector<BYTE> wl::str::to_utf8_blob(const std::wstring& s, bool writeBom) {
+	std::vector<BYTE> buf;
+	if (!s.empty()) {
+		constexpr BYTE utf8bom[] = {0xef, 0xbb, 0xbf};
+		size_t szBom = writeBom ? ARRAYSIZE(utf8bom) : 0; // zero if we won't write the BOM
+
+		size_t neededLen = WideCharToMultiByte(CP_UTF8, 0,
+			s.data(), static_cast<int>(s.length()),
+			nullptr, 0, nullptr, 0);
+		buf.resize(neededLen + szBom);
+
+		if (writeBom)
+			CopyMemory(buf.data(), utf8bom, szBom);
+
+		WideCharToMultiByte(CP_UTF8, 0,
+			s.data(), static_cast<int>(s.length()),
+			reinterpret_cast<char*>(buf.data() + szBom),
+			static_cast<int>(neededLen), nullptr, nullptr);
+	}
+
+	return buf;
+}
+
+std::wstring wl::str::to_wide(const std::string& s) {
+	std::wstring wide(s.length(), L'\0');
+	for (size_t i = 0; i < s.length(); ++i) {
+		wide[i] = s[i]; // brute-force conversion
+	}
+	return wide;
+}
+
+void wl::str::trim_nulls(std::wstring& s) {
+	// When a std::wstring is initialized with any length, possibly to be used as a buffer,
+	// the string length may not match the size() method, after the operation.
+	// This function fixes this.
+	if (!s.empty())
+		s.resize( lstrlenW(s.c_str()) );
+}
+
+void wl::str::trim(std::wstring& s) {
+	if (s.empty()) return;
+	trim_nulls(s);
+
+	size_t len = s.length();
+	size_t iFirst = 0, iLast = len - 1; // bounds of trimmed string
+	bool onlySpaces = true; // our string has only spaces?
+
+	for (size_t i = 0; i < len; ++i) {
+		if (!std::iswspace(s[i])) {
+			iFirst = i;
+			onlySpaces = false;
+			break;
+		}
+	}
+	if (onlySpaces) {
+		s.clear();
+		return;
+	}
+
+	for (size_t i = len; i-- > 0; ) {
+		if (!std::iswspace(s[i])) {
+			iLast = i;
+			break;
+		}
+	}
+
+	std::copy(s.begin() + iFirst, // move the non-space chars back
+		s.begin() + iLast + 1, s.begin());
+	s.resize(iLast - iFirst + 1); // trim container size
+}
+
+static constexpr bool guess_utf8(std::span<BYTE> src) {
+	std::span<BYTE>::iterator p = src.begin(); // https://stackoverflow.com/a/1031773/6923555
+	while (p != src.end() && *p) {
+		if ( // ASCII
+			// use p[0] <= 0x7f to allow ASCII control characters
+			p[0] == 0x09 ||
+			p[0] == 0x0a ||
+			p[0] == 0x0d ||
+			(0x20 <= p[0] && p[0] <= 0x7e)
+		) {
+			std::advance(p, 1);
+			continue;
+		}
+
+		if ( // non-overlong 2-byte
+			(0xc2 <= p[0] && p[0] <= 0xdf) &&
+			(0x80 <= p[1] && p[1] <= 0xbf)
+		) {
+			std::advance(p, 2);
+			continue;
+		}
+
+		if (( // excluding overlongs
+			p[0] == 0xe0 &&
+			(0xa0 <= p[1] && p[1] <= 0xbf) &&
+			(0x80 <= p[2] && p[2] <= 0xbf)
+		) || ( // straight 3-byte
+			((0xe1 <= p[0] && p[0] <= 0xec) ||
+				p[0] == 0xee ||
+				p[0] == 0xef) &&
+			(0x80 <= p[1] && p[1] <= 0xbf) &&
+			(0x80 <= p[2] && p[2] <= 0xbf)
+		) || ( // excluding surrogates
+			p[0] == 0xed &&
+			(0x80 <= p[1] && p[1] <= 0x9f) &&
+			(0x80 <= p[2] && p[2] <= 0xbf)
+		)) {
+			std::advance(p, 3);
+			continue;
+		}
+
+		if (( // planes 1-3
+			p[0] == 0xf0 &&
+			(0x90 <= p[1] && p[1] <= 0xbf) &&
+			(0x80 <= p[2] && p[2] <= 0xbf) &&
+			(0x80 <= p[3] && p[3] <= 0xbf)
+		) || ( // planes 4-15
+			(0xf1 <= p[0] && p[0] <= 0xf3) &&
+			(0x80 <= p[1] && p[1] <= 0xbf) &&
+			(0x80 <= p[2] && p[2] <= 0xbf) &&
+			(0x80 <= p[3] && p[3] <= 0xbf)
+		) || ( // plane 16
+			p[0] == 0xf4 &&
+			(0x80 <= p[1] && p[1] <= 0x8f) &&
+			(0x80 <= p[2] && p[2] <= 0xbf) &&
+			(0x80 <= p[3] && p[3] <= 0xbf)
+		)) {
+			std::advance(p, 4);
+			continue;
+		}
+
+		return false; // none of the conditions were accepted, not UTF-8
+	}
+	return true; // all the conditions accepted through the whole byte source
+}
+
+wl::str::enc::Info wl::str::enc::guess(std::span<BYTE> src) {
+	auto match = [&](std::span<BYTE> bom) constexpr -> bool {
+		return (src.size() >= bom.size())
+			&& std::equal(src.begin(), src.begin() + bom.size(), bom.begin(), bom.end());
+	};
+
+	BYTE utf8[] = {0xef, 0xbb, 0xbf}; // UTF-8 BOM
+	if (match(utf8)) return {Type::Utf8, ARRAYSIZE(utf8)}; // BOM size in bytes
+
+	BYTE utf16be[] = {0xfe, 0xff};
+	if (match(utf16be)) return {Type::Utf16be, ARRAYSIZE(utf16be)};
+
+	BYTE utf16le[] = {0xff, 0xfe};
+	if (match(utf16le)) return {Type::Utf16le, ARRAYSIZE(utf16le)};
+
+	BYTE utf32be[] = {0x00, 0x00, 0xfe, 0xff};
+	if (match(utf32be)) return {Type::Utf32be, ARRAYSIZE(utf32be)};
+
+	BYTE utf32le[] = {0xff, 0xfe, 0x00, 0x00};
+	if (match(utf32le)) return {Type::Utf32le, ARRAYSIZE(utf32le)};
+
+	BYTE scsu[] = {0x0e, 0xfe, 0xff};
+	if (match(scsu)) return {Type::Scsu, ARRAYSIZE(scsu)};
+
+	BYTE bocu1[] = {0xfb, 0xee, 0x28};
+	if (match(bocu1)) return {Type::Bocu1, ARRAYSIZE(bocu1)};
+
+	if (guess_utf8(src)) return {Type::Utf8, 0}; // UTF-8 without BOM
+
+	bool hasNonAnsiChar = std::any_of(src.begin(), src.end(), [](BYTE ch) { return ch > 0x7f; });
+	return hasNonAnsiChar
+		? Info{Type::Win1252, 0} // by exclusion, not assertive
+		: Info{Type::Ansi, 0};
+}

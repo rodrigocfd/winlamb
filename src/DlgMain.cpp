@@ -1,0 +1,62 @@
+#include <Windows.h>
+#include <ShlObj.h>
+#include "DlgMain.h"
+
+RUN_MAIN(DlgMain, wnd)
+
+DlgMain::DlgMain() {
+	wnd.on().wm_init_dialog(std::bind(&DlgMain::on_init_dialog, this, std::placeholders::_1));
+	wnd.on().wm_command(IDCANCEL, std::bind(&DlgMain::on_cancel, this));
+	dropFiles.on_drop(std::bind(&DlgMain::on_drop_files, this, std::placeholders::_1));
+	lstFiles.on().lvn_item_changed(std::bind(&DlgMain::on_lst_files_item_changed, this, std::placeholders::_1));
+
+	// dlg.on().wm_notify(0x333, LVN_DELETEITEM, [this](wl::wm::Notify n) {
+	// 	auto p = n.pHdr<NMLINK>();
+	// 	return 0;
+	// });
+}
+
+bool DlgMain::on_init_dialog(wl::wm::InitDialog) {
+	lstFiles.cols.add(L"Faster", 300);
+	lstFiles.cols.add(L"Rapids", 300);
+
+	lstFiles.items.add(L"Line", {L"Killings"});
+	return true;
+}
+
+void DlgMain::on_cancel() {
+	// wl::ComPtr<IFileOpenDialog> ifod{CLSID_FileOpenDialog};
+
+	// FILEOPENDIALOGOPTIONS defOpts;
+	// ifod->GetOptions(&defOpts);
+	// ifod->SetOptions(defOpts | FOS_FORCEFILESYSTEM | FOS_FILEMUSTEXIST | FOS_ALLOWMULTISELECT);
+
+	// COMDLG_FILTERSPEC ftypes[] = {
+	// 	{L"MP3 files", L"*.mp3"},
+	// 	{L"All files", L"*.*"},
+	// };
+	// ifod->SetFileTypes(ARRAYSIZE(ftypes), ftypes);
+	// ifod->SetFileTypeIndex(1);
+
+	// HRESULT hrShow = ifod->Show(nullptr);
+	// if (hrShow == HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
+	// 	OutputDebugStringW(L"Cancelled.\n");
+	// } else if (SUCCEEDED(hrShow)) {
+	// 	OutputDebugStringW(L"OKAY.\n");
+	// } else  {
+	// 	MessageBoxW(nullptr, L"File open failed.", L"Error", MB_ICONERROR);
+	// }
+
+	PostMessageW(wnd.hwnd(), WM_CLOSE, 0, 0);
+}
+
+void DlgMain::on_drop_files(const std::vector<std::wstring> files) {
+	lstFiles.items.delete_all();
+	for (auto& f : files)
+		lstFiles.items.add(f);
+}
+
+void DlgMain::on_lst_files_item_changed(NMLISTVIEW& p) {
+	wnd.set_title(!lstFiles.items.selected_count()
+		? L"NO SEL" : lstFiles.items[p.iItem].text());
+}

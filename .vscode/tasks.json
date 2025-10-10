@@ -1,0 +1,76 @@
+// MSVC compiler and linker options:
+// https://learn.microsoft.com/en-us/cpp/build/reference/compiler-options-listed-alphabetically
+// https://learn.microsoft.com/en-us/cpp/build/reference/linker-options
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"type": "cppbuild",
+			"label": "MSBuild debug",
+			"command": "msbuild.exe",
+			"args": [
+				"${workspaceFolder}\\${workspaceFolderBasename}.vcxproj",
+				"/p:Configuration=Debug",
+				"/p:Platform=x64",
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true,
+			},
+			"presentation": {
+				"clear": true,
+			},
+		},
+		{
+			"type": "cppbuild",
+			"label": "MSBuild release",
+			"command": "msbuild.exe",
+			"args": [
+				"${workspaceFolder}\\${workspaceFolderBasename}.vcxproj",
+				"/p:Configuration=Release",
+				"/p:Platform=x64",
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true,
+			},
+			"presentation": {
+				"clear": true,
+			},
+		},
+		{
+			"type": "cppbuild",
+			"label": "MSBuild clean",
+			"command": "msbuild.exe",
+			"args": [
+				"${workspaceFolder}\\${workspaceFolderBasename}.vcxproj",
+				"/t:Clean",
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+			"problemMatcher": [
+				"$msCompile"
+			],
+			"group": {
+				"kind": "build",
+				"isDefault": true,
+			},
+			"presentation": {
+				"clear": true,
+			},
+		},
+	]
+}

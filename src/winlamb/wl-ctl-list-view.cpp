@@ -1,0 +1,372 @@
+#include "ctl-list-view.h"
+using namespace _wl_internal;
+using namespace wl;
+
+#define EVENT_ARGS(name, lvn, argty) \
+	void EventsListView::name(std::function<void(argty&)> cb) { \
+		_events._owner._userEvents.wm_notify(_events._ctrlId, lvn, [this, cb = std::move(cb)](wm::Notify p) { \
+			cb(p.hdr<argty>()); \
+			return _events._owner._isDlg ? TRUE : 0; \
+		}); \
+	}
+#define EVENT_ARGS_RET_BOOL(name, lvn, argty) \
+	void EventsListView::name(std::function<bool(argty&)> cb) { \
+		_events._owner._userEvents.wm_notify(_events._ctrlId, lvn, [cb = std::move(cb)](wm::Notify p) { \
+			return cb(p.hdr<argty>()); \
+		}); \
+	}
+
+EVENT_ARGS_RET_BOOL(lvn_begin_label_edit, LVN_BEGINLABELEDITW, NMLVDISPINFOW)
+EVENT_ARGS(lvn_column_click, LVN_COLUMNCLICK, NMLISTVIEW)
+EVENT_ARGS_RET_BOOL(lvn_delete_all_items, LVN_DELETEALLITEMS, NMLISTVIEW)
+EVENT_ARGS(lvn_delete_item, LVN_DELETEITEM, NMLISTVIEW)
+EVENT_ARGS_RET_BOOL(lvn_end_label_edit, LVN_ENDLABELEDITW, NMLVDISPINFOW)
+EVENT_ARGS(lvn_insert_item, LVN_INSERTITEM, NMLISTVIEW)
+EVENT_ARGS(lvn_item_activate, LVN_ITEMACTIVATE, NMITEMACTIVATE)
+EVENT_ARGS(lvn_item_changed, LVN_ITEMCHANGED, NMLISTVIEW)
+EVENT_ARGS_RET_BOOL(lvn_item_changing, LVN_ITEMCHANGING, NMLISTVIEW)
+EVENT_ARGS(lvn_key_down, LVN_KEYDOWN, NMLVKEYDOWN)
+EVENT_ARGS(nm_click, NM_CLICK, NMITEMACTIVATE)
+void EventsListView::nm_custom_draw(std::function<DWORD(NMLVCUSTOMDRAW&)> cb) {
+	_events._owner._userEvents.wm_notify(_events._ctrlId, NM_CUSTOMDRAW, [cb = std::move(cb)](wm::Notify p) {
+		return cb(p.hdr<NMLVCUSTOMDRAW>());
+	});
+}
+EVENT_ARGS(nm_dbl_clk, NM_DBLCLK, NMITEMACTIVATE)
+EVENT_ARGS(nm_kill_focus, NM_KILLFOCUS, NMHDR)
+EVENT_ARGS(nm_r_click, NM_RCLICK, NMITEMACTIVATE)
+EVENT_ARGS(nm_r_dbl_clk, NM_RDBLCLK, NMITEMACTIVATE)
+EVENT_ARGS(nm_set_focus, NM_SETFOCUS, NMHDR)
+
+////////////////////////////////////////////////////////////////////////////////
+
+std::vector<std::wstring> ListView::Column::item_texts() const {
+	UINT count = _pOwner->items.count();
+	std::vector<std::wstring> texts;
+	texts.reserve(count);
+	for (UINT i = 0; i < count; ++i) {
+		texts.emplace_back(_pOwner->items[i].text(_index));
+	}
+	return texts;
+}
+
+std::vector<std::wstring> ListView::Column::selected_item_texts() const {
+	std::vector<std::wstring> texts;
+	texts.reserve(_pOwner->items.selected_count());
+
+	int idx = -1;
+	for (;;) {
+		idx = ListView_GetNextItem(_pOwner->hwnd(), idx, LVNI_SELECTED);
+		if (idx == -1) break;
+		texts.emplace_back(_pOwner->items[idx].text(_index));
+	}
+	return texts;
+}
+
+int ListView::Column::justif() const {
+	HWND hHeader = ListView_GetHeader(_pOwner->hwnd());
+
+	HDITEMW hdi{.mask = HDI_FORMAT};
+	Header_GetItem(hHeader, _index, &hdi);
+
+	return hdi.fmt & (HDF_LEFT | HDF_CENTER | HDF_RIGHT); // filter out
+}
+
+const ListView::Column& ListView::Column::set_justif(WORD hdf) const {
+	HWND hHeader = ListView_GetHeader(_pOwner->hwnd());
+
+	HDITEMW hdi{.mask = HDI_FORMAT};
+	Header_GetItem(hHeader, _index, &hdi); // first, retrieve current
+
+	hdi.fmt &= ~(HDF_CENTER | HDF_LEFT | HDF_RIGHT); // clear all three
+	hdi.fmt |= (hdf & (HDF_LEFT | HDF_CENTER | HDF_RIGHT)); // filter in
+	Header_SetItem(hHeader, _index, &hdi);
+
+	return *this;
+}
+
+WORD ListView::Column::sort_arrow() const {
+	HWND hHeader = ListView_GetHeader(_pOwner->hwnd());
+
+	HDITEMW hdi{.mask = HDI_FORMAT};
+	Header_GetItem(hHeader, _index, &hdi);
+
+	return hdi.fmt & (HDF_SORTDOWN | HDF_SORTUP); // filter out
+}
+
+const ListView::Column& ListView::Column::set_sort_arrow(WORD hdf) const {
+	HWND hHeader = ListView_GetHeader(_pOwner->hwnd());
+	UINT numCols = Header_GetItemCount(hHeader);
+
+	for (UINT i = 0; i < numCols; ++i) {
+		HDITEMW hdi{.mask = HDI_FORMAT};
+		Header_GetItem(hHeader, i, &hdi); // first, retrieve current
+
+		hdi.fmt &= ~(HDF_SORTDOWN | HDF_SORTUP); // clear all two
+		if (i == _index) // only the targeted column will have the flag set
+			hdi.fmt |= (hdf & (HDF_SORTDOWN | HDF_SORTUP)); // filter in
+
+		Header_SetItem(hHeader, i, &hdi);
+	}
+
+	return *this;
+}
+
+std::wstring ListView::Column::text() const {
+	std::wstring buf(64, L'\0'); // arbitrary
+
+	LVCOLUMNW lvc{
+		.mask = LVCF_TEXT,
+		.pszText = buf.data(),
+		.cchTextMax = static_cast<int>(buf.size()),
+	};
+
+	ListView_GetColumn(_pOwner->hwnd(), _index, &lvc);
+	str::trim_nulls(buf);
+	return buf;
+}
+
+const ListView::Column& ListView::Column::set_text(WStrPtr text) const {
+	LVCOLUMNW lvc{
+		.mask = LVCF_TEXT,
+		.pszText = text.lpwstr(),
+	};
+	ListView_SetColumn(_pOwner->hwnd(), _index, &lvc);
+	return *this;
+}
+
+UINT ListView::Column::width() const {
+	return ListView_GetColumnWidth(_pOwner->hwnd(), _index);
+}
+
+const ListView::Column& ListView::Column::set_width(UINT width) const {
+	ListView_SetColumnWidth(_pOwner->hwnd(), _index, width);
+	return *this;
+}
+
+const ListView::Column& ListView::Column::set_width_to_fill(UINT width) const {
+	UINT numCols = _pOwner->cols.count();
+	if (numCols == 0) return *this;
+
+	UINT cxUsed = 0;
+	for (UINT i = 0; i < numCols; ++i) {
+		if (i != _index)
+			cxUsed += _pOwner->cols[i].width(); // retrieve cx of each column, but us
+	}
+
+	RECT rc{};
+	GetClientRect(_pOwner->hwnd(), &rc); // list view client area
+	return set_width(rc.right - cxUsed);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+ListView::Column ListView::ColumnCollection::add(WStrPtr text, UINT width) const {
+	LVCOLUMNW lvc{
+		.mask = LVCF_TEXT | LVCF_WIDTH,
+		.cx = static_cast<int>(width),
+		.pszText = text.lpwstr(),
+	};
+	int index = ListView_InsertColumn(_pOwner->hwnd(), 0xffff, &lvc); // insert as the last column
+	return {*_pOwner, index}; // return newly added column
+}
+
+UINT ListView::ColumnCollection::count() const {
+	HWND hHeader = ListView_GetHeader(_pOwner->hwnd());
+	return Header_GetItemCount(hHeader);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+LPARAM ListView::Item::data() const {
+	LVITEMW lvi{
+		.mask = LVIF_PARAM,
+		.iItem = _index,
+	};
+	ListView_GetItem(_pOwner->hwnd(), &lvi);
+	return lvi.lParam;
+}
+
+const ListView::Item& ListView::Item::set_data(LPARAM data) const {
+	LVITEMW lvi{
+		.mask = LVIF_PARAM,
+		.iItem = _index,
+		.lParam = data,
+	};
+	ListView_SetItem(_pOwner->hwnd(), &lvi);
+	return *this;
+}
+
+bool ListView::Item::is_focused() const {
+	return ListView_GetItemState(_pOwner->hwnd(), _index, LVIS_FOCUSED) & LVIS_FOCUSED;
+}
+
+const ListView::Item& ListView::Item::focus() const {
+	ListView_SetItemState(_pOwner->hwnd(), _index, LVIS_FOCUSED, LVIS_FOCUSED);
+	return *this;
+}
+
+const ListView::Item& ListView::Item::remove() const {
+	ListView_DeleteItem(_pOwner->hwnd(), _index);
+	return *this;
+}
+
+bool ListView::Item::is_selected() const {
+	return ListView_GetItemState(_pOwner->hwnd(), _index, LVIS_SELECTED) & LVIS_SELECTED;
+}
+
+const ListView::Item& ListView::Item::select(bool doSelect) const {
+	ListView_SetItemState(_pOwner->hwnd(), _index, doSelect ? LVIS_SELECTED : 0, LVIS_SELECTED);
+	return *this;
+}
+
+std::wstring ListView::Item::text(UINT columnIndex) const {
+	UINT curBufSz = str::SSO_LEN;
+	std::wstring buf(curBufSz, L'\0');
+
+	for (;;) {
+		LVITEMW lvi{
+			.mask = LVIF_TEXT,
+			.iSubItem = static_cast<int>(columnIndex),
+			.pszText = buf.data(),
+			.cchTextMax = static_cast<int>(curBufSz),
+		};
+
+		UINT recvChars = static_cast<UINT>(
+			SendMessageW(_pOwner->hwnd(), LVM_GETITEMTEXTW, _index, reinterpret_cast<LPARAM>(&lvi)));
+		recvChars += 1; // plus terminating null count
+
+		if (recvChars < curBufSz) { // to break, must have at least 1 char gap
+			str::trim_nulls(buf);
+			return buf;
+		}
+
+		curBufSz *= 2; // double the buffer size to try again
+		buf.resize(curBufSz, L'\0');
+	}
+}
+
+const ListView::Item& ListView::Item::set_text(WStrPtr text, UINT columnIndex) const {
+	ListView_SetItemText(_pOwner->hwnd(), _index, columnIndex, text.lpwstr());
+	return *this;
+}
+
+UINT ListView::Item::unique_id() const {
+	return ListView_MapIndexToID(_pOwner->hwnd(), _index);
+}
+
+bool ListView::Item::is_visible() const {
+	return ListView_IsItemVisible(_pOwner->hwnd(), _index);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+ListView::Item ListView::ItemCollection::add(WStrPtr text,
+	std::initializer_list<WStrPtr> otherColumnsTexts, int icon) const
+{
+	LVITEMW lvi{
+		.mask = LVIF_TEXT | static_cast<UINT>(icon != -1 ? LVIF_IMAGE : 0),
+		.iItem = 0x0fff'ffff, // insert as the last item
+		.pszText = text.lpwstr(),
+		.iImage = icon,
+	};
+	int index = ListView_InsertItem(_pOwner->hwnd(), &lvi);
+	Item newItem{*_pOwner, index};
+
+	for (auto colText = otherColumnsTexts.begin(); colText != otherColumnsTexts.end(); ++colText) {
+		size_t idx = std::distance(otherColumnsTexts.begin(), colText);
+		newItem.set_text(*colText, static_cast<UINT>(idx) + 1);
+	}
+
+	return newItem; // return newly added item
+}
+
+UINT ListView::ItemCollection::count() const {
+	return ListView_GetItemCount(_pOwner->hwnd());
+}
+
+void ListView::ItemCollection::delete_all() const {
+	ListView_DeleteAllItems(_pOwner->hwnd());
+}
+
+void ListView::ItemCollection::delete_selected() const {
+	for (;;) {
+		int idxFound = ListView_GetNextItem(_pOwner->hwnd(), -1, LVNI_SELECTED); // always search first one
+		if (idxFound == -1) break;
+		ListView_DeleteItem(_pOwner->hwnd(), idxFound);
+	}
+}
+
+std::optional<ListView::Item> ListView::ItemCollection::focused() const {
+	int idxFound = ListView_GetNextItem(_pOwner->hwnd(), -1, LVNI_FOCUSED);
+	return idxFound == -1 ? std::nullopt : std::make_optional(Item{*_pOwner, idxFound});
+}
+
+std::optional<ListView::Item> ListView::ItemCollection::get_by_unique_id(UINT uid) const {
+	int idx = ListView_MapIDToIndex(_pOwner->hwnd(), uid);
+	return idx == -1 ? std::nullopt : std::make_optional(Item{*_pOwner, idx});
+}
+
+std::optional<ListView::Item> ListView::ItemCollection::hit_test(POINT pt) const {
+	LVHITTESTINFO lvhti{.pt = pt};
+	int idxFound = ListView_HitTestEx(_pOwner->hwnd(), &lvhti);
+	return idxFound == -1 ? std::nullopt : std::make_optional(Item{*_pOwner, idxFound});
+}
+
+void ListView::ItemCollection::select_all(bool doSelect) const {
+	if (GetWindowLongPtrW(_pOwner->hwnd(), GWL_STYLE) & LVS_SINGLESEL) [[unlikely]] {
+		return; // single-sel list views cannot have all items selected
+	}
+	ListView_SetItemState(_pOwner->hwnd(), -1, doSelect ? LVIS_SELECTED : 0, LVIS_SELECTED);
+}
+
+std::vector<ListView::Item> ListView::ItemCollection::selected() const {
+	std::vector<Item> items;
+	items.reserve(selected_count());
+
+	int idx = -1;
+	for (;;) {
+		idx = ListView_GetNextItem(_pOwner->hwnd(), idx, LVNI_SELECTED);
+		if (idx == -1) break;
+		items.emplace_back(*_pOwner, idx);
+	}
+	return items;
+}
+
+UINT ListView::ItemCollection::selected_count() const {
+	return ListView_GetSelectedCount(_pOwner->hwnd());
+}
+
+void ListView::ItemCollection::sort(std::function<int(Item, Item)> cb) const {
+	struct Info final {
+		const ListView *pOwner;
+		std::function<int(Item, Item)> cb;
+	};
+	Info nfo = {
+		.pOwner = _pOwner,
+		.cb = std::move(cb),
+	};
+
+	ListView_SortItemsEx(_pOwner->hwnd(), [](LPARAM idxA, LPARAM idxB, LPARAM lp) -> int { // receives indexes
+		Info* pNfo = reinterpret_cast<Info*>(lp);
+		return pNfo->cb(
+			pNfo->pOwner->items[static_cast<int>(idxA)],
+			pNfo->pOwner->items[static_cast<int>(idxB)]);
+	}, &nfo);
+}
+
+std::optional<ListView::Item> ListView::ItemCollection::topmost_visible() const {
+	int idx = ListView_GetTopIndex(_pOwner->hwnd());
+	return idx == -1 ? std::nullopt : std::make_optional(Item{*_pOwner, idx});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+ListView::ListView(WindowMain& owner, WORD ctrlId, WORD contextMenuId)
+	: _ctrl{owner}, _events{owner, ctrlId}
+{
+	_ctrl._owner._preEvents.wm_init_dialog([this, pOwner = &owner, ctrlId](wm::InitDialog) {
+		_ctrl.set_hwnd(GetDlgItem(pOwner->hwnd(), ctrlId));
+		return false; // ignored
+	});
+}
