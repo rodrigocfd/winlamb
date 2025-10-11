@@ -18,9 +18,9 @@ namespace wl {
 
 		constexpr File() = default;
 		File(const File&) = delete;
-		File(File&& other) noexcept { operator=(std::forward<File>(other)); }
+		File(File &&other) noexcept { operator=(std::forward<File>(other)); }
 		File& operator=(const File&) = delete;
-		File& operator=(File&& other) noexcept;
+		File& operator=(File &&other) noexcept;
 
 		constexpr explicit File(HANDLE hFile) : _hFile{hFile} { }
 		File(WStrPtr path, Access access) { open(path, access); }
@@ -30,7 +30,7 @@ namespace wl {
 		File& open(WStrPtr path, Access access);
 		[[nodiscard]] size_t ptr_offset() const;
 		[[nodiscard]] std::vector<BYTE> read(size_t numBytes = 0) const;
-		const File& read_buf(std::vector<BYTE>& buf) const;
+		const File& read_buf(std::vector<BYTE> &buf) const;
 		const File& set_ptr_offset(size_t offset) const;
 		[[nodiscard]] size_t size() const;
 		[[nodiscard]] Times times() const;
@@ -57,9 +57,9 @@ namespace wl {
 
 		constexpr FileMapped() = default;
 		FileMapped(const FileMapped&) = delete;
-		FileMapped(FileMapped&& other) noexcept { operator=(std::forward<FileMapped>(other)); }
+		FileMapped(FileMapped &&other) noexcept { operator=(std::forward<FileMapped>(other)); }
 		FileMapped& operator=(const FileMapped&) = delete;
-		FileMapped& operator=(FileMapped&& other) noexcept;
+		FileMapped& operator=(FileMapped &&other) noexcept;
 
 		FileMapped(WStrPtr path, Access access) { open(path, access); }
 

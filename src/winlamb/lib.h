@@ -12,5 +12,5 @@
 #include "runnable.h"
 #include "str.h"
 #include "window-dialog.h"
-#include "window-final.h"
+#include "window-user.h"
 #include "window.h"

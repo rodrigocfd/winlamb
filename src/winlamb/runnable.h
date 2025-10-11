@@ -11,7 +11,7 @@ namespace _wl_internal {
 	};
 
 	// Handles an uncaught exception.
-	void uncaught_exception(const std::exception& e);
+	void uncaught_exception(const std::exception &e);
 
 }
 
@@ -33,7 +33,7 @@ namespace wl {
 		try { \
 			userwnd w; \
 			ret = w.mainwnd.run(hInst, cmdShow); \
-		} catch (const std::exception& e) { \
+		} catch (const std::exception &e) { \
 			_wl_internal::uncaught_exception(e); \
 		} \
 		if (_CrtDumpMemoryLeaks()) MessageBoxW(nullptr, L"A memory leak was found.", L"Memory leak", MB_ICONERROR); \

@@ -4,7 +4,7 @@
 #include <vector>
 #include <Windows.h>
 #include <oleidl.h>
-#include "window-final.h"
+#include "window-user.h"
 
 namespace wl {
 
@@ -17,7 +17,8 @@ namespace wl {
 		DropFiles& operator=(const DropFiles&) = delete;
 		DropFiles& operator=(DropFiles&&) = delete;
 
-		DropFiles(WindowMain& owner);
+		explicit DropFiles(WindowMain &owner);
+		explicit DropFiles(WindowModal &owner);
 
 		HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) override;
 		ULONG STDMETHODCALLTYPE AddRef() override;
@@ -31,6 +32,7 @@ namespace wl {
 		void on_drop(std::function<void(const std::vector<std::wstring>&)> cb) { _cb = std::make_optional(cb); }
 
 	private:
+		void construct(_wl_internal::WindowMsg &owner);
 		std::vector<std::wstring> get_dropped(HDROP hDrop) const;
 
 		LONG _refCount = 1;

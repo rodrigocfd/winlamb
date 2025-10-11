@@ -2,7 +2,7 @@
 #include "file.h"
 using namespace wl;
 
-File& File::operator=(File&& other) noexcept {
+File& File::operator=(File &&other) noexcept {
 	close();
 	std::swap(_hFile, other._hFile);
 	return *this;
@@ -59,7 +59,7 @@ std::vector<BYTE> File::read(size_t numBytes) const {
 	return buf;
 }
 
-const File& File::read_buf(std::vector<BYTE>& buf) const {
+const File& File::read_buf(std::vector<BYTE> &buf) const {
 	DWORD read = 0;
 	if (!ReadFile(_hFile, buf.data(), static_cast<DWORD>(buf.size()), &read, nullptr)) [[unlikely]] {
 		throw std::system_error(GetLastError(), std::system_category(), "ReadFile failed.");
@@ -126,7 +126,7 @@ void File::erase_and_write(WStrPtr path, std::span<BYTE> data) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-FileMapped& FileMapped::operator=(FileMapped&& other) noexcept {
+FileMapped& FileMapped::operator=(FileMapped &&other) noexcept {
 	close();
 	std::swap(_file, other._file);
 	std::swap(_hMap, other._hMap);
@@ -150,7 +150,7 @@ void FileMapped::close() noexcept {
 
 FileMapped& FileMapped::open(WStrPtr path, Access access) {
 	close();
-	auto facc = (access == Access::ExistingReadOnly) ? // translate FileMap to File access
+	File::Access facc = (access == Access::ExistingReadOnly) ? // translate FileMap to File access
 		File::Access::ExistingReadOnly : File::Access::ExistingRW;
 	DWORD page = (access == Access::ExistingReadOnly) ? PAGE_READONLY : PAGE_READWRITE;
 

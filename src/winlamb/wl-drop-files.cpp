@@ -1,22 +1,13 @@
 #include "drop-files.h"
+using namespace _wl_internal;
 using namespace wl;
 
-DropFiles::DropFiles(WindowMain& owner) {
-	if (owner.wnd_msg()._isDlg) {
-		owner.wnd_msg()._preEvents.wm_init_dialog([this, pOwner = &owner](wm::InitDialog) {
-			RegisterDragDrop(pOwner->hwnd(), this);
-			return false; // ignored
-		});
-	} else {
-		owner.wnd_msg()._preEvents.wm_create([this, pOwner = &owner](wm::Create) {
-			RegisterDragDrop(pOwner->hwnd(), this);
-			return false; // ignored
-		});
-	}
+DropFiles::DropFiles(WindowMain &owner) {
+	construct(owner.wnd_msg());
+}
 
-	owner.wnd_msg()._postEvents.wm_destroy([pOwner = &owner]() {
-		RevokeDragDrop(pOwner->hwnd());
-	});
+DropFiles::DropFiles(WindowModal &owner) {
+	construct(owner.wnd_msg());
 }
 
 HRESULT STDMETHODCALLTYPE DropFiles::QueryInterface(REFIID riid, void **ppvObject) {
@@ -75,8 +66,8 @@ HRESULT STDMETHODCALLTYPE DropFiles::Drop(
 		}
 
 		HGLOBAL hFiles = medium.hGlobal;
-		auto hDrop = reinterpret_cast<HDROP>(GlobalLock(hFiles));
-		auto files = get_dropped(hDrop);
+		HDROP hDrop = reinterpret_cast<HDROP>(GlobalLock(hFiles));
+		std::vector<std::wstring> files = get_dropped(hDrop);
 		GlobalUnlock(hFiles);
 		ReleaseStgMedium(&medium);
 
@@ -85,6 +76,16 @@ HRESULT STDMETHODCALLTYPE DropFiles::Drop(
 
 	*pdwEffect &= DROPEFFECT_COPY;
 	return S_OK;
+}
+
+void DropFiles::construct(WindowMsg &owner) {
+	owner._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() {
+		RegisterDragDrop(pOwner->hwnd(), this);
+	});
+
+	owner._postEvents.wm(WM_DESTROY, [pOwner = &owner](wm::Msg) {
+		RevokeDragDrop(pOwner->hwnd());
+	});
 }
 
 std::vector<std::wstring> DropFiles::get_dropped(HDROP hDrop) const {

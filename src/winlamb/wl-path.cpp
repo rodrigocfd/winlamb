@@ -42,7 +42,7 @@ std::vector<std::wstring> wl::path::dir_list(WStrPtr pathAndFilter) {
 			DWORD err = GetLastError();
 			FindClose(hFind);
 			if (err == ERROR_NO_MORE_FILES) [[likely]] {
-				std::sort(entries.begin(), entries.end(), [](const std::wstring& a, const std::wstring& b) -> bool {
+				std::sort(entries.begin(), entries.end(), [](const std::wstring &a, const std::wstring &b) -> bool {
 					return lstrcmpiW(a.c_str(), b.c_str()) < 1;
 				});
 				return entries; // no more files found
@@ -53,7 +53,7 @@ std::vector<std::wstring> wl::path::dir_list(WStrPtr pathAndFilter) {
 	}
 }
 
-void dir_walk_buf(wl::WStrPtr pathAndFilter, std::vector<std::wstring>& outBuf) {
+void dir_walk_buf(wl::WStrPtr pathAndFilter, std::vector<std::wstring> &outBuf) {
 	std::vector<std::wstring> entries = wl::path::dir_list(pathAndFilter);
 	for (const auto& entry : entries) {
 		if (!wl::path::is_dir(entry))
@@ -97,11 +97,11 @@ std::wstring wl::path::file_from(WStrPtr p) {
 	return ret;
 }
 
-bool wl::path::has_extension(const std::wstring& p, WStrPtr ext) {
+bool wl::path::has_extension(const std::wstring &p, WStrPtr ext) {
 	return str::ends_with_i(p, ext);
 }
 
-bool wl::path::has_extension(const std::wstring& p, std::initializer_list<WStrPtr> exts) {
+bool wl::path::has_extension(const std::wstring &p, std::initializer_list<WStrPtr> exts) {
 	for (auto&& ext : exts) {
 		if (has_extension(p, ext))
 			return true;
@@ -129,7 +129,7 @@ bool wl::path::is_read_only(WStrPtr p) {
 	return get_attrs(p) & FILE_ATTRIBUTE_READONLY;
 }
 
-std::wstring wl::path::swap_extension(const std::wstring& p, WStrPtr newExt) {
+std::wstring wl::path::swap_extension(const std::wstring &p, WStrPtr newExt) {
 	size_t idxDot = p.find_last_of(L'.');
 	if (idxDot != std::wstring::npos) [[likely]] {
 		std::wstring p2{p.substr(0, idxDot + (newExt[0] == L'.' ? 0 : 1))};
@@ -140,7 +140,7 @@ std::wstring wl::path::swap_extension(const std::wstring& p, WStrPtr newExt) {
 	}
 }
 
-void wl::path::trim_backslash(std::wstring& p) {
+void wl::path::trim_backslash(std::wstring &p) {
 	while (p.back() == L'\\')
 		p.resize(p.length() - 1);
 }

@@ -1,9 +1,9 @@
 #pragma once
 #include "window-dialog.h"
 
-namespace wl {
+namespace wl { class DropFiles; }
 
-	class DropFiles;
+namespace wl {
 
 	// Main application window.
 	class WindowMain final {
@@ -24,7 +24,7 @@ namespace wl {
 
 		// Allows message events to be added.
 		// The events must be added before the dialog is created.
-		[[nodiscard]] _wl_internal::Events& on() { return wnd_msg().on(); }
+		[[nodiscard]] _wl_internal::EventsUser& on() { return wnd_msg().on(); }
 
 		// Creates a new, detached thread and runs the function. Catches uncaught exceptions.
 		void thread_detach(std::function<void()> cb) const { wnd_msg().thread_detach(cb); }
@@ -42,6 +42,37 @@ namespace wl {
 
 		std::optional<_wl_internal::DialogMain> _rawMain{}; // either one
 		std::optional<_wl_internal::DialogMain> _dlgMain{};
+
+		friend _wl_internal::NativeCtrl;
+		friend _wl_internal::EventsNativeCtrl;
+		friend DropFiles;
+	};
+
+}
+
+namespace wl {
+
+	// Modal window.
+	class WindowModal final {
+	public:
+		WindowModal() = delete;
+		WindowModal(const WindowModal&) = delete;
+		WindowModal(WindowModal&&) = delete;
+		WindowModal& operator=(const WindowModal&) = delete;
+		WindowModal& operator=(WindowModal&&) = delete;
+
+		WindowModal(WORD dlgId)
+			: _dlgModal{std::make_optional<_wl_internal::DialogModal>(dlgId)} { }
+
+		// Displays the modal dialog, blocking until the modal is closed.
+		void show(const wl::WindowMain &owner);
+
+	private:
+		[[nodiscard]] const _wl_internal::WindowMsg& wnd_msg() const;
+		[[nodiscard]] _wl_internal::WindowMsg& wnd_msg();
+
+		std::optional<_wl_internal::DialogModal> _rawModal{}; // either one
+		std::optional<_wl_internal::DialogModal> _dlgModal{};
 
 		friend _wl_internal::NativeCtrl;
 		friend _wl_internal::EventsNativeCtrl;

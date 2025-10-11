@@ -13,12 +13,12 @@ namespace wl {
 		~ComPtr() { release(); }
 
 		constexpr ComPtr() = default;
-		ComPtr(const ComPtr& other) { operator=(other); }
-		ComPtr(ComPtr&& other) noexcept { operator=(std::forward<ComPtr<T>>(other)); }
+		ComPtr(const ComPtr &other) { operator=(other); }
+		ComPtr(ComPtr &&other) noexcept { operator=(std::forward<ComPtr<T>>(other)); }
 		constexpr explicit ComPtr(T *p) : _p{p} { }
 		explicit ComPtr(REFCLSID clsid, DWORD clsctx = CLSCTX_INPROC_SERVER) { co_create_instance(clsid, clsctx); }
 
-		ComPtr& operator=(const ComPtr& other) {
+		ComPtr& operator=(const ComPtr &other) {
 			release();
 			if (other._p) {
 				other._p->AddRef(); // we're effectively cloning the COM pointer
@@ -27,7 +27,7 @@ namespace wl {
 			return *this;
 		}
 
-		ComPtr& operator=(ComPtr&& other) noexcept {
+		ComPtr& operator=(ComPtr &&other) noexcept {
 			release();
 			std::swap(_p, other._p);
 			return *this;

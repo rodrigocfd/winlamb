@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include "ctl-list-view.h"
 using namespace _wl_internal;
 using namespace wl;
@@ -362,11 +363,101 @@ std::optional<ListView::Item> ListView::ItemCollection::topmost_visible() const 
 
 ////////////////////////////////////////////////////////////////////////////////
 
-ListView::ListView(WindowMain& owner, WORD ctrlId, WORD contextMenuId)
+ListView::ListView(WindowMain &owner, WORD ctrlId, WORD contextMenuId)
 	: _ctrl{owner}, _events{owner, ctrlId}
 {
-	_ctrl._owner._preEvents.wm_init_dialog([this, pOwner = &owner, ctrlId](wm::InitDialog) {
+	construct(_ctrl._owner, ctrlId, contextMenuId);
+}
+
+ListView::ListView(WindowModal &owner, WORD ctrlId, WORD contextMenuId)
+	: _ctrl{owner}, _events{owner, ctrlId}
+{
+	construct(_ctrl._owner, ctrlId, contextMenuId);
+}
+
+void ListView::construct(WindowMsg &owner, WORD ctrlId, WORD contextMenuId) {
+	_hMenuContext = LoadMenuW(GetModuleHandle(nullptr), MAKEINTRESOURCEW(contextMenuId));
+	#ifdef _DEBUG
+	if (!_hMenuContext) [[unlikely]] {
+		throw std::invalid_argument("ListView context menu failed to load.");
+	}
+	#endif
+
+	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, pOwner = &owner, ctrlId]() {
 		_ctrl.set_hwnd(GetDlgItem(pOwner->hwnd(), ctrlId));
-		return false; // ignored
 	});
+
+	_ctrl.subclass_on().wm_get_dlg_code([this, ctrlId](wm::GetDlgCode p) {
+		if (!p.is_query() && p.vkey_code() == VK_RETURN) { // Enter key
+			NMLVKEYDOWN nmlvkd{
+				.hdr{
+					.hwndFrom = hwnd(),
+					.idFrom = ctrlId,
+					.code = LVN_KEYDOWN,
+				},
+				.wVKey = VK_RETURN,
+			};
+			HWND hParent = GetAncestor(hwnd(), GA_PARENT);
+			SendMessageW(hParent, WM_NOTIFY, ctrlId, reinterpret_cast<LPARAM>(&nmlvkd)); // send Enter key to parent
+		}
+		return static_cast<WORD>(DefSubclassProc(hwnd(), WM_GETDLGCODE, p.wp, p.lp)); // let system define DLGC
+	});
+
+	owner._preEvents.wm_notify(ctrlId, LVN_KEYDOWN, [this](wm::Notify p) {
+		NMLVKEYDOWN &nmk = p.hdr<NMLVKEYDOWN>();
+		bool hasCtrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
+
+		if (hasCtrl && nmk.wVKey == 'A') { // Ctrl+A pressed?
+			items.select_all(true);
+		} else if (nmk.wVKey == VK_APPS) { // context menu key?
+			bool hasShift = GetAsyncKeyState(VK_SHIFT) & 0x8000;
+			show_context_menu(false, hasCtrl, hasShift);
+		}
+	});
+
+	owner._preEvents.wm_notify(ctrlId, NM_RCLICK, [this](wm::Notify p) {
+		NMITEMACTIVATE &nmi = p.hdr<NMITEMACTIVATE>();
+		bool hasCtrl = nmi.uKeyFlags & LVKF_CONTROL;
+		bool hasShift = nmi.uKeyFlags & LVKF_SHIFT;
+
+		show_context_menu(true, hasCtrl, hasShift);
+	});
+
+	owner._postEvents.wm(WM_DESTROY, [this](wm::Msg) {
+		if (_hMenuContext)
+			DestroyMenu(_hMenuContext);
+	});
+}
+
+void ListView::show_context_menu(bool followCursor, bool hasCtrl, bool hasShift) {
+	if (!_hMenuContext) return;
+
+	POINT menuPos{};
+	if (followCursor) { // usually when fired by a right-click
+		GetCursorPos(&menuPos); // relative to screen
+		ScreenToClient(hwnd(), &menuPos); // now relative to listview
+		std::optional<Item> itemOver = items.hit_test(menuPos);
+		if (!itemOver.has_value()) { // no item was right-clicked
+			items.select_all(false);
+		} else if (!hasCtrl && !hasShift) {
+			itemOver.value().select(true).focus(); // if note yet
+		}
+		SetFocus(hwnd()); // because a right-click won't set the focus by itself
+	} else { // usually fired by the context meny key
+		std::optional<Item> itemFocused = items.focused();
+		if (itemFocused.has_value() && itemFocused.value().is_visible()) {
+			RECT rc{.left = LVIR_BOUNDS};
+			SendMessageW(hwnd(), LVM_GETITEMRECT, itemFocused.value().index(), reinterpret_cast<LPARAM>(&rc));
+			menuPos = {.x = rc.left + 16, .y = rc.top + (rc.bottom - rc.top) / 2};
+		} else { // no item is focused and visible
+			menuPos = {.x = 6, .y = 10}; // arbitrary coordinates
+		}
+	}
+
+	HWND hParent = GetParent(hwnd());
+	HMENU hSubMenu = GetSubMenu(_hMenuContext, 0); // pop the first submenu
+	ClientToScreen(hwnd(), &menuPos); // from listview to screen
+	SetForegroundWindow(hParent);
+	TrackPopupMenu(hSubMenu, TPM_LEFTBUTTON, menuPos.x, menuPos.y, 0, hParent, nullptr);
+	PostMessageW(hParent, WM_NULL, 0, 0); // necessary according to TrackPopupMenu docs
 }

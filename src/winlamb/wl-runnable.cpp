@@ -5,7 +5,7 @@
 #include "runnable.h"
 using namespace _wl_internal;
 
-void _wl_internal::uncaught_exception(const std::exception& e) {
+void _wl_internal::uncaught_exception(const std::exception &e) {
 	MessageBoxA(nullptr, e.what(), "Uncaught exception", MB_ICONERROR);
 	PostQuitMessage(-1);
 }

@@ -49,3 +49,26 @@ namespace _wl_internal {
 	};
 
 }
+
+namespace wl { class WindowMain; }
+
+namespace _wl_internal {
+
+	// Modal dialog window.
+	class DialogModal final {
+	public:
+		DialogModal() = delete;
+		DialogModal(const DialogModal&) = delete;
+		DialogModal(DialogModal&&) = delete;
+		DialogModal& operator=(const DialogModal&) = delete;
+		DialogModal& operator=(DialogModal&&) = delete;
+
+		DialogModal(WORD dlgId);
+
+		[[nodiscard]] constexpr HWND hwnd() const { return _dlgBase.hwnd(); }
+		void show(const wl::WindowMain &owner);
+
+		DialogBase _dlgBase;
+	};
+
+}

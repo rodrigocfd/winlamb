@@ -15,7 +15,7 @@ namespace wl::wm {
 	};
 
 	struct Command : public Msg {
-		constexpr Command(const Msg& p) : Msg{p} { }
+		constexpr Command(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr bool is_from_menu() const        { return HIWORD(wp) == 0; }
 		[[nodiscard]] constexpr bool is_from_accelerator() const { return HIWORD(wp) == 1; }
 		[[nodiscard]] constexpr bool is_from_control() const     { return !is_from_menu() && !is_from_accelerator(); }
@@ -27,12 +27,12 @@ namespace wl::wm {
 	};
 
 	struct Notify : public Msg {
-		constexpr Notify(const Msg& p) : Msg{p} { }
+		constexpr Notify(const Msg &p) : Msg{p} { }
 		template<typename T> [[nodiscard]] T& hdr() { return *reinterpret_cast<T*>(lp); }
 	};
 
 	struct Activate : public Msg {
-		constexpr Activate(const Msg& p) : Msg{p} { }
+		constexpr Activate(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr bool is_being_activated() const           { return wp != WA_INACTIVE; }
 		[[nodiscard]] constexpr bool activated_not_by_mouse_click() const { return wp == WA_ACTIVE; }
 		[[nodiscard]] constexpr bool activated_by_mouse_click() const     { return wp == WA_CLICKACTIVE; }
@@ -40,17 +40,17 @@ namespace wl::wm {
 	};
 
 	struct Create : public Msg {
-		constexpr Create(const Msg& p) : Msg{p} { }
+		constexpr Create(const Msg &p) : Msg{p} { }
 		[[nodiscard]] CREATESTRUCTW& crate_struct() const { return *reinterpret_cast<CREATESTRUCTW*>(lp); }
 	};
 
 	struct Enable : public Msg {
-		constexpr Enable(const Msg& p) : Msg{p} { }
+		constexpr Enable(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr bool was_enabled() const { return wp != FALSE; }
 	};
 
 	struct EndSession : public Msg {
-		constexpr EndSession(const Msg& p) : Msg{p} { }
+		constexpr EndSession(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr bool is_session_being_ended() const { return wp != FALSE; }
 		[[nodiscard]] constexpr bool is_system_issue() const        { return (lp & ENDSESSION_CLOSEAPP) != 0; }
 		[[nodiscard]] constexpr bool is_forced_critical() const     { return (lp & ENDSESSION_CRITICAL) != 0; }
@@ -59,12 +59,12 @@ namespace wl::wm {
 	};
 
 	struct EraseBkgnd : public Msg {
-		constexpr EraseBkgnd(const Msg& p) : Msg{p} { }
+		constexpr EraseBkgnd(const Msg &p) : Msg{p} { }
 		[[nodiscard]] HDC hdc() const { return reinterpret_cast<HDC>(wp); }
 	};
 
 	struct GetDlgCode : public Msg {
-		constexpr GetDlgCode(const Msg& p) : Msg{p} { }
+		constexpr GetDlgCode(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr BYTE vkey_code() const { return static_cast<BYTE>(wm); }
 		[[nodiscard]] constexpr bool is_query() const  { return lp == 0; }
 		[[nodiscard]] MSG*           msg() const       { return this->is_query() ? nullptr : reinterpret_cast<MSG*>(lp); }
@@ -74,12 +74,12 @@ namespace wl::wm {
 	};
 
 	struct InitDialog : public Msg {
-		constexpr InitDialog(const Msg& p) : Msg{p} { }
+		constexpr InitDialog(const Msg &p) : Msg{p} { }
 		[[nodiscard]] HWND hwnd_focus() const { return reinterpret_cast<HWND>(wp); }
 	};
 
 	struct InitMenuPopup : public Msg {
-		constexpr InitMenuPopup(const Msg& p) : Msg{p} { }
+		constexpr InitMenuPopup(const Msg &p) : Msg{p} { }
 		[[nodiscard]] HMENU           hmenu() const              { return reinterpret_cast<HMENU>(wp); }
 		[[nodiscard]] constexpr short relative_pos() const       { return LOWORD(lp); }
 		[[nodiscard]] constexpr bool  is_window_menu() const     { return HIWORD(lp) != FALSE; }
@@ -87,17 +87,17 @@ namespace wl::wm {
 	};
 
 	struct KillFocus : public Msg {
-		constexpr KillFocus(const Msg& p) : Msg{p} { }
+		constexpr KillFocus(const Msg &p) : Msg{p} { }
 		HWND focused_hwnd() const { return reinterpret_cast<HWND>(wp); }
 	};
 
 	struct NcPaint : public Msg {
-		constexpr NcPaint(const Msg& p) : Msg{p} { }
+		constexpr NcPaint(const Msg &p) : Msg{p} { }
 		[[nodiscard]] HRGN hrgn() const { return reinterpret_cast<HRGN>(wp); }
 	};
 
 	struct Size : public Msg {
-		constexpr Size(const Msg& p) : Msg{p} { }
+		constexpr Size(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr bool is_other_maximized() const { return wp == 4; }
 		[[nodiscard]] constexpr bool is_maximized() const       { return wp == 2; }
 		[[nodiscard]] constexpr bool is_other_restored() const  { return wp == 3; }
@@ -107,7 +107,7 @@ namespace wl::wm {
 	};
 
 	struct Sizing : public Msg {
-		constexpr Sizing(const Msg& p) : Msg{p} { }
+		constexpr Sizing(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr WORD edge() const          { return static_cast<WORD>(wp); }
 		[[nodiscard]] RECT&          screen_coords() const { return *reinterpret_cast<RECT*>(lp); }
 	};
@@ -119,9 +119,48 @@ namespace _wl_internal {
 	class WindowMsg;
 	class NativeCtrl;
 
-	// Stores message identifiers and callbacks.
-	class Events final {
+	// Stores library-internal message identifiers and callbacks.
+	class EventsInternal final {
 	public:
+		struct Msg final {
+			UINT wm;
+			std::function<void(wl::wm::Msg)> cb;
+		};
+		struct Nfy final {
+			WORD idFrom;
+			int code;
+			std::function<void(wl::wm::Notify)> cb;
+		};
+
+		constexpr EventsInternal() = delete;
+		constexpr EventsInternal(const EventsInternal&) = delete;
+		constexpr EventsInternal(EventsInternal&&) = delete;
+		constexpr EventsInternal& operator=(const EventsInternal&) = delete;
+		constexpr EventsInternal& operator=(EventsInternal&&) = delete;
+
+		constexpr explicit EventsInternal(bool isDlg) : _isDlg{isDlg} { }
+
+		void wm_create_or_init_dialog(std::function<void()> cb);
+		void wm(UINT msg, std::function<void(wl::wm::Msg)> cb);
+		void wm_notify(WORD idFrom, int code, std::function<void(wl::wm::Notify)> cb);
+
+		void clear_inis(); // WM_CREATE and WM_INITDIALOG
+		void clear();
+		bool process_all(wl::wm::Msg procMsg) const;
+
+		bool _isDlg;
+		std::vector<std::function<void()>> _inis{}; // WM_CREATE, WM_INITDIALOG
+		std::vector<Msg> _msgs{};
+		std::vector<Nfy> _nfys{}; // WM_NOTIFY
+	};
+
+}
+
+namespace _wl_internal {
+
+	// Stores user message identifiers and callbacks.
+	class EventsUser final {
+	private:
 		struct Msg final {
 			UINT wm;
 			std::function<LRESULT(wl::wm::Msg)> cb;
@@ -137,14 +176,15 @@ namespace _wl_internal {
 			std::function<LRESULT(wl::wm::Notify)> cb;
 		};
 
-		constexpr Events() = delete;
-		constexpr Events(const Events&) = delete;
-		constexpr Events(Events&&) = delete;
-		constexpr Events& operator=(const Events&) = delete;
-		constexpr Events& operator=(Events&&) = delete;
+	public:
+		constexpr EventsUser() = delete;
+		constexpr EventsUser(const EventsUser&) = delete;
+		constexpr EventsUser(EventsUser&&) = delete;
+		constexpr EventsUser& operator=(const EventsUser&) = delete;
+		constexpr EventsUser& operator=(EventsUser&&) = delete;
 
 	private:
-		constexpr explicit Events(bool isDlg) : _isDlg{isDlg} { }
+		constexpr explicit EventsUser(bool isDlg) : _isDlg{isDlg} { }
 
 	public:
 		void wm_create(std::function<int(wl::wm::Create)> cb);
@@ -180,16 +220,15 @@ namespace _wl_internal {
 
 	private:
 		[[nodiscard]] bool has_message() const;
-		void clear_inis();
+		void clear_inis(); // WM_CREATE and WM_INITDIALOG
 		void clear();
-		bool process_all(wl::wm::Msg procMsg) const;
 		std::optional<LRESULT> process_last(wl::wm::Msg procMsg) const;
 
 		bool _isDlg;
-		std::vector<Msg> _inis;
-		std::vector<Msg> _msgs;
-		std::vector<Cmd> _cmds;
-		std::vector<Nfy> _nfys;
+		std::vector<Msg> _inis{}; // WM_CREATE, WM_INITDIALOG
+		std::vector<Msg> _msgs{};
+		std::vector<Cmd> _cmds{}; // WM_COMMAND
+		std::vector<Nfy> _nfys{}; // WM_NOTIFY
 
 		friend WindowMsg; // message processing
 		friend NativeCtrl; // subclass processing
@@ -197,7 +236,10 @@ namespace _wl_internal {
 
 }
 
-namespace wl { class WindowMain; }
+namespace wl {
+	class WindowMain;
+	class WindowModal;
+}
 
 namespace _wl_internal {
 
@@ -210,9 +252,10 @@ namespace _wl_internal {
 		EventsNativeCtrl& operator=(const EventsNativeCtrl&) = delete;
 		EventsNativeCtrl& operator=(EventsNativeCtrl&&) = delete;
 
-		EventsNativeCtrl(wl::WindowMain& owner, WORD ctrlId);
+		EventsNativeCtrl(wl::WindowMain &owner, WORD ctrlId);
+		EventsNativeCtrl(wl::WindowModal &owner, WORD ctrlId);
 
-		WindowMsg& _owner;
+		WindowMsg &_owner;
 		WORD _ctrlId;
 	};
 

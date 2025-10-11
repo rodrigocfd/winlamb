@@ -1,6 +1,8 @@
 #include <system_error>
 #include "window-dialog.h"
+#include "window-user.h"
 using namespace _wl_internal;
+using namespace wl;
 
 void DialogBase::create_dialog_param(HINSTANCE hInst, HWND hParent) {
 	#ifdef _DEBUG
@@ -22,12 +24,8 @@ void DialogBase::dialog_box_param(HINSTANCE hInst, HWND hParent) {
 		throw std::logic_error("Cannot create dialog twice.");
 	#endif
 
-	INT_PTR ret = DialogBoxParamW(hInst, MAKEINTRESOURCEW(_dlgId), hParent,
-		dlg_proc, reinterpret_cast<LPARAM>(this));
-	#ifdef _DEBUG
-	if (!ret)
-		throw std::system_error(GetLastError(), std::system_category(), "DialogBoxParam failed.");
-	#endif
+	DialogBoxParamW(hInst, MAKEINTRESOURCEW(_dlgId), hParent,
+		dlg_proc, reinterpret_cast<LPARAM>(this)); // returns the INT_PTR from EndDialog()
 }
 
 void DialogBase::set_icon(HINSTANCE hInst, WORD iconId) const {
@@ -118,4 +116,18 @@ int DialogMain::run(HINSTANCE hInst, int cmdShow) {
 	ShowWindow(hwnd(), cmdShow);
 
 	return _dlgBase._wndMsg.main_loop(hAccel);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+DialogModal::DialogModal(WORD dlgId)
+	: _dlgBase{dlgId}
+{
+	_dlgBase._wndMsg.on().wm_close([this]() {
+		EndDialog(hwnd(), 0);
+	});
+}
+
+void DialogModal::show(const WindowMain &owner) {
+	_dlgBase.dialog_box_param(GetModuleHandleW(nullptr), owner.hwnd());
 }

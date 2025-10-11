@@ -4,37 +4,37 @@
 #include <Windows.h>
 #include "str.h"
 
-int wl::str::cmp(const std::wstring& a, WStrPtr b) {
+int wl::str::cmp(const std::wstring &a, WStrPtr b) {
 	return lstrcmpW(a.c_str(), b);
 }
 
-int wl::str::cmp_i(const std::wstring& a, WStrPtr b) {
+int wl::str::cmp_i(const std::wstring &a, WStrPtr b) {
 	return lstrcmpiW(a.c_str(), b);
 }
 
-bool wl::str::contains(const std::wstring& s, WStrPtr what, size_t off) {
+bool wl::str::contains(const std::wstring &s, WStrPtr what, size_t off) {
 	return s.find(what, off) != std::wstring::npos;
 }
 
-bool wl::str::ends_with(const std::wstring& s, WStrPtr theEnd) {
+bool wl::str::ends_with(const std::wstring &s, WStrPtr theEnd) {
 	int lenEnd = lstrlenW(theEnd);
 	if (!lenEnd) return true;
 	if (s.empty() || lenEnd > s.length()) return false;
 	return !lstrcmpW(s.c_str() + s.length() - lenEnd, theEnd);
 }
 
-bool wl::str::ends_with_i(const std::wstring& s, WStrPtr theEnd) {
+bool wl::str::ends_with_i(const std::wstring &s, WStrPtr theEnd) {
 	int lenEnd = lstrlenW(theEnd);
 	if (!lenEnd) return true;
 	if (s.empty() || lenEnd > s.length()) return false;
 	return !lstrcmpiW(s.c_str() + s.length() - lenEnd, theEnd);
 }
 
-bool wl::str::eq(const std::wstring& a, WStrPtr b) {
+bool wl::str::eq(const std::wstring &a, WStrPtr b) {
 	return !lstrcmpW(a.c_str(), b);
 }
 
-bool wl::str::eq_i(const std::wstring& a, WStrPtr b) {
+bool wl::str::eq_i(const std::wstring &a, WStrPtr b) {
 	return !lstrcmpiW(a.c_str(), b);
 }
 
@@ -73,7 +73,7 @@ std::wstring wl::str::fmt_bytes(size_t numBytes) {
 		return fmt(L"%.2f EB", numBytes / static_cast<float>(ten_pow(18)));
 }
 
-LPCWSTR wl::str::guess_line_break(std::wstring_view s) {
+LPCWSTR wl::str::guess_line_break(const std::wstring &s) {
 	for (size_t i = 0; i < s.length() - 1; ++i) {
 		if (s[i] == L'\r') {
 			return s[i + 1] == L'\n' ? L"\r\n" : L"\r"; // report the first one
@@ -89,7 +89,7 @@ std::wstring wl::str::join(std::span<std::wstring> all, WStrPtr separator) {
 	int lenSep = lstrlenW(separator);
 	bool first = true;
 
-	for (const std::wstring& s : all) {
+	for (auto& s : all) {
 		if (first) {
 			first = false;
 		} else {
@@ -102,7 +102,7 @@ std::wstring wl::str::join(std::span<std::wstring> all, WStrPtr separator) {
 	buf.reserve(count);
 	first = true;
 
-	for (const std::wstring& s : all) {
+	for (auto& s : all) {
 		if (first) {
 			first = false;
 		} else {
@@ -125,12 +125,12 @@ std::wstring wl::str::new_resized(size_t numResize, WCHAR ch) {
 	return s;
 }
 
-std::optional<size_t> wl::str::position(const std::wstring& s, WStrPtr what, size_t off) {
+std::optional<size_t> wl::str::position(const std::wstring &s, WStrPtr what, size_t off) {
 	size_t pos = s.find(what, off);
 	return pos == std::wstring::npos ? std::nullopt : std::make_optional(pos);
 }
 
-std::optional<size_t> wl::str::position_rev(const std::wstring& s, WStrPtr what, size_t off) {
+std::optional<size_t> wl::str::position_rev(const std::wstring &s, WStrPtr what, size_t off) {
 	size_t pos = s.rfind(what, off);
 	return pos == std::wstring::npos ? std::nullopt : std::make_optional(pos);
 }
@@ -185,11 +185,11 @@ std::wstring wl::str::parse(std::span<BYTE> src) {
 	}
 }
 
-void wl::str::remove_diacritics(std::wstring& s) {
+void wl::str::remove_diacritics(std::wstring &s) {
 	LPCWSTR diacritics   = L"ÁáÀàÃãÂâÄäÉéÈèÊêËëÍíÌìÎîÏïÓóÒòÕõÔôÖöÚúÙùÛûÜüÇçÅåÐðÑñØøÝýÿ";
 	LPCWSTR replacements = L"AaAaAaAaAaEeEeEeEeIiIiIiIiOoOoOoOoOoUuUuUuUuCcAaDdNnOoYyy";
 
-	for (WCHAR& ch : s) {
+	for (WCHAR &ch : s) {
 		LPCWSTR pDiac = diacritics;
 		LPCWSTR pRepl = replacements;
 		while (*pDiac) {
@@ -200,7 +200,7 @@ void wl::str::remove_diacritics(std::wstring& s) {
 	}
 }
 
-std::vector<std::wstring> wl::str::split(const std::wstring_view& s, WStrPtr delimiter) {
+std::vector<std::wstring> wl::str::split(const std::wstring &s, WStrPtr delimiter) {
 	if (s.empty()) return {};
 
 	int lenDelim = lstrlenW(delimiter);
@@ -234,11 +234,11 @@ std::vector<std::wstring> wl::str::split(const std::wstring_view& s, WStrPtr del
 	return ret;
 }
 
-std::vector<std::wstring> wl::str::split_lines(const std::wstring& s) {
+std::vector<std::wstring> wl::str::split_lines(const std::wstring &s) {
 	return split(s, guess_line_break(s));
 }
 
-bool wl::str::starts_with(const std::wstring_view& s, WStrPtr theStart) {
+bool wl::str::starts_with(const std::wstring &s, WStrPtr theStart) {
 	int lenStart = lstrlenW(theStart);
 	if (!lenStart) return true;
 	if (s.empty() || lenStart > s.length()) return false;
@@ -247,7 +247,7 @@ bool wl::str::starts_with(const std::wstring_view& s, WStrPtr theStart) {
 	return true;
 }
 
-bool wl::str::starts_with_i(const std::wstring_view& s, WStrPtr theStart) {
+bool wl::str::starts_with_i(const std::wstring &s, WStrPtr theStart) {
 	int lenStart = lstrlenW(theStart);
 	if (!lenStart) return true;
 	if (s.empty() || lenStart > s.length()) return false;
@@ -256,7 +256,7 @@ bool wl::str::starts_with_i(const std::wstring_view& s, WStrPtr theStart) {
 	return !lstrcmpiW(s2.data(), theStart);
 }
 
-std::string wl::str::to_ansi(const std::wstring& s) {
+std::string wl::str::to_ansi(const std::wstring &s) {
 	std::string ansi(s.length(), '\0');
 	for (size_t i = 0; i < s.length(); ++i) {
 		ansi[i] = static_cast<char>(s[i]); // brute-force conversion
@@ -264,19 +264,19 @@ std::string wl::str::to_ansi(const std::wstring& s) {
 	return ansi;
 }
 
-std::wstring wl::str::to_lower(const std::wstring& s) {
+std::wstring wl::str::to_lower(const std::wstring &s) {
 	std::wstring ret{s};
 	CharLowerBuffW(ret.data(), static_cast<DWORD>(ret.length()));
 	return ret;
 }
 
-std::wstring wl::str::to_upper(const std::wstring& s) {
+std::wstring wl::str::to_upper(const std::wstring &s) {
 	std::wstring ret{s};
 	CharUpperBuffW(ret.data(), static_cast<DWORD>(ret.length()));
 	return ret;
 }
 
-std::vector<BYTE> wl::str::to_utf8_blob(const std::wstring& s, bool writeBom) {
+std::vector<BYTE> wl::str::to_utf8_blob(const std::wstring &s, bool writeBom) {
 	std::vector<BYTE> buf;
 	if (!s.empty()) {
 		constexpr BYTE utf8bom[] = {0xef, 0xbb, 0xbf};
@@ -299,7 +299,7 @@ std::vector<BYTE> wl::str::to_utf8_blob(const std::wstring& s, bool writeBom) {
 	return buf;
 }
 
-std::wstring wl::str::to_wide(const std::string& s) {
+std::wstring wl::str::to_wide(const std::string &s) {
 	std::wstring wide(s.length(), L'\0');
 	for (size_t i = 0; i < s.length(); ++i) {
 		wide[i] = s[i]; // brute-force conversion
@@ -307,7 +307,7 @@ std::wstring wl::str::to_wide(const std::string& s) {
 	return wide;
 }
 
-void wl::str::trim_nulls(std::wstring& s) {
+void wl::str::trim_nulls(std::wstring &s) {
 	// When a std::wstring is initialized with any length, possibly to be used as a buffer,
 	// the string length may not match the size() method, after the operation.
 	// This function fixes this.
@@ -315,7 +315,7 @@ void wl::str::trim_nulls(std::wstring& s) {
 		s.resize( lstrlenW(s.c_str()) );
 }
 
-void wl::str::trim(std::wstring& s) {
+void wl::str::trim(std::wstring &s) {
 	if (s.empty()) return;
 	trim_nulls(s);
 

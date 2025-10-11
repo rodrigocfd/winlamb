@@ -52,7 +52,7 @@ namespace _wl_internal {
 			: _isDlg{isDlg}, _preEvents{isDlg}, _userEvents{isDlg}, _postEvents{isDlg} { }
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _wnd.hwnd(); }
-		[[nodiscard]] _wl_internal::Events& on();
+		[[nodiscard]] _wl_internal::EventsUser& on();
 		void thread_detach(std::function<void()> cb) const;
 		void thread_ui(std::function<void()> cb) const;
 
@@ -65,7 +65,9 @@ namespace _wl_internal {
 
 		bool _isDlg;
 		wl::Window _wnd{};
-		Events _preEvents, _userEvents, _postEvents;
+		EventsInternal _preEvents;
+		EventsUser _userEvents;
+		EventsInternal _postEvents;
 	};
 
 }
@@ -81,10 +83,11 @@ namespace _wl_internal {
 		NativeCtrl& operator=(const NativeCtrl&) = delete;
 		NativeCtrl& operator=(NativeCtrl&&) = delete;
 
-		NativeCtrl(wl::WindowMain& owner);
+		NativeCtrl(wl::WindowMain &owner);
+		NativeCtrl(wl::WindowModal &owner);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _wnd.hwnd(); }
-		[[nodiscard]] _wl_internal::Events& subclass_on();
+		[[nodiscard]] _wl_internal::EventsUser& subclass_on();
 		void set_hwnd(HWND hWnd);
 		void install_subclass();
 
@@ -92,8 +95,8 @@ namespace _wl_internal {
 			UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
 		wl::Window _wnd{};
-		WindowMsg& _owner;
-		Events _subclassEvents{false};
+		WindowMsg &_owner;
+		EventsUser _subclassEvents{false};
 		static UINT_PTR _subclassId;
 	};
 

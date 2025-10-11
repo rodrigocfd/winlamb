@@ -12,7 +12,7 @@ namespace wl {
 	class WStrPtr final {
 	public:
 		constexpr WStrPtr(LPCWSTR p) : _p{p} { }
-		constexpr WStrPtr(const std::wstring& s) : _p{s.c_str()} { }
+		constexpr WStrPtr(const std::wstring &s) : _p{s.c_str()} { }
 		constexpr operator LPCWSTR() const { return _p; }
 		[[nodiscard]] constexpr LPWSTR lpwstr() const { return const_cast<LPWSTR>(_p); }
 	private:
@@ -28,25 +28,25 @@ namespace wl::str {
 	constexpr size_t SSO_LEN = std::string{}.capacity();
 
 	// Calls lstrcmp() to compare the strings lexographically, case-sensitive.
-	[[nodiscard]] int cmp(const std::wstring& a, WStrPtr b);
+	[[nodiscard]] int cmp(const std::wstring &a, WStrPtr b);
 
 	// Calls lstrcmpi() to compare the strings lexographically, case-insensitive.
-	[[nodiscard]] int cmp_i(const std::wstring& a, WStrPtr b);
+	[[nodiscard]] int cmp_i(const std::wstring &a, WStrPtr b);
 
 	// Returns true if s contains the substring what, starting from offset off.
-	[[nodiscard]] bool contains(const std::wstring& s, WStrPtr what, size_t off = 0);
+	[[nodiscard]] bool contains(const std::wstring &s, WStrPtr what, size_t off = 0);
 
 	// Returns true if s ends with theStart, case-sensitive.
-	[[nodiscard]] bool ends_with(const std::wstring& s, WStrPtr theEnd);
+	[[nodiscard]] bool ends_with(const std::wstring &s, WStrPtr theEnd);
 
 	// Returns true if s ends with theStart, case-insensitive.
-	[[nodiscard]] bool ends_with_i(const std::wstring& s, WStrPtr theEnd);
+	[[nodiscard]] bool ends_with_i(const std::wstring &s, WStrPtr theEnd);
 
 	// Calls lstrcmp() for case-sensitive equality.
-	[[nodiscard]] bool eq(const std::wstring& a, WStrPtr b);
+	[[nodiscard]] bool eq(const std::wstring &a, WStrPtr b);
 
 	// Calls lstrcmpi() for case-insensitive equality.
-	[[nodiscard]] bool eq_i(const std::wstring& a, WStrPtr b);
+	[[nodiscard]] bool eq_i(const std::wstring &a, WStrPtr b);
 
 	// Calls std::vswprintf(). Prefer using C++20's std::format(), which is safer.
 	[[nodiscard]] std::wstring fmt(WStrPtr format, ...);
@@ -55,7 +55,7 @@ namespace wl::str {
 	[[nodiscard]] std::wstring fmt_bytes(size_t numBytes);
 
 	// Guesses the linebreak characters: CR, CRLF, LF or LFCR.
-	[[nodiscard]] LPCWSTR guess_line_break(std::wstring_view s);
+	[[nodiscard]] LPCWSTR guess_line_break(const std::wstring &s);
 
 	// Returns a new string by joining the strings in all with separator.
 	[[nodiscard]] std::wstring join(std::span<std::wstring> all, WStrPtr separator = L"");
@@ -71,49 +71,49 @@ namespace wl::str {
 
 	// Returns the first occurrence of the substring what in s, if any.
 	// Starts searching from the offset off.
-	[[nodiscard]] std::optional<size_t> position(const std::wstring& s, WStrPtr what, size_t off = 0);
+	[[nodiscard]] std::optional<size_t> position(const std::wstring &s, WStrPtr what, size_t off = 0);
 
 	// Returns the last occurrence of the substring what in s, if any.
 	// Starts searching from the offset off.
-	[[nodiscard]] std::optional<size_t> position_rev(const std::wstring& s, WStrPtr what, size_t off = std::wstring::npos);
+	[[nodiscard]] std::optional<size_t> position_rev(const std::wstring &s, WStrPtr what, size_t off = std::wstring::npos);
 
 	// Removes the diacritics from s, in-place.
-	void remove_diacritics(std::wstring& s);
+	void remove_diacritics(std::wstring &s);
 
 	// Returns a vector with substrings of s, delimited by delimiter.
-	[[nodiscard]] std::vector<std::wstring> split(const std::wstring_view& s, WStrPtr delimiter);
+	[[nodiscard]] std::vector<std::wstring> split(const std::wstring &s, WStrPtr delimiter);
 
 	// Returns a vector with each line of s as a string.
-	[[nodiscard]] std::vector<std::wstring> split_lines(const std::wstring& s);
+	[[nodiscard]] std::vector<std::wstring> split_lines(const std::wstring &s);
 
 	// Returns true if s starts with theStart, case-sensitive.
-	[[nodiscard]] bool starts_with(const std::wstring_view& s, WStrPtr theStart);
+	[[nodiscard]] bool starts_with(const std::wstring &s, WStrPtr theStart);
 
 	// Returns true if s starts with theStart, case-insensitive.
-	[[nodiscard]] bool starts_with_i(const std::wstring_view& s, WStrPtr theStart);
+	[[nodiscard]] bool starts_with_i(const std::wstring &s, WStrPtr theStart);
 
 	// Converts wstring to string. The inverse is done by to_wide().
-	[[nodiscard]] std::string to_ansi(const std::wstring& s);
+	[[nodiscard]] std::string to_ansi(const std::wstring &s);
 
 	// Returns a new string, converted to lowercase.
-	[[nodiscard]] std::wstring to_lower(const std::wstring& s);
+	[[nodiscard]] std::wstring to_lower(const std::wstring &s);
 
 	// Returns a new string, converted to uppercase.
-	[[nodiscard]] std::wstring to_upper(const std::wstring& s);
+	[[nodiscard]] std::wstring to_upper(const std::wstring &s);
 
 	// Converts s into UTF-8 bytes with WideCharToMultiByte().
-	[[nodiscard]] std::vector<BYTE> to_utf8_blob(const std::wstring& s, bool writeBom = false);
+	[[nodiscard]] std::vector<BYTE> to_utf8_blob(const std::wstring &s, bool writeBom = false);
 
 	// Converts string to wstring. The inverse is done by to_ansi().
-	[[nodiscard]] std::wstring to_wide(const std::string& s);
+	[[nodiscard]] std::wstring to_wide(const std::string &s);
 
 	// Calls iswspace() to remove all spaces from beginning and end of the string.
 	// Also calls trim_nulls().
-	void trim(std::wstring& s);
+	void trim(std::wstring &s);
 
 	// Calls lstrlen() and resizes the wstring, so that its size() will match
 	// the actual string length, not counting any terminating nulls.
-	void trim_nulls(std::wstring& s);
+	void trim_nulls(std::wstring &s);
 
 }
 

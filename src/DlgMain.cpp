@@ -9,6 +9,7 @@ DlgMain::DlgMain() {
 	wnd.on().wm_command(IDCANCEL, std::bind(&DlgMain::on_cancel, this));
 	dropFiles.on_drop(std::bind(&DlgMain::on_drop_files, this, std::placeholders::_1));
 	lstFiles.on().lvn_item_changed(std::bind(&DlgMain::on_lst_files_item_changed, this, std::placeholders::_1));
+	wnd.on().wm_command(MNU_FILES_ABOUT, std::bind(&DlgMain::on_about, this));
 
 	// dlg.on().wm_notify(0x333, LVN_DELETEITEM, [this](wl::wm::Notify n) {
 	// 	auto p = n.pHdr<NMLINK>();
@@ -56,7 +57,14 @@ void DlgMain::on_drop_files(const std::vector<std::wstring> files) {
 		lstFiles.items.add(f);
 }
 
-void DlgMain::on_lst_files_item_changed(NMLISTVIEW& p) {
+void DlgMain::on_lst_files_item_changed(NMLISTVIEW &p) {
 	wnd.set_title(!lstFiles.items.selected_count()
 		? L"NO SEL" : lstFiles.items[p.iItem].text());
+}
+
+void DlgMain::on_about() {
+	// MessageBoxW(wnd.hwnd(), L"Hello", L"Title", MB_ICONINFORMATION);
+
+	wl::WindowModal pop{DLG_MAIN};
+	pop.show(wnd);
 }

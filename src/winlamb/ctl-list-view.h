@@ -1,7 +1,7 @@
 #pragma once
 #include <Windows.h>
 #include <CommCtrl.h>
-#include "window-final.h"
+#include "window-user.h"
 
 namespace _wl_internal {
 
@@ -14,7 +14,8 @@ namespace _wl_internal {
 		EventsListView& operator=(const EventsListView&) = delete;
 		EventsListView& operator=(EventsListView&&) = delete;
 
-		EventsListView(wl::WindowMain& owner, WORD ctrlId) : _events{owner, ctrlId} { }
+		EventsListView(wl::WindowMain &owner, WORD ctrlId) : _events{owner, ctrlId} { }
+		EventsListView(wl::WindowModal &owner, WORD ctrlId) : _events{owner, ctrlId} { }
 
 		void lvn_begin_label_edit(std::function<bool(NMLVDISPINFOW&)> cb);
 		void lvn_column_click(std::function<void(NMLISTVIEW&)> cb);
@@ -54,7 +55,7 @@ namespace wl {
 			constexpr Column& operator=(const Column&) = default;
 			constexpr Column& operator=(Column&&) = default;
 
-			constexpr Column(const ListView& owner, int index) : _pOwner{&owner}, _index{index} { }
+			constexpr Column(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
 
 			[[nodiscard]] constexpr int index() const { return _index; }
 
@@ -119,7 +120,7 @@ namespace wl {
 			constexpr Item& operator=(const Item&) = default;
 			constexpr Item& operator=(Item&&) = default;
 
-			constexpr Item(const ListView& owner, int index) : _pOwner{&owner}, _index{index} { }
+			constexpr Item(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
 
 			[[nodiscard]] constexpr int index() const { return _index; }
 			[[nodiscard]] LPARAM data() const;
@@ -178,7 +179,8 @@ namespace wl {
 		ListView& operator=(const ListView&) = delete;
 		ListView& operator=(ListView&&) = delete;
 
-		ListView(WindowMain& owner, WORD ctrlId, WORD contextMenuId = 0);
+		ListView(WindowMain &owner, WORD ctrlId, WORD contextMenuId = 0);
+		ListView(WindowModal &owner, WORD ctrlId, WORD contextMenuId = 0);
 
 		ColumnCollection cols{this};
 		ItemCollection items{this};
@@ -187,8 +189,12 @@ namespace wl {
 		[[nodiscard]] _wl_internal::EventsListView& on() { return _events; }
 
 	private:
+		void construct(_wl_internal::WindowMsg &owner, WORD ctrlId, WORD contextMenuId);
+		void show_context_menu(bool followCursor, bool hasCtrl, bool hasShift);
+
 		_wl_internal::NativeCtrl _ctrl;
 		_wl_internal::EventsListView _events;
+		HMENU _hMenuContext = nullptr;
 	};
 
 }

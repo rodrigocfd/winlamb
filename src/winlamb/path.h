@@ -23,10 +23,10 @@ namespace wl::path {
 	[[nodiscard]] std::wstring file_from(WStrPtr p);
 
 	// Returns true if the p has the ext extension, case-insensitive.
-	[[nodiscard]] bool has_extension(const std::wstring& p, WStrPtr ext);
+	[[nodiscard]] bool has_extension(const std::wstring &p, WStrPtr ext);
 
 	// Returns true if the p has one of the ext extensions, case-insensitive.
-	[[nodiscard]] bool has_extension(const std::wstring& p, std::initializer_list<WStrPtr> exts);
+	[[nodiscard]] bool has_extension(const std::wstring &p, std::initializer_list<WStrPtr> exts);
 
 	// Returns true if p is a directory.
 	[[nodiscard]] bool is_dir(WStrPtr p);
@@ -38,9 +38,9 @@ namespace wl::path {
 	[[nodiscard]] bool is_read_only(WStrPtr p);
 
 	// Swaps the extension of p by newExt.
-	[[nodiscard]] std::wstring swap_extension(const std::wstring& p, WStrPtr newExt);
+	[[nodiscard]] std::wstring swap_extension(const std::wstring &p, WStrPtr newExt);
 
 	// Trims any trailing backslashes, if any, in-place.
-	void trim_backslash(std::wstring& p);
+	void trim_backslash(std::wstring &p);
 
 }

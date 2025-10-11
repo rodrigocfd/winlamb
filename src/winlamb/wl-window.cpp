@@ -1,7 +1,7 @@
 #include <system_error>
 #include <thread>
 #include "window.h"
-#include "window-final.h"
+#include "window-user.h"
 #include "runnable.h"
 #include <CommCtrl.h>
 using namespace _wl_internal;
@@ -31,7 +31,7 @@ void Window::set_text(WStrPtr text) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Events& WindowMsg::on() {
+EventsUser& WindowMsg::on() {
 	#ifdef _DEBUG
 	if (hwnd()) [[unlikely]] {
 		throw std::logic_error("Cannot add events after the window is created.");
@@ -50,7 +50,7 @@ void WindowMsg::thread_detach(std::function<void()> cb) const {
 	std::thread([cb = std::move(cb), this]() {
 		try {
 			cb();
-		} catch (const std::exception& e) {
+		} catch (const std::exception &e) {
 			auto pPack = std::make_unique<ThreadPack>(std::nullopt, e);
 			SendMessageW(hwnd(), WM_THREAD, WM_THREAD, reinterpret_cast<LPARAM>(pPack.release()));
 		}
@@ -70,7 +70,7 @@ WindowMsg::ProcResult WindowMsg::process_msgs(UINT msg, WPARAM wp, LPARAM lp) {
 		} else if (pPack->cb.has_value()) { // running a thread UI callback
 			try {
 				pPack->cb.value()();
-			} catch (const std::exception& e) {
+			} catch (const std::exception &e) {
 				uncaught_exception(e);
 			}
 		}
@@ -78,7 +78,7 @@ WindowMsg::ProcResult WindowMsg::process_msgs(UINT msg, WPARAM wp, LPARAM lp) {
 	}
 
 	bool hasPre = _preEvents.process_all({msg, wp, lp});
-	std::optional<LRESULT> userRet = _userEvents.process_all({msg, wp, lp});
+	std::optional<LRESULT> userRet = _userEvents.process_last({msg, wp, lp});
 	bool hasPost = _postEvents.process_all({msg, wp, lp});
 
 	switch (msg) {
@@ -114,14 +114,19 @@ int WindowMsg::main_loop(HACCEL hAccel) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-NativeCtrl::NativeCtrl(WindowMain& owner)
+NativeCtrl::NativeCtrl(WindowMain &owner)
+	: _owner{owner.wnd_msg()}
+{
+}
+
+NativeCtrl::NativeCtrl(WindowModal &owner)
 	: _owner{owner.wnd_msg()}
 {
 }
 
 UINT_PTR NativeCtrl::_subclassId = 0;
 
-Events& NativeCtrl::subclass_on() {
+EventsUser& NativeCtrl::subclass_on() {
 	#ifdef _DEBUG
 	if (hwnd()) [[unlikely]] {
 		throw std::logic_error("Cannot add subclass events after the control is created.");
