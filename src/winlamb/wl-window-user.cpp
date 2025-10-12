@@ -11,14 +11,14 @@ void WindowMain::set_title(WStrPtr title) const {
 }
 
 int WindowMain::run(HINSTANCE hInst, int cmdShow) {
-	return _dlgMain.has_value()
-		? _dlgMain.value().run(hInst, cmdShow)
+	return _rawMain.has_value()
+		? _rawMain.value().run(hInst, cmdShow)
 		: _dlgMain.value().run(hInst, cmdShow);
 }
 
 const WindowMsg& WindowMain::wnd_msg() const {
 	return _rawMain.has_value()
-		? _rawMain.value()._dlgBase._wndMsg
+		? _rawMain.value()._rawBase._wndMsg
 		: _dlgMain.value()._dlgBase._wndMsg;
 }
 
@@ -29,8 +29,8 @@ WindowMsg& WindowMain::wnd_msg() {
 ////////////////////////////////////////////////////////////////////////////////
 
 void WindowModal::show(const WindowMain &owner) {
-	return _dlgModal.has_value()
-		? _dlgModal.value().show(owner)
+	return _rawModal.has_value()
+		? _rawModal.value().show(owner)
 		: _dlgModal.value().show(owner);
 }
 

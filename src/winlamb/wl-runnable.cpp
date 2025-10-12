@@ -46,12 +46,20 @@ Init::Init() {
 	OleInitialize(nullptr);
 }
 
-int wl::dpi_x(int x) {
+int wl::dpi::x(int xVal) {
 	init_stuff();
-	return MulDiv(x, logPixelsX, 96);
+	return MulDiv(xVal, logPixelsX, 96);
 }
 
-int wl::dpi_y(int y) {
+int wl::dpi::y(int yVal) {
 	init_stuff();
-	return MulDiv(y, logPixelsY, 96);
+	return MulDiv(yVal, logPixelsY, 96);
+}
+
+POINT wl::dpi::pt(int xVal, int yVal) {
+	return {.x = x(xVal), .y = y(yVal)};
+}
+
+SIZE wl::dpi::sz(int xVal, int yVal) {
+	return {.cx = x(xVal), .cy = y(yVal)};
 }

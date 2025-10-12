@@ -33,10 +33,9 @@ namespace wl::wm {
 
 	struct Activate : public Msg {
 		constexpr Activate(const Msg &p) : Msg{p} { }
-		[[nodiscard]] constexpr bool is_being_activated() const           { return wp != WA_INACTIVE; }
-		[[nodiscard]] constexpr bool activated_not_by_mouse_click() const { return wp == WA_ACTIVE; }
-		[[nodiscard]] constexpr bool activated_by_mouse_click() const     { return wp == WA_CLICKACTIVE; }
-		[[nodiscard]] HWND           swapped_window() const               { return reinterpret_cast<HWND>(lp); }
+		[[nodiscard]] constexpr WORD active_state() const   { return LOWORD(wp); }
+		[[nodiscard]] constexpr bool is_minimized() const   { return HIWORD(wp) != 0; }
+		[[nodiscard]] HWND           swapped_window() const { return reinterpret_cast<HWND>(lp); }
 	};
 
 	struct Create : public Msg {
@@ -94,6 +93,11 @@ namespace wl::wm {
 	struct NcPaint : public Msg {
 		constexpr NcPaint(const Msg &p) : Msg{p} { }
 		[[nodiscard]] HRGN hrgn() const { return reinterpret_cast<HRGN>(wp); }
+	};
+
+	struct SetFocus : public Msg {
+		constexpr SetFocus(const Msg &p) : Msg{p} { }
+		[[nodiscard]] HWND hwnd_losing_focus() const { return reinterpret_cast<HWND>(wp); }
 	};
 
 	struct Size : public Msg {
@@ -209,6 +213,7 @@ namespace _wl_internal {
 		void wm_enable(std::function<void(wl::wm::Enable)> cb);
 		void wm_end_session(std::function<void(wl::wm::EndSession)> cb);
 		void wm_erase_bkgnd(std::function<int(wl::wm::EraseBkgnd)> cb);
+		void wm_set_focus(std::function<void(wl::wm::SetFocus)> cb);
 		void wm_get_dlg_code(std::function<WORD(wl::wm::GetDlgCode)> cb);
 		void wm_init_menu_popup(std::function<void(wl::wm::InitMenuPopup)> cb);
 		void wm_kill_focus(std::function<void(wl::wm::KillFocus)> cb);

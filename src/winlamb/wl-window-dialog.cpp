@@ -13,8 +13,9 @@ void DialogBase::create_dialog_param(HINSTANCE hInst, HWND hParent) {
 	HWND hDlg = CreateDialogParamW(hInst, MAKEINTRESOURCEW(_dlgId), hParent,
 		dlg_proc, reinterpret_cast<LPARAM>(this));
 	#ifdef _DEBUG
-	if (!hDlg)
+	if (!hDlg) {
 		throw std::system_error(GetLastError(), std::system_category(), "CreateDialogParam failed.");
+	}
 	#endif
 }
 
@@ -100,11 +101,11 @@ INT_PTR CALLBACK DialogBase::dlg_proc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp)
 DialogMain::DialogMain(WORD dlgId, WORD iconId, WORD accelTblId)
 	: _dlgBase{dlgId}, _iconId{iconId}, _accelTblId{accelTblId}
 {
-	_dlgBase._wndMsg.on().wm_close([this]() {
+	_dlgBase._wndMsg._userEvents.wm_close([this]() {
 		DestroyWindow(hwnd());
 	});
 
-	_dlgBase._wndMsg.on().wm_nc_destroy([]() {
+	_dlgBase._wndMsg._userEvents.wm_nc_destroy([]() {
 		PostQuitMessage(0);
 	});
 }
@@ -123,7 +124,7 @@ int DialogMain::run(HINSTANCE hInst, int cmdShow) {
 DialogModal::DialogModal(WORD dlgId)
 	: _dlgBase{dlgId}
 {
-	_dlgBase._wndMsg.on().wm_close([this]() {
+	_dlgBase._wndMsg._userEvents.wm_close([this]() {
 		EndDialog(hwnd(), 0);
 	});
 }

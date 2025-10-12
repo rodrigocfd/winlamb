@@ -26,3 +26,19 @@ private:
 	void on_lst_files_item_changed(NMLISTVIEW &p);
 	void on_about();
 };
+
+////////////////////////////////////////////////////////////////////////////////
+
+class RawMain final {
+public:
+	RawMain();
+	RawMain(const RawMain&) = delete;
+	RawMain(RawMain&&) = delete;
+	RawMain& operator=(const RawMain&) = delete;
+	RawMain& operator=(RawMain&&) = delete;
+
+	wl::WindowMain wnd;
+
+private:
+	int on_create(wl::wm::Create);
+};

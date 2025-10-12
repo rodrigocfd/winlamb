@@ -2,8 +2,11 @@
 #include "events.h"
 #include "str.h"
 
-namespace _wl_internal { class DialogBase; }
-namespace _wl_internal { class NativeCtrl; }
+namespace _wl_internal {
+	class RawBase;
+	class DialogBase;
+	class NativeCtrl;
+}
 
 namespace wl {
 
@@ -31,7 +34,8 @@ namespace wl {
 
 	private:
 		HWND _hWnd = nullptr;
-		friend _wl_internal::DialogBase; // set dialog hWnd
+		friend _wl_internal::RawBase; // set raw hWnd
+		friend _wl_internal::DialogBase; // set dialog hDlg
 		friend _wl_internal::NativeCtrl; // set control hWnd
 	};
 

@@ -2,7 +2,8 @@
 #include <ShlObj.h>
 #include "DlgMain.h"
 
-RUN_MAIN(DlgMain, wnd)
+// RUN_MAIN(DlgMain, wnd)
+RUN_MAIN(RawMain, wnd)
 
 DlgMain::DlgMain() {
 	wnd.on().wm_init_dialog(std::bind(&DlgMain::on_init_dialog, this, std::placeholders::_1));
@@ -67,4 +68,21 @@ void DlgMain::on_about() {
 
 	wl::WindowModal pop{DLG_MAIN};
 	pop.show(wnd);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+RawMain::RawMain()
+	: wnd{{
+		.iconId = ICO_MAIN,
+		.title = L"Stranger",
+		.style = wl::OptsMain{}.style | WS_MAXIMIZEBOX,
+	}}
+{
+	wnd.on().wm_create(std::bind(&RawMain::on_create, this, std::placeholders::_1));
+}
+
+int RawMain::on_create(wl::wm::Create) {
+	wnd.set_title(L"Shat out of hell");
+	return 0;
 }

@@ -1,5 +1,6 @@
 #pragma once
 #include "window-dialog.h"
+#include "window-raw.h"
 
 namespace wl { class DropFiles; }
 
@@ -13,6 +14,9 @@ namespace wl {
 		WindowMain(WindowMain&&) = delete;
 		WindowMain& operator=(const WindowMain&) = delete;
 		WindowMain& operator=(WindowMain&&) = delete;
+
+		WindowMain(OptsMain opts)
+			: _rawMain{std::make_optional<_wl_internal::RawMain>(opts)} { }
 
 		WindowMain(WORD dlgId, WORD iconId = 0, WORD accelTblId = 0)
 			: _dlgMain{std::make_optional<_wl_internal::DialogMain>(dlgId, iconId, accelTblId)} { }
@@ -40,7 +44,7 @@ namespace wl {
 		[[nodiscard]] const _wl_internal::WindowMsg& wnd_msg() const;
 		[[nodiscard]] _wl_internal::WindowMsg& wnd_msg();
 
-		std::optional<_wl_internal::DialogMain> _rawMain{}; // either one
+		std::optional<_wl_internal::RawMain> _rawMain{}; // either one
 		std::optional<_wl_internal::DialogMain> _dlgMain{};
 
 		friend _wl_internal::NativeCtrl;
