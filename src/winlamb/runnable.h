@@ -1,6 +1,6 @@
 #pragma once
 #include <stdexcept>
-#include <Windows.h>
+#include "lib-include-win.h"
 
 namespace _wl_internal {
 

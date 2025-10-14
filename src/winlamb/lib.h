@@ -1,7 +1,6 @@
-#pragma once
-// #include <SDKDDKVer.h>
-// #define WIN32_LEAN_AND_MEAN
-// #include <Windows.h>
+/**
+ * WinLamb v2 master include file.
+ */
 
 #include "com-ptr.h"
 #include "ctl-list-view.h"
@@ -11,6 +10,7 @@
 #include "path.h"
 #include "runnable.h"
 #include "str.h"
+#include "vec.h"
 #include "window-dialog.h"
 #include "window-user.h"
 #include "window.h"

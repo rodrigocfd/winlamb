@@ -3,7 +3,7 @@
 #include <span>
 #include <string>
 #include <vector>
-#include <Windows.h>
+#include "lib-include-win.h"
 
 namespace wl {
 

@@ -1,7 +1,8 @@
 #pragma once
 #include <system_error>
 #include <type_traits>
-#include <Windows.h>
+#include "lib-include-win.h"
+#include <WTypesbase.h>
 
 namespace wl {
 

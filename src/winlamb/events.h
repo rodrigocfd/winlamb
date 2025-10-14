@@ -2,7 +2,7 @@
 #include <functional>
 #include <optional>
 #include <vector>
-#include <Windows.h>
+#include "lib-include-win.h"
 
 // Window message crackers.
 namespace wl::wm {

@@ -1,7 +1,6 @@
 #include <algorithm>
 #include <cwctype>
 #include <stdexcept>
-#include <Windows.h>
 #include "str.h"
 
 int wl::str::cmp(const std::wstring &a, WStrPtr b) {

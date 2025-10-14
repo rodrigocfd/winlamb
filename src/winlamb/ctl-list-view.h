@@ -1,5 +1,5 @@
 #pragma once
-#include <Windows.h>
+#include "lib-include-win.h"
 #include <CommCtrl.h>
 #include "window-user.h"
 

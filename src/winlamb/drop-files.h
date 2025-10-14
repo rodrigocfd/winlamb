@@ -2,8 +2,9 @@
 #include <functional>
 #include <optional>
 #include <vector>
-#include <Windows.h>
+#include "lib-include-win.h"
 #include <oleidl.h>
+#include <shellapi.h>
 #include "window-user.h"
 
 namespace wl {

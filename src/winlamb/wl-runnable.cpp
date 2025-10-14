@@ -1,7 +1,8 @@
 #include <system_error>
-#include <Windows.h>
+#include "lib-include-win.h"
 #include <CommCtrl.h>
 #include <VersionHelpers.h>
+#include <ole2.h>
 #include "runnable.h"
 using namespace _wl_internal;
 
