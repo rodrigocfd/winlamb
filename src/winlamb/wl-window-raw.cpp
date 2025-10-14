@@ -196,21 +196,13 @@ RawModal::RawModal(OptsModal opts)
 	});
 }
 
-void RawModal::show(const WindowMain &owner) {
-	show_modal(owner.hwnd());
-}
-
-void RawModal::show(const WindowModal &owner) {
-	show_modal(owner.hwnd());
-}
-
-void RawModal::show_modal(HWND hParent) {
+void RawModal::show(const WindowParent &owner) {
 	HINSTANCE hInst = GetModuleHandleW(nullptr);
 	ATOM atom = _rawBase.register_class(hInst, _opts.className, _opts.classStyle,
 		_opts.iconId, _opts.hbrBackground, _opts.hCursor);
 
 	_hWndChildPrevFocusParent = GetFocus();
-	EnableWindow(hParent, FALSE); // https://devblogs.microsoft.com/oldnewthing/20040227-00/?p=40463
+	EnableWindow(owner.hwnd(), FALSE); // https://devblogs.microsoft.com/oldnewthing/20040227-00/?p=40463
 
 	RECT rcWnd{
 		.left = 0,
@@ -222,7 +214,7 @@ void RawModal::show_modal(HWND hParent) {
 	OffsetRect(&rcWnd, -rcWnd.left, -rcWnd.top);
 
 	RECT rcParent{};
-	GetWindowRect(hParent, &rcParent); // relative to screen
+	GetWindowRect(owner.hwnd(), &rcParent); // relative to screen
 
 	POINT ptWndCenter{
 		.x = rcParent.left + (rcParent.right - rcParent.left) / 2 - rcWnd.right / 2, // center on parent

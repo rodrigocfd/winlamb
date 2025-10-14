@@ -2,12 +2,14 @@
 using namespace _wl_internal;
 using namespace wl;
 
-DropFiles::DropFiles(WindowMain &owner) {
-	construct(owner.wnd_msg());
-}
+DropFiles::DropFiles(WindowParent &owner) {
+	owner.wnd_msg()._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() {
+		RegisterDragDrop(pOwner->hwnd(), this);
+	});
 
-DropFiles::DropFiles(WindowModal &owner) {
-	construct(owner.wnd_msg());
+	owner.wnd_msg()._postEvents.wm(WM_DESTROY, [pOwner = &owner](wm::Msg) {
+		RevokeDragDrop(pOwner->hwnd());
+	});
 }
 
 HRESULT STDMETHODCALLTYPE DropFiles::QueryInterface(REFIID riid, void **ppvObject) {
@@ -76,16 +78,6 @@ HRESULT STDMETHODCALLTYPE DropFiles::Drop(
 
 	*pdwEffect &= DROPEFFECT_COPY;
 	return S_OK;
-}
-
-void DropFiles::construct(WindowMsg &owner) {
-	owner._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() {
-		RegisterDragDrop(pOwner->hwnd(), this);
-	});
-
-	owner._postEvents.wm(WM_DESTROY, [pOwner = &owner](wm::Msg) {
-		RevokeDragDrop(pOwner->hwnd());
-	});
 }
 
 std::vector<std::wstring> DropFiles::get_dropped(HDROP hDrop) const {

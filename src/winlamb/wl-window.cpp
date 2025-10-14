@@ -142,12 +142,7 @@ void WindowMsg::modal_loop() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-NativeCtrl::NativeCtrl(WindowMain &owner)
-	: _owner{owner.wnd_msg()}
-{
-}
-
-NativeCtrl::NativeCtrl(WindowModal &owner)
+NativeCtrl::NativeCtrl(WindowParent &owner)
 	: _owner{owner.wnd_msg()}
 {
 }

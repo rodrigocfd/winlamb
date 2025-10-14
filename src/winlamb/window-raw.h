@@ -101,9 +101,7 @@ namespace _wl_internal {
 		explicit RawModal(wl::OptsModal opts);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _rawBase.hwnd(); }
-		void show(const wl::WindowMain &owner);
-		void show(const wl::WindowModal &owner);
-		void show_modal(HWND hParent);
+		void show(const wl::WindowParent &owner);
 
 		RawBase _rawBase{};
 		wl::OptsModal _opts;

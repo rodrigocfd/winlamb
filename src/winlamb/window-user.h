@@ -2,12 +2,28 @@
 #include "window-dialog.h"
 #include "window-raw.h"
 
-namespace wl { class DropFiles; }
+namespace wl {
+
+	class DropFiles;
+
+	// Pure abstract class; any window which can contain child controls.
+	class WindowParent {
+	public:
+		[[nodiscard]] virtual constexpr HWND hwnd() const = 0;
+	private:
+		[[nodiscard]] virtual const _wl_internal::WindowMsg& wnd_msg() const = 0;
+		[[nodiscard]] virtual _wl_internal::WindowMsg& wnd_msg() = 0;
+		friend _wl_internal::NativeCtrl; // so NativeCtrl can be constructed, then expose parent events to controls ctor
+		friend _wl_internal::EventsNativeCtrl; // so events can be added to parent
+		friend DropFiles;
+	};
+
+}
 
 namespace wl {
 
 	// Main application window.
-	class WindowMain final {
+	class WindowMain final : public WindowParent {
 	public:
 		WindowMain() = delete;
 		WindowMain(const WindowMain&) = delete;
@@ -23,9 +39,9 @@ namespace wl {
 		WindowMain(WORD dlgId, WORD iconId = 0, WORD accelTblId = 0)
 			: _dlgMain{std::make_optional<_wl_internal::DialogMain>(dlgId, iconId, accelTblId)} { }
 
-		[[nodiscard]] constexpr HWND hwnd() const { return _rawMain.has_value() ? _rawMain.value().hwnd() : _dlgMain.value().hwnd(); }
-		[[nodiscard]] std::wstring title() const  { return wnd_msg()._wnd.text(); }
-		void set_title(WStrPtr title) const       { wnd_msg()._wnd.set_text(title); }
+		[[nodiscard]] constexpr HWND hwnd() const override { return _rawMain.has_value() ? _rawMain.value().hwnd() : _dlgMain.value().hwnd(); }
+		[[nodiscard]] std::wstring title() const           { return wnd_msg()._wnd.text(); }
+		void set_title(WStrPtr title) const                { wnd_msg()._wnd.set_text(title); }
 
 		// Allows message events to be added.
 		// The events must be added before the dialog is created.
@@ -42,15 +58,11 @@ namespace wl {
 		int run(HINSTANCE hInst, int cmdShow);
 
 	private:
-		[[nodiscard]] const _wl_internal::WindowMsg& wnd_msg() const;
-		[[nodiscard]] _wl_internal::WindowMsg& wnd_msg();
+		[[nodiscard]] const _wl_internal::WindowMsg& wnd_msg() const override;
+		[[nodiscard]] _wl_internal::WindowMsg& wnd_msg() override;
 
 		std::optional<_wl_internal::RawMain> _rawMain{}; // either one
 		std::optional<_wl_internal::DialogMain> _dlgMain{};
-
-		friend _wl_internal::NativeCtrl;
-		friend _wl_internal::EventsNativeCtrl;
-		friend DropFiles;
 	};
 
 }
@@ -58,7 +70,7 @@ namespace wl {
 namespace wl {
 
 	// Modal window.
-	class WindowModal final {
+	class WindowModal final : public WindowParent {
 	public:
 		WindowModal() = delete;
 		WindowModal(const WindowModal&) = delete;
@@ -89,21 +101,14 @@ namespace wl {
 		void thread_ui(std::function<void()> cb) const { wnd_msg().thread_ui(cb); }
 
 		// Displays the modal dialog, blocking until the modal is closed.
-		void show(const wl::WindowMain &owner);
-
-		// Displays the modal dialog, blocking until the modal is closed.
-		void show(const wl::WindowModal &owner);
+		void show(const wl::WindowParent &owner);
 
 	private:
-		[[nodiscard]] const _wl_internal::WindowMsg& wnd_msg() const;
-		[[nodiscard]] _wl_internal::WindowMsg& wnd_msg();
+		[[nodiscard]] const _wl_internal::WindowMsg& wnd_msg() const override;
+		[[nodiscard]] _wl_internal::WindowMsg& wnd_msg() override;
 
 		std::optional<_wl_internal::RawModal> _rawModal{}; // either one
 		std::optional<_wl_internal::DialogModal> _dlgModal{};
-
-		friend _wl_internal::NativeCtrl;
-		friend _wl_internal::EventsNativeCtrl;
-		friend DropFiles;
 	};
 
 }

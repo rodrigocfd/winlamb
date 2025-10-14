@@ -14,8 +14,7 @@ namespace _wl_internal {
 		EventsListView& operator=(const EventsListView&) = delete;
 		EventsListView& operator=(EventsListView&&) = delete;
 
-		EventsListView(wl::WindowMain &owner, WORD ctrlId) : _events{owner, ctrlId} { }
-		EventsListView(wl::WindowModal &owner, WORD ctrlId) : _events{owner, ctrlId} { }
+		EventsListView(wl::WindowParent &owner, WORD ctrlId) : _events{owner, ctrlId} { }
 
 		void lvn_begin_label_edit(std::function<bool(NMLVDISPINFOW&)> cb);
 		void lvn_column_click(std::function<void(NMLISTVIEW&)> cb);
@@ -179,8 +178,7 @@ namespace wl {
 		ListView& operator=(const ListView&) = delete;
 		ListView& operator=(ListView&&) = delete;
 
-		ListView(WindowMain &owner, WORD ctrlId, WORD contextMenuId = 0);
-		ListView(WindowModal &owner, WORD ctrlId, WORD contextMenuId = 0);
+		ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId = 0);
 
 		ColumnCollection cols{this};
 		ItemCollection items{this};
@@ -189,7 +187,6 @@ namespace wl {
 		[[nodiscard]] _wl_internal::EventsListView& on() { return _events; }
 
 	private:
-		void construct(_wl_internal::WindowMsg &owner, WORD ctrlId, WORD contextMenuId);
 		void show_context_menu(bool followCursor, bool hasCtrl, bool hasShift);
 
 		_wl_internal::NativeCtrl _ctrl;

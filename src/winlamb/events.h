@@ -241,10 +241,7 @@ namespace _wl_internal {
 
 }
 
-namespace wl {
-	class WindowMain;
-	class WindowModal;
-}
+namespace wl { class WindowParent; }
 
 namespace _wl_internal {
 
@@ -257,8 +254,7 @@ namespace _wl_internal {
 		EventsNativeCtrl& operator=(const EventsNativeCtrl&) = delete;
 		EventsNativeCtrl& operator=(EventsNativeCtrl&&) = delete;
 
-		EventsNativeCtrl(wl::WindowMain &owner, WORD ctrlId);
-		EventsNativeCtrl(wl::WindowModal &owner, WORD ctrlId);
+		EventsNativeCtrl(wl::WindowParent &owner, WORD ctrlId);
 
 		WindowMsg &_owner;
 		WORD _ctrlId;

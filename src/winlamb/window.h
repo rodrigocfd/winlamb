@@ -77,6 +77,8 @@ namespace _wl_internal {
 
 }
 
+namespace wl { class WindowParent; }
+
 namespace _wl_internal {
 
 	// Base to all native controls.
@@ -88,8 +90,7 @@ namespace _wl_internal {
 		NativeCtrl& operator=(const NativeCtrl&) = delete;
 		NativeCtrl& operator=(NativeCtrl&&) = delete;
 
-		NativeCtrl(wl::WindowMain &owner);
-		NativeCtrl(wl::WindowModal &owner);
+		NativeCtrl(wl::WindowParent &owner);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _wnd.hwnd(); }
 		[[nodiscard]] _wl_internal::EventsUser& subclass_on();

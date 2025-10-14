@@ -129,10 +129,6 @@ DialogModal::DialogModal(WORD dlgId)
 	});
 }
 
-void DialogModal::show(const WindowMain &owner) {
-	_dlgBase.dialog_box_param(GetModuleHandleW(nullptr), owner.hwnd());
-}
-
-void DialogModal::show(const WindowModal &owner) {
+void DialogModal::show(const WindowParent &owner) {
 	_dlgBase.dialog_box_param(GetModuleHandleW(nullptr), owner.hwnd());
 }

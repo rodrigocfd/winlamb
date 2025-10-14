@@ -192,12 +192,7 @@ std::optional<LRESULT> EventsUser::process_last(wm::Msg procMsg) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EventsNativeCtrl::EventsNativeCtrl(WindowMain &owner, WORD ctrlId)
-	: _owner{owner.wnd_msg()}, _ctrlId{ctrlId}
-{
-}
-
-EventsNativeCtrl::EventsNativeCtrl(WindowModal &owner, WORD ctrlId)
+EventsNativeCtrl::EventsNativeCtrl(WindowParent &owner, WORD ctrlId)
 	: _owner{owner.wnd_msg()}, _ctrlId{ctrlId}
 {
 }

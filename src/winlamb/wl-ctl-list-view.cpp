@@ -363,19 +363,9 @@ std::optional<ListView::Item> ListView::ItemCollection::topmost_visible() const 
 
 ////////////////////////////////////////////////////////////////////////////////
 
-ListView::ListView(WindowMain &owner, WORD ctrlId, WORD contextMenuId)
+ListView::ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId)
 	: _ctrl{owner}, _events{owner, ctrlId}
 {
-	construct(_ctrl._owner, ctrlId, contextMenuId);
-}
-
-ListView::ListView(WindowModal &owner, WORD ctrlId, WORD contextMenuId)
-	: _ctrl{owner}, _events{owner, ctrlId}
-{
-	construct(_ctrl._owner, ctrlId, contextMenuId);
-}
-
-void ListView::construct(WindowMsg &owner, WORD ctrlId, WORD contextMenuId) {
 	_hMenuContext = LoadMenuW(GetModuleHandle(nullptr), MAKEINTRESOURCEW(contextMenuId));
 	#ifdef _DEBUG
 	if (!_hMenuContext) [[unlikely]] {
@@ -403,7 +393,7 @@ void ListView::construct(WindowMsg &owner, WORD ctrlId, WORD contextMenuId) {
 		return static_cast<WORD>(DefSubclassProc(hwnd(), WM_GETDLGCODE, p.wp, p.lp)); // let system define DLGC
 	});
 
-	owner._preEvents.wm_notify(ctrlId, LVN_KEYDOWN, [this](wm::Notify p) {
+	_ctrl._owner._preEvents.wm_notify(ctrlId, LVN_KEYDOWN, [this](wm::Notify p) {
 		NMLVKEYDOWN &nmk = p.hdr<NMLVKEYDOWN>();
 		bool hasCtrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
 
@@ -415,7 +405,7 @@ void ListView::construct(WindowMsg &owner, WORD ctrlId, WORD contextMenuId) {
 		}
 	});
 
-	owner._preEvents.wm_notify(ctrlId, NM_RCLICK, [this](wm::Notify p) {
+	_ctrl._owner._preEvents.wm_notify(ctrlId, NM_RCLICK, [this](wm::Notify p) {
 		NMITEMACTIVATE &nmi = p.hdr<NMITEMACTIVATE>();
 		bool hasCtrl = nmi.uKeyFlags & LVKF_CONTROL;
 		bool hasShift = nmi.uKeyFlags & LVKF_SHIFT;
@@ -423,7 +413,7 @@ void ListView::construct(WindowMsg &owner, WORD ctrlId, WORD contextMenuId) {
 		show_context_menu(true, hasCtrl, hasShift);
 	});
 
-	owner._postEvents.wm(WM_DESTROY, [this](wm::Msg) {
+	_ctrl._owner._postEvents.wm(WM_DESTROY, [this](wm::Msg) {
 		if (_hMenuContext)
 			DestroyMenu(_hMenuContext);
 	});
