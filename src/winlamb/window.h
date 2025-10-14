@@ -66,6 +66,7 @@ namespace _wl_internal {
 		};
 		ProcResult process_msgs(UINT msg, WPARAM wp, LPARAM lp);
 		int main_loop(HACCEL hAccel);
+		void modal_loop();
 
 		bool _isDlg;
 		wl::Window _wnd{};

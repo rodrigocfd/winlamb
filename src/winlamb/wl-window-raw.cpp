@@ -1,5 +1,6 @@
 #include <system_error>
 #include "window-raw.h"
+#include "window-user.h"
 using namespace _wl_internal;
 using namespace wl;
 
@@ -174,4 +175,63 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 	UpdateWindow(hwnd());
 
 	return _rawBase._wndMsg.main_loop(_opts.hAccelTable);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+RawModal::RawModal(OptsModal opts)
+	: _opts{opts}
+{
+	_rawBase._wndMsg._preEvents.wm(WM_SETFOCUS, [this](wm::SetFocus) {
+		_rawBase.focus_first_child();
+	});
+
+	_rawBase._wndMsg._userEvents.wm_close([this]() {
+		HWND hParent = GetWindow(hwnd(), GW_OWNER);
+		EnableWindow(hParent, TRUE); // re-enable parent
+		DestroyWindow(hwnd()); // then destroy modal
+		if (_hWndChildPrevFocusParent) {
+			SetFocus(_hWndChildPrevFocusParent); // could be on WM_DESTROY as well
+		}
+	});
+}
+
+void RawModal::show(const WindowMain &owner) {
+	show_modal(owner.hwnd());
+}
+
+void RawModal::show(const WindowModal &owner) {
+	show_modal(owner.hwnd());
+}
+
+void RawModal::show_modal(HWND hParent) {
+	HINSTANCE hInst = GetModuleHandleW(nullptr);
+	ATOM atom = _rawBase.register_class(hInst, _opts.className, _opts.classStyle,
+		_opts.iconId, _opts.hbrBackground, _opts.hCursor);
+
+	_hWndChildPrevFocusParent = GetFocus();
+	EnableWindow(hParent, FALSE); // https://devblogs.microsoft.com/oldnewthing/20040227-00/?p=40463
+
+	RECT rcWnd{
+		.left = 0,
+		.top = 0,
+		.right = _opts.size.cx,
+		.bottom = _opts.size.cy,
+	};
+	AdjustWindowRectEx(&rcWnd, _opts.style, FALSE, _opts.exStyle);
+	OffsetRect(&rcWnd, -rcWnd.left, -rcWnd.top);
+
+	RECT rcParent{};
+	GetWindowRect(hParent, &rcParent); // relative to screen
+
+	POINT ptWndCenter{
+		.x = rcParent.left + (rcParent.right - rcParent.left) / 2 - rcWnd.right / 2, // center on parent
+		.y = rcParent.top + (rcParent.bottom - rcParent.top) / 2 - rcWnd.bottom / 2,
+	};
+
+	_rawBase.create_window(_opts.exStyle, atom, _opts.title, _opts.style,
+		ptWndCenter, {.cx = rcWnd.right - rcWnd.left, .cy = rcWnd.bottom - rcWnd.top},
+		nullptr, nullptr, hInst);
+
+	_rawBase._wndMsg.modal_loop();
 }

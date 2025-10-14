@@ -112,6 +112,34 @@ int WindowMsg::main_loop(HACCEL hAccel) {
 	return static_cast<int>(msg.wParam); // can be used as program return value
 }
 
+void WindowMsg::modal_loop() {
+	MSG msg{};
+	BOOL ret = FALSE;
+	while ((ret = GetMessageW(&msg, nullptr, 0, 0)) != 0) {
+		if (ret == -1) [[unlikely]] {
+			throw std::system_error(GetLastError(), std::system_category(), "GetMessage failed.");
+		}
+		if (!hwnd() || !IsWindow(hwnd())) break; // our modal was destroyed
+
+		// If a child window, will retrieve its top-level parent.
+		// If a top-level, use itself.
+		HWND hWndTopLevel = GetAncestor(hwnd(), GA_ROOT);
+		if (!hWndTopLevel) hWndTopLevel = hwnd();
+
+		// Try to process keyboard actions for child controls.
+		if (IsDialogMessageW(hwnd(), &msg)) {
+			// Processed all keyboard actions for child controls.
+			if (!hwnd()) break; // our modal was destroyed
+			else continue;
+		}
+
+		TranslateMessage(&msg);
+		DispatchMessageW(&msg);
+
+		if (!hwnd() || !IsWindow(hwnd())) break; // our modal was destroyed
+	}
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 NativeCtrl::NativeCtrl(WindowMain &owner)

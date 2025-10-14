@@ -67,6 +67,7 @@ namespace _wl_internal {
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _dlgBase.hwnd(); }
 		void show(const wl::WindowMain &owner);
+		void show(const wl::WindowModal &owner);
 
 		DialogBase _dlgBase;
 	};

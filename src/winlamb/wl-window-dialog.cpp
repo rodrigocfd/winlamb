@@ -132,3 +132,7 @@ DialogModal::DialogModal(WORD dlgId)
 void DialogModal::show(const WindowMain &owner) {
 	_dlgBase.dialog_box_param(GetModuleHandleW(nullptr), owner.hwnd());
 }
+
+void DialogModal::show(const WindowModal &owner) {
+	_dlgBase.dialog_box_param(GetModuleHandleW(nullptr), owner.hwnd());
+}

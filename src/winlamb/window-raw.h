@@ -68,3 +68,46 @@ namespace _wl_internal {
 	};
 
 }
+
+namespace wl {
+
+	// Options to create a modal window programmatically.
+	struct OptsModal {
+		LPCWSTR className = nullptr;
+		DWORD classStyle = CS_DBLCLKS;
+		WORD iconId = 0;
+		HBRUSH hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
+		HCURSOR hCursor = nullptr;
+
+		LPCWSTR title = nullptr;
+		SIZE size = {.cx = 400, .cy = 200}; // you should use dpi::sz()
+		DWORD style =  WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_BORDER | WS_VISIBLE;
+		DWORD exStyle = WS_EX_LEFT;
+	};
+
+}
+
+namespace _wl_internal {
+
+	// Modal raw window.
+	class RawModal final {
+	public:
+		RawModal() = delete;
+		RawModal(const RawModal&) = delete;
+		RawModal(RawModal&&) = delete;
+		RawModal& operator=(const RawModal&) = delete;
+		RawModal& operator=(RawModal&&) = delete;
+
+		explicit RawModal(wl::OptsModal opts);
+
+		[[nodiscard]] constexpr HWND hwnd() const { return _rawBase.hwnd(); }
+		void show(const wl::WindowMain &owner);
+		void show(const wl::WindowModal &owner);
+		void show_modal(HWND hParent);
+
+		RawBase _rawBase{};
+		wl::OptsModal _opts;
+		HWND _hWndChildPrevFocusParent = nullptr;
+	};
+
+}

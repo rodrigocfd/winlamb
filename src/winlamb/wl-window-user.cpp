@@ -2,14 +2,6 @@
 using namespace _wl_internal;
 using namespace wl;
 
-std::wstring WindowMain::title() const {
-	return wnd_msg()._wnd.text();
-}
-
-void WindowMain::set_title(WStrPtr title) const {
-	wnd_msg()._wnd.set_text(title);
-}
-
 int WindowMain::run(HINSTANCE hInst, int cmdShow) {
 	return _rawMain.has_value()
 		? _rawMain.value().run(hInst, cmdShow)
@@ -34,9 +26,15 @@ void WindowModal::show(const WindowMain &owner) {
 		: _dlgModal.value().show(owner);
 }
 
+void WindowModal::show(const WindowModal &owner) {
+	return _rawModal.has_value()
+		? _rawModal.value().show(owner)
+		: _dlgModal.value().show(owner);
+}
+
 const WindowMsg& WindowModal::wnd_msg() const {
 	return _rawModal.has_value()
-		? _rawModal.value()._dlgBase._wndMsg
+		? _rawModal.value()._rawBase._wndMsg
 		: _dlgModal.value()._dlgBase._wndMsg;
 }
 
