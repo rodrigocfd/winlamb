@@ -1,4 +1,5 @@
 #pragma once
+#include <concepts>
 #include <optional>
 #include <ranges>
 #include <span>
@@ -263,7 +264,7 @@ namespace wl::vec {
 	[[nodiscard]] std::vector<U> transform(R&& v, F callback) {
 		std::vector<U> ret;
 		ret.reserve(v.size());
-		for (auto&& elem : v)
+		for (auto &&elem : v)
 			ret.emplace_back(callback(elem));
 		return ret;
 	}

@@ -19,7 +19,7 @@ std::vector<std::wstring> wl::path::dir_list(WStrPtr pathAndFilter) {
 		if (err == ERROR_FILE_NOT_FOUND) [[likely]] {
 			return {}; // no files found
 		} else [[unlikely]] {
-			throw std::system_error(err, std::system_category(), "FindFirstFile failed.");
+			throw std::system_error(err, std::system_category(), "FindFirstFile failed");
 		}
 	}
 
@@ -47,7 +47,7 @@ std::vector<std::wstring> wl::path::dir_list(WStrPtr pathAndFilter) {
 				});
 				return entries; // no more files found
 			} else [[unlikely]] {
-				throw std::system_error(err, std::system_category(), "FindNextFile failed.");
+				throw std::system_error(err, std::system_category(), "FindNextFile failed");
 			}
 		}
 	}
@@ -102,7 +102,7 @@ bool wl::path::has_extension(const std::wstring &p, WStrPtr ext) {
 }
 
 bool wl::path::has_extension(const std::wstring &p, std::initializer_list<WStrPtr> exts) {
-	for (auto&& ext : exts) {
+	for (auto &&ext : exts) {
 		if (has_extension(p, ext))
 			return true;
 	}
@@ -112,7 +112,7 @@ bool wl::path::has_extension(const std::wstring &p, std::initializer_list<WStrPt
 static DWORD get_attrs(wl::WStrPtr p) {
 	DWORD attr = GetFileAttributesW(p);
 	if (attr == INVALID_FILE_ATTRIBUTES) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "GetFileAttributes failed.");
+		throw std::system_error(GetLastError(), std::system_category(), "GetFileAttributes failed");
 	}
 	return attr;
 }

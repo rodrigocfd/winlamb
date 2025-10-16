@@ -20,7 +20,7 @@ ATOM RawBase::register_class(HINSTANCE hInst, LPCWSTR className, DWORD classStyl
 		HICON hIcon = LoadIconW(hInst, MAKEINTRESOURCEW(iconId));
 		#ifdef _DEBUG
 		if (!hIcon)
-			throw std::system_error(GetLastError(), std::system_category(), "LoadIcon failed.");
+			throw std::system_error(GetLastError(), std::system_category(), "LoadIcon failed");
 		#endif
 		wcx.hIcon = hIcon;
 		wcx.hIconSm = hIcon;
@@ -30,7 +30,7 @@ ATOM RawBase::register_class(HINSTANCE hInst, LPCWSTR className, DWORD classStyl
 		HCURSOR hCur = LoadCursorW(nullptr, IDC_ARROW);
 		#ifdef _DEBUG
 		if (!hCur)
-			throw std::system_error(GetLastError(), std::system_category(), "LoadCursor failed.");
+			throw std::system_error(GetLastError(), std::system_category(), "LoadCursor failed");
 		#endif
 		wcx.hCursor = hCur;
 	}
@@ -56,11 +56,11 @@ ATOM RawBase::register_class(HINSTANCE hInst, LPCWSTR className, DWORD classStyl
 			atom = GetClassInfoExW(hInst, wcx.lpszClassName, &wcx);
 			#ifdef _DEBUG
 			if (!atom)
-				throw std::system_error(GetLastError(), std::system_category(), "GetClassInfoEx failed.");
+				throw std::system_error(GetLastError(), std::system_category(), "GetClassInfoEx failed");
 			#endif
 		}
 		#ifdef _DEBUG
-		throw std::system_error(GetLastError(), std::system_category(), "RegisterClassEx failed.");
+		throw std::system_error(GetLastError(), std::system_category(), "RegisterClassEx failed");
 		#endif
 	}
 	return atom;
@@ -78,7 +78,7 @@ void RawBase::create_window(DWORD exStyle, ATOM className, LPCWSTR title, DWORD 
 		pos.x, pos.y, sz.cx, sz.cy, hParent, hMenu, hInst, reinterpret_cast<LPVOID>(this));
 	#ifdef _DEBUG
 	if (!hWnd) {
-		throw std::system_error(GetLastError(), std::system_category(), "CreateWindowEx failed.");
+		throw std::system_error(GetLastError(), std::system_category(), "CreateWindowEx failed");
 	}
 	#endif
 }

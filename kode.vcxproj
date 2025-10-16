@@ -45,7 +45,7 @@
 		<GenerateManifest>false</GenerateManifest>
 	</PropertyGroup>
 
-	<!-- Compiler and linker, by configuration/platform -->
+	<!-- Compiler and linker, debug x64 -->
 	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
 		<ClCompile>
 			<SDLCheck>true</SDLCheck><!-- /sdl -->
@@ -56,6 +56,8 @@
 			<GenerateDebugInformation>true</GenerateDebugInformation><!-- /DEBUG -->
 		</Link>
 	</ItemDefinitionGroup>
+
+	<!-- Compiler and linker, release x64 -->
 	<ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
 		<ClCompile>
 			<FunctionLevelLinking>true</FunctionLevelLinking><!-- /Gy -->

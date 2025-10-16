@@ -368,9 +368,8 @@ ListView::ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId)
 {
 	_hMenuContext = LoadMenuW(GetModuleHandle(nullptr), MAKEINTRESOURCEW(contextMenuId));
 	#ifdef _DEBUG
-	if (!_hMenuContext) [[unlikely]] {
+	if (!_hMenuContext)
 		throw std::invalid_argument("ListView context menu failed to load.");
-	}
 	#endif
 
 	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, pOwner = &owner, ctrlId]() {

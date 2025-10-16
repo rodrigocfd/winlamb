@@ -27,7 +27,7 @@ static void init_stuff() {
 				// Do nothing: Wine doesn't support SetUserObjectInformation for now.
 				// https://bugs.winehq.org/show_bug.cgi?id=54951
 			} else {
-				throw std::system_error(err, std::system_category(), "SetUserObjectInformation failed.");
+				throw std::system_error(err, std::system_category(), "SetUserObjectInformation failed");
 			}
 		}
 	}

@@ -52,7 +52,7 @@ HRESULT STDMETHODCALLTYPE DropFiles::DragLeave() {
 HRESULT STDMETHODCALLTYPE DropFiles::Drop(
 	IDataObject *pDataObj, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect)
 {
-	if (_cb.has_value()) {
+	if (_cb.has_value()) { // do we have an user callback?
 		FORMATETC fetc{
 			.cfFormat = CF_HDROP,
 			.ptd = nullptr,
@@ -62,7 +62,7 @@ HRESULT STDMETHODCALLTYPE DropFiles::Drop(
 		};
 		STGMEDIUM medium{};
 
-		if (HRESULT hr = pDataObj->GetData(&fetc, &medium); FAILED(hr)) {
+		if (HRESULT hr = pDataObj->GetData(&fetc, &medium); FAILED(hr)) [[unlikely]] {
 			*pdwEffect = DROPEFFECT_NONE;
 			return hr;
 		}
@@ -73,7 +73,7 @@ HRESULT STDMETHODCALLTYPE DropFiles::Drop(
 		GlobalUnlock(hFiles);
 		ReleaseStgMedium(&medium);
 
-		_cb.value()(files);
+		_cb.value()(files); // invoke user callback
 	}
 
 	*pdwEffect &= DROPEFFECT_COPY;

@@ -48,7 +48,7 @@ namespace wl {
 		void co_create_instance(REFCLSID clsid, DWORD clsctx = CLSCTX_INPROC_SERVER) {
 			release();
 			if (HRESULT hr = CoCreateInstance(clsid, nullptr, clsctx, IID_PPV_ARGS(&_p)); FAILED(hr)) {
-				throw std::system_error(hr, std::system_category(), "CoCreateInstance failed.");
+				throw std::system_error(hr, std::system_category(), "CoCreateInstance failed");
 			}
 		}
 
@@ -58,7 +58,7 @@ namespace wl {
 		[[nodiscard]] ComPtr<Q> query_interface() const {
 			Q *pQueried = nullptr;
 			if (HRESULT hr = _p->QueryInterface(IID_PPV_ARGS(&pQueried)); FAILED(hr)) {
-				throw std::system_error(hr, std::system_category(), "QueryInterface failed.");
+				throw std::system_error(hr, std::system_category(), "QueryInterface failed");
 			}
 			return ComPtr<Q>{pQueried};
 		}

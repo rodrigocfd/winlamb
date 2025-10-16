@@ -12,7 +12,7 @@ std::wstring Window::text() const {
 	if (!len) {
 		DWORD err = GetLastError();
 		if (err != ERROR_SUCCESS) [[unlikely]] {
-			throw std::system_error(err, std::system_category(), "GetWindowTextLength failed.");
+			throw std::system_error(err, std::system_category(), "GetWindowTextLength failed");
 		}
 		return std::wstring{}; // actual empty string
 	}
@@ -25,7 +25,7 @@ std::wstring Window::text() const {
 
 void Window::set_text(WStrPtr text) const {
 	if (!SetWindowTextW(hwnd(), text)) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "SetWindowText failed.");
+		throw std::system_error(GetLastError(), std::system_category(), "SetWindowText failed");
 	}
 }
 
@@ -102,7 +102,7 @@ int WindowMsg::main_loop(HACCEL hAccel) {
 	BOOL ret = FALSE;
 	while ((ret = GetMessageW(&msg, nullptr, 0, 0)) != 0) {
 		if (ret == -1) [[unlikely]] {
-			throw std::system_error(GetLastError(), std::system_category(), "GetMessage failed.");
+			throw std::system_error(GetLastError(), std::system_category(), "GetMessage failed");
 		}
 		if (hAccel && TranslateAcceleratorW(hwnd(), hAccel, &msg)) continue;
 		if (IsDialogMessageW(hwnd(), &msg)) continue;
@@ -117,7 +117,7 @@ void WindowMsg::modal_loop() {
 	BOOL ret = FALSE;
 	while ((ret = GetMessageW(&msg, nullptr, 0, 0)) != 0) {
 		if (ret == -1) [[unlikely]] {
-			throw std::system_error(GetLastError(), std::system_category(), "GetMessage failed.");
+			throw std::system_error(GetLastError(), std::system_category(), "GetMessage failed");
 		}
 		if (!hwnd() || !IsWindow(hwnd())) break; // our modal was destroyed
 

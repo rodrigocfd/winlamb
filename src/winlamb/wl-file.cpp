@@ -40,7 +40,7 @@ File& File::open(WStrPtr path, Access access) {
 
 	_hFile = CreateFileW(path, acc, share, nullptr, disp, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if (!_hFile || _hFile == INVALID_HANDLE_VALUE) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "CreateFile failed.");
+		throw std::system_error(GetLastError(), std::system_category(), "CreateFile failed");
 	}
 	return *this;
 }
@@ -48,7 +48,7 @@ File& File::open(WStrPtr path, Access access) {
 size_t File::ptr_offset() const {
 	LARGE_INTEGER zeroOffset{}, curOffset{};
 	if (!SetFilePointerEx(_hFile, zeroOffset, &curOffset, FILE_CURRENT)) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "SetFilePointerEx failed.");
+		throw std::system_error(GetLastError(), std::system_category(), "SetFilePointerEx failed");
 	}
 	return static_cast<size_t>(curOffset.QuadPart);
 }
@@ -62,7 +62,7 @@ std::vector<BYTE> File::read(size_t numBytes) const {
 const File& File::read_buf(std::vector<BYTE> &buf) const {
 	DWORD read = 0;
 	if (!ReadFile(_hFile, buf.data(), static_cast<DWORD>(buf.size()), &read, nullptr)) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "ReadFile failed.");
+		throw std::system_error(GetLastError(), std::system_category(), "ReadFile failed");
 	}
 	return *this;
 }
@@ -70,7 +70,7 @@ const File& File::read_buf(std::vector<BYTE> &buf) const {
 const File& File::set_ptr_offset(size_t offset) const {
 	LARGE_INTEGER off{.QuadPart = static_cast<LONGLONG>(offset)};
 	if (!SetFilePointerEx(_hFile, off, nullptr, FILE_BEGIN)) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "SetFilePointerEx failed.");
+		throw std::system_error(GetLastError(), std::system_category(), "SetFilePointerEx failed");
 	}
 	return *this;
 }
@@ -78,7 +78,7 @@ const File& File::set_ptr_offset(size_t offset) const {
 size_t File::size() const {
 	LARGE_INTEGER sz{};
 	if (!GetFileSizeEx(_hFile, &sz)) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "GetFileSizeEx failed.");
+		throw std::system_error(GetLastError(), std::system_category(), "GetFileSizeEx failed");
 	}
 	return static_cast<size_t>(sz.QuadPart);
 }
@@ -86,7 +86,7 @@ size_t File::size() const {
 File::Times File::times() const {
 	FILETIME ftCreation{}, ftLastAccess{}, ftLastWrite{};
 	if (!GetFileTime(_hFile, &ftCreation, &ftLastAccess, &ftLastWrite)) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "GetFileTime failed.");
+		throw std::system_error(GetLastError(), std::system_category(), "GetFileTime failed");
 	}
 
 	SYSTEMTIME stCreationUtc{}, stLastAccessUtc{}, stLastWriteUtc{};
@@ -105,7 +105,7 @@ File::Times File::times() const {
 const File& File::truncate() const {
 	set_ptr_offset(0);
 	if (!SetEndOfFile(_hFile)) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "SetEndOfFile failed.");
+		throw std::system_error(GetLastError(), std::system_category(), "SetEndOfFile failed");
 	}
 	return *this;
 }
@@ -113,7 +113,7 @@ const File& File::truncate() const {
 const File& File::write(std::span<BYTE> data) const {
 	DWORD written = 0;
 	if (!WriteFile(_hFile, data.data(), static_cast<DWORD>(data.size_bytes()), &written, nullptr)) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "WriteFile failed.");
+		throw std::system_error(GetLastError(), std::system_category(), "WriteFile failed");
 	}
 	return *this;
 }
@@ -158,12 +158,12 @@ FileMapped& FileMapped::open(WStrPtr path, Access access) {
 
 	_hMap = CreateFileMappingW(_file.hFile(), nullptr, page, 0, 0, nullptr);
 	if (!_hMap) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "CreateFileMapping failed.");
+		throw std::system_error(GetLastError(), std::system_category(), "CreateFileMapping failed");
 	}
 
 	_pMem = MapViewOfFile(_hMap, FILE_MAP_READ | (access == Access::ExistingRW ? FILE_MAP_WRITE : 0), 0, 0, 0);
 	if (!_pMem) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "MapViewOfFile failed.");
+		throw std::system_error(GetLastError(), std::system_category(), "MapViewOfFile failed");
 	}
 
 	_sz = _file.size();

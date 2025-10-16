@@ -10,9 +10,8 @@ void EventsInternal::wm_create_or_init_dialog(std::function<void()> cb) {
 
 void EventsInternal::wm(UINT msg, std::function<void(wl::wm::Msg)> cb) {
 	#ifdef _DEBUG
-	if (msg == WM_CREATE || msg == WM_INITDIALOG || msg == WM_NOTIFY) [[unlikely]] {
+	if (msg == WM_CREATE || msg == WM_INITDIALOG || msg == WM_NOTIFY)
 		throw std::logic_error("For WM_CREATE, WM_INITDIALOG, WM_NOTIFY, use the specific event methods.");
-	}
 	#endif
 	_msgs.emplace_back(msg, cb);
 }
@@ -37,7 +36,7 @@ bool EventsInternal::process_all(wm::Msg procMsg) const {
 	switch (procMsg.wm) {
 		case WM_CREATE:
 		case WM_INITDIALOG:
-			for (auto& ini : _inis) {
+			for (auto &ini : _inis) {
 				ini();
 				atLeastOne = true;
 			}
@@ -45,7 +44,7 @@ bool EventsInternal::process_all(wm::Msg procMsg) const {
 
 		case WM_NOTIFY: {
 			NMHDR *pHdr = reinterpret_cast<NMHDR*>(procMsg.lp);
-			for (auto& nfy : _nfys) {
+			for (auto &nfy : _nfys) {
 				if (nfy.idFrom == pHdr->idFrom && nfy.code == pHdr->code) {
 					nfy.cb(wm::Notify{procMsg});
 					atLeastOne = true;
@@ -55,7 +54,7 @@ bool EventsInternal::process_all(wm::Msg procMsg) const {
 		}
 
 		default: { // finally, ordinary messages
-			for (auto& msg : _msgs) {
+			for (auto &msg : _msgs) {
 				if (msg.wm == procMsg.wm) {
 					msg.cb(procMsg);
 					atLeastOne = true;
@@ -79,9 +78,8 @@ void EventsUser::wm_init_dialog(std::function<bool(wm::InitDialog)> cb) {
 
 void EventsUser::wm(UINT msg, std::function<LRESULT(wm::Msg)> cb) {
 	#ifdef _DEBUG
-	if (msg == WM_CREATE || msg == WM_INITDIALOG || msg == WM_COMMAND || msg == WM_NOTIFY) [[unlikely]] {
+	if (msg == WM_CREATE || msg == WM_INITDIALOG || msg == WM_COMMAND || msg == WM_NOTIFY)
 		throw std::logic_error("For WM_CREATE, WM_INITDIALOG, WM_COMMAND or WM_NOTIFY, use the specific event methods.");
-	}
 	#endif
 	_msgs.emplace_back(msg, cb);
 }
