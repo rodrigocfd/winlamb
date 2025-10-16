@@ -12,7 +12,7 @@ A lightweight modern C++11 library for [Win32 API](https://en.wikipedia.org/wiki
 
 As far as I can remember, around 2002 I started wrapping all my Win32 routines in classes, to make them reusable to myself, to save my time. Through all these years it took the form of a real library, a thin abstraction layer over raw Win32. People who saw it often commented that it was good, so in 2017 I decided to publish it on GitHub.
 
-Then I wrote [CodeProject - WinLamb: using C++11 lambdas to handle Win32 messages](https://www.codeproject.com/Articles/1184175/WinLamb-using-Cplusplus-lambdas-to-handle-Win-mess), a comprehensive article explaining WinLamb's message handling model, with [dialogs](https://docs.microsoft.com/pt-br/windows/desktop/dlgbox/dialog-boxes) and also [ordinary windows](https://docs.microsoft.com/pt-br/windows/desktop/winmsg/windows). Actually, features from C++14 and C++17 are used as well, as much as my compiler (Visual C++) allows it.
+Then I wrote [CodeProject - WinLamb: using C++11 lambdas to handle Win32 messages](https://www.codeproject.com/articles/WinLamb-using-Cplusplus11-Lambdas-to-Handle-Win32), a comprehensive article explaining WinLamb's message handling model, with [dialogs](https://docs.microsoft.com/pt-br/windows/desktop/dlgbox/dialog-boxes) and also [ordinary windows](https://docs.microsoft.com/pt-br/windows/desktop/winmsg/windows). Actually, features from C++14 and C++17 are used as well, as much as my compiler (Visual C++) allows it.
 
 Beyond dialog/window message handling, WinLamb also has wrappers for most native Windows controls ([textbox](https://docs.microsoft.com/pt-br/windows/desktop/Controls/edit-controls), [listview](https://docs.microsoft.com/pt-br/windows/desktop/Controls/list-view-control-reference), etc.), along with other utility classes (strings, file I/O, COM wrappers, etc.) which play nice together. These controls and utilities, however, are _not_ mandatory: you can use your own classes upon the basic dialog/window infrastructure.
 
@@ -87,7 +87,7 @@ More projects can be seen browsing [winlamb topic](https://github.com/topics/win
 
 Most files are named after the class they contain; for example, file "button.h" contains `button` class.
 
-To create your windows, you inherit from these classes below. See the [article](https://www.codeproject.com/Articles/1184175/WinLamb-using-Cplusplus-lambdas-to-handle-Win-mess) and the [examples](#3-example) to learn how to use them:
+To create your windows, you inherit from these classes below. See the [article](https://www.codeproject.com/articles/WinLamb-using-Cplusplus11-Lambdas-to-Handle-Win32) and the [examples](#3-example) to learn how to use them:
 
 | Class | Description |
 | :--- | :--- |
