@@ -124,7 +124,7 @@ LRESULT CALLBACK RawBase::raw_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RawMain::RawMain(OptsMain opts)
+RawMain::RawMain(opts::Main opts)
 	: _opts{opts}
 {
 	_rawBase._wndMsg._preEvents.wm(WM_ACTIVATE, [this](wm::Activate p) {
@@ -178,15 +178,15 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RawModal::RawModal(OptsModal opts)
-	: _opts{opts}
+RawModal::RawModal(WindowParent &parent, opts::Modal opts)
+	: _parent{parent}, _opts{opts}
 {
 	_rawBase._wndMsg._preEvents.wm(WM_SETFOCUS, [this](wm::SetFocus) {
 		_rawBase.focus_first_child();
 	});
 
-	_rawBase._wndMsg._userEvents.wm_close([this]() {
-		EnableWindow(_opts.parent.hwnd(), TRUE); // re-enable parent
+	_rawBase._wndMsg._userEvents.wm_close([this, pParent = &parent]() {
+		EnableWindow(pParent->hwnd(), TRUE); // re-enable parent
 		if (_hWndChildPrevFocusParent)
 			SetFocus(_hWndChildPrevFocusParent); // could be on WM_DESTROY as well
 		DestroyWindow(hwnd()); // then destroy modal
@@ -199,7 +199,7 @@ void RawModal::show() {
 		_opts.iconId, _opts.hbrBackground, _opts.hCursor);
 
 	_hWndChildPrevFocusParent = GetFocus();
-	EnableWindow(_opts.parent.hwnd(), FALSE); // https://devblogs.microsoft.com/oldnewthing/20040227-00/?p=40463
+	EnableWindow(_parent.hwnd(), FALSE); // https://devblogs.microsoft.com/oldnewthing/20040227-00/?p=40463
 
 	RECT rcWnd{
 		.left = 0,
@@ -211,7 +211,7 @@ void RawModal::show() {
 	OffsetRect(&rcWnd, -rcWnd.left, -rcWnd.top);
 
 	RECT rcParent{};
-	GetWindowRect(_opts.parent.hwnd(), &rcParent); // relative to screen
+	GetWindowRect(_parent.hwnd(), &rcParent); // relative to screen
 
 	POINT ptWndCenter{
 		.x = rcParent.left + (rcParent.right - rcParent.left) / 2 - rcWnd.right / 2, // center on parent

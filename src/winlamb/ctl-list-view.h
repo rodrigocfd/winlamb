@@ -40,18 +40,25 @@ namespace _wl_internal {
 
 }
 
-namespace wl {
+namespace wl::opts {
 
-	// Options to create a list view programmatically.
-	struct OptsListView {
-		WindowParent &owner; // mandatory
-		POINT pos{}; // you should use dpi::pt()
-		SIZE size = {.cx = 120, .cy = 120}; // you should use dpi::sz()
+	// Options to create a ListView programmatically.
+	struct ListView {
+		// Control position. Prefer using DPI-corrected values, like: dpi::pt(10, 10).
+		POINT pos{};
+		// Control size. Prefer using DPI-corrected values, like: dpi::sz(120, 120).
+		SIZE size = {.cx = 120, .cy = 120};
+		// Windows style. Defaults to: WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE.
 		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		// Windows extended style. Defaults to: WS_EX_LEFT | WS_EX_CLIENTEDGE.
 		DWORD windowExStyle = WS_EX_LEFT | WS_EX_CLIENTEDGE;
+		// ListView style. Defaults to: LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS.
 		DWORD ctrlStyle = LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS;
+		// ListView extended style. Defaults to: LVS_EX_FULLROWSELECT.
 		DWORD ctrlExStyle = LVS_EX_FULLROWSELECT;
+		// Control ID. Defaults to an auto-generated number.
 		WORD ctrlId = 0;
+		// Optional ListView context menu.
 		HMENU hContextMenu = nullptr;
 	};
 
@@ -196,7 +203,7 @@ namespace wl {
 		ListView& operator=(ListView&&) = delete;
 
 		// Constructs the list view programmatically.
-		ListView(OptsListView opts);
+		ListView(WindowParent &owner, opts::ListView opts);
 
 		// Constructs the list view from the dialog resource.
 		ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId = 0);
@@ -214,7 +221,7 @@ namespace wl {
 
 		_wl_internal::NativeCtrl _ctrl;
 		_wl_internal::EventsListView _events;
-		std::optional<OptsListView> _opts{};
+		std::optional<opts::ListView> _opts{};
 		HMENU _hMenuContext = nullptr;
 	};
 

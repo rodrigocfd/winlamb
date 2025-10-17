@@ -178,6 +178,8 @@ EventsUser& NativeCtrl::subclass_on() {
 	return _subclassEvents;
 }
 
+static WORD nextCtrId = 0xdfff; // https://stackoverflow.com/a/18192766/6923555
+
 void NativeCtrl::create_wnd(const wl::WindowParent &owner, WORD ctrlId, DWORD exStyle,
 	LPCWSTR className, LPCWSTR title, DWORD style, POINT pos, SIZE size)
 {
@@ -189,7 +191,8 @@ void NativeCtrl::create_wnd(const wl::WindowParent &owner, WORD ctrlId, DWORD ex
 	#endif
 
 	_wnd._hWnd = CreateWindowExW(exStyle, className, title, style,
-		pos.x, pos.y, size.cx, size.cy, owner.hwnd(), reinterpret_cast<HMENU>(static_cast<UINT_PTR>(ctrlId)),
+		pos.x, pos.y, size.cx, size.cy, owner.hwnd(),
+		reinterpret_cast<HMENU>(static_cast<UINT_PTR>(ctrlId ? ctrlId : nextCtrId--)),
 		reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(owner.hwnd(), GWLP_HINSTANCE)), nullptr);
 	#ifdef _DEBUG
 	if (!hwnd())

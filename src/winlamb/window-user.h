@@ -6,7 +6,7 @@ namespace wl {
 
 	class DropFiles;
 
-	// Pure abstract class; any window which can contain child controls.
+	// Pure abstract class; implemented by any window which can contain child controls.
 	class WindowParent {
 	public:
 		[[nodiscard]] virtual constexpr HWND hwnd() const = 0;
@@ -32,7 +32,7 @@ namespace wl {
 		WindowMain& operator=(WindowMain&&) = delete;
 
 		// Constructs the main window programmatically.
-		WindowMain(OptsMain opts)
+		WindowMain(opts::Main opts)
 			: _rawMain{std::make_optional<_wl_internal::RawMain>(opts)} { }
 
 		// Constructs the main window from a dialog resource.
@@ -79,8 +79,8 @@ namespace wl {
 		WindowModal& operator=(WindowModal&&) = delete;
 
 		// Constructs the modal window programmatically.
-		WindowModal(OptsModal opts)
-			: _rawModal{std::make_optional<_wl_internal::RawModal>(opts)} { }
+		WindowModal(WindowParent &parent, opts::Modal opts)
+			: _rawModal{std::make_optional<_wl_internal::RawModal>(parent, opts)} { }
 
 		// Constructs the modal window from a dialog resource.
 		WindowModal(const WindowParent &parent, WORD dlgId)

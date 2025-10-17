@@ -74,17 +74,18 @@ void DlgMain::on_about() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+wl::opts::Main wndOpts{
+	.iconId = ICO_MAIN,
+	.title = L"Together",
+	.style = wl::opts::Main{}.style | WS_MAXIMIZEBOX,
+};
+wl::opts::ListView lstOpts{
+	.pos = wl::dpi::pt(10, 10),
+	.ctrlId = LST_FILES,
+};
+
 RawMain::RawMain()
-	: wnd{{
-		.iconId = ICO_MAIN,
-		.title = L"Stranger",
-		.style = wl::OptsMain{}.style | WS_MAXIMIZEBOX,
-	}},
-	lst{{
-		.owner = wnd,
-		.pos = wl::dpi::pt(10, 10),
-		.ctrlId = LST_FILES,
-	}}
+	: wnd{wndOpts}, lst{wnd, lstOpts}
 {
 	wnd.on().wm_create(std::bind(&RawMain::on_create, this, std::placeholders::_1));
 
@@ -93,14 +94,11 @@ RawMain::RawMain()
 
 int RawMain::on_create(wl::wm::Create) {
 
-	// wl::OptsModal opts{
-	// 	.parent = wnd,
+	// wl::opts::Modal opts{
 	// 	.title = L"Fumble",
 	// };
-	// wl::WindowModal mo{opts};
+	// wl::WindowModal mo{wnd, opts};
 	// mo.show();
-
-
 
 	wnd.set_title(L"Shat out of hell");
 	return 0;

@@ -2,6 +2,9 @@
  * WinLamb v2 master include file.
  */
 
+// WinLamb library namespace.
+namespace wl { }
+
 #include "com-ptr.h"
 #include "ctl-list-view.h"
 #include "drop-files.h"

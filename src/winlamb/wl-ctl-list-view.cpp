@@ -363,11 +363,11 @@ std::optional<ListView::Item> ListView::ItemCollection::topmost_visible() const 
 
 ////////////////////////////////////////////////////////////////////////////////
 
-ListView::ListView(OptsListView opts)
-	: _ctrl{opts.owner}, _events{opts.owner, opts.ctrlId}, _opts{std::make_optional(opts)}
+ListView::ListView(WindowParent &owner, opts::ListView opts)
+	: _ctrl{owner}, _events{owner, opts.ctrlId}, _opts{std::make_optional(opts)}
 {
-	_ctrl._owner._preEvents.wm_create_or_init_dialog([this]() {
-		_ctrl.create_wnd(_opts.value().owner, _opts.value().ctrlId,
+	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() {
+		_ctrl.create_wnd(*pOwner, _opts.value().ctrlId,
 			_opts.value().windowExStyle, WC_LISTVIEWW, nullptr,
 			_opts.value().windowStyle | _opts.value().ctrlStyle,
 			_opts.value().pos, _opts.value().size);

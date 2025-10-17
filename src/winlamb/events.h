@@ -4,7 +4,7 @@
 #include <vector>
 #include "lib-include-win.h"
 
-// Window message crackers.
+// Window message crackers, passed as arguments to the window events.
 namespace wl::wm {
 
 	// Raw data of an ordinary window message.

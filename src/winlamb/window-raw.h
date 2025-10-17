@@ -26,21 +26,33 @@ namespace _wl_internal {
 
 }
 
-namespace wl {
+// Options to create windows and controls programmatically, by calling CreateWindowEx().
+namespace wl::opts {
 
-	// Options to create a main window programmatically.
-	struct OptsMain {
+	// Options to create a WindowMain programmatically.
+	struct Main {
+		// Class name passed to WNDCLASSEX. Defaults to an auto-generated string.
 		LPCWSTR className = nullptr;
+		// Class style passed to WNDCLASSEX. Defaults to: CS_DBLCLKS.
 		DWORD classStyle = CS_DBLCLKS;
+		// Optional window icon resource ID.
 		WORD iconId = 0;
+		// Window background brush.
 		HBRUSH hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
+		// Window cursor.
 		HCURSOR hCursor = nullptr;
 
+		// Window title.
 		LPCWSTR title = nullptr;
-		SIZE size = {.cx = 500, .cy = 300}; // you should use dpi::sz()
+		// Window size. Prefer using DPI-corrected values, like: dpi::sz(500, 300).
+		SIZE size = {.cx = 500, .cy = 300};
+		// Window style. Defaults to: WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_BORDER | WS_VISIBLE | WS_MINIMIZEBOX.
 		DWORD style =  WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_BORDER | WS_VISIBLE | WS_MINIMIZEBOX;
+		// Window extended style. Defaults to: WS_EX_LEFT.
 		DWORD exStyle = WS_EX_LEFT;
+		// Optional window main menu.
 		HMENU hMenu = nullptr;
+		// Optional window accelerator table.
 		HACCEL hAccelTable = nullptr;
 	};
 
@@ -57,13 +69,13 @@ namespace _wl_internal {
 		RawMain& operator=(const RawMain&) = delete;
 		RawMain& operator=(RawMain&&) = delete;
 
-		explicit RawMain(wl::OptsMain opts);
+		explicit RawMain(wl::opts::Main opts);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _rawBase.hwnd(); }
 		int run(HINSTANCE hInst, int cmdShow);
 
 		RawBase _rawBase{};
-		wl::OptsMain _opts;
+		wl::opts::Main _opts;
 		HWND _hWndChildPrevFocus = nullptr;
 	};
 
@@ -71,21 +83,28 @@ namespace _wl_internal {
 
 namespace wl { class WindowParent; }
 
-namespace wl {
+namespace wl::opts {
 
-	// Options to create a modal window programmatically.
-	struct OptsModal {
-		const WindowParent &parent; // mandatory
-
+	// Options to create a WindowModal programmatically.
+	struct Modal {
+		// Class name passed to WNDCLASSEX. Defaults to an auto-generated string.
 		LPCWSTR className = nullptr;
+		// Class style passed to WNDCLASSEX. Defaults to: CS_DBLCLKS.
 		DWORD classStyle = CS_DBLCLKS;
+		// Optional window icon resource ID.
 		WORD iconId = 0;
+		// Window background brush.
 		HBRUSH hbrBackground = reinterpret_cast<HBRUSH>(COLOR_BTNFACE + 1);
+		// Window cursor.
 		HCURSOR hCursor = nullptr;
 
+		// Window title.
 		LPCWSTR title = nullptr;
-		SIZE size = {.cx = 400, .cy = 200}; // you should use dpi::sz()
+		// Window size. Prefer using DPI-corrected values, like: dpi::sz(400, 200).
+		SIZE size = {.cx = 400, .cy = 200};
+		// Window style. Defaults to: WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_BORDER | WS_VISIBLE.
 		DWORD style =  WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_BORDER | WS_VISIBLE;
+		// Window extended style. Defaults to: WS_EX_LEFT.
 		DWORD exStyle = WS_EX_LEFT;
 	};
 
@@ -102,13 +121,14 @@ namespace _wl_internal {
 		RawModal& operator=(const RawModal&) = delete;
 		RawModal& operator=(RawModal&&) = delete;
 
-		explicit RawModal(wl::OptsModal opts);
+		RawModal(wl::WindowParent &parent, wl::opts::Modal opts);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _rawBase.hwnd(); }
 		void show();
 
 		RawBase _rawBase{};
-		wl::OptsModal _opts;
+		wl::WindowParent &_parent;
+		wl::opts::Modal _opts;
 		HWND _hWndChildPrevFocusParent = nullptr;
 	};
 
