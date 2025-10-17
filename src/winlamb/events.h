@@ -50,11 +50,12 @@ namespace wl::wm {
 
 	struct EndSession : public Msg {
 		constexpr EndSession(const Msg &p) : Msg{p} { }
-		[[nodiscard]] constexpr bool is_session_being_ended() const { return wp != FALSE; }
-		[[nodiscard]] constexpr bool is_system_issue() const        { return (lp & ENDSESSION_CLOSEAPP) != 0; }
-		[[nodiscard]] constexpr bool is_forced_critical() const     { return (lp & ENDSESSION_CRITICAL) != 0; }
-		[[nodiscard]] constexpr bool is_logoff() const              { return (lp & ENDSESSION_LOGOFF) != 0; }
-		[[nodiscard]] constexpr bool is_shutdown() const            { return lp == 0; }
+		[[nodiscard]] constexpr DWORD endsession_flag() const        { return static_cast<DWORD>(lp); }
+		[[nodiscard]] constexpr bool  is_session_being_ended() const { return wp != FALSE; }
+		[[nodiscard]] constexpr bool  is_system_issue() const        { return (endsession_flag() & ENDSESSION_CLOSEAPP) != 0; }
+		[[nodiscard]] constexpr bool  is_forced_critical() const     { return (endsession_flag() & ENDSESSION_CRITICAL) != 0; }
+		[[nodiscard]] constexpr bool  is_logoff() const              { return (endsession_flag() & ENDSESSION_LOGOFF) != 0; }
+		[[nodiscard]] constexpr bool  is_shutdown_restart() const    { return lp == 0; }
 	};
 
 	struct EraseBkgnd : public Msg {
@@ -72,6 +73,14 @@ namespace wl::wm {
 		[[nodiscard]] bool           has_shift() const { return (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0; }
 	};
 
+	struct HScroll : public Msg {
+		constexpr HScroll(const Msg &p) : Msg{p} { }
+		[[nodiscard]] constexpr WORD scroll_request() const { return LOWORD(wp); }
+		[[nodiscard]] constexpr WORD scroll_pos() const     { return HIWORD(wp); }
+		[[nodiscard]] HWND           hwnd_scrollbar() const { return reinterpret_cast<HWND>(lp); }
+	};
+	struct VScroll : public HScroll { constexpr VScroll(const Msg &p) : HScroll{p} { } };
+
 	struct InitDialog : public Msg {
 		constexpr InitDialog(const Msg &p) : Msg{p} { }
 		[[nodiscard]] HWND hwnd_focus() const { return reinterpret_cast<HWND>(wp); }
@@ -87,13 +96,50 @@ namespace wl::wm {
 
 	struct KillFocus : public Msg {
 		constexpr KillFocus(const Msg &p) : Msg{p} { }
-		HWND focused_hwnd() const { return reinterpret_cast<HWND>(wp); }
+		[[nodiscard]] HWND focused_hwnd() const { return reinterpret_cast<HWND>(wp); }
+	};
+
+	struct LButtonDblClk : public Msg {
+		constexpr LButtonDblClk(const Msg &p) : Msg{p} { }
+		[[nodiscard]] constexpr WORD  mk_flag() const       { return static_cast<WORD>(wp); }
+		[[nodiscard]] constexpr bool  has_ctrl() const      { return (mk_flag() & MK_CONTROL) != 0; }
+		[[nodiscard]] constexpr bool  has_shift() const     { return (mk_flag() & MK_SHIFT) != 0; }
+		[[nodiscard]] constexpr bool  is_left_btn() const   { return (mk_flag() & MK_LBUTTON) != 0; }
+		[[nodiscard]] constexpr bool  is_middle_btn() const { return (mk_flag() & MK_MBUTTON) != 0; }
+		[[nodiscard]] constexpr bool  is_right_btn() const  { return (mk_flag() & MK_RBUTTON) != 0; }
+		[[nodiscard]] constexpr bool  is_x1_btn() const     { return (mk_flag() & MK_XBUTTON1) != 0; }
+		[[nodiscard]] constexpr bool  is_x2_btn() const     { return (mk_flag() & MK_XBUTTON2) != 0; }
+		[[nodiscard]] constexpr POINT pos() const           { return {LOWORD(lp), HIWORD(lp)}; }
+	};
+	struct LButtonDown   : public LButtonDblClk { constexpr LButtonDown(const Msg &p)   : LButtonDblClk{p} { } };
+	struct LButtonUp     : public LButtonDblClk { constexpr LButtonUp(const Msg &p)     : LButtonDblClk{p} { } };
+	struct MButtonDblClk : public LButtonDblClk { constexpr MButtonDblClk(const Msg &p) : LButtonDblClk{p} { } };
+	struct MButtonDown   : public LButtonDblClk { constexpr MButtonDown(const Msg &p)   : LButtonDblClk{p} { } };
+	struct MButtonUp     : public LButtonDblClk { constexpr MButtonUp(const Msg &p)     : LButtonDblClk{p} { } };
+	struct MouseHover    : public LButtonDblClk { constexpr MouseHover(const Msg &p)    : LButtonDblClk{p} { } };
+	struct MouseMove     : public LButtonDblClk { constexpr MouseMove(const Msg &p)     : LButtonDblClk{p} { } };
+	struct RButtonDblClk : public LButtonDblClk { constexpr RButtonDblClk(const Msg &p) : LButtonDblClk{p} { } };
+	struct RButtonDown   : public LButtonDblClk { constexpr RButtonDown(const Msg &p)   : LButtonDblClk{p} { } };
+	struct RButtonUp     : public LButtonDblClk { constexpr RButtonUp(const Msg &p)     : LButtonDblClk{p} { } };
+
+	struct NcCalcSize : public Msg {
+		constexpr NcCalcSize(const Msg &p) : Msg{p} { }
+		[[nodiscard]] constexpr bool     should_indicate_valid_part() const { return wp != 0; }
+		[[nodiscard]] NCCALCSIZE_PARAMS& nccalcsize_params() const          { return *reinterpret_cast<NCCALCSIZE_PARAMS*>(lp); }
+		[[nodiscard]] RECT&              rect() const                       { return *reinterpret_cast<RECT*>(lp); }
 	};
 
 	struct NcPaint : public Msg {
 		constexpr NcPaint(const Msg &p) : Msg{p} { }
 		[[nodiscard]] HRGN hrgn() const { return reinterpret_cast<HRGN>(wp); }
 	};
+
+	struct PowerBroadcast : public Msg {
+		constexpr PowerBroadcast(const Msg &p) : Msg{p} { }
+		[[nodiscard]] constexpr WORD          pbt_flag() const   { return static_cast<WORD>(wp); }
+		[[nodiscard]] POWERBROADCAST_SETTING& event_data() const { return *reinterpret_cast<POWERBROADCAST_SETTING*>(lp); }
+	};
+
 
 	struct SetFocus : public Msg {
 		constexpr SetFocus(const Msg &p) : Msg{p} { }
@@ -213,15 +259,30 @@ namespace _wl_internal {
 		void wm_enable(std::function<void(wl::wm::Enable)> cb);
 		void wm_end_session(std::function<void(wl::wm::EndSession)> cb);
 		void wm_erase_bkgnd(std::function<int(wl::wm::EraseBkgnd)> cb);
-		void wm_set_focus(std::function<void(wl::wm::SetFocus)> cb);
 		void wm_get_dlg_code(std::function<WORD(wl::wm::GetDlgCode)> cb);
+		void wm_h_scroll(std::function<void(wl::wm::HScroll)> cb);
 		void wm_init_menu_popup(std::function<void(wl::wm::InitMenuPopup)> cb);
 		void wm_kill_focus(std::function<void(wl::wm::KillFocus)> cb);
+		void wm_l_button_dbl_clk(std::function<void(wl::wm::LButtonDblClk)> cb);
+		void wm_l_button_down(std::function<void(wl::wm::LButtonDown)> cb);
+		void wm_l_button_up(std::function<void(wl::wm::LButtonUp)> cb);
+		void wm_m_button_dbl_clk(std::function<void(wl::wm::MButtonDblClk)> cb);
+		void wm_m_button_down(std::function<void(wl::wm::MButtonDown)> cb);
+		void wm_m_button_up(std::function<void(wl::wm::MButtonUp)> cb);
+		void wm_mouse_hover(std::function<void(wl::wm::MouseHover)> cb);
+		void wm_mouse_move(std::function<void(wl::wm::MouseMove)> cb);
+		void wm_nc_calc_size(std::function<WORD(wl::wm::NcCalcSize)> cb);
 		void wm_nc_destroy(std::function<void()> cb);
 		void wm_nc_paint(std::function<void(wl::wm::NcPaint)> cb);
 		void wm_paint(std::function<void()> cb);
+		void wm_power_broadcast(std::function<void(wl::wm::PowerBroadcast)> cb);
+		void wm_r_button_dbl_clk(std::function<void(wl::wm::RButtonDblClk)> cb);
+		void wm_r_button_down(std::function<void(wl::wm::RButtonDown)> cb);
+		void wm_r_button_up(std::function<void(wl::wm::RButtonUp)> cb);
+		void wm_set_focus(std::function<void(wl::wm::SetFocus)> cb);
 		void wm_size(std::function<void(wl::wm::Size)> cb);
 		void wm_sizing(std::function<void(wl::wm::Sizing)> cb);
+		void wm_v_scroll(std::function<void(wl::wm::VScroll)> cb);
 
 	private:
 		[[nodiscard]] bool has_message() const;
