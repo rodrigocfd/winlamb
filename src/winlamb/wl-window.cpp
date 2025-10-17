@@ -100,12 +100,26 @@ WindowMsg::ProcResult WindowMsg::process_msgs(UINT msg, WPARAM wp, LPARAM lp) {
 int WindowMsg::main_loop(HACCEL hAccel) {
 	MSG msg{};
 	BOOL ret = FALSE;
-	while ((ret = GetMessageW(&msg, nullptr, 0, 0)) != 0) {
-		if (ret == -1) [[unlikely]] {
+	for (;;) {
+		if (BOOL ret = GetMessageW(&msg, nullptr, 0, 0); ret == -1) [[unlikely]] {
 			throw std::system_error(GetLastError(), std::system_category(), "GetMessage failed");
+		} else if (!ret) {
+			// WM_QUIT was sent, gracefully terminate the program, wParam is the program exit code.
+			// https://learn.microsoft.com/en-us/windows/win32/winmsg/using-messages-and-message-queues
+			break;
 		}
+
+		// If a child window, will retrieve its top-level parent.
+		// If a top-level, use itself.
+		HWND hWndTopLevel = GetAncestor(hwnd(), GA_ROOT);
+		if (!hWndTopLevel) hWndTopLevel = msg.hwnd;
+
+		// If we have an accelerator table, try to translate the message.
 		if (hAccel && TranslateAcceleratorW(hwnd(), hAccel, &msg)) continue;
+
+		// Try to process keyboard actions for child controls.
 		if (IsDialogMessageW(hwnd(), &msg)) continue;
+
 		TranslateMessage(&msg);
 		DispatchMessageW(&msg);
 	}
@@ -114,11 +128,13 @@ int WindowMsg::main_loop(HACCEL hAccel) {
 
 void WindowMsg::modal_loop() {
 	MSG msg{};
-	BOOL ret = FALSE;
-	while ((ret = GetMessageW(&msg, nullptr, 0, 0)) != 0) {
-		if (ret == -1) [[unlikely]] {
+	for (;;) {
+		if (BOOL ret = GetMessageW(&msg, nullptr, 0, 0); ret == -1) [[unlikely]] {
 			throw std::system_error(GetLastError(), std::system_category(), "GetMessage failed");
+		} else if (!ret) {
+			break; // our modal was destroyed
 		}
+
 		if (!hwnd() || !IsWindow(hwnd())) break; // our modal was destroyed
 
 		// If a child window, will retrieve its top-level parent.

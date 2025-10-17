@@ -77,9 +77,8 @@ void RawBase::create_window(DWORD exStyle, ATOM className, LPCWSTR title, DWORD 
 	HWND hWnd = CreateWindowExW(exStyle, MAKEINTATOM(className), title, style,
 		pos.x, pos.y, sz.cx, sz.cy, hParent, hMenu, hInst, reinterpret_cast<LPVOID>(this));
 	#ifdef _DEBUG
-	if (!hWnd) {
+	if (!hWnd)
 		throw std::system_error(GetLastError(), std::system_category(), "CreateWindowEx failed");
-	}
 	#endif
 }
 
@@ -187,22 +186,20 @@ RawModal::RawModal(OptsModal opts)
 	});
 
 	_rawBase._wndMsg._userEvents.wm_close([this]() {
-		HWND hParent = GetWindow(hwnd(), GW_OWNER);
-		EnableWindow(hParent, TRUE); // re-enable parent
-		DestroyWindow(hwnd()); // then destroy modal
-		if (_hWndChildPrevFocusParent) {
+		EnableWindow(_opts.parent.hwnd(), TRUE); // re-enable parent
+		if (_hWndChildPrevFocusParent)
 			SetFocus(_hWndChildPrevFocusParent); // could be on WM_DESTROY as well
-		}
+		DestroyWindow(hwnd()); // then destroy modal
 	});
 }
 
-void RawModal::show(const WindowParent &owner) {
+void RawModal::show() {
 	HINSTANCE hInst = GetModuleHandleW(nullptr);
 	ATOM atom = _rawBase.register_class(hInst, _opts.className, _opts.classStyle,
 		_opts.iconId, _opts.hbrBackground, _opts.hCursor);
 
 	_hWndChildPrevFocusParent = GetFocus();
-	EnableWindow(owner.hwnd(), FALSE); // https://devblogs.microsoft.com/oldnewthing/20040227-00/?p=40463
+	EnableWindow(_opts.parent.hwnd(), FALSE); // https://devblogs.microsoft.com/oldnewthing/20040227-00/?p=40463
 
 	RECT rcWnd{
 		.left = 0,
@@ -214,7 +211,7 @@ void RawModal::show(const WindowParent &owner) {
 	OffsetRect(&rcWnd, -rcWnd.left, -rcWnd.top);
 
 	RECT rcParent{};
-	GetWindowRect(owner.hwnd(), &rcParent); // relative to screen
+	GetWindowRect(_opts.parent.hwnd(), &rcParent); // relative to screen
 
 	POINT ptWndCenter{
 		.x = rcParent.left + (rcParent.right - rcParent.left) / 2 - rcWnd.right / 2, // center on parent

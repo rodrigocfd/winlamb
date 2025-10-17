@@ -50,7 +50,7 @@ namespace _wl_internal {
 
 }
 
-namespace wl { class WindowMain; }
+namespace wl { class WindowParent; }
 
 namespace _wl_internal {
 
@@ -63,12 +63,13 @@ namespace _wl_internal {
 		DialogModal& operator=(const DialogModal&) = delete;
 		DialogModal& operator=(DialogModal&&) = delete;
 
-		DialogModal(WORD dlgId);
+		DialogModal(const wl::WindowParent &parent, WORD dlgId);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _dlgBase.hwnd(); }
-		void show(const wl::WindowParent &owner);
+		void show();
 
 		DialogBase _dlgBase;
+		const wl::WindowParent &_parent; // mandatory
 	};
 
 }

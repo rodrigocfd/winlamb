@@ -69,10 +69,14 @@ namespace _wl_internal {
 
 }
 
+namespace wl { class WindowParent; }
+
 namespace wl {
 
 	// Options to create a modal window programmatically.
 	struct OptsModal {
+		const WindowParent &parent; // mandatory
+
 		LPCWSTR className = nullptr;
 		DWORD classStyle = CS_DBLCLKS;
 		WORD iconId = 0;
@@ -101,7 +105,7 @@ namespace _wl_internal {
 		explicit RawModal(wl::OptsModal opts);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _rawBase.hwnd(); }
-		void show(const wl::WindowParent &owner);
+		void show();
 
 		RawBase _rawBase{};
 		wl::OptsModal _opts;

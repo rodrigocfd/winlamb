@@ -83,8 +83,8 @@ namespace wl {
 			: _rawModal{std::make_optional<_wl_internal::RawModal>(opts)} { }
 
 		// Constructs the modal window from a dialog resource.
-		WindowModal(WORD dlgId)
-			: _dlgModal{std::make_optional<_wl_internal::DialogModal>(dlgId)} { }
+		WindowModal(const WindowParent &parent, WORD dlgId)
+			: _dlgModal{std::make_optional<_wl_internal::DialogModal>(parent, dlgId)} { }
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _rawModal.has_value() ? _rawModal.value().hwnd() : _dlgModal.value().hwnd(); }
 		[[nodiscard]] std::wstring title() const  { return wnd_msg()._wnd.text(); }
@@ -101,7 +101,7 @@ namespace wl {
 		void thread_ui(std::function<void()> cb) const { wnd_msg().thread_ui(cb); }
 
 		// Displays the modal dialog, blocking until the modal is closed.
-		void show(const wl::WindowParent &owner);
+		void show();
 
 	private:
 		[[nodiscard]] const _wl_internal::WindowMsg& wnd_msg() const override;

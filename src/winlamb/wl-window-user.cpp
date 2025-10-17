@@ -20,10 +20,10 @@ WindowMsg& WindowMain::wnd_msg() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void WindowModal::show(const WindowParent &owner) {
+void WindowModal::show() {
 	return _rawModal.has_value()
-		? _rawModal.value().show(owner)
-		: _dlgModal.value().show(owner);
+		? _rawModal.value().show()
+		: _dlgModal.value().show();
 }
 
 const WindowMsg& WindowModal::wnd_msg() const {

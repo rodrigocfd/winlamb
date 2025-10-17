@@ -120,14 +120,14 @@ int DialogMain::run(HINSTANCE hInst, int cmdShow) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-DialogModal::DialogModal(WORD dlgId)
-	: _dlgBase{dlgId}
+DialogModal::DialogModal(const WindowParent &parent, WORD dlgId)
+	: _parent{parent}, _dlgBase{dlgId}
 {
 	_dlgBase._wndMsg._userEvents.wm_close([this]() {
 		EndDialog(hwnd(), 0);
 	});
 }
 
-void DialogModal::show(const WindowParent &owner) {
-	_dlgBase.dialog_box_param(GetModuleHandleW(nullptr), owner.hwnd());
+void DialogModal::show() {
+	_dlgBase.dialog_box_param(GetModuleHandleW(nullptr), _parent.hwnd());
 }
