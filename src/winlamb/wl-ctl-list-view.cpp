@@ -363,6 +363,20 @@ std::optional<ListView::Item> ListView::ItemCollection::topmost_visible() const 
 
 ////////////////////////////////////////////////////////////////////////////////
 
+ListView::ListView(OptsListView opts)
+	: _ctrl{opts.owner}, _events{opts.owner, opts.ctrlId}, _opts{std::make_optional(opts)}
+{
+	_ctrl._owner._preEvents.wm_create_or_init_dialog([this]() {
+		_ctrl.create_wnd(_opts.value().owner, _opts.value().ctrlId,
+			_opts.value().windowExStyle, WC_LISTVIEWW, nullptr,
+			_opts.value().windowStyle | _opts.value().ctrlStyle,
+			_opts.value().pos, _opts.value().size);
+		set_extended_style(true, _opts.value().ctrlExStyle);
+	});
+
+	custom_events(opts.ctrlId);
+}
+
 ListView::ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId)
 	: _ctrl{owner}, _events{owner, ctrlId}
 {
@@ -373,9 +387,18 @@ ListView::ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId)
 	#endif
 
 	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, pOwner = &owner, ctrlId]() {
-		_ctrl.set_hwnd(GetDlgItem(pOwner->hwnd(), ctrlId));
+		_ctrl.assign_dlg(*pOwner, ctrlId);
 	});
 
+	custom_events(ctrlId);
+}
+
+const ListView& ListView::set_extended_style(bool doSet, DWORD exStyle) const {
+	ListView_SetExtendedListViewStyleEx(hwnd(), exStyle, doSet ? exStyle : 0);
+	return *this;
+}
+
+void ListView::custom_events(WORD ctrlId) {
 	_ctrl.subclass_on().wm_get_dlg_code([this, ctrlId](wm::GetDlgCode p) {
 		if (!p.is_query() && p.vkey_code() == VK_RETURN) { // Enter key
 			NMLVKEYDOWN nmlvkd{

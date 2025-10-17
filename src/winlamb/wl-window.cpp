@@ -33,9 +33,8 @@ void Window::set_text(WStrPtr text) const {
 
 EventsUser& WindowMsg::on() {
 	#ifdef _DEBUG
-	if (hwnd()) [[unlikely]] {
+	if (hwnd())
 		throw std::logic_error("Cannot add events after the window is created.");
-	}
 	#endif
 	return _userEvents;
 }
@@ -77,9 +76,15 @@ WindowMsg::ProcResult WindowMsg::process_msgs(UINT msg, WPARAM wp, LPARAM lp) {
 		return {true, false, std::nullopt};
 	}
 
-	bool hasPre = _preEvents.process_all({msg, wp, lp});
-	std::optional<LRESULT> userRet = _userEvents.process_last({msg, wp, lp});
-	bool hasPost = _postEvents.process_all({msg, wp, lp});
+	bool hasPre = false, hasPost = false;
+	std::optional<LRESULT> userRet{};
+	try {
+		hasPre = _preEvents.process_all({msg, wp, lp});
+		_userEvents.process_last({msg, wp, lp});
+		hasPost = _postEvents.process_all({msg, wp, lp});
+	} catch (const std::exception &e) {
+		uncaught_exception(e);
+	}
 
 	switch (msg) {
 	case WM_CREATE:
@@ -167,15 +172,48 @@ UINT_PTR NativeCtrl::_subclassId = 0;
 
 EventsUser& NativeCtrl::subclass_on() {
 	#ifdef _DEBUG
-	if (hwnd()) [[unlikely]] {
+	if (hwnd())
 		throw std::logic_error("Cannot add subclass events after the control is created.");
-	}
 	#endif
 	return _subclassEvents;
 }
 
-void NativeCtrl::set_hwnd(HWND hWnd) {
-	_wnd._hWnd = hWnd;
+void NativeCtrl::create_wnd(const wl::WindowParent &owner, WORD ctrlId, DWORD exStyle,
+	LPCWSTR className, LPCWSTR title, DWORD style, POINT pos, SIZE size)
+{
+	#ifdef _DEBUG
+	if (hwnd())
+		throw std::logic_error("Cannot create control twice.");
+	if (!owner.hwnd())
+		throw std::logic_error("Cannot create control before parent.");
+	#endif
+
+	_wnd._hWnd = CreateWindowExW(exStyle, className, title, style,
+		pos.x, pos.y, size.cx, size.cy, owner.hwnd(), reinterpret_cast<HMENU>(static_cast<UINT_PTR>(ctrlId)),
+		reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(owner.hwnd(), GWLP_HINSTANCE)), nullptr);
+	#ifdef _DEBUG
+	if (!hwnd())
+		throw std::system_error(GetLastError(), std::system_category(), "CreateWindowEx failed");
+	#endif
+
+	install_subclass();
+}
+
+void NativeCtrl::assign_dlg(const wl::WindowParent &owner, WORD ctrlId) {
+	#ifdef _DEBUG
+	if (hwnd())
+		throw std::logic_error("Cannot assign control twice.");
+	if (!owner.hwnd())
+		throw std::logic_error("Cannot assign control before parent.");
+	#endif
+
+	_wnd._hWnd = GetDlgItem(owner.hwnd(), ctrlId);
+	#ifdef _DEBUG
+	if (!hwnd())
+		throw std::system_error(GetLastError(), std::system_category(), "GetDlgItem failed");
+	#endif
+
+	install_subclass();
 }
 
 void NativeCtrl::install_subclass() {
@@ -183,9 +221,8 @@ void NativeCtrl::install_subclass() {
 		_subclassId++;
 		BOOL ret = SetWindowSubclass(hwnd(), subclass_proc, _subclassId, reinterpret_cast<DWORD_PTR>(this));
 		#ifdef _DEBUG
-		if (!ret) [[unlikely]] {
+		if (!ret)
 			throw std::runtime_error("SetWindowSubclass failed.");
-		}
 		#endif
 	}
 }

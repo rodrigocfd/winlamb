@@ -42,6 +42,23 @@ namespace _wl_internal {
 
 namespace wl {
 
+	// Options to create a list view programmatically.
+	struct OptsListView {
+		WindowParent &owner; // mandatory
+		POINT pos{}; // you should use dpi::pt()
+		SIZE size = {.cx = 120, .cy = 120}; // you should use dpi::sz()
+		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		DWORD windowExStyle = WS_EX_LEFT | WS_EX_CLIENTEDGE;
+		DWORD ctrlStyle = LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS;
+		DWORD ctrlExStyle = LVS_EX_FULLROWSELECT;
+		WORD ctrlId = 0;
+		HMENU hContextMenu = nullptr;
+	};
+
+}
+
+namespace wl {
+
 	// Native list view control.
 	class ListView final {
 	public:
@@ -178,6 +195,10 @@ namespace wl {
 		ListView& operator=(const ListView&) = delete;
 		ListView& operator=(ListView&&) = delete;
 
+		// Constructs the list view programmatically.
+		ListView(OptsListView opts);
+
+		// Constructs the list view from the dialog resource.
 		ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId = 0);
 
 		ColumnCollection cols{this};
@@ -185,12 +206,15 @@ namespace wl {
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _ctrl.hwnd(); }
 		[[nodiscard]] _wl_internal::EventsListView& on() { return _events; }
+		const ListView& set_extended_style(bool doSet, DWORD exStyle) const;
 
 	private:
+		void custom_events(WORD ctrlId);
 		void show_context_menu(bool followCursor, bool hasCtrl, bool hasShift);
 
 		_wl_internal::NativeCtrl _ctrl;
 		_wl_internal::EventsListView _events;
+		std::optional<OptsListView> _opts{};
 		HMENU _hMenuContext = nullptr;
 	};
 

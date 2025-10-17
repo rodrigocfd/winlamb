@@ -94,7 +94,9 @@ namespace _wl_internal {
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _wnd.hwnd(); }
 		[[nodiscard]] _wl_internal::EventsUser& subclass_on();
-		void set_hwnd(HWND hWnd);
+		void create_wnd(const wl::WindowParent &owner, WORD ctrlId, DWORD exStyle,
+			LPCWSTR className, LPCWSTR title, DWORD style, POINT pos, SIZE size);
+		void assign_dlg(const wl::WindowParent &owner, WORD ctrlId);
 		void install_subclass();
 
 		static LRESULT CALLBACK subclass_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp,

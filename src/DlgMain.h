@@ -38,6 +38,7 @@ public:
 	RawMain& operator=(RawMain&&) = delete;
 
 	wl::WindowMain wnd;
+	wl::ListView lst;
 
 private:
 	int on_create(wl::wm::Create);

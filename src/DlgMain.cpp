@@ -1,5 +1,3 @@
-#include <Windows.h>
-#include <ShlObj.h>
 #include "DlgMain.h"
 
 // RUN_MAIN(DlgMain, wnd)
@@ -54,7 +52,7 @@ void DlgMain::on_cancel() {
 
 void DlgMain::on_drop_files(const std::vector<std::wstring> files) {
 	lstFiles.items.delete_all();
-	for (auto& f : files)
+	for (auto &f : files)
 		lstFiles.items.add(f);
 }
 
@@ -66,8 +64,12 @@ void DlgMain::on_lst_files_item_changed(NMLISTVIEW &p) {
 void DlgMain::on_about() {
 	// MessageBoxW(wnd.hwnd(), L"Hello", L"Title", MB_ICONINFORMATION);
 
-	wl::WindowModal pop{DLG_MAIN};
-	pop.show(wnd);
+	wl::WindowModal pop{wnd, DLG_MAIN};
+	pop.on().wm_init_dialog([&pop](wl::wm::InitDialog) {
+		SetWindowPos(pop.hwnd(), nullptr, 0, 0, 400, 200, SWP_NOZORDER | SWP_NOMOVE);
+		return true;
+	});
+	pop.show();
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -77,12 +79,29 @@ RawMain::RawMain()
 		.iconId = ICO_MAIN,
 		.title = L"Stranger",
 		.style = wl::OptsMain{}.style | WS_MAXIMIZEBOX,
+	}},
+	lst{{
+		.owner = wnd,
+		.pos = wl::dpi::pt(10, 10),
+		.ctrlId = LST_FILES,
 	}}
 {
 	wnd.on().wm_create(std::bind(&RawMain::on_create, this, std::placeholders::_1));
+
+
 }
 
 int RawMain::on_create(wl::wm::Create) {
+
+	// wl::OptsModal opts{
+	// 	.parent = wnd,
+	// 	.title = L"Fumble",
+	// };
+	// wl::WindowModal mo{opts};
+	// mo.show();
+
+
+
 	wnd.set_title(L"Shat out of hell");
 	return 0;
 }
