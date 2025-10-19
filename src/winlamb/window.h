@@ -1,5 +1,5 @@
 #pragma once
-#include "events.h"
+#include "layout.h"
 #include "str.h"
 
 namespace _wl_internal {
@@ -44,6 +44,7 @@ namespace wl {
 namespace _wl_internal {
 
 	// Stores the pre, user and post window messages for container windows.
+	// Exposes exception-safe multi-threading operations.
 	class WindowMsg final {
 	public:
 		WindowMsg() = delete;
@@ -65,11 +66,12 @@ namespace _wl_internal {
 			std::optional<LRESULT> userRet;
 		};
 		ProcResult process_msgs(UINT msg, WPARAM wp, LPARAM lp);
-		int main_loop(HACCEL hAccel);
-		void modal_loop();
+		int main_loop(HACCEL hAccel, bool processDlgMsgs);
+		void modal_loop(bool processDlgMsgs);
 
 		bool _isDlg;
 		wl::Window _wnd{};
+		Layout _layout;
 		EventsInternal _preEvents;
 		EventsUser _userEvents;
 		EventsInternal _postEvents;
@@ -90,13 +92,13 @@ namespace _wl_internal {
 		NativeCtrl& operator=(const NativeCtrl&) = delete;
 		NativeCtrl& operator=(NativeCtrl&&) = delete;
 
-		NativeCtrl(wl::WindowParent &owner);
+		NativeCtrl(wl::WindowParent &owner, wl::Lay layout);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _wnd.hwnd(); }
 		[[nodiscard]] _wl_internal::EventsUser& subclass_on();
-		void create_wnd(const wl::WindowParent &owner, WORD ctrlId, DWORD exStyle,
-			LPCWSTR className, LPCWSTR title, DWORD style, POINT pos, SIZE size);
-		void assign_dlg(const wl::WindowParent &owner, WORD ctrlId);
+		void create_wnd(WORD ctrlId, DWORD exStyle, LPCWSTR className,
+			LPCWSTR title, DWORD style, POINT pos, SIZE size);
+		void assign_dlg(WORD ctrlId);
 		void install_subclass();
 
 		static LRESULT CALLBACK subclass_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp,

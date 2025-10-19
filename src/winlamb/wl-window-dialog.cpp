@@ -115,7 +115,7 @@ int DialogMain::run(HINSTANCE hInst, int cmdShow) {
 	HACCEL hAccel = _dlgBase.load_accel(hInst, _accelTblId);
 	ShowWindow(hwnd(), cmdShow);
 
-	return _dlgBase._wndMsg.main_loop(hAccel);
+	return _dlgBase._wndMsg.main_loop(hAccel, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

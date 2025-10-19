@@ -173,7 +173,7 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 	ShowWindow(hwnd(), cmdShow);
 	UpdateWindow(hwnd());
 
-	return _rawBase._wndMsg.main_loop(_opts.hAccelTable);
+	return _rawBase._wndMsg.main_loop(_opts.hAccelTable, _opts.processDlgMsgs);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -222,5 +222,5 @@ void RawModal::show() {
 		ptWndCenter, {.cx = rcWnd.right - rcWnd.left, .cy = rcWnd.bottom - rcWnd.top},
 		nullptr, nullptr, hInst);
 
-	_rawBase._wndMsg.modal_loop();
+	_rawBase._wndMsg.modal_loop(_opts.processDlgMsgs);
 }

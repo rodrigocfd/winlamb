@@ -16,11 +16,17 @@ namespace _wl_internal {
 
 		EventsListView(wl::WindowParent &owner, WORD ctrlId) : _events{owner, ctrlId} { }
 
+		void lvn_begin_drag(std::function<void(NMLISTVIEW&)> cb);
 		void lvn_begin_label_edit(std::function<bool(NMLVDISPINFOW&)> cb);
+		void lvn_begin_r_drag(std::function<void(NMLISTVIEW&)> cb);
+		void lvn_begin_scroll(std::function<void(NMLVSCROLL&)> cb);
 		void lvn_column_click(std::function<void(NMLISTVIEW&)> cb);
+		void lvn_column_drop_down(std::function<void(NMLISTVIEW&)> cb);
+		void lvn_column_overflow_click(std::function<void(NMLISTVIEW&)> cb);
 		void lvn_delete_all_items(std::function<bool(NMLISTVIEW&)> cb);
 		void lvn_delete_item(std::function<void(NMLISTVIEW&)> cb);
 		void lvn_end_label_edit(std::function<bool(NMLVDISPINFOW&)> cb);
+		void lvn_end_scroll(std::function<void(NMLVSCROLL&)> cb);
 		void lvn_insert_item(std::function<void(NMLISTVIEW&)> cb);
 		void lvn_item_activate(std::function<void(NMITEMACTIVATE&)> cb);
 		void lvn_item_changed(std::function<void(NMLISTVIEW&)> cb);
@@ -32,6 +38,7 @@ namespace _wl_internal {
 		void nm_kill_focus(std::function<void(NMHDR&)> cb);
 		void nm_r_click(std::function<void(NMITEMACTIVATE&)> cb);
 		void nm_r_dbl_clk(std::function<void(NMITEMACTIVATE&)> cb);
+		void nm_released_capture(std::function<void(NMHDR&)> cb);
 		void nm_set_focus(std::function<void(NMHDR&)> cb);
 
 	private:
@@ -44,22 +51,32 @@ namespace wl::opts {
 
 	// Options to create a ListView programmatically.
 	struct ListView {
-		// Control position. Prefer using DPI-corrected values, like: dpi::pt(10, 10).
+		// Control position.
+		// Prefer using DPI-corrected values, like: dpi::pt(10, 10).
 		POINT pos{};
-		// Control size. Prefer using DPI-corrected values, like: dpi::sz(120, 120).
+		// Control size.
+		// Prefer using DPI-corrected values, like: dpi::sz(120, 120).
 		SIZE size = {.cx = 120, .cy = 120};
-		// Windows style. Defaults to: WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE.
+		// Windows style.
+		// Defaults to: WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE.
 		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
-		// Windows extended style. Defaults to: WS_EX_LEFT | WS_EX_CLIENTEDGE.
+		// Windows extended style.
+		// Defaults to: WS_EX_LEFT | WS_EX_CLIENTEDGE.
 		DWORD windowExStyle = WS_EX_LEFT | WS_EX_CLIENTEDGE;
-		// ListView style. Defaults to: LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS.
+		// ListView style.
+		// Defaults to: LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS.
 		DWORD ctrlStyle = LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS;
-		// ListView extended style. Defaults to: LVS_EX_FULLROWSELECT.
+		// ListView extended style.
+		// Defaults to: LVS_EX_FULLROWSELECT.
 		DWORD ctrlExStyle = LVS_EX_FULLROWSELECT;
-		// Control ID. Defaults to an auto-generated number.
+		// Control ID.
+		// Defaults to an auto-generated number.
 		WORD ctrlId = 0;
 		// Optional ListView context menu.
-		HMENU hContextMenu = nullptr;
+		HMENU hMenuContext = nullptr;
+		// Horizontal and vertical behavior of the control when the parent window is resized.
+		// Defaults to: Lay::none_none.
+		Lay layout = Lay::none_none;
 	};
 
 }
@@ -104,7 +121,7 @@ namespace wl {
 			const Column& set_text(WStrPtr text) const;
 			[[nodiscard]] UINT width() const;
 			const Column& set_width(UINT width) const;
-			const Column& set_width_to_fill(UINT width) const;
+			const Column& set_width_to_fill() const;
 
 		private:
 			const ListView *_pOwner;
@@ -206,7 +223,7 @@ namespace wl {
 		ListView(WindowParent &owner, opts::ListView opts);
 
 		// Constructs the list view from the dialog resource.
-		ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId = 0);
+		ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId = 0, Lay layout = Lay::none_none);
 
 		ColumnCollection cols{this};
 		ItemCollection items{this};

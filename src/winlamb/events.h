@@ -148,11 +148,12 @@ namespace wl::wm {
 
 	struct Size : public Msg {
 		constexpr Size(const Msg &p) : Msg{p} { }
-		[[nodiscard]] constexpr bool is_other_maximized() const { return wp == 4; }
-		[[nodiscard]] constexpr bool is_maximized() const       { return wp == 2; }
-		[[nodiscard]] constexpr bool is_other_restored() const  { return wp == 3; }
-		[[nodiscard]] constexpr bool is_minimized() const       { return wp == 1; }
-		[[nodiscard]] constexpr bool is_restored() const        { return wp == 0; }
+		[[nodiscard]] constexpr WORD size_flag() const { return static_cast<WORD>(wp); }
+		[[nodiscard]] constexpr bool is_other_maximized() const { return size_flag() == SIZE_MAXHIDE; }
+		[[nodiscard]] constexpr bool is_maximized() const       { return size_flag() == SIZE_MAXIMIZED; }
+		[[nodiscard]] constexpr bool is_other_restored() const  { return size_flag() == SIZE_MAXSHOW; }
+		[[nodiscard]] constexpr bool is_minimized() const       { return size_flag() == SIZE_MINIMIZED; }
+		[[nodiscard]] constexpr bool is_restored() const        { return size_flag() == SIZE_RESTORED; }
 		[[nodiscard]] constexpr SIZE sz() const                 { return {LOWORD(lp), HIWORD(lp)}; }
 	};
 

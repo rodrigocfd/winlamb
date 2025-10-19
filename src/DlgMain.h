@@ -17,7 +17,7 @@ public:
 
 	wl::WindowMain wnd{DLG_MAIN, ICO_MAIN};
 	wl::DropFiles dropFiles{wnd};
-	wl::ListView lstFiles{wnd, LST_FILES, MNU_FILES};
+	wl::ListView lstFiles{wnd, LST_FILES, MNU_FILES, wl::Lay::resize_resize};
 
 private:
 	bool on_init_dialog(wl::wm::InitDialog);

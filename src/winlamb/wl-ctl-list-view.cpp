@@ -17,11 +17,17 @@ using namespace wl;
 		}); \
 	}
 
+EVENT_ARGS(lvn_begin_drag, LVN_BEGINDRAG, NMLISTVIEW)
 EVENT_ARGS_RET_BOOL(lvn_begin_label_edit, LVN_BEGINLABELEDITW, NMLVDISPINFOW)
+EVENT_ARGS(lvn_begin_r_drag, LVN_BEGINRDRAG, NMLISTVIEW)
+EVENT_ARGS(lvn_begin_scroll, LVN_BEGINSCROLL, NMLVSCROLL)
 EVENT_ARGS(lvn_column_click, LVN_COLUMNCLICK, NMLISTVIEW)
+EVENT_ARGS(lvn_column_drop_down, LVN_COLUMNDROPDOWN, NMLISTVIEW)
+EVENT_ARGS(lvn_column_overflow_click, LVN_COLUMNOVERFLOWCLICK, NMLISTVIEW)
 EVENT_ARGS_RET_BOOL(lvn_delete_all_items, LVN_DELETEALLITEMS, NMLISTVIEW)
 EVENT_ARGS(lvn_delete_item, LVN_DELETEITEM, NMLISTVIEW)
 EVENT_ARGS_RET_BOOL(lvn_end_label_edit, LVN_ENDLABELEDITW, NMLVDISPINFOW)
+EVENT_ARGS(lvn_end_scroll, LVN_ENDSCROLL, NMLVSCROLL)
 EVENT_ARGS(lvn_insert_item, LVN_INSERTITEM, NMLISTVIEW)
 EVENT_ARGS(lvn_item_activate, LVN_ITEMACTIVATE, NMITEMACTIVATE)
 EVENT_ARGS(lvn_item_changed, LVN_ITEMCHANGED, NMLISTVIEW)
@@ -37,6 +43,7 @@ EVENT_ARGS(nm_dbl_clk, NM_DBLCLK, NMITEMACTIVATE)
 EVENT_ARGS(nm_kill_focus, NM_KILLFOCUS, NMHDR)
 EVENT_ARGS(nm_r_click, NM_RCLICK, NMITEMACTIVATE)
 EVENT_ARGS(nm_r_dbl_clk, NM_RDBLCLK, NMITEMACTIVATE)
+EVENT_ARGS(nm_released_capture, NM_RELEASEDCAPTURE, NMHDR)
 EVENT_ARGS(nm_set_focus, NM_SETFOCUS, NMHDR)
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -145,7 +152,7 @@ const ListView::Column& ListView::Column::set_width(UINT width) const {
 	return *this;
 }
 
-const ListView::Column& ListView::Column::set_width_to_fill(UINT width) const {
+const ListView::Column& ListView::Column::set_width_to_fill() const {
 	UINT numCols = _pOwner->cols.count();
 	if (numCols == 0) return *this;
 
@@ -364,11 +371,12 @@ std::optional<ListView::Item> ListView::ItemCollection::topmost_visible() const 
 ////////////////////////////////////////////////////////////////////////////////
 
 ListView::ListView(WindowParent &owner, opts::ListView opts)
-	: _ctrl{owner}, _events{owner, opts.ctrlId}, _opts{std::make_optional(opts)}
+	: _ctrl{owner, opts.layout}, _events{owner, opts.ctrlId}, _opts{std::make_optional(opts)}
 {
+	_hMenuContext = opts.hMenuContext;
+
 	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() {
-		_ctrl.create_wnd(*pOwner, _opts.value().ctrlId,
-			_opts.value().windowExStyle, WC_LISTVIEWW, nullptr,
+		_ctrl.create_wnd(_opts.value().ctrlId, _opts.value().windowExStyle, WC_LISTVIEWW, nullptr,
 			_opts.value().windowStyle | _opts.value().ctrlStyle,
 			_opts.value().pos, _opts.value().size);
 		set_extended_style(true, _opts.value().ctrlExStyle);
@@ -377,8 +385,8 @@ ListView::ListView(WindowParent &owner, opts::ListView opts)
 	custom_events(opts.ctrlId);
 }
 
-ListView::ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId)
-	: _ctrl{owner}, _events{owner, ctrlId}
+ListView::ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId, Lay layout)
+	: _ctrl{owner, layout}, _events{owner, ctrlId}
 {
 	_hMenuContext = LoadMenuW(GetModuleHandle(nullptr), MAKEINTRESOURCEW(contextMenuId));
 	#ifdef _DEBUG
@@ -386,8 +394,8 @@ ListView::ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId)
 		throw std::invalid_argument("ListView context menu failed to load.");
 	#endif
 
-	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, pOwner = &owner, ctrlId]() {
-		_ctrl.assign_dlg(*pOwner, ctrlId);
+	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, ctrlId]() {
+		_ctrl.assign_dlg(ctrlId);
 	});
 
 	custom_events(ctrlId);

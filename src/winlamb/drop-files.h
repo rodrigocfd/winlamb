@@ -35,7 +35,7 @@ namespace wl {
 		std::vector<std::wstring> get_dropped(HDROP hDrop) const;
 
 		LONG _refCount = 1;
-		std::optional<std::function<void(const std::vector<std::wstring>&)>> _cb;
+		std::optional<std::function<void(const std::vector<std::wstring>&)>> _cb{};
 	};
 
 }

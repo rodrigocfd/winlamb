@@ -10,6 +10,7 @@ namespace wl { }
 #include "drop-files.h"
 #include "events.h"
 #include "file.h"
+#include "layout.h"
 #include "path.h"
 #include "runnable.h"
 #include "str.h"

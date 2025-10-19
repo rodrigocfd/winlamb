@@ -1,7 +1,7 @@
 #include "DlgMain.h"
 
-// RUN_MAIN(DlgMain, wnd)
-RUN_MAIN(RawMain, wnd)
+RUN_MAIN(DlgMain, wnd)
+// RUN_MAIN(RawMain, wnd)
 
 DlgMain::DlgMain() {
 	wnd.on().wm_init_dialog(std::bind(&DlgMain::on_init_dialog, this, std::placeholders::_1));
@@ -77,11 +77,13 @@ void DlgMain::on_about() {
 wl::opts::Main wndOpts{
 	.iconId = ICO_MAIN,
 	.title = L"Together",
-	.style = wl::opts::Main{}.style | WS_MAXIMIZEBOX,
+	.style = wl::opts::Main{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
 };
 wl::opts::ListView lstOpts{
 	.pos = wl::dpi::pt(10, 10),
+	.size = wl::dpi::sz(400, 200),
 	.ctrlId = LST_FILES,
+	.layout = wl::Lay::resize_resize,
 };
 
 RawMain::RawMain()
@@ -93,6 +95,10 @@ RawMain::RawMain()
 }
 
 int RawMain::on_create(wl::wm::Create) {
+	lst.cols.add(L"First", 200);
+	lst.cols.add(L"Second", 1).set_justif(HDF_CENTER).set_width_to_fill();
+	lst.items.add(L"Bronco kid", {L"Surreal"});
+	lst.items.add(L"Ground control", {L"to major tom"});
 
 	// wl::opts::Modal opts{
 	// 	.title = L"Fumble",

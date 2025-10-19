@@ -31,9 +31,11 @@ namespace wl::opts {
 
 	// Options to create a WindowMain programmatically.
 	struct Main {
-		// Class name passed to WNDCLASSEX. Defaults to an auto-generated string.
+		// Class name passed to WNDCLASSEX.
+		// Defaults to an auto-generated string.
 		LPCWSTR className = nullptr;
-		// Class style passed to WNDCLASSEX. Defaults to: CS_DBLCLKS.
+		// Class style passed to WNDCLASSEX.
+		// Defaults to: CS_DBLCLKS.
 		DWORD classStyle = CS_DBLCLKS;
 		// Optional window icon resource ID.
 		WORD iconId = 0;
@@ -44,16 +46,25 @@ namespace wl::opts {
 
 		// Window title.
 		LPCWSTR title = nullptr;
-		// Window size. Prefer using DPI-corrected values, like: dpi::sz(500, 300).
+		// Window size.
+		// Prefer using DPI-corrected values, like: dpi::sz(500, 300).
 		SIZE size = {.cx = 500, .cy = 300};
-		// Window style. Defaults to: WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_BORDER | WS_VISIBLE | WS_MINIMIZEBOX.
+		// Window style.
+		// Defaults to: WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_BORDER | WS_VISIBLE | WS_MINIMIZEBOX.
+		// For a resizable window, add: WS_SIZEBOX | WS_MAXIMIZEBOX.
 		DWORD style =  WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_BORDER | WS_VISIBLE | WS_MINIMIZEBOX;
-		// Window extended style. Defaults to: WS_EX_LEFT.
+		// Window extended style.
+		// Defaults to: WS_EX_LEFT.
 		DWORD exStyle = WS_EX_LEFT;
 		// Optional window main menu.
 		HMENU hMenu = nullptr;
 		// Optional window accelerator table.
 		HACCEL hAccelTable = nullptr;
+
+		// In most applications, the window loop calls IsDialogMessage() so child control messages will properly work.
+		// However, this has the side-effect of inhibiting WM_CHAR messages from being sent, which is bad for applications like text editors.
+		// So if your application has no child controls and needs to process WM_CHAR messages, pass false to suppress IsDialogMessage() call.
+		bool processDlgMsgs = true;
 	};
 
 }
@@ -87,9 +98,11 @@ namespace wl::opts {
 
 	// Options to create a WindowModal programmatically.
 	struct Modal {
-		// Class name passed to WNDCLASSEX. Defaults to an auto-generated string.
+		// Class name passed to WNDCLASSEX.
+		// Defaults to an auto-generated string.
 		LPCWSTR className = nullptr;
-		// Class style passed to WNDCLASSEX. Defaults to: CS_DBLCLKS.
+		// Class style passed to WNDCLASSEX.
+		// Defaults to: CS_DBLCLKS.
 		DWORD classStyle = CS_DBLCLKS;
 		// Optional window icon resource ID.
 		WORD iconId = 0;
@@ -100,12 +113,20 @@ namespace wl::opts {
 
 		// Window title.
 		LPCWSTR title = nullptr;
-		// Window size. Prefer using DPI-corrected values, like: dpi::sz(400, 200).
+		// Window size.
+		// Prefer using DPI-corrected values, like: dpi::sz(400, 200).
 		SIZE size = {.cx = 400, .cy = 200};
-		// Window style. Defaults to: WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_BORDER | WS_VISIBLE.
+		// Window style.
+		// Defaults to: WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_BORDER | WS_VISIBLE.
 		DWORD style =  WS_CAPTION | WS_SYSMENU | WS_CLIPCHILDREN | WS_BORDER | WS_VISIBLE;
-		// Window extended style. Defaults to: WS_EX_LEFT.
+		// Window extended style.
+		// Defaults to: WS_EX_LEFT.
 		DWORD exStyle = WS_EX_LEFT;
+
+		// In most applications, the window loop calls IsDialogMessage() so child control messages will properly work.
+		// However, this has the side-effect of inhibiting WM_CHAR messages from being sent, which is bad for applications like text editors.
+		// So if your application has no child controls and needs to process WM_CHAR messages, pass false to suppress IsDialogMessage() call.
+		bool processDlgMsgs = true;
 	};
 
 }
