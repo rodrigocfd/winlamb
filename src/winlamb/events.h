@@ -183,12 +183,8 @@ namespace _wl_internal {
 			std::function<void(wl::wm::Notify)> cb;
 		};
 
-		constexpr EventsInternal() = delete;
-		constexpr EventsInternal(const EventsInternal&) = delete;
-		constexpr EventsInternal(EventsInternal&&) = delete;
-		constexpr EventsInternal& operator=(const EventsInternal&) = delete;
-		constexpr EventsInternal& operator=(EventsInternal&&) = delete;
-
+		DEL_COPY_MOVE(EventsInternal);
+		EventsInternal() = delete;
 		constexpr explicit EventsInternal(bool isDlg) : _isDlg{isDlg} { }
 
 		void wm_create_or_init_dialog(std::function<void()> cb);
@@ -228,12 +224,8 @@ namespace _wl_internal {
 		};
 
 	public:
-		constexpr EventsUser() = delete;
-		constexpr EventsUser(const EventsUser&) = delete;
-		constexpr EventsUser(EventsUser&&) = delete;
-		constexpr EventsUser& operator=(const EventsUser&) = delete;
-		constexpr EventsUser& operator=(EventsUser&&) = delete;
-
+		DEL_COPY_MOVE(EventsUser);
+		EventsUser() = delete;
 	private:
 		constexpr explicit EventsUser(bool isDlg) : _isDlg{isDlg} { }
 
@@ -310,12 +302,8 @@ namespace _wl_internal {
 	// Base to all native control events.
 	class EventsNativeCtrl final {
 	public:
+		DEL_COPY_MOVE(EventsNativeCtrl);
 		EventsNativeCtrl() = delete;
-		EventsNativeCtrl(const EventsNativeCtrl&) = delete;
-		EventsNativeCtrl(EventsNativeCtrl&&) = delete;
-		EventsNativeCtrl& operator=(const EventsNativeCtrl&) = delete;
-		EventsNativeCtrl& operator=(EventsNativeCtrl&&) = delete;
-
 		EventsNativeCtrl(wl::WindowParent &owner, WORD ctrlId);
 
 		WindowMsg &_owner;

@@ -79,13 +79,15 @@ WindowMsg::ProcResult WindowMsg::process_msgs(UINT msg, WPARAM wp, LPARAM lp) {
 		}
 		break;
 	case WM_SIZE:
-		_layout.rearrange(hwnd(), wm::Msg{msg, wp, lp});
+		_layout.rearrange(wm::Msg{msg, wp, lp});
 	}
 
 	bool hasPre = false, hasPost = false;
 	std::optional<LRESULT> userRet{};
 	try {
 		hasPre = _preEvents.process_all({msg, wp, lp});
+		if (msg == WM_CREATE || msg == WM_INITDIALOG)
+			_layout.calc_origins(hwnd()); // controls are created in _preEvents, we need their HWNDs
 		_userEvents.process_last({msg, wp, lp});
 		hasPost = _postEvents.process_all({msg, wp, lp});
 	} catch (const std::exception &e) {
@@ -113,7 +115,7 @@ int WindowMsg::main_loop(HACCEL hAccel, bool processDlgMsgs) {
 	BOOL ret = FALSE;
 	for (;;) {
 		if (BOOL ret = GetMessageW(&msg, nullptr, 0, 0); ret == -1) [[unlikely]] {
-			throw std::system_error(GetLastError(), std::system_category(), "GetMessage failed");
+			throw std::system_error(GetLastError(), std::system_category(), "Main loop: GetMessage failed");
 		} else if (!ret) {
 			// WM_QUIT was sent, gracefully terminate the program, wParam is the program exit code.
 			// https://learn.microsoft.com/en-us/windows/win32/winmsg/using-messages-and-message-queues
@@ -141,7 +143,7 @@ void WindowMsg::modal_loop(bool processDlgMsgs) {
 	MSG msg{};
 	for (;;) {
 		if (BOOL ret = GetMessageW(&msg, nullptr, 0, 0); ret == -1) [[unlikely]] {
-			throw std::system_error(GetLastError(), std::system_category(), "GetMessage failed");
+			throw std::system_error(GetLastError(), std::system_category(), "Modal loop: GetMessage failed");
 		} else if (!ret) {
 			break; // our modal was destroyed
 		}
@@ -203,7 +205,7 @@ void NativeCtrl::create_wnd(WORD ctrlId, DWORD exStyle, LPCWSTR className,
 		reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(_owner.hwnd(), GWLP_HINSTANCE)), nullptr);
 	#ifdef _DEBUG
 	if (!hwnd())
-		throw std::system_error(GetLastError(), std::system_category(), "CreateWindowEx failed");
+		throw std::system_error(GetLastError(), std::system_category(), "NativeCtrl: CreateWindowEx failed");
 	#endif
 
 	install_subclass();
@@ -220,7 +222,7 @@ void NativeCtrl::assign_dlg(WORD ctrlId) {
 	_wnd._hWnd = GetDlgItem(_owner.hwnd(), ctrlId);
 	#ifdef _DEBUG
 	if (!hwnd())
-		throw std::system_error(GetLastError(), std::system_category(), "GetDlgItem failed");
+		throw std::system_error(GetLastError(), std::system_category(), "NativeCtrl: GetDlgItem failed");
 	#endif
 
 	install_subclass();

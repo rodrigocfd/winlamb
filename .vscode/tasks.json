@@ -13,19 +13,10 @@
 				"/p:Configuration=Debug",
 				"/p:Platform=x64",
 			],
-			"options": {
-				"cwd": "${workspaceFolder}"
-			},
-			"problemMatcher": [
-				"$msCompile"
-			],
-			"group": {
-				"kind": "build",
-				"isDefault": true,
-			},
-			"presentation": {
-				"clear": true,
-			},
+			"options":        { "cwd": "${workspaceFolder}" },
+			"problemMatcher": [ "$msCompile" ],
+			"group":          { "kind": "build", "isDefault": true },
+			"presentation":   { "clear": true },
 		},
 		{
 			"type": "cppbuild",
@@ -36,19 +27,10 @@
 				"/p:Configuration=Release",
 				"/p:Platform=x64",
 			],
-			"options": {
-				"cwd": "${workspaceFolder}"
-			},
-			"problemMatcher": [
-				"$msCompile"
-			],
-			"group": {
-				"kind": "build",
-				"isDefault": true,
-			},
-			"presentation": {
-				"clear": true,
-			},
+			"options":        { "cwd": "${workspaceFolder}" },
+			"problemMatcher": [ "$msCompile" ],
+			"group":          { "kind": "build" },
+			"presentation":   { "clear": true },
 		},
 		{
 			"type": "cppbuild",
@@ -58,19 +40,10 @@
 				"${workspaceFolder}\\${workspaceFolderBasename}.vcxproj",
 				"/t:Clean",
 			],
-			"options": {
-				"cwd": "${workspaceFolder}"
-			},
-			"problemMatcher": [
-				"$msCompile"
-			],
-			"group": {
-				"kind": "build",
-				"isDefault": true,
-			},
-			"presentation": {
-				"clear": true,
-			},
+			"options":        { "cwd": "${workspaceFolder}" },
+			"problemMatcher": [ "$msCompile" ],
+			"group":          { "kind": "build" },
+			"presentation":   { "clear": true },
 		},
 	]
 }

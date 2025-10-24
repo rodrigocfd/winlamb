@@ -8,12 +8,8 @@ namespace _wl_internal {
 	// Native list view control events.
 	class EventsListView final {
 	public:
+		DEL_COPY_MOVE(EventsListView);
 		EventsListView() = delete;
-		EventsListView(const EventsListView&) = delete;
-		EventsListView(EventsListView&&) = delete;
-		EventsListView& operator=(const EventsListView&) = delete;
-		EventsListView& operator=(EventsListView&&) = delete;
-
 		EventsListView(wl::WindowParent &owner, WORD ctrlId) : _events{owner, ctrlId} { }
 
 		void lvn_begin_drag(std::function<void(NMLISTVIEW&)> cb);
@@ -89,12 +85,8 @@ namespace wl {
 		// A single column of the ListView.
 		class Column final {
 		public:
+			DEF_COPY_MOVE(Column);
 			Column() = delete;
-			constexpr Column(const Column&) = default;
-			constexpr Column(Column&&) = default;
-			constexpr Column& operator=(const Column&) = default;
-			constexpr Column& operator=(Column&&) = default;
-
 			constexpr Column(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
 
 			[[nodiscard]] constexpr int index() const { return _index; }
@@ -132,12 +124,8 @@ namespace wl {
 		// Operations over the columns.
 		class ColumnCollection final {
 		private:
+			DEL_COPY_MOVE(ColumnCollection);
 			ColumnCollection() = delete;
-			ColumnCollection(const ColumnCollection&) = delete;
-			ColumnCollection(ColumnCollection&&) = delete;
-			ColumnCollection& operator=(const ColumnCollection&) = delete;
-			ColumnCollection& operator=(ColumnCollection&&) = delete;
-
 			constexpr explicit ColumnCollection(const ListView *pOwner) : _pOwner{pOwner} { }
 
 		public:
@@ -154,12 +142,8 @@ namespace wl {
 		// A single item of the ListView.
 		class Item final {
 		public:
+			DEF_COPY_MOVE(Item);
 			Item() = delete;
-			constexpr Item(const Item&) = default;
-			constexpr Item(Item&&) = default;
-			constexpr Item& operator=(const Item&) = default;
-			constexpr Item& operator=(Item&&) = default;
-
 			constexpr Item(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
 
 			[[nodiscard]] constexpr int index() const { return _index; }
@@ -184,12 +168,8 @@ namespace wl {
 		// Operations over the items.
 		class ItemCollection final {
 		private:
+			DEL_COPY_MOVE(ItemCollection);
 			ItemCollection() = delete;
-			ItemCollection(const ItemCollection&) = delete;
-			ItemCollection(ItemCollection&&) = delete;
-			ItemCollection& operator=(const ItemCollection&) = delete;
-			ItemCollection& operator=(ItemCollection&&) = delete;
-
 			constexpr explicit ItemCollection(const ListView *pOwner) : _pOwner{pOwner} { }
 
 		public:
@@ -213,11 +193,8 @@ namespace wl {
 		};
 
 	public:
+		DEL_COPY_MOVE(ListView);
 		ListView() = delete;
-		ListView(const ListView&) = delete;
-		ListView(ListView&&) = delete;
-		ListView& operator=(const ListView&) = delete;
-		ListView& operator=(ListView&&) = delete;
 
 		// Constructs the list view programmatically.
 		ListView(WindowParent &owner, opts::ListView opts);

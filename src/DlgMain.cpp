@@ -1,7 +1,7 @@
 #include "DlgMain.h"
 
-RUN_MAIN(DlgMain, wnd)
-// RUN_MAIN(RawMain, wnd)
+// RUN_MAIN(DlgMain, wnd)
+RUN_MAIN(RawMain, wnd)
 
 DlgMain::DlgMain() {
 	wnd.on().wm_init_dialog(std::bind(&DlgMain::on_init_dialog, this, std::placeholders::_1));
@@ -17,10 +17,12 @@ DlgMain::DlgMain() {
 }
 
 bool DlgMain::on_init_dialog(wl::wm::InitDialog) {
+	lstFiles.set_extended_style(true, LVS_EX_FULLROWSELECT);
 	lstFiles.cols.add(L"Faster", 300);
 	lstFiles.cols.add(L"Rapids", 300);
 
 	lstFiles.items.add(L"Line", {L"Killings"});
+	lstFiles.items.add(L"Neither heaven", {L"nor space"});
 	return true;
 }
 
@@ -94,11 +96,16 @@ RawMain::RawMain()
 
 }
 
+#include "id3v2/tag.h"
+
 int RawMain::on_create(wl::wm::Create) {
 	lst.cols.add(L"First", 200);
 	lst.cols.add(L"Second", 1).set_justif(HDF_CENTER).set_width_to_fill();
 	lst.items.add(L"Bronco kid", {L"Surreal"});
 	lst.items.add(L"Ground control", {L"to major tom"});
+
+	// id3v2::Tag tag{L"D:\\Music\\mp3\\Eagles - 1976 - Hotel California\\01 Eagles - Hotel California.mp3"};
+	id3v2::Tag tag{L"D:\\Music\\mp3\\Megadeth - 1988 - So Far, So Good\\01 Megadeth - Into the Lungs of Hell.mp3"};
 
 	// wl::opts::Modal opts{
 	// 	.title = L"Fumble",

@@ -65,11 +65,10 @@ namespace _wl_internal {
 		};
 
 		void add(HWND &hCtrl, wl::Lay layout) { _ctrls.emplace_back(hCtrl, layout, RECT{}); }
-		void rearrange(HWND hParent, wl::wm::Size p);
 		void calc_origins(HWND hParent);
+		void rearrange(wl::wm::Size p);
 
 		std::vector<Ctrl> _ctrls{};
-		bool _firstPass = true;
 		SIZE _szOrig{}; // original parent client area
 	};
 

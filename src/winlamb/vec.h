@@ -5,7 +5,7 @@
 #include <span>
 #include <vector>
 
-// Vector utilities.
+// Vector, span and array utilities.
 namespace wl::vec {
 
 	// Returns true if all elements are equal to the given one.
@@ -13,7 +13,7 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> // https://stackoverflow.com/q/78827063
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] bool all(R&& v, const std::type_identity_t<T>& elem) {
+	[[nodiscard]] constexpr bool all(R &&v, const std::type_identity_t<T> &elem) {
 		for (auto it = v.begin(); it != v.end(); ++it) {
 			if (*it != elem) return false;
 		}
@@ -26,7 +26,7 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] bool all_if(R&& v, std::predicate<T> auto pred) {
+	[[nodiscard]] bool all_if(R &&v, std::predicate<T> auto pred) {
 		for (auto it = v.begin(); it != v.end(); ++it) {
 			if (!pred(*it)) return false;
 		}
@@ -38,7 +38,7 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] bool any(R&& v, const std::type_identity_t<T>& elem) {
+	[[nodiscard]] constexpr bool any(R &&v, const std::type_identity_t<T> &elem) {
 		return std::find(v.begin(), v.end(), elem) != v.end();
 	}
 	// Returns true if the predicate returns true for any of the elements.
@@ -48,18 +48,18 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] bool any_if(R&& v, std::predicate<T> auto pred) {
+	[[nodiscard]] bool any_if(R &&v, std::predicate<T> auto pred) {
 		return std::find_if(v.begin(), v.end(), pred) != v.end();
 	}
 
 	// Appends multiple elements to the vector with push_back().
 	template<typename T>
-	void append(std::vector<T>& dest, const std::type_identity_t<T>& elem) {
+	void append(std::vector<T> &dest, const std::type_identity_t<T> &elem) {
 		dest.push_back(elem);
 	}
 	// Appends multiple elements to the vector with push_back().
 	template<typename T, typename... U>
-	void append(std::vector<T>& dest, const std::type_identity_t<T>& elem, U... rest) {
+	void append(std::vector<T> &dest, const std::type_identity_t<T> &elem, U... rest) {
 		append(dest, elem);
 		append(dest, rest...);
 	}
@@ -69,7 +69,7 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
-	void append(std::vector<T>& dest, R&& other) {
+	void append(std::vector<T> &dest, R &&other) {
 		dest.insert(dest.end(), other.begin(), other.end());
 	}
 	// Appends all elements of vectors to the vector with insert().
@@ -78,7 +78,7 @@ namespace wl::vec {
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>,
 		typename... U
 	> requires std::ranges::sized_range<R>
-	void append(std::vector<T>& dest, R&& other, U... rest) {
+	void append(std::vector<T> &dest, R &&other, U... rest) {
 		append(dest, std::forward<R>(other));
 		append(dest, rest...);
 	}
@@ -88,7 +88,7 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] T* find(R&& v, const std::type_identity_t<T>& elem) {
+	[[nodiscard]] constexpr T* find(R &&v, const std::type_identity_t<T> &elem) {
 		auto foundIt = std::find(v.begin(), v.end(), elem);
 		return (foundIt == v.end()) ? nullptr : &(*foundIt);
 	}
@@ -99,7 +99,7 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] T* find_if(R&& v, std::predicate<T> auto pred) {
+	[[nodiscard]] T* find_if(R &&v, std::predicate<T> auto pred) {
 		auto foundIt = std::find_if(v.begin(), v.end(), pred);
 		return (foundIt == v.end()) ? nullptr : &(*foundIt);
 	}
@@ -108,7 +108,7 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] T* find_rev(R&& v, const std::type_identity_t<T>& elem) {
+	[[nodiscard]] constexpr T* find_rev(R &&v, const std::type_identity_t<T> &elem) {
 		auto foundIt = std::find(v.rbegin(), v.rend(), elem);
 		return (foundIt == v.rend()) ? nullptr : &(*foundIt);
 	}
@@ -119,7 +119,7 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] T* find_rev_if(R&& v, std::predicate<T> auto pred) {
+	[[nodiscard]] T* find_rev_if(R &&v, std::predicate<T> auto pred) {
 		auto foundIt = std::find_if(v.rbegin(), v.rend(), pred);
 		return (foundIt == v.rend()) ? nullptr : &(*foundIt);
 	}
@@ -129,7 +129,7 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] std::optional<size_t> index(R&& v, const std::type_identity_t<T>& elem) {
+	[[nodiscard]] constexpr std::optional<size_t> index(R &&v, const std::type_identity_t<T> &elem) {
 		auto foundIt = std::find(v.begin(), v.end(), elem);
 		return (foundIt == v.end()) ? std::nullopt : std::make_optional(std::distance(v.begin(), foundIt));
 	}
@@ -138,7 +138,7 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] std::optional<size_t> index_rev(R&& v, const std::type_identity_t<T>& elem) {
+	[[nodiscard]] constexpr std::optional<size_t> index_rev(R &&v, const std::type_identity_t<T> &elem) {
 		auto foundIt = std::find(v.rbegin(), v.rend(), elem);
 		return (foundIt == v.rend()) ? std::nullopt : std::make_optional(std::distance(foundIt, std::prev(v.rend())));
 	}
@@ -149,7 +149,7 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] std::optional<size_t> index_if(R&& v, std::predicate<T> auto pred) {
+	[[nodiscard]] std::optional<size_t> index_if(R &&v, std::predicate<T> auto pred) {
 		auto foundIt = std::find_if(v.begin(), v.end(), pred);
 		return (foundIt == v.end()) ? std::nullopt : std::make_optional(std::distance(v.begin(), foundIt));
 	}
@@ -160,7 +160,7 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] std::optional<size_t> index_rev_if(R&& v, std::predicate<T> auto pred) {
+	[[nodiscard]] std::optional<size_t> index_rev_if(R &&v, std::predicate<T> auto pred) {
 		auto foundIt = std::find_if(v.rbegin(), v.rend(), pred);
 		return (foundIt == v.rend()) ? std::nullopt : std::make_optional(std::distance(foundIt, std::prev(v.rend())));
 	}
@@ -168,17 +168,21 @@ namespace wl::vec {
 	// Returns the index of the first element where the entire sequence matches the following elements.
 	// Example:
 	// vector<int> nums{0, 1, 2, 3, 4, 5};
-	// optional<size_t> index = index_seq(nums, {2, 3, 4});
+	// const int SEQ[] = {2, 3, 4};
+	// optional<size_t> index = index_seq(nums, SEQ);
 	template<
 		std::ranges::contiguous_range R,
-		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
+		std::ranges::contiguous_range Q
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] std::optional<size_t> index_seq(R&& v,
-			std::initializer_list<const std::type_identity_t<T>> sequence) {
-		for (size_t i = 0; i <= v.size() - sequence.size(); ++i) {
+		&& std::ranges::contiguous_range<Q>
+		&& std::same_as<std::ranges::range_value_t<R>, std::ranges::range_value_t<Q>>
+	[[nodiscard]] constexpr std::optional<size_t> index_seq(R &&v, Q &&sequence) {
+		size_t vSize = std::ranges::size(v);
+		size_t seqSize = std::ranges::size(sequence);
+		for (size_t i = 0; i <= vSize - seqSize; ++i) {
 			bool found = true;
-			for (size_t e = 0; e < sequence.size(); ++e) {
-				if (v[e + i] != *(sequence.begin() + e)) {
+			for (size_t e = 0; e < seqSize; ++e) {
+				if (v[e + i] != sequence[e]) {
 					found = false;
 					break;
 				}
@@ -187,18 +191,54 @@ namespace wl::vec {
 		}
 		return std::nullopt;
 	}
+	// Returns the index of the first element where the entire sequence matches the following elements.
+	// Example:
+	// vector<int> nums{0, 1, 2, 3, 4, 5};
+	// optional<size_t> index = index_seq(nums, {2, 3, 4});
+	template<
+		std::ranges::contiguous_range R,
+		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
+	> requires std::ranges::sized_range<R>
+	[[nodiscard]] constexpr std::optional<size_t> index_seq(
+			R &&v, std::initializer_list<const std::type_identity_t<T>> sequence) { // initializer_list overload
+		return index_seq(std::forward<R>(v), std::span(sequence));
+	}
 
 	// Removes the element at the given index.
 	template<typename T>
-	void remove(std::vector<T>& v, size_t index) {
+	void remove(std::vector<T> &v, size_t index) {
 		v.erase(v.begin() + index);
 	}
 	// Removes the elements to which the callback returns true.
 	// Example:
 	// remove_if(entries, [](const Entry&) -> bool { return true; });
 	template<typename T>
-	void remove_if(std::vector<T>& v, std::predicate<T> auto pred) {
+	void remove_if(std::vector<T> &v, std::predicate<T> auto pred) {
 		v.erase(std::remove_if(v.begin(), v.end(), pred), v.end());
+	}
+
+	// Returns true if all elements in v and q are equal.
+	template<
+		std::ranges::contiguous_range R,
+		std::ranges::contiguous_range Q
+	> requires std::ranges::sized_range<R>
+		&& std::ranges::contiguous_range<Q>
+		&& std::same_as<std::ranges::range_value_t<R>, std::ranges::range_value_t<Q>>
+	[[nodiscard]] constexpr bool same(R &&v, Q &&q) {
+		size_t len = std::min(std::ranges::size(v), std::ranges::size(q));
+		for (size_t i = 0; i < len; ++i) {
+			if (v[i] != q[i]) return false;
+		}
+		return true;
+	}
+	// Returns true if all elements in v and sequence are equal.
+	template<
+		std::ranges::contiguous_range R,
+		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
+	> requires std::ranges::sized_range<R>
+	[[nodiscard]] constexpr bool same(
+			R &&v, std::initializer_list<const std::type_identity_t<T>> sequence) { // initializer_list overload
+		return same(std::forward<R>(v), std::span(sequence));
 	}
 
 	// Returns spans over the source vector, splitted by the delimiter, including empty spans.
@@ -207,7 +247,7 @@ namespace wl::vec {
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
 	[[nodiscard]] std::vector<std::span<T>> split(
-			R&& v, const std::type_identity_t<T>& delimiter, std::optional<size_t> maxParts = std::nullopt) {
+			R &&v, const std::type_identity_t<T> &delimiter, std::optional<size_t> maxParts = std::nullopt) {
 		if (v.empty()) return {};
 
 		std::span<T> src{v};
@@ -261,7 +301,7 @@ namespace wl::vec {
 		typename F = std::is_invocable<const std::type_identity_t<T>&>,
 		typename U = std::invoke_result_t<F, const std::type_identity_t<T>&>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] std::vector<U> transform(R&& v, F callback) {
+	[[nodiscard]] std::vector<U> transform(R &&v, F callback) {
 		std::vector<U> ret;
 		ret.reserve(v.size());
 		for (auto &&elem : v)

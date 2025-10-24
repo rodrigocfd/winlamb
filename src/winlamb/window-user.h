@@ -25,11 +25,8 @@ namespace wl {
 	// Main application window.
 	class WindowMain final : public WindowParent {
 	public:
+		DEL_COPY_MOVE(WindowMain);
 		WindowMain() = delete;
-		WindowMain(const WindowMain&) = delete;
-		WindowMain(WindowMain&&) = delete;
-		WindowMain& operator=(const WindowMain&) = delete;
-		WindowMain& operator=(WindowMain&&) = delete;
 
 		// Constructs the main window programmatically.
 		WindowMain(opts::Main opts)
@@ -72,11 +69,8 @@ namespace wl {
 	// Modal window.
 	class WindowModal final : public WindowParent {
 	public:
+		DEL_COPY_MOVE(WindowModal);
 		WindowModal() = delete;
-		WindowModal(const WindowModal&) = delete;
-		WindowModal(WindowModal&&) = delete;
-		WindowModal& operator=(const WindowModal&) = delete;
-		WindowModal& operator=(WindowModal&&) = delete;
 
 		// Constructs the modal window programmatically.
 		WindowModal(WindowParent &parent, opts::Modal opts)

@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <optional>
 #include <span>
 #include <string>
@@ -7,18 +8,21 @@
 
 namespace wl {
 
-	// Holds a pointer to a null-terminated string, being constructible from LPCWSTR or const std::wstring&.
-	// Analog to std::wstring_view, but null-terminated.
+	// Holds a pointer to a null-terminated string, analog to wstring_view, but null-terminated.
+	// Constructible from:
+	// - LPCWSTR
+	// - const wstring&
+	// - array<WCHAR, N>
 	class WStrPtr final {
 	public:
 		constexpr WStrPtr() = default;
-		constexpr WStrPtr(const WStrPtr&) = default;
-		constexpr WStrPtr(WStrPtr&&) = default;
-		constexpr WStrPtr& operator=(const WStrPtr&) = default;
-		constexpr WStrPtr& operator=(WStrPtr&&) = default;
+		DEF_COPY_MOVE(WStrPtr);
 
 		constexpr WStrPtr(LPCWSTR p) : _p{p} { }
 		constexpr WStrPtr(const std::wstring &s) : _p{s.c_str()} { }
+
+		template<size_t N>
+		constexpr WStrPtr(std::array<WCHAR, N> s) : _p{s.data()} { }
 
 		constexpr operator LPCWSTR() const { return _p; }
 		[[nodiscard]] constexpr WCHAR operator[](size_t index) const { return _p[index]; }

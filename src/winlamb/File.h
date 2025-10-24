@@ -16,12 +16,11 @@ namespace wl {
 
 		~File() { close(); }
 
-		constexpr File() = default;
-		File(const File&) = delete;
 		File(File &&other) noexcept { operator=(std::forward<File>(other)); }
-		File& operator=(const File&) = delete;
 		File& operator=(File &&other) noexcept;
 
+		DEL_COPY(File);
+		constexpr File() = default;
 		constexpr explicit File(HANDLE hFile) : _hFile{hFile} { }
 		File(WStrPtr path, Access access) { open(path, access); }
 
@@ -55,12 +54,11 @@ namespace wl {
 
 		~FileMapped() { close(); }
 
-		constexpr FileMapped() = default;
-		FileMapped(const FileMapped&) = delete;
 		FileMapped(FileMapped &&other) noexcept { operator=(std::forward<FileMapped>(other)); }
-		FileMapped& operator=(const FileMapped&) = delete;
 		FileMapped& operator=(FileMapped &&other) noexcept;
 
+		DEL_COPY(FileMapped);
+		constexpr FileMapped() = default;
 		FileMapped(WStrPtr path, Access access) { open(path, access); }
 
 		void close() noexcept;

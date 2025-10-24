@@ -6,12 +6,8 @@ namespace _wl_internal {
 	// Base to all dialog container windows.
 	class DialogBase final {
 	public:
+		DEL_COPY_MOVE(DialogBase);
 		DialogBase() = delete;
-		DialogBase(const DialogBase&) = delete;
-		DialogBase(DialogBase&&) = delete;
-		DialogBase& operator=(const DialogBase&) = delete;
-		DialogBase& operator=(DialogBase&&) = delete;
-
 		constexpr DialogBase(WORD dlgId) : _wndMsg{true}, _dlgId{dlgId} { }
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _wndMsg.hwnd(); }
@@ -33,12 +29,8 @@ namespace _wl_internal {
 	// Main dialog window.
 	class DialogMain final {
 	public:
+		DEL_COPY_MOVE(DialogMain);
 		DialogMain() = delete;
-		DialogMain(const DialogMain&) = delete;
-		DialogMain(DialogMain&&) = delete;
-		DialogMain& operator=(const DialogMain&) = delete;
-		DialogMain& operator=(DialogMain&&) = delete;
-
 		DialogMain(WORD dlgId, WORD iconId, WORD accelTblId);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _dlgBase.hwnd(); }
@@ -57,12 +49,8 @@ namespace _wl_internal {
 	// Modal dialog window.
 	class DialogModal final {
 	public:
+		DEL_COPY_MOVE(DialogModal);
 		DialogModal() = delete;
-		DialogModal(const DialogModal&) = delete;
-		DialogModal(DialogModal&&) = delete;
-		DialogModal& operator=(const DialogModal&) = delete;
-		DialogModal& operator=(DialogModal&&) = delete;
-
 		DialogModal(const wl::WindowParent &parent, WORD dlgId);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _dlgBase.hwnd(); }

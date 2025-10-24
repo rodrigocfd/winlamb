@@ -9,11 +9,8 @@
 
 class DlgMain final {
 public:
+	DEL_COPY_MOVE(DlgMain);
 	DlgMain();
-	DlgMain(const DlgMain&) = delete;
-	DlgMain(DlgMain&&) = delete;
-	DlgMain& operator=(const DlgMain&) = delete;
-	DlgMain& operator=(DlgMain&&) = delete;
 
 	wl::WindowMain wnd{DLG_MAIN, ICO_MAIN};
 	wl::DropFiles dropFiles{wnd};
@@ -31,11 +28,8 @@ private:
 
 class RawMain final {
 public:
+	DEL_COPY_MOVE(RawMain);
 	RawMain();
-	RawMain(const RawMain&) = delete;
-	RawMain(RawMain&&) = delete;
-	RawMain& operator=(const RawMain&) = delete;
-	RawMain& operator=(RawMain&&) = delete;
 
 	wl::WindowMain wnd;
 	wl::ListView lst;

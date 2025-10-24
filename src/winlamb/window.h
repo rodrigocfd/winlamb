@@ -13,15 +13,9 @@ namespace wl {
 	// Base to any window.
 	class Window final {
 	public:
+		DEF_COPY_MOVE(Window);
 		constexpr Window() = default;
-		constexpr Window(const Window&) = default;
-		constexpr Window(Window&&) = default;
-		constexpr Window& operator=(const Window&) = default;
-		constexpr Window& operator=(Window&&) = default;
-
 		constexpr explicit Window(HWND hWnd) : _hWnd{hWnd} { }
-
-		constexpr operator HWND() const { return _hWnd; }
 
 		// Returns the window handle.
 		[[nodiscard]] constexpr HWND hwnd() const { return _hWnd; }
@@ -47,12 +41,8 @@ namespace _wl_internal {
 	// Exposes exception-safe multi-threading operations.
 	class WindowMsg final {
 	public:
+		DEL_COPY_MOVE(WindowMsg);
 		WindowMsg() = delete;
-		WindowMsg(const WindowMsg&) = delete;
-		WindowMsg(WindowMsg&&) = delete;
-		WindowMsg& operator=(const WindowMsg&) = delete;
-		WindowMsg& operator=(WindowMsg&&) = delete;
-
 		constexpr explicit WindowMsg(bool isDlg)
 			: _isDlg{isDlg}, _preEvents{isDlg}, _userEvents{isDlg}, _postEvents{isDlg} { }
 
@@ -86,12 +76,8 @@ namespace _wl_internal {
 	// Base to all native controls.
 	class NativeCtrl final {
 	public:
+		DEL_COPY_MOVE(NativeCtrl);
 		NativeCtrl() = delete;
-		NativeCtrl(const NativeCtrl&) = delete;
-		NativeCtrl(NativeCtrl&&) = delete;
-		NativeCtrl& operator=(const NativeCtrl&) = delete;
-		NativeCtrl& operator=(NativeCtrl&&) = delete;
-
 		NativeCtrl(wl::WindowParent &owner, wl::Lay layout);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _wnd.hwnd(); }

@@ -14,7 +14,7 @@ void DialogBase::create_dialog_param(HINSTANCE hInst, HWND hParent) {
 		dlg_proc, reinterpret_cast<LPARAM>(this));
 	#ifdef _DEBUG
 	if (!hDlg)
-		throw std::system_error(GetLastError(), std::system_category(), "CreateDialogParam failed");
+		throw std::system_error(GetLastError(), std::system_category(), "DialogBase: CreateDialogParam failed");
 	#endif
 }
 
@@ -34,13 +34,13 @@ void DialogBase::set_icon(HINSTANCE hInst, WORD iconId) const {
 	HANDLE hIcon16 = LoadImageW(hInst, MAKEINTRESOURCEW(iconId), IMAGE_ICON, 16, 16, LR_DEFAULTCOLOR);
 	#ifdef _DEBUG
 	if (!hIcon16)
-		throw std::system_error(GetLastError(), std::system_category(), "LoadImage 16x16 failed");
+		throw std::system_error(GetLastError(), std::system_category(), "DialogBase: LoadImage 16x16 failed");
 	#endif
 
 	HANDLE hIcon32 = LoadImageW(hInst, MAKEINTRESOURCEW(iconId), IMAGE_ICON, 32, 32, LR_DEFAULTCOLOR);
 	#ifdef _DEBUG
 	if (!hIcon32)
-		throw std::system_error(GetLastError(), std::system_category(), "LoadImage 32x32 failed");
+		throw std::system_error(GetLastError(), std::system_category(), "DialogBase: LoadImage 32x32 failed");
 	#endif
 
 	SendMessageW(hwnd(), WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon16));
@@ -53,7 +53,7 @@ HACCEL DialogBase::load_accel(HINSTANCE hInst, WORD accelTblId) const {
 	HACCEL hAccel = LoadAcceleratorsW(hInst, MAKEINTRESOURCEW(accelTblId));
 	#ifdef _DEBUG
 	if (!hAccel)
-		throw std::system_error(GetLastError(), std::system_category(), "LoadAccelerators failed");
+		throw std::system_error(GetLastError(), std::system_category(), "DialogBase: LoadAccelerators failed");
 	#endif
 	return hAccel;
 }

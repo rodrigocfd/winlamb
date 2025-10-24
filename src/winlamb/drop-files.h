@@ -9,15 +9,11 @@
 
 namespace wl {
 
-	// Implements IDropFiles COM interface, allowing file drag & dropping.
+	// Implements IDropFiles COM interface, allowing file drag & drop on the window.
 	class DropFiles final : public IDropTarget {
 	public:
+		DEL_COPY_MOVE(DropFiles);
 		DropFiles() = delete;
-		DropFiles(const DropFiles&) = delete;
-		DropFiles(DropFiles&&) = delete;
-		DropFiles& operator=(const DropFiles&) = delete;
-		DropFiles& operator=(DropFiles&&) = delete;
-
 		explicit DropFiles(WindowParent &owner);
 
 		HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) override;

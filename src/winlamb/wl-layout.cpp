@@ -1,15 +1,32 @@
+#include <system_error>
 #include "layout.h"
 using namespace _wl_internal;
 using namespace wl;
 
-void Layout::rearrange(HWND hParent, wm::Size p) {
+void Layout::calc_origins(HWND hParent) {
+	RECT rcParent{};
+	BOOL ret = GetClientRect(hParent, &rcParent);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::system_error(GetLastError(), std::system_category(), "Layout: GetClientRect failed");
+	#endif
+	_szOrig = {rcParent.right, rcParent.bottom}; // save original parent client area
+
+	for (auto& ctrl : _ctrls) { // save original client area of each control, relative to parent
+		RECT rcCtrlOrig{};
+		BOOL ret = GetWindowRect(ctrl.hCtrl, &ctrl.rcOrig); // relative to screen
+		#ifdef _DEBUG
+		if (!ret)
+			throw std::system_error(GetLastError(), std::system_category(), "Layout: GetWindowRect failed");
+		#endif
+		ScreenToClient(hParent, reinterpret_cast<POINT*>(&ctrl.rcOrig)); // now relative to parent
+		ScreenToClient(hParent, reinterpret_cast<POINT*>(&ctrl.rcOrig.right)); // now relative to parent
+	}
+}
+
+void Layout::rearrange(wm::Size p) {
 	if (_ctrls.empty() || p.is_minimized())
 		return; // no need to resize if window is minimized
-
-	if (_firstPass) {
-		calc_origins(hParent); // only once
-		_firstPass = false;
-	}
 
 	HDWP hdwp = BeginDeferWindowPos(static_cast<int>(_ctrls.size()));
 	for (auto& ctrl : _ctrls) {
@@ -38,17 +55,4 @@ void Layout::rearrange(HWND hParent, wm::Size p) {
 			flags);
 	}
 	EndDeferWindowPos(hdwp);
-}
-
-void Layout::calc_origins(HWND hParent) {
-	RECT rcParent{};
-	GetClientRect(hParent, &rcParent);
-	_szOrig = {rcParent.right, rcParent.bottom}; // save original parent client area
-
-	for (auto& ctrl : _ctrls) { // save original client area of each control, relative to parent
-		RECT rcCtrlOrig{};
-		GetWindowRect(ctrl.hCtrl, &ctrl.rcOrig); // relative to screen
-		ScreenToClient(hParent, reinterpret_cast<POINT*>(&ctrl.rcOrig)); // now relative to parent
-		ScreenToClient(hParent, reinterpret_cast<POINT*>(&ctrl.rcOrig.right)); // now relative to parent
-	}
 }
