@@ -10,20 +10,30 @@ namespace _wl_internal {
 
 namespace wl {
 
-	// Base to any window.
+	/// @brief Base to any window.
+	///
+	/// Simply wraps a window handle.
 	class Window final {
 	public:
-		DEF_COPY_MOVE(Window);
+		/// Default constructor.
+		///
+		/// Initializes the wrapped window handle to `nullptr`.
 		constexpr Window() = default;
+
+		/** Constructs `Window` by wrapping the given window handle. */
 		constexpr explicit Window(HWND hWnd) : _hWnd{hWnd} { }
 
-		// Returns the window handle.
+		/** Returns the wrapped window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const { return _hWnd; }
 
-		// Calls GetWindowText().
+		/// Calls [`GetWindowText`].
+		///
+		/// [`GetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowtextw
 		[[nodiscard]] std::wstring text() const;
 
-		// Calls SetWindowText().
+		/// Calls [`SetWindowText`].
+		///
+		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
 		void set_text(WStrPtr text) const;
 
 	private:
@@ -37,17 +47,15 @@ namespace wl {
 
 namespace _wl_internal {
 
-	// Stores the pre, user and post window messages for container windows.
-	// Exposes exception-safe multi-threading operations.
-	class WindowMsg final {
+	/// Stores the pre, user and post window messages for container windows.
+	/// Exposes exception-safe multi-threading operations.
+	class WindowMsg final : wl::NonMovable {
 	public:
-		DEL_COPY_MOVE(WindowMsg);
-		WindowMsg() = delete;
 		constexpr explicit WindowMsg(bool isDlg)
 			: _isDlg{isDlg}, _preEvents{isDlg}, _userEvents{isDlg}, _postEvents{isDlg} { }
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _wnd.hwnd(); }
-		[[nodiscard]] _wl_internal::EventsUser& on();
+		[[nodiscard]] wl::events::WindowEvents& on();
 		void thread_detach(std::function<void()> cb) const;
 		void thread_ui(std::function<void()> cb) const;
 
@@ -63,7 +71,7 @@ namespace _wl_internal {
 		wl::Window _wnd{};
 		Layout _layout;
 		EventsInternal _preEvents;
-		EventsUser _userEvents;
+		wl::events::WindowEvents _userEvents;
 		EventsInternal _postEvents;
 	};
 
@@ -73,15 +81,13 @@ namespace wl { class WindowParent; }
 
 namespace _wl_internal {
 
-	// Base to all native controls.
-	class NativeCtrl final {
+	/// Base to all native controls.
+	class NativeCtrl final : wl::NonMovable {
 	public:
-		DEL_COPY_MOVE(NativeCtrl);
-		NativeCtrl() = delete;
 		NativeCtrl(wl::WindowParent &owner, wl::Lay layout);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _wnd.hwnd(); }
-		[[nodiscard]] _wl_internal::EventsUser& subclass_on();
+		[[nodiscard]] wl::events::WindowEvents& subclass_on();
 		void create_wnd(WORD ctrlId, DWORD exStyle, LPCWSTR className,
 			LPCWSTR title, DWORD style, POINT pos, SIZE size);
 		void assign_dlg(WORD ctrlId);
@@ -92,7 +98,7 @@ namespace _wl_internal {
 
 		wl::Window _wnd{};
 		WindowMsg &_owner;
-		EventsUser _subclassEvents{false};
+		wl::events::WindowEvents _subclassEvents{false};
 		static UINT_PTR _subclassId;
 	};
 

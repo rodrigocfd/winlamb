@@ -40,6 +40,7 @@ namespace id3v2::synch_safe {
 
 namespace id3v2::conv {
 
-	UINT uint_from_be_bytes(std::span<BYTE> src);
+	[[nodiscard]] UINT uint_from_be_bytes(std::span<BYTE> src);
+	void serialize_be(std::vector<BYTE> &dest, UINT n);
 
 }

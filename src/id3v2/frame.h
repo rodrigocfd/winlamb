@@ -40,8 +40,6 @@ namespace id3v2 {
 		virtual ~Frame() { }
 
 	protected:
-		DEF_COPY_MOVE(Frame);
-		Frame() = delete;
 		Frame(std::wstring &&name4, UINT declaredSize, std::array<BYTE, 2> flags)
 			: _name4{std::move(name4)}, _declaredSize{declaredSize}, _flags{flags} { }
 
@@ -62,6 +60,8 @@ namespace id3v2 {
 		virtual void serialize(std::vector<BYTE> &dest) const = 0;
 
 	protected:
+		void serialize_header(std::vector<BYTE> &dest) const;
+
 		std::wstring _name4{};
 		UINT _declaredSize = 0; // used only at tag parsing
 		std::array<BYTE, 2> _flags{};
@@ -73,8 +73,6 @@ namespace id3v2 {
 	public:
 		virtual ~FrameText() { }
 
-		DEF_COPY_MOVE(FrameText);
-		FrameText() = delete;
 		FrameText(std::wstring &&name4, UINT declaredSize, std::array<BYTE, 2> flags, std::span<BYTE> src);
 		FrameText(std::wstring &&name4, wl::WStrPtr simpleText)
 			: Frame{std::move(name4), 0, {{0, 0}}}, _text{simpleText} { }
@@ -97,8 +95,6 @@ namespace id3v2 {
 	public:
 		virtual ~FrameUserText() { }
 
-		DEF_COPY_MOVE(FrameUserText);
-		FrameUserText() = delete;
 		FrameUserText(std::wstring &&name4, UINT declaredSize, std::array<BYTE, 2> flags, std::span<BYTE> src);
 
 		[[nodiscard]] std::wstring as_simple_text() const override;
@@ -122,8 +118,6 @@ namespace id3v2 {
 	public:
 		virtual ~FrameBinary() { }
 
-		DEF_COPY_MOVE(FrameBinary);
-		FrameBinary() = delete;
 		FrameBinary(std::wstring &&name4, UINT declaredSize, std::array<BYTE, 2> flags, std::span<BYTE> src);
 
 		[[nodiscard]] std::wstring as_simple_text() const override;
@@ -144,8 +138,6 @@ namespace id3v2 {
 	public:
 		virtual ~FrameComment() { }
 
-		DEF_COPY_MOVE(FrameComment);
-		FrameComment() = delete;
 		FrameComment(std::wstring &&name4, UINT declaredSize, std::array<BYTE, 2> flags, std::span<BYTE> src);
 		FrameComment(std::wstring &&name4, wl::WStrPtr simpleText)
 			: Frame{std::move(name4), 0, {{0, 0}}}, _lang3{L"eng"}, _text{simpleText} { }
@@ -173,8 +165,6 @@ namespace id3v2 {
 	public:
 		virtual ~FramePicture() { }
 
-		DEF_COPY_MOVE(FramePicture);
-		FramePicture() = delete;
 		FramePicture(std::wstring &&name4, UINT declaredSize, std::array<BYTE, 2> flags, std::span<BYTE> src);
 
 		[[nodiscard]] std::wstring as_simple_text() const override;
@@ -204,8 +194,6 @@ namespace id3v2 {
 	public:
 		virtual ~FrameGeob() { }
 
-		DEF_COPY_MOVE(FrameGeob);
-		FrameGeob() = delete;
 		FrameGeob(std::wstring &&name4, UINT declaredSize, std::array<BYTE, 2> flags, std::span<BYTE> src);
 
 		[[nodiscard]] std::wstring as_simple_text() const override;

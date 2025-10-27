@@ -6,6 +6,7 @@
 #include <CommCtrl.h>
 using namespace _wl_internal;
 using namespace wl;
+using namespace wl::events;
 
 std::wstring Window::text() const {
 	UINT len = GetWindowTextLengthW(hwnd());
@@ -31,7 +32,7 @@ void Window::set_text(WStrPtr text) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-EventsUser& WindowMsg::on() {
+WindowEvents& WindowMsg::on() {
 	#ifdef _DEBUG
 	if (hwnd())
 		throw std::logic_error("Cannot add events after the window is created.");
@@ -179,7 +180,7 @@ NativeCtrl::NativeCtrl(WindowParent &owner, Lay layout)
 
 UINT_PTR NativeCtrl::_subclassId = 0;
 
-EventsUser& NativeCtrl::subclass_on() {
+WindowEvents& NativeCtrl::subclass_on() {
 	#ifdef _DEBUG
 	if (hwnd())
 		throw std::logic_error("Cannot add subclass events after the control is created.");

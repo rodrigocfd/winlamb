@@ -3,15 +3,15 @@
 #include <CommCtrl.h>
 #include "window-user.h"
 
-namespace _wl_internal {
+namespace wl { class ListView; }
 
-	// Native list view control events.
-	class EventsListView final {
+namespace wl::events {
+
+	/** @brief Native list view message callbacks. */
+	class ListViewEvents final : wl::NonMovable {
+	private:
+		ListViewEvents(wl::WindowParent &owner, WORD ctrlId) : _events{owner, ctrlId} { }
 	public:
-		DEL_COPY_MOVE(EventsListView);
-		EventsListView() = delete;
-		EventsListView(wl::WindowParent &owner, WORD ctrlId) : _events{owner, ctrlId} { }
-
 		void lvn_begin_drag(std::function<void(NMLISTVIEW&)> cb);
 		void lvn_begin_label_edit(std::function<bool(NMLVDISPINFOW&)> cb);
 		void lvn_begin_r_drag(std::function<void(NMLISTVIEW&)> cb);
@@ -38,7 +38,8 @@ namespace _wl_internal {
 		void nm_set_focus(std::function<void(NMHDR&)> cb);
 
 	private:
-		EventsNativeCtrl _events;
+		_wl_internal::EventsNativeCtrl _events;
+		friend wl::ListView; // ctor
 	};
 
 }
@@ -46,7 +47,7 @@ namespace _wl_internal {
 namespace wl::opts {
 
 	// Options to create a ListView programmatically.
-	struct ListView {
+	struct ListView final {
 		// Control position.
 		// Prefer using DPI-corrected values, like: dpi::pt(10, 10).
 		POINT pos{};
@@ -79,14 +80,14 @@ namespace wl::opts {
 
 namespace wl {
 
-	// Native list view control.
-	class ListView final {
+	/// @brief Native [list view] control.
+	///
+	/// [list view]: https://learn.microsoft.com/en-us/windows/win32/controls/list-view-controls-overview
+	class ListView final : NonMovable {
 	public:
 		// A single column of the ListView.
 		class Column final {
 		public:
-			DEF_COPY_MOVE(Column);
-			Column() = delete;
 			constexpr Column(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
 
 			[[nodiscard]] constexpr int index() const { return _index; }
@@ -122,10 +123,8 @@ namespace wl {
 
 	private:
 		// Operations over the columns.
-		class ColumnCollection final {
+		class ColumnCollection final : NonMovable {
 		private:
-			DEL_COPY_MOVE(ColumnCollection);
-			ColumnCollection() = delete;
 			constexpr explicit ColumnCollection(const ListView *pOwner) : _pOwner{pOwner} { }
 
 		public:
@@ -142,8 +141,6 @@ namespace wl {
 		// A single item of the ListView.
 		class Item final {
 		public:
-			DEF_COPY_MOVE(Item);
-			Item() = delete;
 			constexpr Item(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
 
 			[[nodiscard]] constexpr int index() const { return _index; }
@@ -166,10 +163,8 @@ namespace wl {
 
 	private:
 		// Operations over the items.
-		class ItemCollection final {
+		class ItemCollection final : NonMovable {
 		private:
-			DEL_COPY_MOVE(ItemCollection);
-			ItemCollection() = delete;
 			constexpr explicit ItemCollection(const ListView *pOwner) : _pOwner{pOwner} { }
 
 		public:
@@ -193,9 +188,6 @@ namespace wl {
 		};
 
 	public:
-		DEL_COPY_MOVE(ListView);
-		ListView() = delete;
-
 		// Constructs the list view programmatically.
 		ListView(WindowParent &owner, opts::ListView opts);
 
@@ -206,7 +198,7 @@ namespace wl {
 		ItemCollection items{this};
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _ctrl.hwnd(); }
-		[[nodiscard]] _wl_internal::EventsListView& on() { return _events; }
+		[[nodiscard]] events::ListViewEvents& on() { return _events; }
 		const ListView& set_extended_style(bool doSet, DWORD exStyle) const;
 
 	private:
@@ -214,7 +206,7 @@ namespace wl {
 		void show_context_menu(bool followCursor, bool hasCtrl, bool hasShift);
 
 		_wl_internal::NativeCtrl _ctrl;
-		_wl_internal::EventsListView _events;
+		events::ListViewEvents _events;
 		std::optional<opts::ListView> _opts{};
 		HMENU _hMenuContext = nullptr;
 	};

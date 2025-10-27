@@ -6,10 +6,39 @@ namespace wl {
 
 	class DropFiles;
 
-	// Pure abstract class; implemented by any window which can contain child controls.
-	class WindowParent {
+	/** @brief Pure abstract class; implemented by any window which can contain child controls. */
+	class WindowParent : NonMovable {
 	public:
-		[[nodiscard]] virtual constexpr HWND hwnd() const = 0;
+		/** Returns the window handle. */
+		[[nodiscard]] virtual HWND hwnd() const = 0;
+
+		/// Calls [`GetWindowText`] to retrieve the window title.
+		///
+		/// [`GetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowtextw
+		[[nodiscard]] virtual std::wstring title() const = 0;
+
+		/// Calls [`SetWindowText`] to set the window title.
+		///
+		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
+		virtual void set_title(WStrPtr title) const = 0;
+
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the window is created.
+		[[nodiscard]] virtual events::WindowEvents& on() = 0;
+
+		/// Creates a new, detached thread and runs `cb`.
+		///
+		/// Catches uncaught exceptions.
+		virtual void thread_detach(std::function<void()> cb) const = 0;
+
+		/// Blocks the current thread and runs `cb` in the UI thread.
+		///
+		/// Ideal to be called from another thread, when you need to update the UI.
+		///
+		/// Catches uncaught exceptions.
+		virtual void thread_ui(std::function<void()> cb) const = 0;
+
 	private:
 		[[nodiscard]] virtual const _wl_internal::WindowMsg& wnd_msg() const = 0;
 		[[nodiscard]] virtual _wl_internal::WindowMsg& wnd_msg() = 0;
@@ -22,36 +51,95 @@ namespace wl {
 
 namespace wl {
 
-	// Main application window.
+	/// @brief Main application window.
+	///
+	/// Example of creating a window programmatically:
+	///
+	///     // --- MyMain.h ---
+	///
+	///     class MyMain final : wl::NonMovable {
+	///     public:
+	///         MyMain();
+	///         wl::WindowMain wnd;
+	///     };
+	///
+	///     // --- MyMain.cpp ---
+	///
+	///     RUN_MAIN(MyMain, wnd)
+	///
+	///     wl::opts::Main wndOpts{
+	///         .title = L"My main window",
+	///         .style = wl::opts::Main{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
+	///     };
+	///
+	///     MyMain::MyMain()
+	///         : wnd{wndOpts}
+	///     {
+	///     }
+	///
+	/// Example of creating a window from a dialog resource:
+	///
+	///     // --- MyMain.h ---
+	///
+	///     class MyMain final : wl::NonMovable {
+	///     public:
+	///         MyMain();
+	///         wl::WindowMain wnd{DLG_MAIN, ICO_MAIN};
+	///     };
+	///
+	///     // --- MyMain.cpp ---
+	///
+	///     RUN_MAIN(MyMain, wnd)
+	///
+	///     MyMain::MyMain() {
+	///     }
 	class WindowMain final : public WindowParent {
 	public:
-		DEL_COPY_MOVE(WindowMain);
-		WindowMain() = delete;
-
-		// Constructs the main window programmatically.
+		/// Constructs the main window programmatically with [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		WindowMain(opts::Main opts)
 			: _rawMain{std::make_optional<_wl_internal::RawMain>(opts)} { }
 
-		// Constructs the main window from a dialog resource.
+		/// Constructs the main window from a dialog resource with [`CreateDialogParam`].
+		///
+		/// [`CreateDialogParam`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createdialogparamw
 		WindowMain(WORD dlgId, WORD iconId = 0, WORD accelTblId = 0)
 			: _dlgMain{std::make_optional<_wl_internal::DialogMain>(dlgId, iconId, accelTblId)} { }
 
+		/** Returns the window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return _rawMain.has_value() ? _rawMain.value().hwnd() : _dlgMain.value().hwnd(); }
-		[[nodiscard]] std::wstring title() const           { return wnd_msg()._wnd.text(); }
-		void set_title(WStrPtr title) const                { wnd_msg()._wnd.set_text(title); }
 
-		// Allows message events to be added.
-		// The events must be added before the dialog is created.
-		[[nodiscard]] _wl_internal::EventsUser& on() { return wnd_msg().on(); }
+		/// Calls [`GetWindowText`] to retrieve the window title.
+		///
+		/// [`GetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowtextw
+		[[nodiscard]] std::wstring title() const override { return wnd_msg()._wnd.text(); }
 
-		// Creates a new, detached thread and runs the function. Catches uncaught exceptions.
-		void thread_detach(std::function<void()> cb) const { wnd_msg().thread_detach(cb); }
+		/// Calls [`SetWindowText`] to set the window title.
+		///
+		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
+		void set_title(WStrPtr title) const override { wnd_msg()._wnd.set_text(title); }
 
-		// Blocks the current thread and runs the function in the original UI thread. Catches uncaught exceptions.
-		void thread_ui(std::function<void()> cb) const { wnd_msg().thread_ui(cb); }
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the window is created.
+		[[nodiscard]] events::WindowEvents& on() override { return wnd_msg().on(); }
 
-		// Runs the main dialog, blocking until the dialog is closed.
-		// Prefer using the RUN_MAIN macro instead of calling this method directly.
+		/// Creates a new, detached thread and runs `cb`.
+		///
+		/// Catches uncaught exceptions.
+		void thread_detach(std::function<void()> cb) const override { wnd_msg().thread_detach(cb); }
+
+		/// Blocks the current thread and runs `cb` in the UI thread.
+		///
+		/// Ideal to be called from another thread, when you need to update the UI.
+		///
+		/// Catches uncaught exceptions.
+		void thread_ui(std::function<void()> cb) const override { wnd_msg().thread_ui(cb); }
+
+		/// Runs the main window, blocking the UI thread until the window is closed.
+		///
+		/// Prefer using the `RUN_MAIN` macro instead of calling this method directly.
 		int run(HINSTANCE hInst, int cmdShow);
 
 	private:
@@ -66,35 +154,52 @@ namespace wl {
 
 namespace wl {
 
-	// Modal window.
+	/** @brief Modal window. */
 	class WindowModal final : public WindowParent {
 	public:
-		DEL_COPY_MOVE(WindowModal);
-		WindowModal() = delete;
-
-		// Constructs the modal window programmatically.
+		/// Constructs the modal window programmatically with [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		WindowModal(WindowParent &parent, opts::Modal opts)
 			: _rawModal{std::make_optional<_wl_internal::RawModal>(parent, opts)} { }
 
-		// Constructs the modal window from a dialog resource.
+		/// Constructs the modal window from a dialog resource with [`DialogBoxParam`].
+		///
+		/// [`DialogBoxParam`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxparamw
 		WindowModal(const WindowParent &parent, WORD dlgId)
 			: _dlgModal{std::make_optional<_wl_internal::DialogModal>(parent, dlgId)} { }
 
+		/** Returns the window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const { return _rawModal.has_value() ? _rawModal.value().hwnd() : _dlgModal.value().hwnd(); }
-		[[nodiscard]] std::wstring title() const  { return wnd_msg()._wnd.text(); }
-		void set_title(WStrPtr title) const       { wnd_msg()._wnd.set_text(title); }
 
-		// Allows message events to be added.
-		// The events must be added before the dialog is created.
-		[[nodiscard]] _wl_internal::EventsUser& on() { return wnd_msg().on(); }
+		/// Calls [`GetWindowText`] to retrieve the window title.
+		///
+		/// [`GetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowtextw
+		[[nodiscard]] std::wstring title() const override { return wnd_msg()._wnd.text(); }
 
-		// Creates a new, detached thread and runs the function. Catches uncaught exceptions.
-		void thread_detach(std::function<void()> cb) const { wnd_msg().thread_detach(cb); }
+		/// Calls [`SetWindowText`] to set the window title.
+		///
+		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
+		void set_title(WStrPtr title) const override { wnd_msg()._wnd.set_text(title); }
 
-		// Blocks the current thread and runs the function in the original UI thread. Catches uncaught exceptions.
-		void thread_ui(std::function<void()> cb) const { wnd_msg().thread_ui(cb); }
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the window is created.
+		[[nodiscard]] events::WindowEvents& on() override { return wnd_msg().on(); }
 
-		// Displays the modal dialog, blocking until the modal is closed.
+		/// Creates a new, detached thread and runs `cb`.
+		///
+		/// Catches uncaught exceptions.
+		void thread_detach(std::function<void()> cb) const override { wnd_msg().thread_detach(cb); }
+
+		/// Blocks the current thread and runs `cb` in the UI thread.
+		///
+		/// Ideal to be called from another thread, when you need to update the UI.
+		///
+		/// Catches uncaught exceptions.
+		void thread_ui(std::function<void()> cb) const override { wnd_msg().thread_ui(cb); }
+
+		/** Displays the modal window, blocking the UI thread until the window is closed. */
 		void show();
 
 	private:

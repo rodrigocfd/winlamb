@@ -4,11 +4,8 @@
 namespace _wl_internal {
 
 	// Base to all raw container windows.
-	class RawBase final {
+	class RawBase final : wl::NonMovable {
 	public:
-		DEL_COPY_MOVE(RawBase);
-		constexpr RawBase() = default;
-
 		[[nodiscard]] constexpr HWND hwnd() const { return _wndMsg.hwnd(); }
 		[[nodiscard]] ATOM register_class(HINSTANCE hInst, LPCWSTR className, DWORD classStyle,
 			WORD iconId, HBRUSH hbrBackground, HCURSOR hCursor);
@@ -27,7 +24,7 @@ namespace _wl_internal {
 namespace wl::opts {
 
 	// Options to create a WindowMain programmatically.
-	struct Main {
+	struct Main final {
 		// Class name passed to WNDCLASSEX.
 		// Defaults to an auto-generated string.
 		LPCWSTR className = nullptr;
@@ -69,10 +66,8 @@ namespace wl::opts {
 namespace _wl_internal {
 
 	// Main raw window.
-	class RawMain final {
+	class RawMain final : wl::NonMovable {
 	public:
-		DEL_COPY_MOVE(RawMain);
-		RawMain() = delete;
 		explicit RawMain(wl::opts::Main opts);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _rawBase.hwnd(); }
@@ -90,7 +85,7 @@ namespace wl { class WindowParent; }
 namespace wl::opts {
 
 	// Options to create a WindowModal programmatically.
-	struct Modal {
+	struct Modal final {
 		// Class name passed to WNDCLASSEX.
 		// Defaults to an auto-generated string.
 		LPCWSTR className = nullptr;
@@ -127,10 +122,8 @@ namespace wl::opts {
 namespace _wl_internal {
 
 	// Modal raw window.
-	class RawModal final {
+	class RawModal final : wl::NonMovable {
 	public:
-		DEL_COPY_MOVE(RawModal);
-		RawModal() = delete;
 		RawModal(wl::WindowParent &parent, wl::opts::Modal opts);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _rawBase.hwnd(); }

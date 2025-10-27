@@ -33,7 +33,7 @@ namespace wl::dpi {
 
 }
 
-// Implements WinMain(), instantiates the main class, and calls run().
+/** @brief Implements WinMain(), instantiates the main class, and calls run(). */
 #define RUN_MAIN(userwnd, mainwnd) \
 	int APIENTRY wWinMain(_In_ HINSTANCE hInst, _In_opt_ HINSTANCE, _In_ LPWSTR, _In_ int cmdShow) { \
 		_wl_internal::Init init; \

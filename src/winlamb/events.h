@@ -4,7 +4,9 @@
 #include <vector>
 #include "lib-include-win.h"
 
-// Window message crackers, passed as arguments to the window events.
+/// @brief [Message] crackers, passed as arguments to the window events.
+///
+/// [Message]: https://learn.microsoft.com/en-us/windows/win32/learnwin32/window-messages
 namespace wl::wm {
 
 	// Raw data of an ordinary window message.
@@ -170,8 +172,8 @@ namespace _wl_internal {
 	class WindowMsg;
 	class NativeCtrl;
 
-	// Stores library-internal message identifiers and callbacks.
-	class EventsInternal final {
+	/** Library-internal window message callbacks. */
+	class EventsInternal final : wl::NonMovable {
 	public:
 		struct Msg final {
 			UINT wm;
@@ -183,8 +185,6 @@ namespace _wl_internal {
 			std::function<void(wl::wm::Notify)> cb;
 		};
 
-		DEL_COPY_MOVE(EventsInternal);
-		EventsInternal() = delete;
 		constexpr explicit EventsInternal(bool isDlg) : _isDlg{isDlg} { }
 
 		void wm_create_or_init_dialog(std::function<void()> cb);
@@ -203,10 +203,10 @@ namespace _wl_internal {
 
 }
 
-namespace _wl_internal {
+namespace wl::events {
 
-	// Stores user message identifiers and callbacks.
-	class EventsUser final {
+	/** @brief Native window message callbacks. */
+	class WindowEvents final : wl::NonMovable {
 	private:
 		struct Msg final {
 			UINT wm;
@@ -223,11 +223,7 @@ namespace _wl_internal {
 			std::function<LRESULT(wl::wm::Notify)> cb;
 		};
 
-	public:
-		DEL_COPY_MOVE(EventsUser);
-		EventsUser() = delete;
-	private:
-		constexpr explicit EventsUser(bool isDlg) : _isDlg{isDlg} { }
+		constexpr explicit WindowEvents(bool isDlg) : _isDlg{isDlg} { }
 
 	public:
 		void wm_create(std::function<int(wl::wm::Create)> cb);
@@ -289,8 +285,8 @@ namespace _wl_internal {
 		std::vector<Cmd> _cmds{}; // WM_COMMAND
 		std::vector<Nfy> _nfys{}; // WM_NOTIFY
 
-		friend WindowMsg; // message processing
-		friend NativeCtrl; // subclass processing
+		friend _wl_internal::WindowMsg; // message processing
+		friend _wl_internal::NativeCtrl; // subclass processing
 	};
 
 }
@@ -299,11 +295,9 @@ namespace wl { class WindowParent; }
 
 namespace _wl_internal {
 
-	// Base to all native control events.
-	class EventsNativeCtrl final {
+	/** Base to all native control events. */
+	class EventsNativeCtrl final : wl::NonMovable {
 	public:
-		DEL_COPY_MOVE(EventsNativeCtrl);
-		EventsNativeCtrl() = delete;
 		EventsNativeCtrl(wl::WindowParent &owner, WORD ctrlId);
 
 		WindowMsg &_owner;

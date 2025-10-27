@@ -1,12 +1,15 @@
 #include <stdexcept>
 #include "tag.h"
 #include "util.h"
+using std::function;
 using std::span;
 using std::unique_ptr;
+using std::vector;
+using std::wstring;
 using namespace id3v2;
 
 Tag::Tag(wl::WStrPtr mp3File) {
-	const wl::FileMapped fin{mp3File, wl::FileMapped::Access::ExistingReadOnly};
+	const wl::FileMapped fin{mp3File, wl::FileMapped::Access::existing_read_only};
 	parse(fin.view());
 }
 
@@ -22,22 +25,94 @@ void Tag::add_frame_with_text(wl::WStrPtr name4, wl::WStrPtr text) {
 	_frames.emplace_back(std::move(frame));
 }
 
-Frame* Tag::frame_by_name4(wl::WStrPtr name4) {
-	for (auto& frame : _frames) {
+const Frame* Tag::frame_by_name4(wl::WStrPtr name4) const {
+	for (auto &&frame : _frames) {
 		if (wl::str::eq_i(frame->name4(), name4))
 			return frame.get();
 	}
 	return nullptr;
 }
 
+Frame* Tag::frame_by_name4(wl::WStrPtr name4) {
+	return const_cast<Frame*>(std::as_const(*this).frame_by_name4(name4));
+}
+
+void Tag::remove_frame_if(function<bool(const Frame&)> cb) {
+	wl::vec::remove_if(_frames, [cb = std::move(cb)](const unique_ptr<Frame>& f) {
+		return cb(*f.get());
+	});
+}
+
+LPCWSTR Tag::replay_gain_status() const {
+	bool hasTrack = false, hasAlbum = false;
+	for (auto &&frame : _frames) {
+		if (hasTrack && hasAlbum)
+			break;
+
+		if (wl::str::eq_i(frame->name4(), L"TXXX")) {
+			if (FrameUserText *pUserText = dynamic_cast<FrameUserText*>(frame.get()); pUserText) {
+				wstring descr = wl::str::to_lower(pUserText->descr());
+				if (wl::str::starts_with(descr, L"replaygain_track_")) {
+					hasTrack = true;
+				} else if (wl::str::starts_with(descr, L"replaygain_album_")) {
+					hasAlbum = true;
+				}
+			}
+		}
+	}
+
+	if (hasTrack && hasAlbum) return L"TA";
+	else if (hasTrack) return L"T";
+	else if (hasAlbum) return L"A";
+	else return L"";
+}
+
+vector<BYTE> Tag::serialize() const {
+	size_t szTag = 10; // start with 10-byte tag header
+	for (auto &&frame : _frames) {
+		szTag += frame->serializable_size();
+	}
+
+	vector<BYTE> blob{};
+	blob.reserve(szTag);
+
+	wl::vec::append(blob, {'I', 'D', '3'}); // magic bytes
+	wl::vec::append(blob, {0x03, 0x00}); // tag version
+	blob.emplace_back(0x00); // flags
+
+	UINT szTagSeri = synch_safe::encode(static_cast<DWORD>(szTag) - 10); // don't count 10-byte tag header
+	conv::serialize_be(blob, szTagSeri);
+
+	for (auto &&frame : _frames)
+		frame->serialize(blob);
+
+	return blob;
+}
+
+void Tag::save_to_file(wl::WStrPtr mp3File) {
+	wl::File fout{mp3File, wl::File::Access::existing_rw};
+	vector<BYTE> currentContents = fout.read(); // copy the whole file into memory
+
+	Tag oldTag{currentContents}; // so we can have the MP3 offset
+	fout.truncate();
+
+	if (!_frames.empty()) {
+		vector<BYTE> tagBlob = serialize();
+		fout.write(tagBlob);
+	}
+
+	fout.write(currentContents.begin() + oldTag.mp3_offset(), currentContents.end());
+	_padding = 0; // we write no padding
+}
+
 size_t Tag::parse_header(span<BYTE> src) {
 	// Check ID3 magic bytes.
-	if (!wl::vec::same(src.subspan(0, 3), {'I', 'D', '3'})) {
+	if (!wl::vec::eq(src.subspan(0, 3), {'I', 'D', '3'})) {
 		return 0; // MP3 has no tag
 	}
 
 	// Validate tag version 2.3.0.
-	if (!wl::vec::same(src.subspan(3, 3), {3, 0})) [[unlikely]] { // the first "2" is not stored
+	if (!wl::vec::eq(src.subspan(3, 2), {3, 0})) [[unlikely]] { // the first "2" is not stored
 		throw std::runtime_error(wl::str::to_ansi(
 			wl::str::fmt(L"Tag version 2.%d.%d not supported, only 2.3.0.", src[3], src[4])));
 	}
@@ -62,7 +137,7 @@ size_t Tag::parse_header(span<BYTE> src) {
 	// https://github.com/sindresorhus/file-type/issues/75#issuecomment-320650344
 	const BYTE MP3_MAGIC[][2] = {{0xff, 0xfb}, {0xff, 0xfb}, {0xff, 0xf2}, {0xff, 0xfa}, {0xff, 0xf3}};
 	for (size_t i = 0; i < ARRAYSIZE(MP3_MAGIC); ++i) {
-		if (wl::vec::same(src.subspan(0, 2), MP3_MAGIC[i]))
+		if (wl::vec::eq(src.subspan(0, 2), MP3_MAGIC[i]))
 			return true;
 	}
 	return false;

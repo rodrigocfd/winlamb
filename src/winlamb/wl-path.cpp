@@ -55,11 +55,11 @@ std::vector<std::wstring> wl::path::dir_list(WStrPtr pathAndFilter) {
 
 void dir_walk_buf(wl::WStrPtr pathAndFilter, std::vector<std::wstring> &outBuf) {
 	std::vector<std::wstring> entries = wl::path::dir_list(pathAndFilter);
-	for (const auto& entry : entries) {
+	for (auto &&entry : entries) {
 		if (!wl::path::is_dir(entry))
 			outBuf.push_back(entry);
 	}
-	for (const auto& entry : entries) {
+	for (auto &&entry : entries) {
 		if (wl::path::is_dir(entry)) {
 			std::wstring subPath{entry};
 			subPath.append(L"\\*");

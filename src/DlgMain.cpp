@@ -1,7 +1,7 @@
 #include "DlgMain.h"
 
-// RUN_MAIN(DlgMain, wnd)
-RUN_MAIN(RawMain, wnd)
+RUN_MAIN(DlgMain, wnd)
+// RUN_MAIN(RawMain, wnd)
 
 DlgMain::DlgMain() {
 	wnd.on().wm_init_dialog(std::bind(&DlgMain::on_init_dialog, this, std::placeholders::_1));
@@ -54,7 +54,7 @@ void DlgMain::on_cancel() {
 
 void DlgMain::on_drop_files(const std::vector<std::wstring> files) {
 	lstFiles.items.delete_all();
-	for (auto &f : files)
+	for (auto &&f : files)
 		lstFiles.items.add(f);
 }
 

@@ -1,6 +1,5 @@
 #pragma once
 
-
 // Proper #include <Windows.h>
 
 #include <sdkddkver.h>
@@ -8,29 +7,50 @@
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>
 
+namespace wl {
 
-// "Rule of 5" shorthand macros for classes.
+	/// @brief Makes the derived class non-copyable.
+	///
+	/// Implements [P2895] with [C.35 core guideline].
+	///
+	/// Example:
+	///
+	///     class Foo final : wl::NonCopyable {
+	///     public:
+	///         std::wstring name{};
+	///     };
+	///
+	/// [P2895]: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2895r0.html
+	/// [C.35 core guideline]: https://www.sandordargo.com/blog/2024/11/27/non-movable-classes
+	class NonCopyable {
+	protected:
+		~NonCopyable() = default;
+	public:
+		NonCopyable() = default;
+		NonCopyable(NonCopyable&&) = default;
+		NonCopyable& operator=(NonCopyable&&) = default;
+	};
 
-#define DEF_COPY(c) \
-	constexpr c(const c&) = default; \
-	constexpr c& operator=(const c&) = default;
+	/// @brief Makes the derived class non-copyable and non-movable.
+	///
+	/// Implements [P2895] with [C.35 core guideline].
+	///
+	/// Example:
+	///
+	///     class Foo final : wl::NonMovable {
+	///     public:
+	///         std::wstring name{};
+	///     };
+	///
+	/// [P2895]: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2895r0.html
+	/// [C.35 core guideline]: https://www.sandordargo.com/blog/2024/11/27/non-movable-classes
+	class NonMovable {
+	protected:
+		~NonMovable() = default;
+	public:
+		NonMovable() = default;
+		NonMovable(NonMovable const&) = delete;
+		NonMovable& operator=(NonMovable const&) = delete;
+	};
 
-#define DEF_MOVE(c) \
-	constexpr c(c&&) = default; \
-	constexpr c& operator=(c&&) = default;
-
-#define DEF_COPY_MOVE(c) \
-	DEF_COPY(c); \
-	DEF_MOVE(c);
-
-#define DEL_COPY(c) \
-	c(const c&) = delete; \
-	c& operator=(const c&) = delete;
-
-#define DEL_MOVE(c) \
-	c(c&&) = delete; \
-	c& operator=(c&&) = delete;
-
-#define DEL_COPY_MOVE(c) \
-	DEL_COPY(c); \
-	DEL_MOVE(c);
+}

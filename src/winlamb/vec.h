@@ -5,10 +5,17 @@
 #include <span>
 #include <vector>
 
-// Vector, span and array utilities.
+/** @brief Vector, span and array utilities. */
 namespace wl::vec {
 
-	// Returns true if all elements are equal to the given one.
+	/// Returns true if all elements are equal to the given one.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{2, 2, 2, 2};
+	/// bool allTwo = wl::vec::all(nums, 2);
+	/// ```
 	template<
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>> // https://stackoverflow.com/q/78827063
@@ -19,9 +26,17 @@ namespace wl::vec {
 		}
 		return true;
 	}
-	// Returns true if the predicate returns true for all of the elements.
-	// Example:
-	// all_if(entries, [](const Entry&) -> bool { return true; });
+
+	/// Returns true if `pred` returns true for all of the elements.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{2, 2, 2, 2};
+	/// bool allTwo = wl::vec::all_if(nums, [](const int &n) {
+	///     return n == 2;
+	/// });
+	/// ```
 	template<
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
@@ -33,7 +48,14 @@ namespace wl::vec {
 		return true;
 	}
 
-	// Returns true if one of the elements is equal to the given one.
+	/// Returns true if one of the elements is equal to the given one.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 3, 4};
+	/// bool anyTwo = wl::vec::any(nums, 2);
+	/// ```
 	template<
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
@@ -41,9 +63,17 @@ namespace wl::vec {
 	[[nodiscard]] constexpr bool any(R &&v, const std::type_identity_t<T> &elem) {
 		return std::find(v.begin(), v.end(), elem) != v.end();
 	}
-	// Returns true if the predicate returns true for any of the elements.
-	// Example:
-	// any_if(entries, [](const Entry&) -> bool { return true; });
+
+	/// Returns true if `pred` returns true for any of the elements.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 3, 4};
+	/// bool anyTwo = wl::vec::any_if(nums, [](const int &n) {
+	///     return n == 2;
+	/// });
+	/// ```
 	template<
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
@@ -52,19 +82,15 @@ namespace wl::vec {
 		return std::find_if(v.begin(), v.end(), pred) != v.end();
 	}
 
-	// Appends multiple elements to the vector with push_back().
-	template<typename T>
-	void append(std::vector<T> &dest, const std::type_identity_t<T> &elem) {
-		dest.push_back(elem);
-	}
-	// Appends multiple elements to the vector with push_back().
-	template<typename T, typename... U>
-	void append(std::vector<T> &dest, const std::type_identity_t<T> &elem, U... rest) {
-		append(dest, elem);
-		append(dest, rest...);
-	}
-
-	// Appends all elements of vectors to the vector with insert().
+	/// Appends all elements of `other` into `dest`.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 3, 4};
+	/// std::vector<int> more{5, 6, 7};
+	/// wl::vec::append(nums, more);
+	/// ```
 	template<
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
@@ -72,18 +98,71 @@ namespace wl::vec {
 	void append(std::vector<T> &dest, R &&other) {
 		dest.insert(dest.end(), other.begin(), other.end());
 	}
-	// Appends all elements of vectors to the vector with insert().
-	template<
-		std::ranges::contiguous_range R,
-		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>,
-		typename... U
-	> requires std::ranges::sized_range<R>
-	void append(std::vector<T> &dest, R &&other, U... rest) {
-		append(dest, std::forward<R>(other));
-		append(dest, rest...);
+
+	/// Appends multiple elements to `dest`.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 3, 4};
+	/// wl::vec::append(nums, {5, 6, 7});
+	/// ```
+	template<typename T>
+	void append(std::vector<T> &dest, std::initializer_list<const std::type_identity_t<T>> elems) {
+		dest.insert(dest.end(), elems.begin(), elems.end());
 	}
 
-	// Returns a pointer to the first found element, or nullptr.
+	/// Returns true if `v` and `q` have the same length, and all elements are equal.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 3, 4};
+	/// std::vector<int> other{1, 2, 3, 4};
+	/// bool theSame = wl::vec::eq(nums, other);
+	/// ```
+	template<
+		std::ranges::contiguous_range R,
+		std::ranges::contiguous_range Q
+	> requires std::ranges::sized_range<R>
+		&& std::ranges::contiguous_range<Q>
+		&& std::same_as<std::ranges::range_value_t<R>, std::ranges::range_value_t<Q>>
+	[[nodiscard]] constexpr bool eq(R &&v, Q &&q) {
+		if (std::ranges::size(v) != std::ranges::size(q))
+			return false;
+		for (size_t i = 0; i < std::ranges::size(v); ++i) {
+			if (v[i] != q[i]) return false;
+		}
+		return true;
+	}
+
+	/// Returns true if `v` and `sequence` have the same length, and all elements are equal.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 3, 4};
+	/// bool theSame = wl::vec::eq(nums, {1, 2, 3, 4});
+	/// ```
+	template<
+		std::ranges::contiguous_range R,
+		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
+	> requires std::ranges::sized_range<R>
+	[[nodiscard]] constexpr bool eq(
+			R &&v, std::initializer_list<const std::type_identity_t<T>> sequence) { // initializer_list overload
+		return eq(std::forward<R>(v), std::span(sequence));
+	}
+
+	/// Returns a pointer to the first found element, or `nullptr`.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 3, 4};
+	/// if (int *pFound = wl::vec::find(nums, 2); pFound) {
+	///     // ...
+	/// }
+	/// ```
 	template<
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
@@ -92,9 +171,20 @@ namespace wl::vec {
 		auto foundIt = std::find(v.begin(), v.end(), elem);
 		return (foundIt == v.end()) ? nullptr : &(*foundIt);
 	}
-	// Returns a pointer to the first element according to the predicate, or nullptr.
-	// Example:
-	// find_if(entries, [](const Entry&) -> bool { return true; });
+
+	/// Returns a pointer to the first element according to `pred`, or nullptr.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 3, 4};
+	/// int *pFound = wl::vec::find_if(nums, [](const int &n) {
+	///     return n == 2;
+	/// });
+	/// if (pFound) {
+	///     // ...
+	/// }
+	/// ```
 	template<
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
@@ -103,7 +193,18 @@ namespace wl::vec {
 		auto foundIt = std::find_if(v.begin(), v.end(), pred);
 		return (foundIt == v.end()) ? nullptr : &(*foundIt);
 	}
-	// Returns a pointer to the last found element, or nullptr.
+
+	/// Returns a pointer to the last found element, or `nullptr`.
+	///
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 3, 4};
+	/// if (int *pFound = wl::vec::find_rev(nums, 2); pFound) {
+	///     // ...
+	/// }
+	/// ```
 	template<
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
@@ -112,9 +213,20 @@ namespace wl::vec {
 		auto foundIt = std::find(v.rbegin(), v.rend(), elem);
 		return (foundIt == v.rend()) ? nullptr : &(*foundIt);
 	}
-	// Returns a pointer to the last element according to the predicate, or nullptr.
-	// Example:
-	// find_ref_if(entries, [](const Entry&) -> bool { return true; });
+
+	/// Returns a pointer to the last element according to `pred`, or `nullptr`.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 3, 4};
+	/// int *pFound = wl::vec::find_rev_if(nums, [](const int &n) {
+	///     return n == 2;
+	/// });
+	/// if (pFound) {
+	///     // ...
+	/// }
+	/// ```
 	template<
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
@@ -124,7 +236,14 @@ namespace wl::vec {
 		return (foundIt == v.rend()) ? nullptr : &(*foundIt);
 	}
 
-	// Returns the index of the first found element.
+	/// Returns the index of the first found element.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 3, 4};
+	/// std::optional<size_t> idx2 = wl::vec::index(nums, 2);
+	/// ```
 	template<
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
@@ -133,18 +252,17 @@ namespace wl::vec {
 		auto foundIt = std::find(v.begin(), v.end(), elem);
 		return (foundIt == v.end()) ? std::nullopt : std::make_optional(std::distance(v.begin(), foundIt));
 	}
-	// Returns the index of the last found element.
-	template<
-		std::ranges::contiguous_range R,
-		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
-	> requires std::ranges::sized_range<R>
-	[[nodiscard]] constexpr std::optional<size_t> index_rev(R &&v, const std::type_identity_t<T> &elem) {
-		auto foundIt = std::find(v.rbegin(), v.rend(), elem);
-		return (foundIt == v.rend()) ? std::nullopt : std::make_optional(std::distance(foundIt, std::prev(v.rend())));
-	}
-	// Returns the first index according to the predicate.
-	// Example:
-	// index_if(entries, [](const Entry&) -> bool { return true; });
+
+	/// Returns the first index according to `pred`.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 3, 4};
+	/// std::optional<size_t> idx2 = wl::vec::index_if(nums, [](const int &n) {
+	///     return n == 2;
+	/// });
+	/// ```
 	template<
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
@@ -153,9 +271,34 @@ namespace wl::vec {
 		auto foundIt = std::find_if(v.begin(), v.end(), pred);
 		return (foundIt == v.end()) ? std::nullopt : std::make_optional(std::distance(v.begin(), foundIt));
 	}
-	// Returns the last index according to the predicate.
-	// Example:
-	// index_rev_if(entries, [](const Entry&) -> bool { return true; });
+
+	/// Returns the index of the last found element.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 3, 4};
+	/// std::optional<size_t> idx2 = wl::vec::index_rev(nums, 2);
+	/// ```
+	template<
+		std::ranges::contiguous_range R,
+		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
+	> requires std::ranges::sized_range<R>
+	[[nodiscard]] constexpr std::optional<size_t> index_rev(R &&v, const std::type_identity_t<T> &elem) {
+		auto foundIt = std::find(v.rbegin(), v.rend(), elem);
+		return (foundIt == v.rend()) ? std::nullopt : std::make_optional(std::distance(foundIt, std::prev(v.rend())));
+	}
+
+	/// Returns the last index according to `pred`.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 3, 4};
+	/// std::optional<size_t> idx2 = wl::vec::index_rev_if(nums, [](const int &n) {
+	///     return n == 2;
+	/// });
+	/// ```
 	template<
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
@@ -165,11 +308,15 @@ namespace wl::vec {
 		return (foundIt == v.rend()) ? std::nullopt : std::make_optional(std::distance(foundIt, std::prev(v.rend())));
 	}
 
-	// Returns the index of the first element where the entire sequence matches the following elements.
-	// Example:
-	// vector<int> nums{0, 1, 2, 3, 4, 5};
-	// const int SEQ[] = {2, 3, 4};
-	// optional<size_t> index = index_seq(nums, SEQ);
+	/// Returns the index of the first element where the entire `sequence` starts, if any.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 3, 4};
+	/// const int SEQ[] = {2, 3};
+	/// std::optional<size_t> idx = wl::vec::index_seq(nums, SEQ);
+	/// ```
 	template<
 		std::ranges::contiguous_range R,
 		std::ranges::contiguous_range Q
@@ -191,10 +338,15 @@ namespace wl::vec {
 		}
 		return std::nullopt;
 	}
-	// Returns the index of the first element where the entire sequence matches the following elements.
-	// Example:
-	// vector<int> nums{0, 1, 2, 3, 4, 5};
-	// optional<size_t> index = index_seq(nums, {2, 3, 4});
+
+	/// Returns the index of the first element where the entire `sequence` starts, if any.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 3, 4};
+	/// std::optional<size_t> idx = wl::vec::index_seq(nums, {2, 3});
+	/// ```
 	template<
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
@@ -204,44 +356,35 @@ namespace wl::vec {
 		return index_seq(std::forward<R>(v), std::span(sequence));
 	}
 
-	// Removes the element at the given index.
+	/** Removes the element at the given index. */
 	template<typename T>
 	void remove(std::vector<T> &v, size_t index) {
 		v.erase(v.begin() + index);
 	}
-	// Removes the elements to which the callback returns true.
-	// Example:
-	// remove_if(entries, [](const Entry&) -> bool { return true; });
+
+	/// Removes all the elements to which `pred` returns true.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 3, 4};
+	/// wl::vec::remove_if(nums, [](const int& n) {
+	///     return n < 2;
+	/// });
+	/// ```
 	template<typename T>
 	void remove_if(std::vector<T> &v, std::predicate<T> auto pred) {
 		v.erase(std::remove_if(v.begin(), v.end(), pred), v.end());
 	}
 
-	// Returns true if all elements in v and q are equal.
-	template<
-		std::ranges::contiguous_range R,
-		std::ranges::contiguous_range Q
-	> requires std::ranges::sized_range<R>
-		&& std::ranges::contiguous_range<Q>
-		&& std::same_as<std::ranges::range_value_t<R>, std::ranges::range_value_t<Q>>
-	[[nodiscard]] constexpr bool same(R &&v, Q &&q) {
-		size_t len = std::min(std::ranges::size(v), std::ranges::size(q));
-		for (size_t i = 0; i < len; ++i) {
-			if (v[i] != q[i]) return false;
-		}
-		return true;
-	}
-	// Returns true if all elements in v and sequence are equal.
-	template<
-		std::ranges::contiguous_range R,
-		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
-	> requires std::ranges::sized_range<R>
-	[[nodiscard]] constexpr bool same(
-			R &&v, std::initializer_list<const std::type_identity_t<T>> sequence) { // initializer_list overload
-		return same(std::forward<R>(v), std::span(sequence));
-	}
-
-	// Returns spans over the source vector, splitted by the delimiter, including empty spans.
+	/// Returns spans over the `v`, splitted by `delimiter`, including empty spans.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 99, 3, 4, 99, 5};
+	/// std::vector<std::span<int>> parts = wl::vec::split(nums, 99);
+	/// ```
 	template<
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
@@ -292,20 +435,27 @@ namespace wl::vec {
 		return ret;
 	}
 
-	// Returns a new vector by applying the callback to each element.
-	// Example:
-	// vector<int> v = transform(entries, [](const Entry&) -> int { return 9; });
+	/// Returns a new vector populated with the results of calling `cb` on each element of `v`.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<int> nums{1, 2, 3, 4};
+	/// std::vector<std::wstring> strs = wl::vec::transform(nums, [](const int& n) {
+	///     return L"num " + std::to_wstring(n);
+	/// });
+	/// ```
 	template<
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>,
 		typename F = std::is_invocable<const std::type_identity_t<T>&>,
 		typename U = std::invoke_result_t<F, const std::type_identity_t<T>&>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] std::vector<U> transform(R &&v, F callback) {
+	[[nodiscard]] std::vector<U> transform(R &&v, F cb) {
 		std::vector<U> ret;
 		ret.reserve(v.size());
 		for (auto &&elem : v)
-			ret.emplace_back(callback(elem));
+			ret.emplace_back(cb(elem));
 		return ret;
 	}
 

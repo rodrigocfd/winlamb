@@ -1,9 +1,8 @@
-/**
- * WinLamb v2 master include file.
- */
-
-// WinLamb library namespace.
+/** @brief WinLamb library namespace. */
 namespace wl { }
+
+/** @brief Native window and control events. */
+namespace wl::events { }
 
 #include "com-ptr.h"
 #include "ctl-list-view.h"

@@ -20,20 +20,20 @@ File& File::open(WStrPtr path, Access access) {
 	DWORD acc = 0, share = 0, disp = 0;
 
 	switch (access) {
-	case Access::ExistingReadOnly:
+	case Access::existing_read_only:
 		acc = GENERIC_READ;
 		share = FILE_SHARE_READ;
 		disp = OPEN_EXISTING;
 		break;
-	case Access::ExistingRW:
+	case Access::existing_rw:
 		acc = GENERIC_READ | GENERIC_WRITE;
 		disp = OPEN_EXISTING;
 		break;
-	case Access::OpenOrCreateRW:
+	case Access::open_or_create_rw:
 		acc = GENERIC_READ | GENERIC_WRITE;
 		disp = OPEN_ALWAYS;
 		break;
-	case Access::CreateRW:
+	case Access::create_rw:
 		acc = GENERIC_READ | GENERIC_WRITE;
 		disp = CREATE_NEW;
 	}
@@ -45,12 +45,28 @@ File& File::open(WStrPtr path, Access access) {
 	return *this;
 }
 
+size_t File::size() const {
+	LARGE_INTEGER sz{};
+	if (!GetFileSizeEx(_hFile, &sz)) [[unlikely]] {
+		throw std::system_error(GetLastError(), std::system_category(), "GetFileSizeEx failed");
+	}
+	return static_cast<size_t>(sz.QuadPart);
+}
+
 size_t File::ptr_offset() const {
 	LARGE_INTEGER zeroOffset{}, curOffset{};
 	if (!SetFilePointerEx(_hFile, zeroOffset, &curOffset, FILE_CURRENT)) [[unlikely]] {
 		throw std::system_error(GetLastError(), std::system_category(), "SetFilePointerEx failed");
 	}
 	return static_cast<size_t>(curOffset.QuadPart);
+}
+
+const File& File::set_ptr_offset(size_t offset) const {
+	LARGE_INTEGER off{.QuadPart = static_cast<LONGLONG>(offset)};
+	if (!SetFilePointerEx(_hFile, off, nullptr, FILE_BEGIN)) [[unlikely]] {
+		throw std::system_error(GetLastError(), std::system_category(), "SetFilePointerEx failed");
+	}
+	return *this;
 }
 
 std::vector<BYTE> File::read(size_t numBytes) const {
@@ -65,22 +81,6 @@ const File& File::read_buf(std::vector<BYTE> &buf) const {
 		throw std::system_error(GetLastError(), std::system_category(), "ReadFile failed");
 	}
 	return *this;
-}
-
-const File& File::set_ptr_offset(size_t offset) const {
-	LARGE_INTEGER off{.QuadPart = static_cast<LONGLONG>(offset)};
-	if (!SetFilePointerEx(_hFile, off, nullptr, FILE_BEGIN)) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "SetFilePointerEx failed");
-	}
-	return *this;
-}
-
-size_t File::size() const {
-	LARGE_INTEGER sz{};
-	if (!GetFileSizeEx(_hFile, &sz)) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "GetFileSizeEx failed");
-	}
-	return static_cast<size_t>(sz.QuadPart);
 }
 
 File::Times File::times() const {
@@ -110,18 +110,12 @@ const File& File::truncate() const {
 	return *this;
 }
 
-const File& File::write(std::span<BYTE> data) const {
+const File& File::write_ptr(const BYTE *p, size_t n) const {
 	DWORD written = 0;
-	if (!WriteFile(_hFile, data.data(), static_cast<DWORD>(data.size_bytes()), &written, nullptr)) [[unlikely]] {
+	if (!WriteFile(_hFile, p, static_cast<DWORD>(n), &written, nullptr)) [[unlikely]] {
 		throw std::system_error(GetLastError(), std::system_category(), "WriteFile failed");
 	}
 	return *this;
-}
-
-void File::erase_and_write(WStrPtr path, std::span<BYTE> data) {
-	File f{path, Access::OpenOrCreateRW};
-	f.truncate();
-	f.write(data);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -150,18 +144,18 @@ void FileMapped::close() noexcept {
 
 FileMapped& FileMapped::open(WStrPtr path, Access access) {
 	close();
-	File::Access facc = (access == Access::ExistingReadOnly) ? // translate FileMap to File access
-		File::Access::ExistingReadOnly : File::Access::ExistingRW;
-	DWORD page = (access == Access::ExistingReadOnly) ? PAGE_READONLY : PAGE_READWRITE;
+	File::Access facc = (access == Access::existing_read_only) ? // translate FileMap to File access
+		File::Access::existing_read_only : File::Access::existing_rw;
+	DWORD page = (access == Access::existing_read_only) ? PAGE_READONLY : PAGE_READWRITE;
 
 	_file.open(path, facc);
 
-	_hMap = CreateFileMappingW(_file.hFile(), nullptr, page, 0, 0, nullptr);
+	_hMap = CreateFileMappingW(_file.hfile(), nullptr, page, 0, 0, nullptr);
 	if (!_hMap) [[unlikely]] {
 		throw std::system_error(GetLastError(), std::system_category(), "CreateFileMapping failed");
 	}
 
-	_pMem = MapViewOfFile(_hMap, FILE_MAP_READ | (access == Access::ExistingRW ? FILE_MAP_WRITE : 0), 0, 0, 0);
+	_pMem = MapViewOfFile(_hMap, FILE_MAP_READ | (access == Access::existing_rw ? FILE_MAP_WRITE : 0), 0, 0, 0);
 	if (!_pMem) [[unlikely]] {
 		throw std::system_error(GetLastError(), std::system_category(), "MapViewOfFile failed");
 	}
@@ -169,28 +163,4 @@ FileMapped& FileMapped::open(WStrPtr path, Access access) {
 	_sz = _file.size();
 	_access = access;
 	return *this;
-}
-
-std::span<BYTE> FileMapped::view() {
-	if (_access != Access::ExistingRW) [[unlikely]] {
-		throw std::logic_error("Cannot write to read-only mapped file.");
-	}
-	return {reinterpret_cast<BYTE*>(_pMem), size()};
-}
-
-const BYTE& FileMapped::operator[](size_t index) const {
-	return reinterpret_cast<BYTE*>(_pMem)[index];
-}
-
-BYTE& FileMapped::operator[](size_t index) {
-	if (_access != Access::ExistingRW) [[unlikely]] {
-		throw std::logic_error("Cannot write to read-only mapped file.");
-	}
-	return reinterpret_cast<BYTE*>(_pMem)[index];
-}
-
-std::vector<BYTE> FileMapped::read_all(WStrPtr path) {
-	const FileMapped f{path, Access::ExistingReadOnly};
-	const std::span<BYTE> raw = f.view();
-	return {raw.begin(), raw.end()}; // copy all bytes
 }

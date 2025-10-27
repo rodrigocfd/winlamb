@@ -1,4 +1,5 @@
 #pragma once
+#include <functional>
 #include <memory>
 #include <string>
 #include <vector>
@@ -8,12 +9,8 @@
 namespace id3v2 {
 
 	// Each MP3 file has one tag.
-	class Tag final {
+	class Tag final : wl::NonCopyable {
 	public:
-		Tag() = delete;
-		DEL_COPY(Tag);
-		DEF_MOVE(Tag);
-
 		explicit Tag(wl::WStrPtr mp3File);
 		explicit Tag(std::span<BYTE> src) { parse(src); }
 
@@ -21,7 +18,12 @@ namespace id3v2 {
 		[[nodiscard]] constexpr size_t padding() const    { return _padding; }
 
 		void add_frame_with_text(wl::WStrPtr name4, wl::WStrPtr text);
+		[[nodiscard]] const Frame* frame_by_name4(wl::WStrPtr name4) const;
 		[[nodiscard]] Frame* frame_by_name4(wl::WStrPtr name4);
+		void remove_frame_if(std::function<bool(const Frame&)> cb);
+		[[nodiscard]] LPCWSTR replay_gain_status() const;
+		[[nodiscard]] std::vector<BYTE> serialize() const;
+		void save_to_file(wl::WStrPtr mp3File);
 
 	private:
 		void parse(std::span<BYTE>);

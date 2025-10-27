@@ -107,7 +107,7 @@ std::wstring wl::str::join(std::span<std::wstring> all, WStrPtr separator) {
 	size_t lenSep = separator.length();
 	bool first = true;
 
-	for (auto &s : all) {
+	for (auto &&s : all) {
 		if (first) {
 			first = false;
 		} else {
@@ -120,7 +120,7 @@ std::wstring wl::str::join(std::span<std::wstring> all, WStrPtr separator) {
 	buf.reserve(count);
 	first = true;
 
-	for (auto &s : all) {
+	for (auto &&s : all) {
 		if (first) {
 			first = false;
 		} else {
@@ -129,18 +129,6 @@ std::wstring wl::str::join(std::span<std::wstring> all, WStrPtr separator) {
 		buf.append(s);
 	}
 	return buf;
-}
-
-std::wstring wl::str::new_reserved(size_t numReserve) {
-	std::wstring s;
-	s.reserve(numReserve);
-	return s;
-}
-
-std::wstring wl::str::new_resized(size_t numResize, WCHAR ch) {
-	std::wstring s;
-	s.resize(numResize, ch);
-	return s;
 }
 
 static std::wstring parse_ansi(std::span<BYTE> src) {
@@ -174,22 +162,22 @@ static std::wstring parse_encoded(std::span<BYTE> src, UINT codePage) {
 std::wstring wl::str::parse(std::span<BYTE> src) {
 	if (src.empty()) return {};
 
-	enc::Info encInfo = enc::guess(src);
+	EncodingInfo encInfo = EncodingInfo::guess(src);
 	src = src.subspan(encInfo.bomSize); // skip BOM, if any
 
 	switch (encInfo.encType) {
-	using enum enc::Type;
-		case Unknown:
-		case Ansi:    return parse_ansi(src);
-		case Win1252: return parse_encoded(src, 1252);
-		case Utf8:    return parse_encoded(src, CP_UTF8);
-		case Utf16be: throw std::invalid_argument("UTF-16 big endian: encoding not implemented.");
-		case Utf16le: throw std::invalid_argument("UTF-16 little endian: encoding not implemented.");
-		case Utf32be: throw std::invalid_argument("UTF-32 big endian: encoding not implemented.");
-		case Utf32le: throw std::invalid_argument("UTF-32 little endian: encoding not implemented.");
-		case Scsu:    throw std::invalid_argument("Standard compression scheme for Unicode: encoding not implemented.");
-		case Bocu1:   throw std::invalid_argument("Binary ordered compression for Unicode: encoding not implemented.");
-		default:      throw std::invalid_argument("Unknown encoding.");
+	using enum Encoding;
+		case unknown:
+		case ansi:     return parse_ansi(src);
+		case win_1252: return parse_encoded(src, 1252);
+		case utf8:     return parse_encoded(src, CP_UTF8);
+		case utf16_be: throw std::invalid_argument("UTF-16 big endian: encoding not implemented.");
+		case utf16_le: throw std::invalid_argument("UTF-16 little endian: encoding not implemented.");
+		case utf32_be: throw std::invalid_argument("UTF-32 big endian: encoding not implemented.");
+		case utf32_le: throw std::invalid_argument("UTF-32 little endian: encoding not implemented.");
+		case scsu:     throw std::invalid_argument("Standard compression scheme for Unicode: encoding not implemented.");
+		case bocu1:    throw std::invalid_argument("Binary ordered compression for Unicode: encoding not implemented.");
+		default:       throw std::invalid_argument("Unknown encoding.");
 	}
 }
 
@@ -197,7 +185,7 @@ void wl::str::remove_diacritics(std::wstring &s) {
 	LPCWSTR diacritics   = L"ÁáÀàÃãÂâÄäÉéÈèÊêËëÍíÌìÎîÏïÓóÒòÕõÔôÖöÚúÙùÛûÜüÇçÅåÐðÑñØøÝýÿ";
 	LPCWSTR replacements = L"AaAaAaAaAaEeEeEeEeIiIiIiIiOoOoOoOoOoUuUuUuUuCcAaDdNnOoYyy";
 
-	for (WCHAR &ch : s) {
+	for (wchar_t &ch : s) {
 		LPCWSTR pDiac = diacritics;
 		LPCWSTR pRepl = replacements;
 		while (*pDiac) {
@@ -353,6 +341,8 @@ void wl::str::trim(std::wstring &s) {
 	s.resize(iLast - iFirst + 1); // trim container size
 }
 
+////////////////////////////////////////////////////////////////////////////////
+
 static constexpr bool guess_utf8(std::span<BYTE> src) {
 	std::span<BYTE>::iterator p = src.begin(); // https://stackoverflow.com/a/1031773/6923555
 	while (p != src.end() && *p) {
@@ -419,37 +409,37 @@ static constexpr bool guess_utf8(std::span<BYTE> src) {
 	return true; // all the conditions accepted through the whole byte source
 }
 
-wl::str::enc::Info wl::str::enc::guess(std::span<BYTE> src) {
+EncodingInfo EncodingInfo::guess(std::span<BYTE> src) {
 	auto match = [&](std::span<BYTE> bom) constexpr -> bool {
 		return (src.size() >= bom.size())
 			&& std::equal(src.begin(), src.begin() + bom.size(), bom.begin(), bom.end());
 	};
 
 	BYTE utf8[] = {0xef, 0xbb, 0xbf}; // UTF-8 BOM
-	if (match(utf8)) return {Type::Utf8, ARRAYSIZE(utf8)}; // BOM size in bytes
+	if (match(utf8)) return {Encoding::utf8, ARRAYSIZE(utf8)}; // BOM size in bytes
 
 	BYTE utf16be[] = {0xfe, 0xff};
-	if (match(utf16be)) return {Type::Utf16be, ARRAYSIZE(utf16be)};
+	if (match(utf16be)) return {Encoding::utf16_be, ARRAYSIZE(utf16be)};
 
 	BYTE utf16le[] = {0xff, 0xfe};
-	if (match(utf16le)) return {Type::Utf16le, ARRAYSIZE(utf16le)};
+	if (match(utf16le)) return {Encoding::utf16_le, ARRAYSIZE(utf16le)};
 
 	BYTE utf32be[] = {0x00, 0x00, 0xfe, 0xff};
-	if (match(utf32be)) return {Type::Utf32be, ARRAYSIZE(utf32be)};
+	if (match(utf32be)) return {Encoding::utf32_be, ARRAYSIZE(utf32be)};
 
 	BYTE utf32le[] = {0xff, 0xfe, 0x00, 0x00};
-	if (match(utf32le)) return {Type::Utf32le, ARRAYSIZE(utf32le)};
+	if (match(utf32le)) return {Encoding::utf32_le, ARRAYSIZE(utf32le)};
 
 	BYTE scsu[] = {0x0e, 0xfe, 0xff};
-	if (match(scsu)) return {Type::Scsu, ARRAYSIZE(scsu)};
+	if (match(scsu)) return {Encoding::scsu, ARRAYSIZE(scsu)};
 
 	BYTE bocu1[] = {0xfb, 0xee, 0x28};
-	if (match(bocu1)) return {Type::Bocu1, ARRAYSIZE(bocu1)};
+	if (match(bocu1)) return {Encoding::bocu1, ARRAYSIZE(bocu1)};
 
-	if (guess_utf8(src)) return {Type::Utf8, 0}; // UTF-8 without BOM
+	if (guess_utf8(src)) return {Encoding::utf8, 0}; // UTF-8 without BOM
 
 	bool hasNonAnsiChar = std::any_of(src.begin(), src.end(), [](BYTE ch) { return ch > 0x7f; });
 	return hasNonAnsiChar
-		? Info{Type::Win1252, 0} // by exclusion, not assertive
-		: Info{Type::Ansi, 0};
+		? EncodingInfo{Encoding::win_1252, 0} // by exclusion, not assertive
+		: EncodingInfo{Encoding::ansi, 0};
 }

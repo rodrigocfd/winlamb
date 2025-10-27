@@ -10,10 +10,8 @@
 namespace wl {
 
 	// Implements IDropFiles COM interface, allowing file drag & drop on the window.
-	class DropFiles final : public IDropTarget {
+	class DropFiles final : public IDropTarget, NonMovable {
 	public:
-		DEL_COPY_MOVE(DropFiles);
-		DropFiles() = delete;
 		explicit DropFiles(WindowParent &owner);
 
 		HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) override;

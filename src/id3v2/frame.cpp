@@ -73,6 +73,15 @@ unique_ptr<Frame> Frame::new_simple_text(wl::WStrPtr name4, wl::WStrPtr text) {
 	}
 }
 
+void Frame::serialize_header(vector<BYTE> &dest) const {
+	str_engine::serialize_str_ascii(dest, _name4);
+
+	size_t szBody = serializable_size(); // don't count 10-byte header
+	conv::serialize_be(dest, static_cast<DWORD>(szBody));
+
+	wl::vec::append(dest, _flags);
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 FrameText::FrameText(wstring &&name4, UINT declaredSize, array<BYTE, 2> flags, span<BYTE> src)
@@ -89,6 +98,7 @@ size_t FrameText::serializable_size() const {
 }
 
 void FrameText::serialize(vector<BYTE> &dest) const {
+	serialize_header(dest);
 	Enc encByte = str_engine::serializable_enc({_text});
 	str_engine::serialize_enc(dest, encByte);
 	str_engine::serialize_str(encByte, dest, _text);
@@ -121,6 +131,7 @@ size_t FrameUserText::serializable_size() const {
 }
 
 void FrameUserText::serialize(vector<BYTE> &dest) const {
+	serialize_header(dest);
 	Enc encByte = str_engine::serializable_enc({_descr, _text});
 	str_engine::serialize_enc(dest, encByte);
 	str_engine::serialize_str(encByte, dest, _descr);
@@ -145,6 +156,7 @@ void FrameBinary::force_simple_text(wl::WStrPtr text) {
 }
 
 void FrameBinary::serialize(vector<BYTE> &dest) const {
+	serialize_header(dest);
 	wl::vec::append(dest, _bin);
 }
 
@@ -180,6 +192,7 @@ size_t FrameComment::serializable_size() const {
 }
 
 void FrameComment::serialize(vector<BYTE> &dest) const {
+	serialize_header(dest);
 	Enc encByte = str_engine::serializable_enc({_descr, _text});
 	str_engine::serialize_enc(dest, encByte);
 	str_engine::serialize_str_ascii(dest, _lang3);
@@ -219,6 +232,7 @@ size_t FramePicture::serializable_size() const {
 }
 
 void FramePicture::serialize(vector<BYTE> &dest) const {
+	serialize_header(dest);
 	Enc encByte = str_engine::serializable_enc({_descr});
 	str_engine::serialize_enc(dest, encByte);
 	str_engine::serialize_str(Enc::iso88591, dest, _mime);
@@ -257,6 +271,7 @@ size_t FrameGeob::serializable_size() const {
 }
 
 void FrameGeob::serialize(vector<BYTE> &dest) const {
+	serialize_header(dest);
 	Enc encByte = str_engine::serializable_enc({_fileName, _descr});
 	str_engine::serialize_enc(dest, encByte);
 	str_engine::serialize_str(Enc::iso88591, dest, _mime);

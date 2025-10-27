@@ -4,10 +4,8 @@
 namespace _wl_internal {
 
 	// Base to all dialog container windows.
-	class DialogBase final {
+	class DialogBase final : wl::NonMovable {
 	public:
-		DEL_COPY_MOVE(DialogBase);
-		DialogBase() = delete;
 		constexpr DialogBase(WORD dlgId) : _wndMsg{true}, _dlgId{dlgId} { }
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _wndMsg.hwnd(); }
@@ -27,10 +25,8 @@ namespace _wl_internal {
 namespace _wl_internal {
 
 	// Main dialog window.
-	class DialogMain final {
+	class DialogMain final : wl::NonMovable {
 	public:
-		DEL_COPY_MOVE(DialogMain);
-		DialogMain() = delete;
 		DialogMain(WORD dlgId, WORD iconId, WORD accelTblId);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _dlgBase.hwnd(); }
@@ -47,10 +43,8 @@ namespace wl { class WindowParent; }
 namespace _wl_internal {
 
 	// Modal dialog window.
-	class DialogModal final {
+	class DialogModal final : wl::NonMovable {
 	public:
-		DEL_COPY_MOVE(DialogModal);
-		DialogModal() = delete;
 		DialogModal(const wl::WindowParent &parent, WORD dlgId);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _dlgBase.hwnd(); }

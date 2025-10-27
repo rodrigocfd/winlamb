@@ -2,16 +2,17 @@
 #include "ctl-list-view.h"
 using namespace _wl_internal;
 using namespace wl;
+using namespace wl::events;
 
 #define EVENT_ARGS(name, lvn, argty) \
-	void EventsListView::name(std::function<void(argty&)> cb) { \
+	void ListViewEvents::name(std::function<void(argty&)> cb) { \
 		_events._owner._userEvents.wm_notify(_events._ctrlId, lvn, [this, cb = std::move(cb)](wm::Notify p) { \
 			cb(p.hdr<argty>()); \
 			return _events._owner._isDlg ? TRUE : 0; \
 		}); \
 	}
 #define EVENT_ARGS_RET_BOOL(name, lvn, argty) \
-	void EventsListView::name(std::function<bool(argty&)> cb) { \
+	void ListViewEvents::name(std::function<bool(argty&)> cb) { \
 		_events._owner._userEvents.wm_notify(_events._ctrlId, lvn, [cb = std::move(cb)](wm::Notify p) { \
 			return cb(p.hdr<argty>()); \
 		}); \
@@ -34,7 +35,7 @@ EVENT_ARGS(lvn_item_changed, LVN_ITEMCHANGED, NMLISTVIEW)
 EVENT_ARGS_RET_BOOL(lvn_item_changing, LVN_ITEMCHANGING, NMLISTVIEW)
 EVENT_ARGS(lvn_key_down, LVN_KEYDOWN, NMLVKEYDOWN)
 EVENT_ARGS(nm_click, NM_CLICK, NMITEMACTIVATE)
-void EventsListView::nm_custom_draw(std::function<DWORD(NMLVCUSTOMDRAW&)> cb) {
+void ListViewEvents::nm_custom_draw(std::function<DWORD(NMLVCUSTOMDRAW&)> cb) {
 	_events._owner._userEvents.wm_notify(_events._ctrlId, NM_CUSTOMDRAW, [cb = std::move(cb)](wm::Notify p) {
 		return cb(p.hdr<NMLVCUSTOMDRAW>());
 	});

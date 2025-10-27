@@ -12,7 +12,7 @@ void Layout::calc_origins(HWND hParent) {
 	#endif
 	_szOrig = {rcParent.right, rcParent.bottom}; // save original parent client area
 
-	for (auto& ctrl : _ctrls) { // save original client area of each control, relative to parent
+	for (auto &&ctrl : _ctrls) { // save original client area of each control, relative to parent
 		RECT rcCtrlOrig{};
 		BOOL ret = GetWindowRect(ctrl.hCtrl, &ctrl.rcOrig); // relative to screen
 		#ifdef _DEBUG
@@ -29,7 +29,7 @@ void Layout::rearrange(wm::Size p) {
 		return; // no need to resize if window is minimized
 
 	HDWP hdwp = BeginDeferWindowPos(static_cast<int>(_ctrls.size()));
-	for (auto& ctrl : _ctrls) {
+	for (auto &&ctrl : _ctrls) {
 		WORD flags = SWP_NOZORDER;
 		switch (ctrl.layout) {
 		case Lay::repos_repos: // repos both horz and vert

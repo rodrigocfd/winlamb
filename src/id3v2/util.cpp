@@ -107,7 +107,7 @@ size_t id3v2::str_engine::serializable_size(Enc encByte, wl::WStrPtr s) {
 
 void id3v2::str_engine::serialize_str(Enc encByte, vector<BYTE> &dest, wl::WStrPtr s) {
 	if (encByte == Enc::unicode)
-		wl::vec::append(dest, LOBYTE(BOM_LE), HIBYTE(BOM_LE)); // BOM bytes serialized as little-endian
+		wl::vec::append(dest, {LOBYTE(BOM_LE), HIBYTE(BOM_LE)}); // BOM bytes serialized as little-endian
 
 	for (auto ch : wstring_view{s}) {
 		switch (encByte) {
@@ -115,7 +115,7 @@ void id3v2::str_engine::serialize_str(Enc encByte, vector<BYTE> &dest, wl::WStrP
 			dest.emplace_back(static_cast<BYTE>(ch));
 			break;
 		case Enc::unicode:
-			wl::vec::append(dest, LOBYTE(ch), HIBYTE(ch)); // 2 bytes, little endian
+			wl::vec::append(dest, {LOBYTE(ch), HIBYTE(ch)}); // 2 bytes, little endian
 		}
 	}
 
@@ -124,7 +124,7 @@ void id3v2::str_engine::serialize_str(Enc encByte, vector<BYTE> &dest, wl::WStrP
 		dest.emplace_back(0x00);
 		break;
 	case Enc::unicode:
-		wl::vec::append(dest, 0x00, 0x00);
+		wl::vec::append(dest, {0x00, 0x00});
 	}
 }
 
@@ -155,4 +155,11 @@ UINT id3v2::conv::uint_from_be_bytes(span<BYTE> src) {
 		throw std::invalid_argument("UINT must be converted from at least 4 bytes.");
 	}
 	return MAKELONG(MAKEWORD(src[3], src[2]), MAKEWORD(src[1], src[0]));
+}
+
+void id3v2::conv::serialize_be(vector<BYTE> &dest, UINT n) {
+	wl::vec::append(dest, {
+		LOBYTE(LOWORD(n)), HIBYTE(LOWORD(n)),
+		LOBYTE(HIWORD(n)), HIBYTE(HIWORD(n)),
+	});
 }

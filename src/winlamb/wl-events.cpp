@@ -3,6 +3,7 @@
 #include "window-user.h"
 using namespace _wl_internal;
 using namespace wl;
+using namespace wl::events;
 
 void EventsInternal::wm_create_or_init_dialog(std::function<void()> cb) {
 	_inis.emplace_back(cb);
@@ -36,7 +37,7 @@ bool EventsInternal::process_all(wm::Msg procMsg) const {
 	switch (procMsg.wm) {
 		case WM_CREATE:
 		case WM_INITDIALOG:
-			for (auto &ini : _inis) {
+			for (auto &&ini : _inis) {
 				ini();
 				atLeastOne = true;
 			}
@@ -44,7 +45,7 @@ bool EventsInternal::process_all(wm::Msg procMsg) const {
 
 		case WM_NOTIFY: {
 			NMHDR *pHdr = reinterpret_cast<NMHDR*>(procMsg.lp);
-			for (auto &nfy : _nfys) {
+			for (auto &&nfy : _nfys) {
 				if (nfy.idFrom == pHdr->idFrom && nfy.code == pHdr->code) {
 					nfy.cb(wm::Notify{procMsg});
 					atLeastOne = true;
@@ -54,7 +55,7 @@ bool EventsInternal::process_all(wm::Msg procMsg) const {
 		}
 
 		default: { // finally, ordinary messages
-			for (auto &msg : _msgs) {
+			for (auto &&msg : _msgs) {
 				if (msg.wm == procMsg.wm) {
 					msg.cb(procMsg);
 					atLeastOne = true;
@@ -68,15 +69,15 @@ bool EventsInternal::process_all(wm::Msg procMsg) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void EventsUser::wm_create(std::function<int(wm::Create)> cb) {
+void WindowEvents::wm_create(std::function<int(wm::Create)> cb) {
 	_inis.emplace_back(WM_CREATE, cb);
 }
 
-void EventsUser::wm_init_dialog(std::function<bool(wm::InitDialog)> cb) {
+void WindowEvents::wm_init_dialog(std::function<bool(wm::InitDialog)> cb) {
 	_inis.emplace_back(WM_INITDIALOG, cb);
 }
 
-void EventsUser::wm(UINT msg, std::function<LRESULT(wm::Msg)> cb) {
+void WindowEvents::wm(UINT msg, std::function<LRESULT(wm::Msg)> cb) {
 	#ifdef _DEBUG
 	if (msg == WM_CREATE || msg == WM_INITDIALOG || msg == WM_COMMAND || msg == WM_NOTIFY)
 		throw std::logic_error("For WM_CREATE, WM_INITDIALOG, WM_COMMAND or WM_NOTIFY, use the specific event methods.");
@@ -84,29 +85,29 @@ void EventsUser::wm(UINT msg, std::function<LRESULT(wm::Msg)> cb) {
 	_msgs.emplace_back(msg, cb);
 }
 
-void EventsUser::wm_command(WORD cmdId, WORD notifCode, std::function<void()> cb) {
+void WindowEvents::wm_command(WORD cmdId, WORD notifCode, std::function<void()> cb) {
 	_cmds.emplace_back(cmdId, notifCode, cb);
 }
 
-void EventsUser::wm_command(WORD cmdId, std::function<void()> cb) {
+void WindowEvents::wm_command(WORD cmdId, std::function<void()> cb) {
 	_cmds.emplace_back(cmdId, 0, cb); // menu
 	_cmds.emplace_back(cmdId, 1, cb); // accelerator
 }
 
-void EventsUser::wm_notify(WORD idFrom, int code, std::function<LRESULT(wm::Notify)> cb) {
+void WindowEvents::wm_notify(WORD idFrom, int code, std::function<LRESULT(wm::Notify)> cb) {
 	_nfys.emplace_back(idFrom, code, cb);
 }
 
 #define EVENT_NO_ARGS(name, msg) \
-	void EventsUser::name(std::function<void()> cb) { \
+	void WindowEvents::name(std::function<void()> cb) { \
 		wm(msg, [cb = std::move(cb), isDlg = _isDlg](wm::Msg) { cb(); return isDlg ? TRUE : 0; }); \
 	}
 #define EVENT_ARGS(name, msg, ty) \
-	void EventsUser::name(std::function<void(ty)> cb) { \
+	void WindowEvents::name(std::function<void(ty)> cb) { \
 		wm(msg, [cb = std::move(cb), isDlg = _isDlg](wm::Msg p) { cb(p); return isDlg ? TRUE : 0; }); \
 	}
 #define EVENT_ARGS_RET(name, msg, ty, tyret) \
-	void EventsUser::name(std::function<tyret(ty)> cb) { \
+	void WindowEvents::name(std::function<tyret(ty)> cb) { \
 		wm(msg, [cb = std::move(cb)](wm::Msg p) { return cb(p); }); \
 	}
 
@@ -141,22 +142,22 @@ EVENT_ARGS(wm_size, WM_SIZE, wm::Size)
 EVENT_ARGS(wm_sizing, WM_SIZING, wm::Sizing)
 EVENT_ARGS(wm_v_scroll, WM_VSCROLL, wm::VScroll)
 
-bool EventsUser::has_message() const {
+bool WindowEvents::has_message() const {
 	return !_inis.empty() || !_msgs.empty() || !_cmds.empty() || !_nfys.empty();
 }
 
-void EventsUser::clear_inis() {
+void WindowEvents::clear_inis() {
 	std::vector<Msg>{}.swap(_inis); // https://stackoverflow.com/a/13944912/6923555
 }
 
-void EventsUser::clear() {
+void WindowEvents::clear() {
 	clear_inis();
 	std::vector<Msg>{}.swap(_msgs);
 	std::vector<Cmd>{}.swap(_cmds);
 	std::vector<Nfy>{}.swap(_nfys);
 }
 
-std::optional<LRESULT> EventsUser::process_last(wm::Msg procMsg) const {
+std::optional<LRESULT> WindowEvents::process_last(wm::Msg procMsg) const {
 	// We process the last added message because the library adds some events
 	// which can be overwritten by the user.
 

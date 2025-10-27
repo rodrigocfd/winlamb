@@ -7,9 +7,8 @@
 #define DLG_MAIN        1000
 #define LST_FILES       1001
 
-class DlgMain final {
+class DlgMain final : wl::NonMovable {
 public:
-	DEL_COPY_MOVE(DlgMain);
 	DlgMain();
 
 	wl::WindowMain wnd{DLG_MAIN, ICO_MAIN};
@@ -26,9 +25,8 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class RawMain final {
+class RawMain final : wl::NonMovable {
 public:
-	DEL_COPY_MOVE(RawMain);
 	RawMain();
 
 	wl::WindowMain wnd;
