@@ -1,8 +1,15 @@
 /** @brief WinLamb library namespace. */
 namespace wl { }
 
-/** @brief Native window and control events. */
+/// @brief Native window and control events.
+///
+/// You don't instantiate these classes manually, they are exposed by native windows and controls.
 namespace wl::events { }
+
+/// @brief Options to create windows and controls programmatically with [`CreateWindowEx`].
+///
+/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+namespace wl::opts { }
 
 #include "com-ptr.h"
 #include "ctl-list-view.h"

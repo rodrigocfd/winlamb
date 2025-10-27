@@ -421,7 +421,7 @@ void ListView::custom_events(WORD ctrlId) {
 			HWND hParent = GetAncestor(hwnd(), GA_PARENT);
 			SendMessageW(hParent, WM_NOTIFY, ctrlId, reinterpret_cast<LPARAM>(&nmlvkd)); // send Enter key to parent
 		}
-		return static_cast<WORD>(DefSubclassProc(hwnd(), WM_GETDLGCODE, p.wp, p.lp)); // let system define DLGC
+		return static_cast<WORD>(DefSubclassProc(hwnd(), WM_GETDLGCODE, p.wparam(), p.lparam())); // let system define DLGC
 	});
 
 	_ctrl._owner._preEvents.wm_notify(ctrlId, LVN_KEYDOWN, [this](wm::Notify p) {

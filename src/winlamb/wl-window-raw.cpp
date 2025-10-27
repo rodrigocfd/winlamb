@@ -124,8 +124,8 @@ LRESULT CALLBACK RawBase::raw_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RawMain::RawMain(opts::Main opts)
-	: _opts{opts}
+RawMain::RawMain(opts::Main options)
+	: _opts{options}
 {
 	_rawBase._wndMsg._preEvents.wm(WM_ACTIVATE, [this](wm::Activate p) {
 		if (!p.is_minimized()) { // https://devblogs.microsoft.com/oldnewthing/20140521-00/?p=943

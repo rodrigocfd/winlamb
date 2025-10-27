@@ -9,8 +9,10 @@ namespace wl {
 	///
 	/// Example:
 	///
-	///     wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::existing_read_only};
-	///     std::vector<BYTE> contents = myFile.read();
+	/// ```cpp
+	/// wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::existing_read_only};
+	/// std::vector<BYTE> contents = myFile.read();
+	/// ```
 	class File final : NonCopyable {
 	public:
 		/** @brief Requested access to open/create a file. */
@@ -47,7 +49,9 @@ namespace wl {
 		///
 		/// Example:
 		///
-		///     wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::existing_read_only};
+		/// ```cpp
+		/// wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::existing_read_only};
+		/// ```
 		///
 		/// [`CreateFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
 		File(WStrPtr path, Access access) { open(path, access); }
@@ -73,8 +77,10 @@ namespace wl {
 		///
 		/// Example:
 		///
-		///     wl::File myFile{};
-		///     myFile.open(L"C:\\Temp\\foo.txt", wl::File::Access::existing_read_only);
+		/// ```cpp
+		/// wl::File myFile{};
+		/// myFile.open(L"C:\\Temp\\foo.txt", wl::File::Access::existing_read_only);
+		/// ```
 		///
 		/// [`CreateFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
 		File& open(WStrPtr path, Access access);
@@ -98,8 +104,10 @@ namespace wl {
 		///
 		/// Example:
 		///
-		///     wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::existing_read_only};
-		///     std::vector<BYTE> contents = myFile.read();
+		/// ```cpp
+		/// wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::existing_read_only};
+		/// std::vector<BYTE> contents = myFile.read();
+		/// ```
 		///
 		/// [`ReadFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-readfile
 		[[nodiscard]] std::vector<BYTE> read(size_t numBytes = 0) const;
@@ -108,9 +116,11 @@ namespace wl {
 		///
 		/// Example:
 		///
-		///     wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::existing_read_only};
-		///     std::vector<BYTE> buf(100, 0x00);
-		///     myFile.read_buf(buf);
+		/// ```cpp
+		/// wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::existing_read_only};
+		/// std::vector<BYTE> buf(100, 0x00);
+		/// myFile.read_buf(buf);
+		/// ```
 		///
 		/// [`ReadFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-readfile
 		const File& read_buf(std::vector<BYTE> &buf) const;
@@ -119,12 +129,14 @@ namespace wl {
 		///
 		/// Example:
 		///
-		///     wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::open_or_create_rw};
-		///     myFile.truncate();
+		/// ```cpp
+		/// wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::open_or_create_rw};
+		/// myFile.truncate();
 		///
-		///     std::wstring text{L"content text"};
-		///     std::vector<BYTE> bytes = wl::str::to_utf8_blob(text);
-		///     myFile.write(bytes);
+		/// std::wstring text{L"content text"};
+		/// std::vector<BYTE> bytes = wl::str::to_utf8_blob(text);
+		/// myFile.write(bytes);
+		/// ```
 		///
 		/// [`WriteFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-writefile
 		template<std::ranges::contiguous_range R>
@@ -135,12 +147,14 @@ namespace wl {
 		///
 		/// Example:
 		///
-		///     wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::open_or_create_rw};
-		///     myFile.truncate();
+		/// ```cpp
+		/// wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::open_or_create_rw};
+		/// myFile.truncate();
 		///
-		///     std::wstring text{L"content text"};
-		///     std::vector<BYTE> bytes = wl::str::to_utf8_blob(text);
-		///     myFile.write(bytes.begin(), bytes.end());
+		/// std::wstring text{L"content text"};
+		/// std::vector<BYTE> bytes = wl::str::to_utf8_blob(text);
+		/// myFile.write(bytes.begin(), bytes.end());
+		/// ```
 		///
 		/// [`WriteFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-writefile
 		template<std::input_iterator It, std::sentinel_for<It> End>
@@ -155,8 +169,10 @@ namespace wl {
 		///
 		/// Example:
 		///
-		///     wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::open_or_create_rw};
-		///     myFile.truncate();
+		/// ```cpp
+		/// wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::open_or_create_rw};
+		/// myFile.truncate();
+		/// ```
 		///
 		/// [`SetEndOfFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-setendoffile
 		const File& truncate() const;
@@ -176,8 +192,10 @@ namespace wl {
 	///
 	/// Example:
 	///
-	///     wl::FileMapped myFile{L"C:\\Temp\\foo.txt", wl::FileMapped::Access::existing_read_only};
-	///     std::span<BYTE> view = myFile.view();
+	/// ```cpp
+	/// wl::FileMapped myFile{L"C:\\Temp\\foo.txt", wl::FileMapped::Access::existing_read_only};
+	/// std::span<BYTE> myView = myFile.view();
+	/// ```
 	class FileMapped final : NonCopyable {
 	public:
 		/** @brief Requested access to open a file. */
@@ -206,7 +224,9 @@ namespace wl {
 		///
 		/// Example:
 		///
-		///     wl::FileMapped myFile{L"C:\\Temp\\foo.txt", wl::FileMapped::Access::existing_read_only};
+		/// ```cpp
+		/// wl::FileMapped myFile{L"C:\\Temp\\foo.txt", wl::FileMapped::Access::existing_read_only};
+		/// ```
 		///
 		/// [`CreateFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
 		/// [`CreateFileMapping`]: https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-createfilemappingw
@@ -236,8 +256,10 @@ namespace wl {
 		///
 		/// Example:
 		///
-		///     wl::FileMapped myFile{};
-		///     myFile.open(L"C:\\Temp\\foo.txt", wl::FileMapped::Access::existing_read_only);
+		/// ```cpp
+		/// wl::FileMapped myFile{};
+		/// myFile.open(L"C:\\Temp\\foo.txt", wl::FileMapped::Access::existing_read_only);
+		/// ```
 		///
 		/// [`CreateFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
 		/// [`CreateFileMapping`]: https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-createfilemappingw
@@ -251,8 +273,10 @@ namespace wl {
 		///
 		/// Example:
 		///
-		///     wl::FileMapped myFile{L"C:\\Temp\\foo.txt", wl::FileMapped::Access::existing_read_only};
-		///     std::span<BYTE> view = myFile.view();
+		/// ```cpp
+		/// wl::FileMapped myFile{L"C:\\Temp\\foo.txt", wl::FileMapped::Access::existing_read_only};
+		/// std::span<BYTE> myView = myFile.view();
+		/// ```
 		[[nodiscard]] constexpr std::span<BYTE> view() const { return {reinterpret_cast<BYTE*>(_pMem), size()}; }
 
 		/** Returns the underlying `File` object. */

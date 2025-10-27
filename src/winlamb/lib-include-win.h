@@ -15,10 +15,12 @@ namespace wl {
 	///
 	/// Example:
 	///
-	///     class Foo final : wl::NonCopyable {
-	///     public:
-	///         std::wstring name{};
-	///     };
+	/// ```cpp
+	/// class Foo final : wl::NonCopyable {
+	/// public:
+	///     std::wstring name{};
+	/// };
+	/// ```
 	///
 	/// [P2895]: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2895r0.html
 	/// [C.35 core guideline]: https://www.sandordargo.com/blog/2024/11/27/non-movable-classes
@@ -37,10 +39,12 @@ namespace wl {
 	///
 	/// Example:
 	///
-	///     class Foo final : wl::NonMovable {
-	///     public:
-	///         std::wstring name{};
-	///     };
+	/// ```cpp
+	/// class Foo final : wl::NonMovable {
+	/// public:
+	///     std::wstring name{};
+	/// };
+	/// ```
 	///
 	/// [P2895]: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2895r0.html
 	/// [C.35 core guideline]: https://www.sandordargo.com/blog/2024/11/27/non-movable-classes

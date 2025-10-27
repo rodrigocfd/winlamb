@@ -4,31 +4,38 @@
 
 namespace _wl_internal {
 
-	// Initializes the GUI environment.
+	/** Initializes the GUI environment. */
 	struct Init {
 		~Init();
 		Init();
 	};
 
-	// Handles an uncaught exception.
+	/** Handles an uncaught exception. */
 	void uncaught_exception(const std::exception &e);
 
 }
 
-// Adjusts pixel values according to the current system DPI.
-// These functions should be used every time you position something on the screen.
+/// @brief Adjusts pixel values according to the current [system DPI].
+///
+/// These functions should be used every time you position something on the screen.
+///
+/// [system DPI]: https://learn.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
 namespace wl::dpi {
 
-	// Returns the value adjusted according to the current horizontal system DPI.
+	/** Returns the value adjusted according to the current horizontal system DPI. */
 	int x(int xVal);
 
-	// Returns the value adjusted according to the current vertical system DPI.
+	/** Returns the value adjusted according to the current vertical system DPI. */
 	int y(int yVal);
 
-	// Returns a POINT with values adjusted according to the current horizontal and vertical system DPI.
+	/// Returns a [`POINT`] with values adjusted according to the current horizontal and vertical system DPI.
+	///
+	/// [`POINT`]: https://learn.microsoft.com/en-us/windows/win32/api/windef/ns-windef-point
 	POINT pt(int xVal, int yVal);
 
-	// Returns a SIZE with values adjusted according to the current horizontal and vertical system DPI.
+	/// Returns a [`SIZE`] with values adjusted according to the current horizontal and vertical system DPI.
+	///
+	/// [`SIZE`]: https://learn.microsoft.com/en-us/windows/win32/api/windef/ns-windef-size
 	SIZE sz(int xVal, int yVal);
 
 }

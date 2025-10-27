@@ -2,15 +2,26 @@
 #include <system_error>
 #include <type_traits>
 #include "lib-include-win.h"
+#include <Unknwnbase.h>
 #include <WTypesbase.h>
 
 namespace wl {
 
 	/// @brief Templated COM smart pointer.
 	///
-	/// Wraps an [`IUnknown`]-derived pointer, properly managing it to avoid memory leaks.
+	/// Wraps an [`IUnknown`]-derived pointer. Calls [`IUnknown::AddRef`] and [`IUnknown::Release`] automatically to prevent resource leaks.
+	///
+	/// Example calling [`CoCreateInstance`] to create a COM object:
+	///
+	/// ```cpp
+	/// wl::ComPtr<IFileOpenDialog> openDlg{CLSID_FileOpenDialog};
+	/// openDlg->SetFileTypeIndex(1);
+	/// ```
 	///
 	/// [`IUnknown`]: https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nn-unknwn-iunknown
+	/// [`IUnknown::AddRef`]: https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-addref
+	/// [`IUnknown::Release`]: https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release
+	/// [`CoCreateInstance`]: https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cocreateinstance
 	template<typename T>
 		requires std::is_base_of_v<IUnknown, T>
 	class ComPtr final {
@@ -36,7 +47,7 @@ namespace wl {
 
 		/// Move-constructor.
 		///
-		/// Takes ownership of `other`, so no memory leaks happen.
+		/// Takes ownership of `other`, so no resource leaks happen.
 		ComPtr(ComPtr &&other) noexcept { operator=(std::forward<ComPtr<T>>(other)); }
 
 		/// Constructs `ComPtr` by wrapping `p`.
@@ -45,6 +56,12 @@ namespace wl {
 		constexpr explicit ComPtr(T *p) : _p{p} { }
 
 		/// Initializes the internal pointer by calling [`CoCreateInstance`] immediately.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// wl::ComPtr<IFileOpenDialog> openDlg{CLSID_FileOpenDialog};
+		/// ```
 		///
 		/// [`CoCreateInstance`]: https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cocreateinstance
 		explicit ComPtr(REFCLSID clsid, DWORD clsctx = CLSCTX_INPROC_SERVER) { co_create_instance(clsid, clsctx); }
@@ -65,7 +82,7 @@ namespace wl {
 
 		/// Move-assignment operator.
 		///
-		/// Calls [`IUnknown::Release`] on the current pointer and takes ownership of `other`, so no memory leaks happen.
+		/// Calls [`IUnknown::Release`] on the current pointer and takes ownership of `other`, so no resource leaks happen.
 		///
 		/// [`IUnknown::Release`]: https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release
 		ComPtr& operator=(ComPtr &&other) noexcept {
@@ -77,6 +94,8 @@ namespace wl {
 		/// Pointer-assignment operator.
 		///
 		/// Calls [`IUnknown::Release`] on the current pointer and wraps `p`.
+		///
+		/// Ideally, you should never need this.
 		///
 		/// [`IUnknown::Release`]: https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release
 		ComPtr& operator=(T *p) {
@@ -95,6 +114,13 @@ namespace wl {
 		[[nodiscard]] constexpr T** pptr() { return &_p; }
 
 		/// Calls [`IUnknown::Release`] on the current pointer, then calls [`CoCreateInstance`].
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// wl::ComPtr<IFileOpenDialog> openDlg{};
+		/// openDlg.co_create_instance(CLSID_FileOpenDialog);
+		/// ```
 		///
 		/// [`IUnknown::Release`]: https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release
 		/// [`CoCreateInstance`]: https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cocreateinstance

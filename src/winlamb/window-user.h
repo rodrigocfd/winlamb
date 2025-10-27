@@ -53,55 +53,73 @@ namespace wl {
 
 	/// @brief Main application window.
 	///
-	/// Example of creating a window programmatically:
+	/// Example of creating a window programmatically, .h and .cpp files:
 	///
-	///     // --- MyMain.h ---
+	/// ```cpp
+	/// class MyMain final : wl::NonMovable {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd;
+	/// };
+	/// ```
 	///
-	///     class MyMain final : wl::NonMovable {
-	///     public:
-	///         MyMain();
-	///         wl::WindowMain wnd;
-	///     };
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
 	///
-	///     // --- MyMain.cpp ---
+	/// wl::opts::Main wndOpts{
+	///     .title = L"My main window",
+	///     .size  = wl::dpi::sz(500, 300),
+	///     .style = wl::opts::Main{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
+	/// };
 	///
-	///     RUN_MAIN(MyMain, wnd)
+	/// MyMain::MyMain()
+	///     : wnd{wndOpts}
+	/// {
+	/// }
+	/// ```
 	///
-	///     wl::opts::Main wndOpts{
-	///         .title = L"My main window",
-	///         .style = wl::opts::Main{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
-	///     };
+	/// Example of creating a window from a dialog resource, .h and .cpp files:
 	///
-	///     MyMain::MyMain()
-	///         : wnd{wndOpts}
-	///     {
-	///     }
+	/// ```cpp
+	/// class MyMain final : wl::NonMovable {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{DLG_MAIN, ICO_MAIN};
+	/// };
+	/// ```
 	///
-	/// Example of creating a window from a dialog resource:
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
 	///
-	///     // --- MyMain.h ---
-	///
-	///     class MyMain final : wl::NonMovable {
-	///     public:
-	///         MyMain();
-	///         wl::WindowMain wnd{DLG_MAIN, ICO_MAIN};
-	///     };
-	///
-	///     // --- MyMain.cpp ---
-	///
-	///     RUN_MAIN(MyMain, wnd)
-	///
-	///     MyMain::MyMain() {
-	///     }
+	/// MyMain::MyMain() {
+	/// }
+	/// ```
 	class WindowMain final : public WindowParent {
 	public:
 		/// Constructs the main window programmatically with [`CreateWindowEx`].
 		///
+		/// Example:
+		///
+		/// ```cpp
+		/// wl::opts::Main wndOpts{
+		///     .title = L"My main window",
+		///     .size  = wl::dpi::sz(500, 300),
+		///     .style = wl::opts::Main{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
+		/// };
+		/// wl::WindowMain wnd{wndOpts};
+		/// ```
+		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		WindowMain(opts::Main opts)
-			: _rawMain{std::make_optional<_wl_internal::RawMain>(opts)} { }
+		WindowMain(opts::Main options)
+			: _rawMain{std::make_optional<_wl_internal::RawMain>(options)} { }
 
 		/// Constructs the main window from a dialog resource with [`CreateDialogParam`].
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// wl::WindowMain wnd{DLG_MAIN, ICO_MAIN, ACC_MAIN};
+		/// ```
 		///
 		/// [`CreateDialogParam`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createdialogparamw
 		WindowMain(WORD dlgId, WORD iconId = 0, WORD accelTblId = 0)
@@ -159,11 +177,33 @@ namespace wl {
 	public:
 		/// Constructs the modal window programmatically with [`CreateWindowEx`].
 		///
+		/// Example:
+		///
+		/// ```cpp
+		/// void show_my_modal(wl::WindowParent &wnd) {
+		///     wl::opts::Modal opts{
+		///         .title = L"My modal",
+		///         .size  = wl::dpi::sz(400, 200),
+		///     };
+		///     wl::WindowModal myModal{wnd, opts};
+		///     myModal.show();
+		/// }
+		/// ```
+		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		WindowModal(WindowParent &parent, opts::Modal opts)
 			: _rawModal{std::make_optional<_wl_internal::RawModal>(parent, opts)} { }
 
 		/// Constructs the modal window from a dialog resource with [`DialogBoxParam`].
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// void show_my_modal(wl::WindowParent &wnd) {
+		///     wl::WindowModal myModal{wnd, DLG_MAIN};
+		///     myModal.show();
+		/// }
+		/// ```
 		///
 		/// [`DialogBoxParam`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxparamw
 		WindowModal(const WindowParent &parent, WORD dlgId)

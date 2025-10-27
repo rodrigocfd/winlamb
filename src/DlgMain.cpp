@@ -1,7 +1,7 @@
 #include "DlgMain.h"
 
-RUN_MAIN(DlgMain, wnd)
-// RUN_MAIN(RawMain, wnd)
+// RUN_MAIN(DlgMain, wnd)
+RUN_MAIN(RawMain, wnd)
 
 DlgMain::DlgMain() {
 	wnd.on().wm_init_dialog(std::bind(&DlgMain::on_init_dialog, this, std::placeholders::_1));
@@ -9,6 +9,10 @@ DlgMain::DlgMain() {
 	dropFiles.on_drop(std::bind(&DlgMain::on_drop_files, this, std::placeholders::_1));
 	lstFiles.on().lvn_item_changed(std::bind(&DlgMain::on_lst_files_item_changed, this, std::placeholders::_1));
 	wnd.on().wm_command(MNU_FILES_ABOUT, std::bind(&DlgMain::on_about, this));
+
+	dropFiles.on_drop([](const std::vector<std::wstring> &files) {
+
+	});
 
 	// dlg.on().wm_notify(0x333, LVN_DELETEITEM, [this](wl::wm::Notify n) {
 	// 	auto p = n.pHdr<NMLINK>();
@@ -79,6 +83,7 @@ void DlgMain::on_about() {
 wl::opts::Main wndOpts{
 	.iconId = ICO_MAIN,
 	.title = L"Together",
+	.size = wl::dpi::sz(500, 300),
 	.style = wl::opts::Main{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
 };
 wl::opts::ListView lstOpts{
@@ -107,11 +112,6 @@ int RawMain::on_create(wl::wm::Create) {
 	// id3v2::Tag tag{L"D:\\Music\\mp3\\Eagles - 1976 - Hotel California\\01 Eagles - Hotel California.mp3"};
 	id3v2::Tag tag{L"D:\\Music\\mp3\\Megadeth - 1988 - So Far, So Good\\01 Megadeth - Into the Lungs of Hell.mp3"};
 
-	// wl::opts::Modal opts{
-	// 	.title = L"Fumble",
-	// };
-	// wl::WindowModal mo{wnd, opts};
-	// mo.show();
 
 	wnd.set_title(L"Shat out of hell");
 	return 0;

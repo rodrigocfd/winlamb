@@ -46,7 +46,7 @@ namespace wl::events {
 
 namespace wl::opts {
 
-	// Options to create a ListView programmatically.
+	/** Options to create a ListView programmatically. */
 	struct ListView final {
 		// Control position.
 		// Prefer using DPI-corrected values, like: dpi::pt(10, 10).
@@ -85,7 +85,7 @@ namespace wl {
 	/// [list view]: https://learn.microsoft.com/en-us/windows/win32/controls/list-view-controls-overview
 	class ListView final : NonMovable {
 	public:
-		// A single column of the ListView.
+		/** A single column of the ListView. */
 		class Column final {
 		public:
 			constexpr Column(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
@@ -122,7 +122,7 @@ namespace wl {
 		};
 
 	private:
-		// Operations over the columns.
+		/** Operations over the columns. */
 		class ColumnCollection final : NonMovable {
 		private:
 			constexpr explicit ColumnCollection(const ListView *pOwner) : _pOwner{pOwner} { }
@@ -138,7 +138,7 @@ namespace wl {
 		};
 
 	public:
-		// A single item of the ListView.
+		/** A single item of the ListView. */
 		class Item final {
 		public:
 			constexpr Item(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
@@ -162,7 +162,7 @@ namespace wl {
 		};
 
 	private:
-		// Operations over the items.
+		/** Operations over the items. */
 		class ItemCollection final : NonMovable {
 		private:
 			constexpr explicit ItemCollection(const ListView *pOwner) : _pOwner{pOwner} { }
@@ -188,10 +188,12 @@ namespace wl {
 		};
 
 	public:
-		// Constructs the list view programmatically.
+		/// Constructs the list view programmatically with [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		ListView(WindowParent &owner, opts::ListView opts);
 
-		// Constructs the list view from the dialog resource.
+		/** Constructs the list view from the dialog resource. */
 		ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId = 0, Lay layout = Lay::none_none);
 
 		ColumnCollection cols{this};

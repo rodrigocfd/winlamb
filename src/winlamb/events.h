@@ -9,14 +9,16 @@
 /// [Message]: https://learn.microsoft.com/en-us/windows/win32/learnwin32/window-messages
 namespace wl::wm {
 
-	// Raw data of an ordinary window message.
+	/// @brief Raw data of an ordinary window message.
+	///
+	/// Convertible to the specific window message structs.
 	struct Msg {
 		UINT wm;
 		WPARAM wp;
 		LPARAM lp;
 	};
 
-	struct Command : public Msg {
+	struct Command : protected Msg {
 		constexpr Command(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr bool is_from_menu() const        { return HIWORD(wp) == 0; }
 		[[nodiscard]] constexpr bool is_from_accelerator() const { return HIWORD(wp) == 1; }
@@ -28,29 +30,29 @@ namespace wl::wm {
 		[[nodiscard]] HWND           control_hwnd() const        { return reinterpret_cast<HWND>(lp); }
 	};
 
-	struct Notify : public Msg {
+	struct Notify : protected Msg {
 		constexpr Notify(const Msg &p) : Msg{p} { }
 		template<typename T> [[nodiscard]] T& hdr() { return *reinterpret_cast<T*>(lp); }
 	};
 
-	struct Activate : public Msg {
+	struct Activate : protected Msg {
 		constexpr Activate(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr WORD active_state() const   { return LOWORD(wp); }
 		[[nodiscard]] constexpr bool is_minimized() const   { return HIWORD(wp) != 0; }
 		[[nodiscard]] HWND           swapped_window() const { return reinterpret_cast<HWND>(lp); }
 	};
 
-	struct Create : public Msg {
+	struct Create : protected Msg {
 		constexpr Create(const Msg &p) : Msg{p} { }
-		[[nodiscard]] CREATESTRUCTW& crate_struct() const { return *reinterpret_cast<CREATESTRUCTW*>(lp); }
+		[[nodiscard]] const CREATESTRUCTW& crate_struct() const { return *reinterpret_cast<const CREATESTRUCTW*>(lp); }
 	};
 
-	struct Enable : public Msg {
+	struct Enable : protected Msg {
 		constexpr Enable(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr bool was_enabled() const { return wp != FALSE; }
 	};
 
-	struct EndSession : public Msg {
+	struct EndSession : protected Msg {
 		constexpr EndSession(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr DWORD endsession_flag() const        { return static_cast<DWORD>(lp); }
 		[[nodiscard]] constexpr bool  is_session_being_ended() const { return wp != FALSE; }
@@ -60,22 +62,24 @@ namespace wl::wm {
 		[[nodiscard]] constexpr bool  is_shutdown_restart() const    { return lp == 0; }
 	};
 
-	struct EraseBkgnd : public Msg {
+	struct EraseBkgnd : protected Msg {
 		constexpr EraseBkgnd(const Msg &p) : Msg{p} { }
 		[[nodiscard]] HDC hdc() const { return reinterpret_cast<HDC>(wp); }
 	};
 
-	struct GetDlgCode : public Msg {
+	struct GetDlgCode : protected Msg {
 		constexpr GetDlgCode(const Msg &p) : Msg{p} { }
-		[[nodiscard]] constexpr BYTE vkey_code() const { return static_cast<BYTE>(wm); }
-		[[nodiscard]] constexpr bool is_query() const  { return lp == 0; }
-		[[nodiscard]] MSG*           msg() const       { return this->is_query() ? nullptr : reinterpret_cast<MSG*>(lp); }
-		[[nodiscard]] bool           has_alt() const   { return (GetAsyncKeyState(VK_MENU) & 0x8000) != 0; }
-		[[nodiscard]] bool           has_ctrl() const  { return (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0; }
-		[[nodiscard]] bool           has_shift() const { return (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0; }
+		[[nodiscard]] constexpr WPARAM wparam() const { return wp; }
+		[[nodiscard]] constexpr LPARAM lparam() const { return lp; }
+		[[nodiscard]] constexpr BYTE   vkey_code() const { return static_cast<BYTE>(wm); }
+		[[nodiscard]] constexpr bool   is_query() const  { return lp == 0; }
+		[[nodiscard]] MSG*             msg() const       { return this->is_query() ? nullptr : reinterpret_cast<MSG*>(lp); }
+		[[nodiscard]] bool             has_alt() const   { return (GetAsyncKeyState(VK_MENU) & 0x8000) != 0; }
+		[[nodiscard]] bool             has_ctrl() const  { return (GetAsyncKeyState(VK_CONTROL) & 0x8000) != 0; }
+		[[nodiscard]] bool             has_shift() const { return (GetAsyncKeyState(VK_SHIFT) & 0x8000) != 0; }
 	};
 
-	struct HScroll : public Msg {
+	struct HScroll : protected Msg {
 		constexpr HScroll(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr WORD scroll_request() const { return LOWORD(wp); }
 		[[nodiscard]] constexpr WORD scroll_pos() const     { return HIWORD(wp); }
@@ -83,12 +87,12 @@ namespace wl::wm {
 	};
 	struct VScroll : public HScroll { constexpr VScroll(const Msg &p) : HScroll{p} { } };
 
-	struct InitDialog : public Msg {
+	struct InitDialog : protected Msg {
 		constexpr InitDialog(const Msg &p) : Msg{p} { }
 		[[nodiscard]] HWND hwnd_focus() const { return reinterpret_cast<HWND>(wp); }
 	};
 
-	struct InitMenuPopup : public Msg {
+	struct InitMenuPopup : protected Msg {
 		constexpr InitMenuPopup(const Msg &p) : Msg{p} { }
 		[[nodiscard]] HMENU           hmenu() const              { return reinterpret_cast<HMENU>(wp); }
 		[[nodiscard]] constexpr short relative_pos() const       { return LOWORD(lp); }
@@ -96,12 +100,12 @@ namespace wl::wm {
 		[[nodiscard]] UINT            first_menu_item_id() const { return GetMenuItemID(hmenu(), 0); }
 	};
 
-	struct KillFocus : public Msg {
+	struct KillFocus : protected Msg {
 		constexpr KillFocus(const Msg &p) : Msg{p} { }
 		[[nodiscard]] HWND focused_hwnd() const { return reinterpret_cast<HWND>(wp); }
 	};
 
-	struct LButtonDblClk : public Msg {
+	struct LButtonDblClk : protected Msg {
 		constexpr LButtonDblClk(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr WORD  mk_flag() const       { return static_cast<WORD>(wp); }
 		[[nodiscard]] constexpr bool  has_ctrl() const      { return (mk_flag() & MK_CONTROL) != 0; }
@@ -124,31 +128,31 @@ namespace wl::wm {
 	struct RButtonDown   : public LButtonDblClk { constexpr RButtonDown(const Msg &p)   : LButtonDblClk{p} { } };
 	struct RButtonUp     : public LButtonDblClk { constexpr RButtonUp(const Msg &p)     : LButtonDblClk{p} { } };
 
-	struct NcCalcSize : public Msg {
+	struct NcCalcSize : protected Msg {
 		constexpr NcCalcSize(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr bool     should_indicate_valid_part() const { return wp != 0; }
 		[[nodiscard]] NCCALCSIZE_PARAMS& nccalcsize_params() const          { return *reinterpret_cast<NCCALCSIZE_PARAMS*>(lp); }
 		[[nodiscard]] RECT&              rect() const                       { return *reinterpret_cast<RECT*>(lp); }
 	};
 
-	struct NcPaint : public Msg {
+	struct NcPaint : protected Msg {
 		constexpr NcPaint(const Msg &p) : Msg{p} { }
 		[[nodiscard]] HRGN hrgn() const { return reinterpret_cast<HRGN>(wp); }
 	};
 
-	struct PowerBroadcast : public Msg {
+	struct PowerBroadcast : protected Msg {
 		constexpr PowerBroadcast(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr WORD          pbt_flag() const   { return static_cast<WORD>(wp); }
 		[[nodiscard]] POWERBROADCAST_SETTING& event_data() const { return *reinterpret_cast<POWERBROADCAST_SETTING*>(lp); }
 	};
 
 
-	struct SetFocus : public Msg {
+	struct SetFocus : protected Msg {
 		constexpr SetFocus(const Msg &p) : Msg{p} { }
 		[[nodiscard]] HWND hwnd_losing_focus() const { return reinterpret_cast<HWND>(wp); }
 	};
 
-	struct Size : public Msg {
+	struct Size : protected Msg {
 		constexpr Size(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr WORD size_flag() const { return static_cast<WORD>(wp); }
 		[[nodiscard]] constexpr bool is_other_maximized() const { return size_flag() == SIZE_MAXHIDE; }
@@ -159,7 +163,7 @@ namespace wl::wm {
 		[[nodiscard]] constexpr SIZE sz() const                 { return {LOWORD(lp), HIWORD(lp)}; }
 	};
 
-	struct Sizing : public Msg {
+	struct Sizing : protected Msg {
 		constexpr Sizing(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr WORD edge() const          { return static_cast<WORD>(wp); }
 		[[nodiscard]] RECT&          screen_coords() const { return *reinterpret_cast<RECT*>(lp); }
@@ -226,20 +230,103 @@ namespace wl::events {
 		constexpr explicit WindowEvents(bool isDlg) : _isDlg{isDlg} { }
 
 	public:
+		/// Handles the [`WM_CREATE`] message.
+		///
+		/// Note that this message is sent only to windows created programmatically, not to dialog windows.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// wl::WindowMain wnd{{
+		///     .title = L"My title",
+		///     .style = wl::opts::Main{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
+		/// }};
+		/// wnd.on().wm_create([](wl::wm::Create p) {
+		///     // ...
+		///     return 0;
+		/// });
+		/// ```
+		///
+		/// [`WM_CREATE`]: https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-create
 		void wm_create(std::function<int(wl::wm::Create)> cb);
+
+		/// Handles the [`WM_INITDIALOG`] message.
+		///
+		/// Note that this message is sent only to dialog windows, not to windows created programmatically.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// wl::WindowMain wnd{DLG_MAIN};
+		/// wnd.on().wm_init_dialog([](wl::wm::InitDialog p) {
+		///     // ...
+		///     return true;
+		/// });
+		/// ```
+		///
+		/// [`WM_INITDIALOG`]: https://learn.microsoft.com/en-us/windows/win32/dlgbox/wm-initdialog
 		void wm_init_dialog(std::function<bool(wl::wm::InitDialog)> cb);
 
-		// Adds a callback to an ordinary WM message.
+		/// Adds a callback to an ordinary WM message.
+		///
+		/// This is a general method for custom messages, always prefer using the specific message methods.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// wl::WindowMain wnd{DLG_MAIN};
+		/// wnd.on().wm(WM_ENTERIDLE, [](wl::wm::Msg p) {
+		///     // ...
+		///     return 0;
+		/// });
+		/// ```
 		void wm(UINT msg, std::function<LRESULT(wl::wm::Msg)> cb);
 
-		// Adds a callback to a WM_COMMAND message, to an specific notification code.
+		/// Adds a callback to a [`WM_COMMAND`] message, to an specific notification code.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// wl::WindowMain wnd{DLG_MAIN};
+		/// wnd.on().wm_command(BTN_MAIN, BN_CLICKED, []() {
+		///     // ...
+		/// });
+		/// ```
+		///
+		/// [`WM_COMMAND`]: https://learn.microsoft.com/en-us/windows/win32/menurc/wm-command
 		void wm_command(WORD cmdId, WORD notifCode, std::function<void()> cb);
 
-		// Adds a callback to a WM_COMMAND message, for notifications from
-		// both accelerator and menu events. This is the most common case.
+		/// Adds a callback to a [`WM_COMMAND`] message, for notifications from both accelerator and menu events.
+		///
+		/// This is the most common case.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// wl::WindowMain wnd{DLG_MAIN};
+		/// wnd.on().wm_command(IDCANCEL, []() {
+		///     // ...
+		/// });
+		/// ```
+		///
+		/// [`WM_COMMAND`]: https://learn.microsoft.com/en-us/windows/win32/menurc/wm-command
 		void wm_command(WORD cmdId, std::function<void()> cb);
 
-		// Adds a callback to a WM_NOTIFY message, to specific control ID and notification code.
+		/// Adds a callback to a [`WM_NOTIFY`] message, to specific control ID and notification code.
+		///
+		/// This is a general method for custom notifications, always prefer using the specific control notification metods.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// wl::WindowMain wnd{DLG_MAIN};
+		/// wnd.on().wm_notify(LST_MAIN, LVN_BEGINDRAG, [](wl::wm::Notify p) {
+		///     // ...
+		///     return 0;
+		/// });
+		/// ```
+		///
+		/// [`WM_NOTIFY`]: https://learn.microsoft.com/en-us/windows/win32/controls/wm-notify
 		void wm_notify(WORD idFrom, int code, std::function<LRESULT(wl::wm::Notify)> cb);
 
 		void wm_activate(std::function<void(wl::wm::Activate)> cb);

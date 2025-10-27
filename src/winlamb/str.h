@@ -55,7 +55,7 @@ namespace wl {
 
 }
 
-/** @brief String utilities. */
+/** @brief UTF-16 wide string utilities. */
 namespace wl::str {
 
 	/** Default number of characters of a string allocated with Short String Optimization. */
