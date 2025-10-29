@@ -6,11 +6,6 @@
 #include "runnable.h"
 using namespace _wl_internal;
 
-void _wl_internal::uncaught_exception(const std::exception &e) {
-	MessageBoxA(nullptr, e.what(), "Uncaught exception", MB_ICONERROR);
-	PostQuitMessage(-1);
-}
-
 static int logPixelsX = 0, logPixelsY = 0;
 
 static void init_stuff() {
@@ -38,11 +33,11 @@ static void init_stuff() {
 	ReleaseDC(nullptr, hdcScreen);
 }
 
-Init::~Init() {
+GuiInit::~GuiInit() {
 	OleUninitialize();
 }
 
-Init::Init() {
+GuiInit::GuiInit() {
 	init_stuff();
 	OleInitialize(nullptr);
 }

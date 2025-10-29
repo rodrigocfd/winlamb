@@ -69,20 +69,20 @@ bool EventsInternal::process_all(wm::Msg procMsg) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void WindowEvents::wm_create(std::function<int(wm::Create)> cb) {
-	_inis.emplace_back(WM_CREATE, cb);
-}
-
-void WindowEvents::wm_init_dialog(std::function<bool(wm::InitDialog)> cb) {
-	_inis.emplace_back(WM_INITDIALOG, cb);
-}
-
 void WindowEvents::wm(UINT msg, std::function<LRESULT(wm::Msg)> cb) {
 	#ifdef _DEBUG
 	if (msg == WM_CREATE || msg == WM_INITDIALOG || msg == WM_COMMAND || msg == WM_NOTIFY)
 		throw std::logic_error("For WM_CREATE, WM_INITDIALOG, WM_COMMAND or WM_NOTIFY, use the specific event methods.");
 	#endif
 	_msgs.emplace_back(msg, cb);
+}
+
+void WindowEvents::wm_create(std::function<int(wm::Create)> cb) {
+	_inis.emplace_back(WM_CREATE, cb);
+}
+
+void WindowEvents::wm_init_dialog(std::function<bool(wm::InitDialog)> cb) {
+	_inis.emplace_back(WM_INITDIALOG, cb);
 }
 
 void WindowEvents::wm_command(WORD cmdId, WORD notifCode, std::function<void()> cb) {
@@ -112,11 +112,15 @@ void WindowEvents::wm_notify(WORD idFrom, int code, std::function<LRESULT(wm::No
 	}
 
 EVENT_ARGS(wm_activate, WM_ACTIVATE, wm::Activate)
+EVENT_ARGS(wm_activate_app, WM_ACTIVATEAPP, wm::ActivateApp)
+EVENT_NO_ARGS(wm_child_activate, WM_CHILDACTIVATE)
 EVENT_NO_ARGS(wm_close, WM_CLOSE)
 EVENT_NO_ARGS(wm_destroy, WM_DESTROY)
 EVENT_ARGS(wm_enable, WM_ENABLE, wm::Enable)
 EVENT_ARGS(wm_end_session, WM_ENDSESSION, wm::EndSession)
+EVENT_NO_ARGS(wm_enter_size_move, WM_ENTERSIZEMOVE)
 EVENT_ARGS_RET(wm_erase_bkgnd, WM_ERASEBKGND, wm::EraseBkgnd, int)
+EVENT_NO_ARGS(wm_exit_size_move, WM_EXITSIZEMOVE)
 EVENT_ARGS_RET(wm_get_dlg_code, WM_GETDLGCODE, wm::GetDlgCode, WORD)
 EVENT_ARGS(wm_h_scroll, WM_HSCROLL, wm::HScroll)
 EVENT_ARGS(wm_init_menu_popup, WM_INITMENUPOPUP, wm::InitMenuPopup)
@@ -129,6 +133,8 @@ EVENT_ARGS(wm_m_button_down, WM_MBUTTONDOWN, wm::MButtonDown)
 EVENT_ARGS(wm_m_button_up, WM_MBUTTONUP, wm::MButtonUp)
 EVENT_ARGS(wm_mouse_hover, WM_MOUSEHOVER, wm::MouseHover)
 EVENT_ARGS(wm_mouse_move, WM_MOUSEMOVE, wm::MouseMove)
+EVENT_ARGS(wm_move, WM_MOVE, wm::Move)
+EVENT_ARGS(wm_moving, WM_MOVING, wm::Moving)
 EVENT_ARGS_RET(wm_nc_calc_size, WM_NCCALCSIZE, wm::NcCalcSize, WORD)
 EVENT_NO_ARGS(wm_nc_destroy, WM_NCDESTROY)
 EVENT_ARGS(wm_nc_paint, WM_NCPAINT, wm::NcPaint)
@@ -165,9 +171,8 @@ std::optional<LRESULT> WindowEvents::process_last(wm::Msg procMsg) const {
 		case WM_CREATE:
 		case WM_INITDIALOG:
 			for (auto it = _inis.rbegin(); it != _inis.rend(); ++it) {
-				if (it->wm == procMsg.wm) {
+				if (it->wm == procMsg.wm)
 					return std::make_optional(it->cb(procMsg));
-				}
 			}
 			break;
 
@@ -185,18 +190,16 @@ std::optional<LRESULT> WindowEvents::process_last(wm::Msg procMsg) const {
 		case WM_NOTIFY: {
 			NMHDR *pHdr = reinterpret_cast<NMHDR*>(procMsg.lp);
 			for (auto it = _nfys.rbegin(); it != _nfys.rend(); ++it) {
-				if (it->idFrom == pHdr->idFrom && it->code == pHdr->code) {
+				if (it->idFrom == pHdr->idFrom && it->code == pHdr->code)
 					return std::make_optional(it->cb(wm::Notify{procMsg}));
-				}
 			}
 			break;
 		}
 
 		default: { // finally, ordinary messages
 			for (auto it = _msgs.rbegin(); it != _msgs.rend(); ++it) {
-				if (it->wm == procMsg.wm) {
+				if (it->wm == procMsg.wm)
 					return std::make_optional(it->cb(procMsg));
-				}
 			}
 		}
 	}

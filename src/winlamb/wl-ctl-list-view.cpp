@@ -371,19 +371,17 @@ std::optional<ListView::Item> ListView::ItemCollection::topmost_visible() const 
 
 ////////////////////////////////////////////////////////////////////////////////
 
-ListView::ListView(WindowParent &owner, opts::ListView opts)
-	: _ctrl{owner, opts.layout}, _events{owner, opts.ctrlId}, _opts{std::make_optional(opts)}
+ListView::ListView(WindowParent &owner, opts::ListView options)
+	: _ctrl{owner, options.layout}, _events{owner, options.ctrlId}, _hMenuContext{options.hMenuContext}
 {
-	_hMenuContext = opts.hMenuContext;
-
-	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() {
-		_ctrl.create_wnd(_opts.value().ctrlId, _opts.value().windowExStyle, WC_LISTVIEWW, nullptr,
-			_opts.value().windowStyle | _opts.value().ctrlStyle,
-			_opts.value().pos, _opts.value().size);
-		set_extended_style(true, _opts.value().ctrlExStyle);
+	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, pOwner = &owner, options]() {
+		_ctrl.create_wnd(options.ctrlId, options.windowExStyle, WC_LISTVIEWW, nullptr,
+			options.windowStyle | options.ctrlStyle,
+			options.pos, options.size);
+		set_extended_style(true, options.ctrlExStyle);
 	});
 
-	custom_events(opts.ctrlId);
+	custom_events(options.ctrlId);
 }
 
 ListView::ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId, Lay layout)

@@ -82,13 +82,13 @@ void DlgMain::on_about() {
 
 wl::opts::Main wndOpts{
 	.iconId = ICO_MAIN,
-	.title = L"Together",
-	.size = wl::dpi::sz(500, 300),
-	.style = wl::opts::Main{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
+	.title  = L"Together",
+	.size   = wl::dpi::sz(500, 300),
+	.style  = wl::opts::Main{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
 };
 wl::opts::ListView lstOpts{
-	.pos = wl::dpi::pt(10, 10),
-	.size = wl::dpi::sz(400, 200),
+	.pos    = wl::dpi::pt(10, 10),
+	.size   = wl::dpi::sz(400, 200),
 	.ctrlId = LST_FILES,
 	.layout = wl::Lay::resize_resize,
 };
@@ -97,6 +97,7 @@ RawMain::RawMain()
 	: wnd{wndOpts}, lst{wnd, lstOpts}
 {
 	wnd.on().wm_create(std::bind(&RawMain::on_create, this, std::placeholders::_1));
+
 
 
 }

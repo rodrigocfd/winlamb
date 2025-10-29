@@ -11,7 +11,7 @@ namespace wl {
 
 	/// @brief Makes the derived class non-copyable.
 	///
-	/// Implements [P2895] with [C.35 core guideline].
+	/// Implements [P2895].
 	///
 	/// Example:
 	///
@@ -23,10 +23,7 @@ namespace wl {
 	/// ```
 	///
 	/// [P2895]: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2895r0.html
-	/// [C.35 core guideline]: https://www.sandordargo.com/blog/2024/11/27/non-movable-classes
 	class NonCopyable {
-	protected:
-		~NonCopyable() = default;
 	public:
 		NonCopyable() = default;
 		NonCopyable(NonCopyable&&) = default;
@@ -35,7 +32,7 @@ namespace wl {
 
 	/// @brief Makes the derived class non-copyable and non-movable.
 	///
-	/// Implements [P2895] with [C.35 core guideline].
+	/// Implements [P2895].
 	///
 	/// Example:
 	///
@@ -47,10 +44,7 @@ namespace wl {
 	/// ```
 	///
 	/// [P2895]: https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2023/p2895r0.html
-	/// [C.35 core guideline]: https://www.sandordargo.com/blog/2024/11/27/non-movable-classes
 	class NonMovable {
-	protected:
-		~NonMovable() = default;
 	public:
 		NonMovable() = default;
 		NonMovable(NonMovable const&) = delete;

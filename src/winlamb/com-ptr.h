@@ -110,8 +110,17 @@ namespace wl {
 		/** Returns the wrapped COM pointer. */
 		[[nodiscard]] constexpr T* ptr() const { return _p; }
 
-		/** Returns a pointer to the wrapped COM pointer. */
-		[[nodiscard]] constexpr T** pptr() { return &_p; }
+		/// Returns a pointer to the wrapped COM pointer.
+		///
+		/// Useful to functions which create a COM pointer externally, placing it inside an existing pointer variable.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// wl::ComPtr<IShellItem> item{};
+		/// SHCreateItemFromParsingName(L"C:\\Temp\\foo.txt", nullptr, IID_IShellItem, item.pptr());
+		/// ```
+		[[nodiscard]] constexpr void** pptr() { return reinterpret_cast<void**>(&_p); }
 
 		/// Calls [`IUnknown::Release`] on the current pointer, then calls [`CoCreateInstance`].
 		///
@@ -132,6 +141,15 @@ namespace wl {
 		}
 
 		/// Returns a new `ComPtr` by calling [`IUnknown::QueryInterface`].
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// wl::ComPtr<IShellItem> item{};
+		/// SHCreateItemFromParsingName(L"C:\\Temp\\foo.txt", nullptr, IID_IShellItem, item.pptr());
+		///
+		/// wl::ComPtr<IShellItem2> item2 = item.query_interface<IShellItem2>();
+		/// ```
 		///
 		/// [`IUnknown::QueryInterface`]: https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-queryinterface(refiid_void)
 		template<typename Q>

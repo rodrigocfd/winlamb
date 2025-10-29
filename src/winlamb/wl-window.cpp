@@ -41,24 +41,12 @@ WindowEvents& WindowMsg::on() {
 }
 
 struct ThreadPack final {
-	std::optional<std::function<void()>> cb = std::nullopt;
-	std::optional<std::exception> excep = std::nullopt;
+	std::function<void()> cb;
 };
 static constexpr UINT WM_THREAD = WM_APP + 0x3fff; // last WM_APP value
 
-void WindowMsg::thread_detach(std::function<void()> cb) const {
-	std::thread([cb = std::move(cb), this]() {
-		try {
-			cb();
-		} catch (const std::exception &e) {
-			auto pPack = std::make_unique<ThreadPack>(std::nullopt, e);
-			SendMessageW(hwnd(), WM_THREAD, WM_THREAD, reinterpret_cast<LPARAM>(pPack.release()));
-		}
-	}).detach();
-}
-
-void WindowMsg::thread_ui(std::function<void()> cb) const {
-	auto pPack = std::make_unique<ThreadPack>(std::move(cb), std::nullopt);
+void WindowMsg::ui_thread(std::function<void()> cb) const {
+	auto pPack = std::make_unique<ThreadPack>(std::move(cb));
 	SendMessageW(hwnd(), WM_THREAD, WM_THREAD, reinterpret_cast<LPARAM>(pPack.release()));
 }
 
@@ -67,15 +55,7 @@ WindowMsg::ProcResult WindowMsg::process_msgs(UINT msg, WPARAM wp, LPARAM lp) {
 	case WM_THREAD:
 		if (wp == WM_THREAD) { // additional safety check
 			std::unique_ptr<ThreadPack> pPack{reinterpret_cast<ThreadPack*>(lp)};
-			if (pPack->excep.has_value()) { // catching an exception from another thread
-				uncaught_exception(pPack->excep.value());
-			} else if (pPack->cb.has_value()) { // running a thread UI callback
-				try {
-					pPack->cb.value()();
-				} catch (const std::exception &e) {
-					uncaught_exception(e);
-				}
-			}
+			pPack->cb();
 			return {true, false, std::nullopt};
 		}
 		break;
@@ -83,17 +63,11 @@ WindowMsg::ProcResult WindowMsg::process_msgs(UINT msg, WPARAM wp, LPARAM lp) {
 		_layout.rearrange(wm::Msg{msg, wp, lp});
 	}
 
-	bool hasPre = false, hasPost = false;
-	std::optional<LRESULT> userRet{};
-	try {
-		hasPre = _preEvents.process_all({msg, wp, lp});
-		if (msg == WM_CREATE || msg == WM_INITDIALOG)
-			_layout.calc_origins(hwnd()); // controls are created in _preEvents, we need their HWNDs
-		_userEvents.process_last({msg, wp, lp});
-		hasPost = _postEvents.process_all({msg, wp, lp});
-	} catch (const std::exception &e) {
-		uncaught_exception(e);
-	}
+	bool hasPre = _preEvents.process_all({msg, wp, lp});
+	if (msg == WM_CREATE || msg == WM_INITDIALOG)
+		_layout.calc_origins(hwnd()); // controls are created in _preEvents, we need their HWNDs
+	std::optional<LRESULT> userRet = _userEvents.process_last({msg, wp, lp});
+	bool hasPost = _postEvents.process_all({msg, wp, lp});
 
 	switch (msg) {
 	case WM_CREATE:
@@ -245,15 +219,15 @@ LRESULT CALLBACK NativeCtrl::subclass_proc(HWND hWnd, UINT msg, WPARAM wp, LPARA
 {
 	NativeCtrl *pSelf = reinterpret_cast<NativeCtrl*>(dwRefData);
 
-	std::optional<LRESULT> ret;
-	if (pSelf) {
+	std::optional<LRESULT> ret{};
+	if (pSelf)
 		ret = pSelf->_subclassEvents.process_last({msg, wp, lp});
-	}
 
 	if (msg == WM_NCDESTROY) { // always check
 		// https://devblogs.microsoft.com/oldnewthing/20031111-00/?p=41883
 		RemoveWindowSubclass(hWnd, subclass_proc, uIdSubclass);
-		if (pSelf) pSelf->_subclassEvents.clear();
+		if (pSelf)
+			pSelf->_subclassEvents.clear();
 	}
 
 	return ret.has_value() ? ret.value() : DefSubclassProc(hWnd, msg, wp, lp);

@@ -36,11 +36,6 @@ namespace wl {
 		/** Returns the character at `index`. */
 		[[nodiscard]] constexpr wchar_t operator[](size_t index) const { return _p[index]; }
 
-		/// Returns the wrapped `LPCWSTR` converted to `LPWSTR` – that is, without the `const`.
-		///
-		/// This is required by some Win32 structs, which have a `LPWSTR` member.
-		[[nodiscard]] constexpr LPWSTR lpwstr() const { return const_cast<LPWSTR>(_p); }
-
 		/** Returns `true` if the wrapped pointer is `nullptr`, of if the string is empty. */
 		[[nodiscard]] bool empty() const { return !_p || !length(); }
 
@@ -48,6 +43,11 @@ namespace wl {
 		///
 		/// [`lstrlen`]: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-lstrlenw
 		[[nodiscard]] size_t length() const;
+
+		/// Returns the wrapped `LPCWSTR` converted to `LPWSTR` – that is, without the `const`.
+		///
+		/// This is required by some Win32 structs, which have a `LPWSTR` member.
+		[[nodiscard]] constexpr LPWSTR lpwstr() const { return const_cast<LPWSTR>(_p); }
 
 	private:
 		LPCWSTR _p;
@@ -100,6 +100,11 @@ namespace wl::str {
 
 	/** Converts `numBytes` into a string with the highest unit, up to exabytes., with two decimal places. */
 	[[nodiscard]] std::wstring fmt_bytes(size_t numBytes);
+
+	/// Calls [`FormatMessage`] to retrieve the description of a native Win32 error code.
+	///
+	/// [`FormatMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-formatmessagew
+	[[nodiscard]] std::wstring fmt_error(DWORD errorCode);
 
 	/** Guesses the linebreak characters: CR, CRLF, LF or LFCR. */
 	[[nodiscard]] LPCWSTR guess_line_break(WStrPtr s);

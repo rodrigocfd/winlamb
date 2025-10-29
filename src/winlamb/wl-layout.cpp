@@ -8,7 +8,7 @@ void Layout::calc_origins(HWND hParent) {
 	BOOL ret = GetClientRect(hParent, &rcParent);
 	#ifdef _DEBUG
 	if (!ret)
-		throw std::system_error(GetLastError(), std::system_category(), "Layout: GetClientRect failed");
+		throw std::system_error(GetLastError(), std::system_category(), "GetClientRect failed");
 	#endif
 	_szOrig = {rcParent.right, rcParent.bottom}; // save original parent client area
 
@@ -17,7 +17,7 @@ void Layout::calc_origins(HWND hParent) {
 		BOOL ret = GetWindowRect(ctrl.hCtrl, &ctrl.rcOrig); // relative to screen
 		#ifdef _DEBUG
 		if (!ret)
-			throw std::system_error(GetLastError(), std::system_category(), "Layout: GetWindowRect failed");
+			throw std::system_error(GetLastError(), std::system_category(), "GetWindowRect failed");
 		#endif
 		ScreenToClient(hParent, reinterpret_cast<POINT*>(&ctrl.rcOrig)); // now relative to parent
 		ScreenToClient(hParent, reinterpret_cast<POINT*>(&ctrl.rcOrig.right)); // now relative to parent

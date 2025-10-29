@@ -24,26 +24,19 @@ namespace wl {
 
 		/// Allows message events to be added.
 		///
-		/// The events must be added before the window is created.
+		/// The events must be added before the window is created on the screen.
 		[[nodiscard]] virtual events::WindowEvents& on() = 0;
-
-		/// Creates a new, detached thread and runs `cb`.
-		///
-		/// Catches uncaught exceptions.
-		virtual void thread_detach(std::function<void()> cb) const = 0;
 
 		/// Blocks the current thread and runs `cb` in the UI thread.
 		///
-		/// Ideal to be called from another thread, when you need to update the UI.
-		///
-		/// Catches uncaught exceptions.
-		virtual void thread_ui(std::function<void()> cb) const = 0;
+		/// Useful if you need to update the window from another thread.
+		virtual void ui_thread(std::function<void()> cb) const = 0;
 
 	private:
 		[[nodiscard]] virtual const _wl_internal::WindowMsg& wnd_msg() const = 0;
 		[[nodiscard]] virtual _wl_internal::WindowMsg& wnd_msg() = 0;
-		friend _wl_internal::NativeCtrl; // so NativeCtrl can be constructed, then expose parent events to controls ctor
-		friend _wl_internal::EventsNativeCtrl; // so events can be added to parent
+		friend _wl_internal::NativeCtrl; // controls acess wnd_msg() to add creation events
+		friend _wl_internal::EventsNativeCtrl; // so events can be added to parent via wnd_msg()
 		friend DropFiles;
 	};
 
@@ -140,20 +133,13 @@ namespace wl {
 
 		/// Allows message events to be added.
 		///
-		/// The events must be added before the window is created.
+		/// The events must be added before the window is created on the screen.
 		[[nodiscard]] events::WindowEvents& on() override { return wnd_msg().on(); }
-
-		/// Creates a new, detached thread and runs `cb`.
-		///
-		/// Catches uncaught exceptions.
-		void thread_detach(std::function<void()> cb) const override { wnd_msg().thread_detach(cb); }
 
 		/// Blocks the current thread and runs `cb` in the UI thread.
 		///
-		/// Ideal to be called from another thread, when you need to update the UI.
-		///
-		/// Catches uncaught exceptions.
-		void thread_ui(std::function<void()> cb) const override { wnd_msg().thread_ui(cb); }
+		/// Useful if you need to update the window from another thread.
+		void ui_thread(std::function<void()> cb) const override { wnd_msg().ui_thread(cb); }
 
 		/// Runs the main window, blocking the UI thread until the window is closed.
 		///
@@ -224,20 +210,13 @@ namespace wl {
 
 		/// Allows message events to be added.
 		///
-		/// The events must be added before the window is created.
+		/// The events must be added before the window is created on the screen.
 		[[nodiscard]] events::WindowEvents& on() override { return wnd_msg().on(); }
-
-		/// Creates a new, detached thread and runs `cb`.
-		///
-		/// Catches uncaught exceptions.
-		void thread_detach(std::function<void()> cb) const override { wnd_msg().thread_detach(cb); }
 
 		/// Blocks the current thread and runs `cb` in the UI thread.
 		///
-		/// Ideal to be called from another thread, when you need to update the UI.
-		///
-		/// Catches uncaught exceptions.
-		void thread_ui(std::function<void()> cb) const override { wnd_msg().thread_ui(cb); }
+		/// Useful if you need to update the window from another thread.
+		void ui_thread(std::function<void()> cb) const override { wnd_msg().ui_thread(cb); }
 
 		/** Displays the modal window, blocking the UI thread until the window is closed. */
 		void show();

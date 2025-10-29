@@ -13,41 +13,41 @@ namespace _wl_internal {
 
 namespace wl {
 
-	// Specifies the horizontal and vertical behavior for a control when the parent window is resized.
+	/** Specifies the horizontal and vertical behavior for a control when the parent window is resized. */
 	enum class Lay : BYTE {
-		// When parent is resized, nothing happens.
+		/** When parent is resized, nothing happens. */
 		none_none = 0,
-		// When parent resizes:
-		// - horizontal: nothing happens;
-		// - vertical: control moves anchored at bottom.
+		/// When parent resizes:
+		/// - horizontal: nothing happens;
+		/// - vertical: control moves anchored at bottom.
 		none_repos = _wl_internal::LAY_V_REPOS,
-		// When parent resizes:
-		//	- horizontal: nothing happens;
-		//	- vertical: control is resized together.
+		/// When parent resizes:
+		/// - horizontal: nothing happens;
+		/// - vertical: control is resized together.
 		none_resize = _wl_internal::LAY_V_RESIZE,
-		// When parent resizes:
-		//	- horizontal: control moves anchored at right;
-		//	- vertical: nothing happens.
+		/// When parent resizes:
+		/// - horizontal: control moves anchored at right;
+		/// - vertical: nothing happens.
 		repos_none = _wl_internal::LAY_H_REPOS,
-		// When parent resizes:
-		//	- horizontal: control moves anchored at right;
-		//	- vertical: control moves anchored at bottom.
+		/// When parent resizes:
+		/// - horizontal: control moves anchored at right;
+		/// - vertical: control moves anchored at bottom.
 		repos_repos = _wl_internal::LAY_H_REPOS | _wl_internal::LAY_V_REPOS,
-		// When parent resizes:
-		//	- horizontal: control moves anchored at right;
-		//	- vertical: control is resized together.
+		/// When parent resizes:
+		/// - horizontal: control moves anchored at right;
+		/// - vertical: control is resized together.
 		repos_resize = _wl_internal::LAY_H_REPOS | _wl_internal::LAY_V_RESIZE,
-		// When parent resizes:
-		//	- horizontal: control is resized together;
-		//	- vertical: nothing happens.
+		/// When parent resizes:
+		/// - horizontal: control is resized together;
+		/// - vertical: nothing happens.
 		resize_none = _wl_internal::LAY_H_RESIZE,
-		// When parent resizes:
-		//	- horizontal: control is resized together;
-		//	- vertical: control moves anchored at bottom.
+		/// When parent resizes:
+		/// - horizontal: control is resized together;
+		/// - vertical: control moves anchored at bottom.
 		resize_repos = _wl_internal::LAY_H_RESIZE | _wl_internal::LAY_V_REPOS,
-		// When parent resizes:
-		//	- horizontal: control is resized together;
-		//	- vertical: control is resized together.
+		/// When parent resizes:
+		/// - horizontal: control is resized together;
+		/// - vertical: control is resized together.
 		resize_resize = _wl_internal::LAY_H_RESIZE | _wl_internal::LAY_V_RESIZE,
 	};
 
@@ -55,7 +55,7 @@ namespace wl {
 
 namespace _wl_internal {
 
-	// Rearranges position and size of each control when the parent resizes, according to Lay flags.
+	/** Rearranges position and size of each control when the parent resizes, according to Lay flags. */
 	class Layout final {
 	public:
 		struct Ctrl final {

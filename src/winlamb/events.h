@@ -42,6 +42,12 @@ namespace wl::wm {
 		[[nodiscard]] HWND           swapped_window() const { return reinterpret_cast<HWND>(lp); }
 	};
 
+	struct ActivateApp : protected Msg {
+		constexpr ActivateApp(const Msg &p) : Msg{p} { }
+		[[nodiscard]] constexpr bool  is_being_discarded() const { return wp != 0; }
+		[[nodiscard]] constexpr DWORD thread_id() const          { return static_cast<DWORD>(lp); }
+	};
+
 	struct Create : protected Msg {
 		constexpr Create(const Msg &p) : Msg{p} { }
 		[[nodiscard]] const CREATESTRUCTW& crate_struct() const { return *reinterpret_cast<const CREATESTRUCTW*>(lp); }
@@ -128,6 +134,16 @@ namespace wl::wm {
 	struct RButtonDown   : public LButtonDblClk { constexpr RButtonDown(const Msg &p)   : LButtonDblClk{p} { } };
 	struct RButtonUp     : public LButtonDblClk { constexpr RButtonUp(const Msg &p)     : LButtonDblClk{p} { } };
 
+	struct Move : protected Msg {
+		constexpr Move(const Msg &p) : Msg{p} { }
+		[[nodiscard]] constexpr POINT client_area_pos() const { return {LOWORD(lp), HIWORD(lp)}; }
+	};
+
+	struct Moving : protected Msg {
+		constexpr Moving(const Msg &p) : Msg{p} { }
+		[[nodiscard]] RECT& window_pos() const { return *reinterpret_cast<RECT*>(lp); }
+	};
+
 	struct NcCalcSize : protected Msg {
 		constexpr NcCalcSize(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr bool     should_indicate_valid_part() const { return wp != 0; }
@@ -142,8 +158,8 @@ namespace wl::wm {
 
 	struct PowerBroadcast : protected Msg {
 		constexpr PowerBroadcast(const Msg &p) : Msg{p} { }
-		[[nodiscard]] constexpr WORD          pbt_flag() const   { return static_cast<WORD>(wp); }
-		[[nodiscard]] POWERBROADCAST_SETTING& event_data() const { return *reinterpret_cast<POWERBROADCAST_SETTING*>(lp); }
+		[[nodiscard]] constexpr WORD                pbt_flag() const   { return static_cast<WORD>(wp); }
+		[[nodiscard]] const POWERBROADCAST_SETTING& event_data() const { return *reinterpret_cast<const POWERBROADCAST_SETTING*>(lp); }
 	};
 
 
@@ -197,7 +213,7 @@ namespace _wl_internal {
 
 		void clear_inis(); // WM_CREATE and WM_INITDIALOG
 		void clear();
-		bool process_all(wl::wm::Msg procMsg) const;
+		[[nodiscard]] bool process_all(wl::wm::Msg procMsg) const;
 
 		bool _isDlg;
 		std::vector<std::function<void()>> _inis{}; // WM_CREATE, WM_INITDIALOG
@@ -230,6 +246,20 @@ namespace wl::events {
 		constexpr explicit WindowEvents(bool isDlg) : _isDlg{isDlg} { }
 
 	public:
+		/// Adds a callback to an ordinary WM message.
+		///
+		/// This is a general method for custom messages, always prefer using the specific message methods.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// myWindow.on().wm(WM_ENTERIDLE, [](wl::wm::Msg p) {
+		///     // ...
+		///     return 0;
+		/// });
+		/// ```
+		void wm(UINT msg, std::function<LRESULT(wl::wm::Msg)> cb);
+
 		/// Handles the [`WM_CREATE`] message.
 		///
 		/// Note that this message is sent only to windows created programmatically, not to dialog windows.
@@ -237,11 +267,7 @@ namespace wl::events {
 		/// Example:
 		///
 		/// ```cpp
-		/// wl::WindowMain wnd{{
-		///     .title = L"My title",
-		///     .style = wl::opts::Main{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
-		/// }};
-		/// wnd.on().wm_create([](wl::wm::Create p) {
+		/// myWindow.on().wm_create([](wl::wm::Create p) {
 		///     // ...
 		///     return 0;
 		/// });
@@ -257,8 +283,7 @@ namespace wl::events {
 		/// Example:
 		///
 		/// ```cpp
-		/// wl::WindowMain wnd{DLG_MAIN};
-		/// wnd.on().wm_init_dialog([](wl::wm::InitDialog p) {
+		/// myWindow.on().wm_init_dialog([](wl::wm::InitDialog p) {
 		///     // ...
 		///     return true;
 		/// });
@@ -267,28 +292,12 @@ namespace wl::events {
 		/// [`WM_INITDIALOG`]: https://learn.microsoft.com/en-us/windows/win32/dlgbox/wm-initdialog
 		void wm_init_dialog(std::function<bool(wl::wm::InitDialog)> cb);
 
-		/// Adds a callback to an ordinary WM message.
-		///
-		/// This is a general method for custom messages, always prefer using the specific message methods.
-		///
-		/// Example:
-		///
-		/// ```cpp
-		/// wl::WindowMain wnd{DLG_MAIN};
-		/// wnd.on().wm(WM_ENTERIDLE, [](wl::wm::Msg p) {
-		///     // ...
-		///     return 0;
-		/// });
-		/// ```
-		void wm(UINT msg, std::function<LRESULT(wl::wm::Msg)> cb);
-
 		/// Adds a callback to a [`WM_COMMAND`] message, to an specific notification code.
 		///
 		/// Example:
 		///
 		/// ```cpp
-		/// wl::WindowMain wnd{DLG_MAIN};
-		/// wnd.on().wm_command(BTN_MAIN, BN_CLICKED, []() {
+		/// myWindow.on().wm_command(BTN_MAIN, BN_CLICKED, []() {
 		///     // ...
 		/// });
 		/// ```
@@ -303,8 +312,7 @@ namespace wl::events {
 		/// Example:
 		///
 		/// ```cpp
-		/// wl::WindowMain wnd{DLG_MAIN};
-		/// wnd.on().wm_command(IDCANCEL, []() {
+		/// myWindow.on().wm_command(IDCANCEL, []() {
 		///     // ...
 		/// });
 		/// ```
@@ -319,8 +327,7 @@ namespace wl::events {
 		/// Example:
 		///
 		/// ```cpp
-		/// wl::WindowMain wnd{DLG_MAIN};
-		/// wnd.on().wm_notify(LST_MAIN, LVN_BEGINDRAG, [](wl::wm::Notify p) {
+		/// myWindow.on().wm_notify(LST_MAIN, LVN_BEGINDRAG, [](wl::wm::Notify p) {
 		///     // ...
 		///     return 0;
 		/// });
@@ -330,11 +337,15 @@ namespace wl::events {
 		void wm_notify(WORD idFrom, int code, std::function<LRESULT(wl::wm::Notify)> cb);
 
 		void wm_activate(std::function<void(wl::wm::Activate)> cb);
+		void wm_activate_app(std::function<void(wl::wm::ActivateApp)> cb);
+		void wm_child_activate(std::function<void()> cb);
 		void wm_close(std::function<void()> cb);
 		void wm_destroy(std::function<void()> cb);
 		void wm_enable(std::function<void(wl::wm::Enable)> cb);
 		void wm_end_session(std::function<void(wl::wm::EndSession)> cb);
+		void wm_enter_size_move(std::function<void()> cb);
 		void wm_erase_bkgnd(std::function<int(wl::wm::EraseBkgnd)> cb);
+		void wm_exit_size_move(std::function<void()> cb);
 		void wm_get_dlg_code(std::function<WORD(wl::wm::GetDlgCode)> cb);
 		void wm_h_scroll(std::function<void(wl::wm::HScroll)> cb);
 		void wm_init_menu_popup(std::function<void(wl::wm::InitMenuPopup)> cb);
@@ -347,6 +358,8 @@ namespace wl::events {
 		void wm_m_button_up(std::function<void(wl::wm::MButtonUp)> cb);
 		void wm_mouse_hover(std::function<void(wl::wm::MouseHover)> cb);
 		void wm_mouse_move(std::function<void(wl::wm::MouseMove)> cb);
+		void wm_move(std::function<void(wl::wm::Move)> cb);
+		void wm_moving(std::function<void(wl::wm::Moving)> cb);
 		void wm_nc_calc_size(std::function<WORD(wl::wm::NcCalcSize)> cb);
 		void wm_nc_destroy(std::function<void()> cb);
 		void wm_nc_paint(std::function<void(wl::wm::NcPaint)> cb);
@@ -364,7 +377,7 @@ namespace wl::events {
 		[[nodiscard]] bool has_message() const;
 		void clear_inis(); // WM_CREATE and WM_INITDIALOG
 		void clear();
-		std::optional<LRESULT> process_last(wl::wm::Msg procMsg) const;
+		[[nodiscard]] std::optional<LRESULT> process_last(wl::wm::Msg procMsg) const;
 
 		bool _isDlg;
 		std::vector<Msg> _inis{}; // WM_CREATE, WM_INITDIALOG
@@ -382,7 +395,8 @@ namespace wl { class WindowParent; }
 
 namespace _wl_internal {
 
-	/** Base to all native control events. */
+	/// Base to all native control events.
+	/// Actually just holds a pointer to parent events, which is where the events are added.
 	class EventsNativeCtrl final : wl::NonMovable {
 	public:
 		EventsNativeCtrl(wl::WindowParent &owner, WORD ctrlId);

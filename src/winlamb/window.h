@@ -56,8 +56,7 @@ namespace _wl_internal {
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _wnd.hwnd(); }
 		[[nodiscard]] wl::events::WindowEvents& on();
-		void thread_detach(std::function<void()> cb) const;
-		void thread_ui(std::function<void()> cb) const;
+		void ui_thread(std::function<void()> cb) const;
 
 		struct ProcResult final {
 			bool hasPre, hasPost;
@@ -96,7 +95,7 @@ namespace _wl_internal {
 		static LRESULT CALLBACK subclass_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp,
 			UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
 
-		wl::Window _wnd{};
+		wl::Window _wnd{}; // _hWnd member is set during control creation
 		WindowMsg &_owner;
 		wl::events::WindowEvents _subclassEvents{false};
 		static UINT_PTR _subclassId;

@@ -11,6 +11,7 @@ namespace wl::events {
 	class ListViewEvents final : wl::NonMovable {
 	private:
 		ListViewEvents(wl::WindowParent &owner, WORD ctrlId) : _events{owner, ctrlId} { }
+
 	public:
 		void lvn_begin_drag(std::function<void(NMLISTVIEW&)> cb);
 		void lvn_begin_label_edit(std::function<bool(NMLVDISPINFOW&)> cb);
@@ -48,31 +49,56 @@ namespace wl::opts {
 
 	/** Options to create a ListView programmatically. */
 	struct ListView final {
-		// Control position.
-		// Prefer using DPI-corrected values, like: dpi::pt(10, 10).
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::opts::ListView lvOpts{
+		///     .pos = wl::dpi::pt(10, 10),
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		POINT pos{};
-		// Control size.
-		// Prefer using DPI-corrected values, like: dpi::sz(120, 120).
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::opts::ListView lvOpts{
+		///     .pos = wl::dpi::sz(120, 120),
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		SIZE size = {.cx = 120, .cy = 120};
-		// Windows style.
-		// Defaults to: WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE.
+		/// The [window style] passed to [`CreateWindowEx`].
+		///
+		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
-		// Windows extended style.
-		// Defaults to: WS_EX_LEFT | WS_EX_CLIENTEDGE.
+		/// The [window extended style] passed to [`CreateWindowEx`].
+		///
+		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD windowExStyle = WS_EX_LEFT | WS_EX_CLIENTEDGE;
-		// ListView style.
-		// Defaults to: LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS.
+		/// The [ListView style] passed to [`CreateWindowEx`].
+		///
+		/// [ListView style]: https://learn.microsoft.com/en-us/windows/win32/controls/list-view-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD ctrlStyle = LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS;
-		// ListView extended style.
-		// Defaults to: LVS_EX_FULLROWSELECT.
+		/// The [ListView extended styles] applied right after the control is created.
+		///
+		/// [ListView extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/extended-list-view-styles
 		DWORD ctrlExStyle = LVS_EX_FULLROWSELECT;
-		// Control ID.
-		// Defaults to an auto-generated number.
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
 		WORD ctrlId = 0;
-		// Optional ListView context menu.
+		/** Optional ListView context menu. */
 		HMENU hMenuContext = nullptr;
-		// Horizontal and vertical behavior of the control when the parent window is resized.
-		// Defaults to: Lay::none_none.
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
 		Lay layout = Lay::none_none;
 	};
 
@@ -121,7 +147,6 @@ namespace wl {
 			int _index;
 		};
 
-	private:
 		/** Operations over the columns. */
 		class ColumnCollection final : NonMovable {
 		private:
@@ -137,7 +162,6 @@ namespace wl {
 			friend ListView;
 		};
 
-	public:
 		/** A single item of the ListView. */
 		class Item final {
 		public:
@@ -161,7 +185,6 @@ namespace wl {
 			int _index;
 		};
 
-	private:
 		/** Operations over the items. */
 		class ItemCollection final : NonMovable {
 		private:
@@ -187,20 +210,37 @@ namespace wl {
 			friend ListView;
 		};
 
-	public:
 		/// Constructs the list view programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		ListView(WindowParent &owner, opts::ListView opts);
+		ListView(WindowParent &owner, opts::ListView options);
 
 		/** Constructs the list view from the dialog resource. */
 		ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId = 0, Lay layout = Lay::none_none);
 
+		/** Column methods. */
 		ColumnCollection cols{this};
+
+		/** Item methods. */
 		ItemCollection items{this};
 
+		/** Returns the wrapped window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const { return _ctrl.hwnd(); }
+
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
 		[[nodiscard]] events::ListViewEvents& on() { return _events; }
+
+		/// Sets one or more [extended styles].
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// myList.set_extended_style(true, LVS_EX_FULLROWSELECT);
+		/// ```
+		///
+		/// [extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/extended-list-view-styles
 		const ListView& set_extended_style(bool doSet, DWORD exStyle) const;
 
 	private:
@@ -209,7 +249,6 @@ namespace wl {
 
 		_wl_internal::NativeCtrl _ctrl;
 		events::ListViewEvents _events;
-		std::optional<opts::ListView> _opts{};
 		HMENU _hMenuContext = nullptr;
 	};
 

@@ -57,7 +57,8 @@ std::wstring wl::str::fmt(WStrPtr format, ...) {
 
 static constexpr size_t ten_pow(BYTE exponent) {
 	size_t val = 1;
-	for (BYTE i = 0; i < exponent; ++i) val *= 10;
+	for (BYTE i = 0; i < exponent; ++i)
+		val *= 10;
 	return val;
 }
 
@@ -77,6 +78,24 @@ std::wstring wl::str::fmt_bytes(size_t numBytes) {
 		return fmt(L"%.2f PB", numBytes / static_cast<float>(ten_pow(15)));
 	else
 		return fmt(L"%.2f EB", numBytes / static_cast<float>(ten_pow(18)));
+}
+
+std::wstring wl::str::fmt_error(DWORD errorCode) {
+	wchar_t *pBuf = nullptr;
+	DWORD nChars = FormatMessageW( // without terminating null
+		FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+		nullptr, errorCode, LANG_USER_DEFAULT, reinterpret_cast<LPWSTR>(&pBuf), 0, nullptr);
+
+	if (!nChars) [[unlikely]] {
+		std::wstring crashMsg = str::fmt(L"FormatMessage failed with error %d.", GetLastError());
+		MessageBoxW(nullptr, crashMsg.c_str(), L"Critical error", MB_ICONERROR);
+		return crashMsg;
+	}
+
+	std::wstring finalBuf(pBuf, nChars);
+	LocalFree(pBuf);
+	str::trim(finalBuf); // because \r\n is placed after the string
+	return finalBuf;
 }
 
 LPCWSTR wl::str::guess_line_break(WStrPtr s) {

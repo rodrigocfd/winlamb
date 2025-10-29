@@ -11,6 +11,8 @@ namespace wl::events { }
 /// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 namespace wl::opts { }
 
+#include "lib-include-win.h"
+
 #include "com-ptr.h"
 #include "ctl-list-view.h"
 #include "drop-files.h"
@@ -22,5 +24,6 @@ namespace wl::opts { }
 #include "str.h"
 #include "vec.h"
 #include "window-dialog.h"
+#include "window-raw.h"
 #include "window-user.h"
 #include "window.h"

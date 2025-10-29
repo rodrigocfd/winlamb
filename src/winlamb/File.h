@@ -16,7 +16,16 @@ namespace wl {
 	class File final : NonCopyable {
 	public:
 		/** @brief Requested access to open/create a file. */
-		enum class Access { existing_read_only, existing_rw, open_or_create_rw, create_rw };
+		enum class Access {
+			/** Opens the file as read-only, fails if the file doesn't exist. */
+			existing_read_only,
+			/** Opens the file as read-write, fails if the file doesn't exist. */
+			existing_rw,
+			/** Opens the file as read-write, creates the file if it doesn't exist. */
+			open_or_create_rw,
+			/** Creates the file as read-write, fails if the file already exists. */
+			create_rw,
+		};
 
 		/** @brief Creation, last access and last write file times. */
 		struct Times final {
@@ -199,7 +208,12 @@ namespace wl {
 	class FileMapped final : NonCopyable {
 	public:
 		/** @brief Requested access to open a file. */
-		enum class Access { existing_read_only, existing_rw };
+		enum class Access {
+			/** Opens the file as read-only. */
+			existing_read_only,
+			/** Opens the file as read-write. */
+			existing_rw,
+		};
 
 	public:
 		/// Destructor.
