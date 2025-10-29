@@ -3,25 +3,32 @@
 using namespace _wl_internal;
 using namespace wl;
 
-void Layout::calc_origins(HWND hParent) {
-	RECT rcParent{};
-	BOOL ret = GetClientRect(hParent, &rcParent);
-	#ifdef _DEBUG
-	if (!ret)
-		throw std::system_error(GetLastError(), std::system_category(), "GetClientRect failed");
-	#endif
-	_szOrig = {rcParent.right, rcParent.bottom}; // save original parent client area
+void Layout::add(HWND hCtrl, wl::Lay layout) {
+	if (layout == Lay::none_none)
+		return; // nothing to do, don't even bother adding the control
 
-	for (auto &&ctrl : _ctrls) { // save original client area of each control, relative to parent
-		RECT rcCtrlOrig{};
-		BOOL ret = GetWindowRect(ctrl.hCtrl, &ctrl.rcOrig); // relative to screen
+	HWND hParent = GetParent(hCtrl);
+
+	if (_ctrls.empty()) { // first control being added?
+		RECT rcParent{};
+		BOOL ret = GetClientRect(hParent, &rcParent);
 		#ifdef _DEBUG
 		if (!ret)
-			throw std::system_error(GetLastError(), std::system_category(), "GetWindowRect failed");
+			throw std::system_error(GetLastError(), std::system_category(), "GetClientRect failed");
 		#endif
-		ScreenToClient(hParent, reinterpret_cast<POINT*>(&ctrl.rcOrig)); // now relative to parent
-		ScreenToClient(hParent, reinterpret_cast<POINT*>(&ctrl.rcOrig.right)); // now relative to parent
+		_szOrig = {.cx = rcParent.right, .cy = rcParent.bottom}; // save original parent client area
 	}
+
+	RECT rcCtrl{};
+	BOOL ret = GetWindowRect(hCtrl, &rcCtrl); // relative to screen
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::system_error(GetLastError(), std::system_category(), "GetWindowRect failed");
+	#endif
+	ScreenToClient(hParent, reinterpret_cast<POINT*>(&rcCtrl)); // now relative to parent
+	ScreenToClient(hParent, reinterpret_cast<POINT*>(&rcCtrl.right)); // now relative to parent
+
+	_ctrls.emplace_back(hCtrl, layout, rcCtrl);
 }
 
 void Layout::rearrange(wm::Size p) {

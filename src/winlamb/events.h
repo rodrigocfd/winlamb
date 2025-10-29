@@ -121,7 +121,7 @@ namespace wl::wm {
 		[[nodiscard]] constexpr bool  is_right_btn() const  { return (mk_flag() & MK_RBUTTON) != 0; }
 		[[nodiscard]] constexpr bool  is_x1_btn() const     { return (mk_flag() & MK_XBUTTON1) != 0; }
 		[[nodiscard]] constexpr bool  is_x2_btn() const     { return (mk_flag() & MK_XBUTTON2) != 0; }
-		[[nodiscard]] constexpr POINT pos() const           { return {LOWORD(lp), HIWORD(lp)}; }
+		[[nodiscard]] constexpr POINT pos() const           { return {.x = LOWORD(lp), .y = HIWORD(lp)}; }
 	};
 	struct LButtonDown   : public LButtonDblClk { constexpr LButtonDown(const Msg &p)   : LButtonDblClk{p} { } };
 	struct LButtonUp     : public LButtonDblClk { constexpr LButtonUp(const Msg &p)     : LButtonDblClk{p} { } };
@@ -136,7 +136,7 @@ namespace wl::wm {
 
 	struct Move : protected Msg {
 		constexpr Move(const Msg &p) : Msg{p} { }
-		[[nodiscard]] constexpr POINT client_area_pos() const { return {LOWORD(lp), HIWORD(lp)}; }
+		[[nodiscard]] constexpr POINT client_area_pos() const { return {.x = LOWORD(lp), .y = HIWORD(lp)}; }
 	};
 
 	struct Moving : protected Msg {
@@ -176,7 +176,7 @@ namespace wl::wm {
 		[[nodiscard]] constexpr bool is_other_restored() const  { return size_flag() == SIZE_MAXSHOW; }
 		[[nodiscard]] constexpr bool is_minimized() const       { return size_flag() == SIZE_MINIMIZED; }
 		[[nodiscard]] constexpr bool is_restored() const        { return size_flag() == SIZE_RESTORED; }
-		[[nodiscard]] constexpr SIZE sz() const                 { return {LOWORD(lp), HIWORD(lp)}; }
+		[[nodiscard]] constexpr SIZE sz() const                 { return {.cx = LOWORD(lp), .cy = HIWORD(lp)}; }
 	};
 
 	struct Sizing : protected Msg {

@@ -372,20 +372,21 @@ std::optional<ListView::Item> ListView::ItemCollection::topmost_visible() const 
 ////////////////////////////////////////////////////////////////////////////////
 
 ListView::ListView(WindowParent &owner, opts::ListView options)
-	: _ctrl{owner, options.layout}, _events{owner, options.ctrlId}, _hMenuContext{options.hMenuContext}
+	: _ctrl{owner}, _events{owner, options.ctrlId}, _hMenuContext{options.hMenuContext}
 {
 	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, pOwner = &owner, options]() {
 		_ctrl.create_wnd(options.ctrlId, options.windowExStyle, WC_LISTVIEWW, nullptr,
 			options.windowStyle | options.ctrlStyle,
 			options.pos, options.size);
 		set_extended_style(true, options.ctrlExStyle);
+		_ctrl._owner._layout.add(hwnd(), options.layout);
 	});
 
 	custom_events(options.ctrlId);
 }
 
 ListView::ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId, Lay layout)
-	: _ctrl{owner, layout}, _events{owner, ctrlId}
+	: _ctrl{owner}, _events{owner, ctrlId}
 {
 	_hMenuContext = LoadMenuW(GetModuleHandle(nullptr), MAKEINTRESOURCEW(contextMenuId));
 	#ifdef _DEBUG
@@ -393,8 +394,9 @@ ListView::ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId, Lay lay
 		throw std::invalid_argument("ListView context menu failed to load.");
 	#endif
 
-	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, ctrlId]() {
+	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, ctrlId, layout]() {
 		_ctrl.assign_dlg(ctrlId);
+		_ctrl._owner._layout.add(hwnd(), layout);
 	});
 
 	custom_events(ctrlId);

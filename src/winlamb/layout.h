@@ -59,13 +59,12 @@ namespace _wl_internal {
 	class Layout final {
 	public:
 		struct Ctrl final {
-			HWND &hCtrl;
+			HWND hCtrl;
 			wl::Lay layout;
 			RECT rcOrig;
 		};
 
-		void add(HWND &hCtrl, wl::Lay layout) { _ctrls.emplace_back(hCtrl, layout, RECT{}); }
-		void calc_origins(HWND hParent);
+		void add(HWND hCtrl, wl::Lay layout);
 		void rearrange(wl::wm::Size p);
 
 		std::vector<Ctrl> _ctrls{};

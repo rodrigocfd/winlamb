@@ -83,7 +83,7 @@ namespace _wl_internal {
 	/// Base to all native controls.
 	class NativeCtrl final : wl::NonMovable {
 	public:
-		NativeCtrl(wl::WindowParent &owner, wl::Lay layout);
+		NativeCtrl(wl::WindowParent &owner);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _wnd.hwnd(); }
 		[[nodiscard]] wl::events::WindowEvents& subclass_on();

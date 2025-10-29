@@ -64,8 +64,6 @@ WindowMsg::ProcResult WindowMsg::process_msgs(UINT msg, WPARAM wp, LPARAM lp) {
 	}
 
 	bool hasPre = _preEvents.process_all({msg, wp, lp});
-	if (msg == WM_CREATE || msg == WM_INITDIALOG)
-		_layout.calc_origins(hwnd()); // controls are created in _preEvents, we need their HWNDs
 	std::optional<LRESULT> userRet = _userEvents.process_last({msg, wp, lp});
 	bool hasPost = _postEvents.process_all({msg, wp, lp});
 
@@ -146,10 +144,9 @@ void WindowMsg::modal_loop(bool processDlgMsgs) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-NativeCtrl::NativeCtrl(WindowParent &owner, Lay layout)
+NativeCtrl::NativeCtrl(WindowParent &owner)
 	: _owner{owner.wnd_msg()}
 {
-	_owner._layout.add(_wnd._hWnd, layout); // don't pass hwnd(), it's a HWND&
 }
 
 UINT_PTR NativeCtrl::_subclassId = 0;
