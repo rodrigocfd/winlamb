@@ -1,5 +1,5 @@
 #pragma once
-#include "window-dialog.h"
+#include "window-dlg.h"
 #include "window-raw.h"
 
 namespace wl {
@@ -10,35 +10,41 @@ namespace wl {
 	class WindowParent : NonMovable {
 	public:
 		/** Returns the window handle. */
-		[[nodiscard]] virtual HWND hwnd() const = 0;
-
-		/// Calls [`GetWindowText`] to retrieve the window title.
-		///
-		/// [`GetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowtextw
-		[[nodiscard]] virtual std::wstring title() const = 0;
-
-		/// Calls [`SetWindowText`] to set the window title.
-		///
-		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		virtual void set_title(WStrPtr title) const = 0;
+		[[nodiscard]] constexpr virtual HWND hwnd() const { return wnd_msg().hwnd(); }
 
 		/// Allows message events to be added.
 		///
 		/// The events must be added before the window is created on the screen.
-		[[nodiscard]] virtual events::WindowEvents& on() = 0;
+		[[nodiscard]] virtual events::WindowEvents& on() { return wnd_msg().on(); }
 
 		/// Blocks the current thread and runs `cb` in the UI thread.
 		///
 		/// Useful if you need to update the window from another thread.
-		virtual void ui_thread(std::function<void()> cb) const = 0;
+		virtual void ui_thread(std::function<void()> cb) const { return wnd_msg().ui_thread(cb); }
 
 	private:
 		[[nodiscard]] virtual const _wl_internal::WindowMsg& wnd_msg() const = 0;
 		[[nodiscard]] virtual _wl_internal::WindowMsg& wnd_msg() = 0;
-		friend _wl_internal::NativeCtrl; // controls acess wnd_msg() to add creation events
+
 		friend _wl_internal::EventsNativeCtrl; // so events can be added to parent via wnd_msg()
+		friend _wl_internal::NativeCtrl; // here and below: so events can be added to parent via wnd_msg()
+		friend _wl_internal::RawControl;
+		friend _wl_internal::DlgControl;
 		friend DropFiles;
 	};
+
+}
+
+namespace _wl_internal {
+
+	template<typename R, typename D>
+	[[nodiscard]] constexpr const WindowMsg& get_wnd_msg(const std::optional<R> &raw, const std::optional<D> &dlg) {
+		return raw.has_value() ? raw.value()._rawBase._wndMsg : dlg.value()._dlgBase._wndMsg;
+	}
+	template<typename R, typename D>
+	[[nodiscard]] constexpr WindowMsg& get_wnd_msg(std::optional<R> &raw, std::optional<D> &dlg) {
+		return raw.has_value() ? raw.value()._rawBase._wndMsg : dlg.value()._dlgBase._wndMsg;
+	}
 
 }
 
@@ -116,30 +122,17 @@ namespace wl {
 		///
 		/// [`CreateDialogParam`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createdialogparamw
 		WindowMain(WORD dlgId, WORD iconId = 0, WORD accelTblId = 0)
-			: _dlgMain{std::make_optional<_wl_internal::DialogMain>(dlgId, iconId, accelTblId)} { }
-
-		/** Returns the window handle. */
-		[[nodiscard]] constexpr HWND hwnd() const override { return _rawMain.has_value() ? _rawMain.value().hwnd() : _dlgMain.value().hwnd(); }
+			: _dlgMain{std::make_optional<_wl_internal::DlgMain>(dlgId, iconId, accelTblId)} { }
 
 		/// Calls [`GetWindowText`] to retrieve the window title.
 		///
 		/// [`GetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowtextw
-		[[nodiscard]] std::wstring title() const override { return wnd_msg()._wnd.text(); }
+		[[nodiscard]] std::wstring title() const { return wnd_msg()._wnd.text(); }
 
 		/// Calls [`SetWindowText`] to set the window title.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		void set_title(WStrPtr title) const override { wnd_msg()._wnd.set_text(title); }
-
-		/// Allows message events to be added.
-		///
-		/// The events must be added before the window is created on the screen.
-		[[nodiscard]] events::WindowEvents& on() override { return wnd_msg().on(); }
-
-		/// Blocks the current thread and runs `cb` in the UI thread.
-		///
-		/// Useful if you need to update the window from another thread.
-		void ui_thread(std::function<void()> cb) const override { wnd_msg().ui_thread(cb); }
+		void set_title(WStrPtr title) const { wnd_msg()._wnd.set_text(title); }
 
 		/// Runs the main window, blocking the UI thread until the window is closed.
 		///
@@ -147,11 +140,11 @@ namespace wl {
 		int run(HINSTANCE hInst, int cmdShow);
 
 	private:
-		[[nodiscard]] const _wl_internal::WindowMsg& wnd_msg() const override;
-		[[nodiscard]] _wl_internal::WindowMsg& wnd_msg() override;
+		[[nodiscard]] constexpr const _wl_internal::WindowMsg& wnd_msg() const override { return get_wnd_msg(_rawMain, _dlgMain); }
+		[[nodiscard]] constexpr _wl_internal::WindowMsg& wnd_msg() override             { return get_wnd_msg(_rawMain, _dlgMain); }
 
 		std::optional<_wl_internal::RawMain> _rawMain{}; // either one
-		std::optional<_wl_internal::DialogMain> _dlgMain{};
+		std::optional<_wl_internal::DlgMain> _dlgMain{};
 	};
 
 }
@@ -177,8 +170,8 @@ namespace wl {
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		WindowModal(WindowParent &parent, opts::Modal opts)
-			: _rawModal{std::make_optional<_wl_internal::RawModal>(parent, opts)} { }
+		WindowModal(WindowParent &parent, opts::Modal options)
+			: _rawModal{std::make_optional<_wl_internal::RawModal>(parent, options)} { }
 
 		/// Constructs the modal window from a dialog resource with [`DialogBoxParam`].
 		///
@@ -193,40 +186,54 @@ namespace wl {
 		///
 		/// [`DialogBoxParam`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxparamw
 		WindowModal(const WindowParent &parent, WORD dlgId)
-			: _dlgModal{std::make_optional<_wl_internal::DialogModal>(parent, dlgId)} { }
-
-		/** Returns the window handle. */
-		[[nodiscard]] constexpr HWND hwnd() const { return _rawModal.has_value() ? _rawModal.value().hwnd() : _dlgModal.value().hwnd(); }
+			: _dlgModal{std::make_optional<_wl_internal::DlgModal>(parent, dlgId)} { }
 
 		/// Calls [`GetWindowText`] to retrieve the window title.
 		///
 		/// [`GetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowtextw
-		[[nodiscard]] std::wstring title() const override { return wnd_msg()._wnd.text(); }
+		[[nodiscard]] std::wstring title() const { return wnd_msg()._wnd.text(); }
 
 		/// Calls [`SetWindowText`] to set the window title.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		void set_title(WStrPtr title) const override { wnd_msg()._wnd.set_text(title); }
-
-		/// Allows message events to be added.
-		///
-		/// The events must be added before the window is created on the screen.
-		[[nodiscard]] events::WindowEvents& on() override { return wnd_msg().on(); }
-
-		/// Blocks the current thread and runs `cb` in the UI thread.
-		///
-		/// Useful if you need to update the window from another thread.
-		void ui_thread(std::function<void()> cb) const override { wnd_msg().ui_thread(cb); }
+		void set_title(WStrPtr title) const { wnd_msg()._wnd.set_text(title); }
 
 		/** Displays the modal window, blocking the UI thread until the window is closed. */
 		void show();
 
 	private:
-		[[nodiscard]] const _wl_internal::WindowMsg& wnd_msg() const override;
-		[[nodiscard]] _wl_internal::WindowMsg& wnd_msg() override;
+		[[nodiscard]] constexpr const _wl_internal::WindowMsg& wnd_msg() const override { return get_wnd_msg(_rawModal, _dlgModal); }
+		[[nodiscard]] constexpr _wl_internal::WindowMsg& wnd_msg() override             { return get_wnd_msg(_rawModal, _dlgModal); }
 
 		std::optional<_wl_internal::RawModal> _rawModal{}; // either one
-		std::optional<_wl_internal::DialogModal> _dlgModal{};
+		std::optional<_wl_internal::DlgModal> _dlgModal{};
+	};
+
+}
+
+namespace wl {
+
+	/** @brief Custom control window. */
+	class WindowControl final : public WindowParent {
+	public:
+		/// Constructs the custom control window programmatically with [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		WindowControl(WindowParent &parent, opts::Control options)
+			: _rawControl{std::make_optional<_wl_internal::RawControl>(parent, options)} { }
+
+		/// Constructs the custom control window from a dialog resource with [`CreateDialogParam`].
+		///
+		/// [`CreateDialogParam`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createdialogparamw
+		WindowControl(wl::WindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos, wl::Lay layout = wl::Lay::none_none)
+			: _dlgControl{std::make_optional<_wl_internal::DlgControl>(parent, dlgId, ctrlId, pos, layout)} { }
+
+	private:
+		[[nodiscard]] constexpr const _wl_internal::WindowMsg& wnd_msg() const override { return get_wnd_msg(_rawControl, _dlgControl); }
+		[[nodiscard]] constexpr _wl_internal::WindowMsg& wnd_msg() override             { return get_wnd_msg(_rawControl, _dlgControl); }
+
+		std::optional<_wl_internal::RawControl> _rawControl{}; // either one
+		std::optional<_wl_internal::DlgControl> _dlgControl{};
 	};
 
 }

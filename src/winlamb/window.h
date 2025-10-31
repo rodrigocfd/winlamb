@@ -4,7 +4,7 @@
 
 namespace _wl_internal {
 	class RawBase;
-	class DialogBase;
+	class DlgBase;
 	class NativeCtrl;
 }
 
@@ -39,7 +39,7 @@ namespace wl {
 	private:
 		HWND _hWnd = nullptr;
 		friend _wl_internal::RawBase; // set raw hWnd
-		friend _wl_internal::DialogBase; // set dialog hDlg
+		friend _wl_internal::DlgBase; // set dialog hDlg
 		friend _wl_internal::NativeCtrl; // set control hWnd
 	};
 
@@ -67,8 +67,8 @@ namespace _wl_internal {
 		void modal_loop(bool processDlgMsgs);
 
 		bool _isDlg;
-		wl::Window _wnd{};
-		Layout _layout;
+		wl::Window _wnd{}; // _hWnd member is set during window/control creation
+		Layout _layout{};
 		EventsInternal _preEvents;
 		wl::events::WindowEvents _userEvents;
 		EventsInternal _postEvents;
@@ -80,10 +80,10 @@ namespace wl { class WindowParent; }
 
 namespace _wl_internal {
 
-	/// Base to all native controls.
+	/** Base to all native controls. */
 	class NativeCtrl final : wl::NonMovable {
 	public:
-		NativeCtrl(wl::WindowParent &owner);
+		explicit NativeCtrl(wl::WindowParent &owner);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _wnd.hwnd(); }
 		[[nodiscard]] wl::events::WindowEvents& subclass_on();
@@ -98,7 +98,8 @@ namespace _wl_internal {
 		wl::Window _wnd{}; // _hWnd member is set during control creation
 		WindowMsg &_owner;
 		wl::events::WindowEvents _subclassEvents{false};
-		static UINT_PTR _subclassId;
+
+		static HMENU valid_ctrl_id(WORD ctrlId);
 	};
 
 }

@@ -80,10 +80,23 @@ void DlgMain::on_about() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+wl::opts::Control ctlOpts{
+	.pos    = wl::dpi::pt(420, 10),
+	.size   = wl::dpi::sz(80, 80),
+	.layout = wl::Lay::repos_none,
+};
+
+Contro::Contro(wl::WindowParent &parent)
+	: wnd{parent, ctlOpts}
+{
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 wl::opts::Main wndOpts{
 	.iconId = ICO_MAIN,
 	.title  = L"Together",
-	.size   = wl::dpi::sz(500, 300),
+	.size   = wl::dpi::sz(550, 300),
 	.style  = wl::opts::Main{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
 };
 wl::opts::ListView lstOpts{

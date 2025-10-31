@@ -95,7 +95,7 @@ LRESULT CALLBACK RawBase::raw_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
 	RawBase *pSelf = nullptr;
 	switch (msg) {
 	case WM_NCCREATE:
-		pSelf = reinterpret_cast<RawBase*>(reinterpret_cast<CREATESTRUCTW*>(lp)->lpCreateParams);
+		pSelf = reinterpret_cast<RawBase*>(reinterpret_cast<const CREATESTRUCTW*>(lp)->lpCreateParams);
 		pSelf->_wndMsg._wnd._hWnd = hWnd;
 		SetWindowLongPtrW(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pSelf));
 		break;
@@ -178,8 +178,8 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RawModal::RawModal(WindowParent &parent, opts::Modal opts)
-	: _parent{parent}, _opts{opts}
+RawModal::RawModal(const WindowParent &parent, opts::Modal options)
+	: _parent{parent}, _opts{options}
 {
 	_rawBase._wndMsg._preEvents.wm(WM_SETFOCUS, [this](wm::SetFocus) {
 		_rawBase.focus_first_child();
@@ -194,7 +194,7 @@ RawModal::RawModal(WindowParent &parent, opts::Modal opts)
 }
 
 void RawModal::show() {
-	HINSTANCE hInst = GetModuleHandleW(nullptr);
+	HINSTANCE hInst = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(_parent.hwnd(), GWLP_HINSTANCE));
 	ATOM atom = _rawBase.register_class(hInst, _opts.className, _opts.classStyle,
 		_opts.iconId, _opts.hbrBackground, _opts.hCursor);
 
@@ -223,4 +223,17 @@ void RawModal::show() {
 		nullptr, nullptr, hInst);
 
 	_rawBase._wndMsg.modal_loop(_opts.processDlgMsgs);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+RawControl::RawControl(WindowParent &parent, opts::Control options) {
+	parent.wnd_msg()._preEvents.wm_create_or_init_dialog([this, pParent = &parent, options]() {
+		HINSTANCE hInst = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(pParent->hwnd(), GWLP_HINSTANCE));
+		ATOM atom = _rawBase.register_class(hInst, options.className, options.classStyle,
+			0, options.hbrBackground, options.hCursor);
+		_rawBase.create_window(options.windowExStyle, atom, nullptr, options.windowStyle,
+			options.pos, options.size, pParent->hwnd(), NativeCtrl::valid_ctrl_id(options.ctrlId), hInst);
+		pParent->wnd_msg()._layout.add(hwnd(), options.layout);
+	});
 }

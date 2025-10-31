@@ -207,9 +207,9 @@ namespace _wl_internal {
 
 		constexpr explicit EventsInternal(bool isDlg) : _isDlg{isDlg} { }
 
-		void wm_create_or_init_dialog(std::function<void()> cb);
-		void wm(UINT msg, std::function<void(wl::wm::Msg)> cb);
-		void wm_notify(WORD idFrom, int code, std::function<void(wl::wm::Notify)> cb);
+		void wm_create_or_init_dialog(std::function<void()> &&cb);
+		void wm(UINT msg, std::function<void(wl::wm::Msg)> &&cb);
+		void wm_notify(WORD idFrom, int code, std::function<void(wl::wm::Notify)> &&cb);
 
 		void clear_inis(); // WM_CREATE and WM_INITDIALOG
 		void clear();
@@ -258,7 +258,7 @@ namespace wl::events {
 		///     return 0;
 		/// });
 		/// ```
-		void wm(UINT msg, std::function<LRESULT(wl::wm::Msg)> cb);
+		void wm(UINT msg, std::function<LRESULT(wl::wm::Msg)> &&cb);
 
 		/// Handles the [`WM_CREATE`] message.
 		///
@@ -274,7 +274,7 @@ namespace wl::events {
 		/// ```
 		///
 		/// [`WM_CREATE`]: https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-create
-		void wm_create(std::function<int(wl::wm::Create)> cb);
+		void wm_create(std::function<int(wl::wm::Create)> &&cb);
 
 		/// Handles the [`WM_INITDIALOG`] message.
 		///
@@ -290,7 +290,7 @@ namespace wl::events {
 		/// ```
 		///
 		/// [`WM_INITDIALOG`]: https://learn.microsoft.com/en-us/windows/win32/dlgbox/wm-initdialog
-		void wm_init_dialog(std::function<bool(wl::wm::InitDialog)> cb);
+		void wm_init_dialog(std::function<bool(wl::wm::InitDialog)> &&cb);
 
 		/// Adds a callback to a [`WM_COMMAND`] message, to an specific notification code.
 		///
@@ -303,7 +303,7 @@ namespace wl::events {
 		/// ```
 		///
 		/// [`WM_COMMAND`]: https://learn.microsoft.com/en-us/windows/win32/menurc/wm-command
-		void wm_command(WORD cmdId, WORD notifCode, std::function<void()> cb);
+		void wm_command(WORD cmdId, WORD notifCode, std::function<void()> &&cb);
 
 		/// Adds a callback to a [`WM_COMMAND`] message, for notifications from both accelerator and menu events.
 		///
@@ -318,7 +318,7 @@ namespace wl::events {
 		/// ```
 		///
 		/// [`WM_COMMAND`]: https://learn.microsoft.com/en-us/windows/win32/menurc/wm-command
-		void wm_command(WORD cmdId, std::function<void()> cb);
+		void wm_command(WORD cmdId, std::function<void()> &&cb);
 
 		/// Adds a callback to a [`WM_NOTIFY`] message, to specific control ID and notification code.
 		///
@@ -334,44 +334,44 @@ namespace wl::events {
 		/// ```
 		///
 		/// [`WM_NOTIFY`]: https://learn.microsoft.com/en-us/windows/win32/controls/wm-notify
-		void wm_notify(WORD idFrom, int code, std::function<LRESULT(wl::wm::Notify)> cb);
+		void wm_notify(WORD idFrom, int code, std::function<LRESULT(wl::wm::Notify)> &&cb);
 
-		void wm_activate(std::function<void(wl::wm::Activate)> cb);
-		void wm_activate_app(std::function<void(wl::wm::ActivateApp)> cb);
-		void wm_child_activate(std::function<void()> cb);
-		void wm_close(std::function<void()> cb);
-		void wm_destroy(std::function<void()> cb);
-		void wm_enable(std::function<void(wl::wm::Enable)> cb);
-		void wm_end_session(std::function<void(wl::wm::EndSession)> cb);
-		void wm_enter_size_move(std::function<void()> cb);
-		void wm_erase_bkgnd(std::function<int(wl::wm::EraseBkgnd)> cb);
-		void wm_exit_size_move(std::function<void()> cb);
-		void wm_get_dlg_code(std::function<WORD(wl::wm::GetDlgCode)> cb);
-		void wm_h_scroll(std::function<void(wl::wm::HScroll)> cb);
-		void wm_init_menu_popup(std::function<void(wl::wm::InitMenuPopup)> cb);
-		void wm_kill_focus(std::function<void(wl::wm::KillFocus)> cb);
-		void wm_l_button_dbl_clk(std::function<void(wl::wm::LButtonDblClk)> cb);
-		void wm_l_button_down(std::function<void(wl::wm::LButtonDown)> cb);
-		void wm_l_button_up(std::function<void(wl::wm::LButtonUp)> cb);
-		void wm_m_button_dbl_clk(std::function<void(wl::wm::MButtonDblClk)> cb);
-		void wm_m_button_down(std::function<void(wl::wm::MButtonDown)> cb);
-		void wm_m_button_up(std::function<void(wl::wm::MButtonUp)> cb);
-		void wm_mouse_hover(std::function<void(wl::wm::MouseHover)> cb);
-		void wm_mouse_move(std::function<void(wl::wm::MouseMove)> cb);
-		void wm_move(std::function<void(wl::wm::Move)> cb);
-		void wm_moving(std::function<void(wl::wm::Moving)> cb);
-		void wm_nc_calc_size(std::function<WORD(wl::wm::NcCalcSize)> cb);
-		void wm_nc_destroy(std::function<void()> cb);
-		void wm_nc_paint(std::function<void(wl::wm::NcPaint)> cb);
-		void wm_paint(std::function<void()> cb);
-		void wm_power_broadcast(std::function<void(wl::wm::PowerBroadcast)> cb);
-		void wm_r_button_dbl_clk(std::function<void(wl::wm::RButtonDblClk)> cb);
-		void wm_r_button_down(std::function<void(wl::wm::RButtonDown)> cb);
-		void wm_r_button_up(std::function<void(wl::wm::RButtonUp)> cb);
-		void wm_set_focus(std::function<void(wl::wm::SetFocus)> cb);
-		void wm_size(std::function<void(wl::wm::Size)> cb);
-		void wm_sizing(std::function<void(wl::wm::Sizing)> cb);
-		void wm_v_scroll(std::function<void(wl::wm::VScroll)> cb);
+		void wm_activate(std::function<void(wl::wm::Activate)> &&cb);
+		void wm_activate_app(std::function<void(wl::wm::ActivateApp)> &&cb);
+		void wm_child_activate(std::function<void()> &&cb);
+		void wm_close(std::function<void()> &&cb);
+		void wm_destroy(std::function<void()> &&cb);
+		void wm_enable(std::function<void(wl::wm::Enable)> &&cb);
+		void wm_end_session(std::function<void(wl::wm::EndSession)> &&cb);
+		void wm_enter_size_move(std::function<void()> &&cb);
+		void wm_erase_bkgnd(std::function<int(wl::wm::EraseBkgnd)> &&cb);
+		void wm_exit_size_move(std::function<void()> &&cb);
+		void wm_get_dlg_code(std::function<WORD(wl::wm::GetDlgCode)> &&cb);
+		void wm_h_scroll(std::function<void(wl::wm::HScroll)> &&cb);
+		void wm_init_menu_popup(std::function<void(wl::wm::InitMenuPopup)> &&cb);
+		void wm_kill_focus(std::function<void(wl::wm::KillFocus)> &&cb);
+		void wm_l_button_dbl_clk(std::function<void(wl::wm::LButtonDblClk)> &&cb);
+		void wm_l_button_down(std::function<void(wl::wm::LButtonDown)> &&cb);
+		void wm_l_button_up(std::function<void(wl::wm::LButtonUp)> &&cb);
+		void wm_m_button_dbl_clk(std::function<void(wl::wm::MButtonDblClk)> &&cb);
+		void wm_m_button_down(std::function<void(wl::wm::MButtonDown)> &&cb);
+		void wm_m_button_up(std::function<void(wl::wm::MButtonUp)> &&cb);
+		void wm_mouse_hover(std::function<void(wl::wm::MouseHover)> &&cb);
+		void wm_mouse_move(std::function<void(wl::wm::MouseMove)> &&cb);
+		void wm_move(std::function<void(wl::wm::Move)> &&cb);
+		void wm_moving(std::function<void(wl::wm::Moving)> &&cb);
+		void wm_nc_calc_size(std::function<WORD(wl::wm::NcCalcSize)> &&cb);
+		void wm_nc_destroy(std::function<void()> &&cb);
+		void wm_nc_paint(std::function<void(wl::wm::NcPaint)> &&cb);
+		void wm_paint(std::function<void()> &&cb);
+		void wm_power_broadcast(std::function<void(wl::wm::PowerBroadcast)> &&cb);
+		void wm_r_button_dbl_clk(std::function<void(wl::wm::RButtonDblClk)> &&cb);
+		void wm_r_button_down(std::function<void(wl::wm::RButtonDown)> &&cb);
+		void wm_r_button_up(std::function<void(wl::wm::RButtonUp)> &&cb);
+		void wm_set_focus(std::function<void(wl::wm::SetFocus)> &&cb);
+		void wm_size(std::function<void(wl::wm::Size)> &&cb);
+		void wm_sizing(std::function<void(wl::wm::Sizing)> &&cb);
+		void wm_v_scroll(std::function<void(wl::wm::VScroll)> &&cb);
 
 	private:
 		[[nodiscard]] bool has_message() const;

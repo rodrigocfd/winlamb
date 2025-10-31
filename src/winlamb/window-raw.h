@@ -194,15 +194,96 @@ namespace _wl_internal {
 	/** Modal raw window. */
 	class RawModal final : wl::NonMovable {
 	public:
-		RawModal(wl::WindowParent &parent, wl::opts::Modal opts);
+		RawModal(const wl::WindowParent &parent, wl::opts::Modal options);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _rawBase.hwnd(); }
 		void show();
 
 		RawBase _rawBase{};
-		wl::WindowParent &_parent;
+		const wl::WindowParent &_parent;
 		wl::opts::Modal _opts;
 		HWND _hWndChildPrevFocusParent = nullptr;
+	};
+
+}
+
+namespace wl::opts {
+
+	/** Options to create a WindowControl programmatically. */
+	struct Control final {
+		/// Class name passed to [`WNDCLASSEX`].
+		///
+		/// Defaults to an auto-generated string.
+		///
+		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
+		LPCWSTR className = nullptr;
+		/// Class style passed to [`WNDCLASSEX`].
+		///
+		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
+		DWORD classStyle = CS_DBLCLKS;
+		/// The window background brush passed to [`WNDCLASSEX`].
+		///
+		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
+		HBRUSH hbrBackground = reinterpret_cast<HBRUSH>(COLOR_WINDOW + 1);
+		/// The window cursor passed to [`WNDCLASSEX`].
+		///
+		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
+		HCURSOR hCursor = nullptr;
+
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::opts::Control ctrlOpts{
+		///     .pos = wl::dpi::pt(10, 10),
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		POINT pos{};
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::opts::Control ctrlOpts{
+		///     .pos = wl::dpi::sz(100, 100),
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SIZE size = {.cx = 100, .cy = 100};
+		/// The [window style] passed to [`CreateWindowEx`].
+		///
+		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD windowStyle = WS_CHILD | WS_TABSTOP | WS_GROUP | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+		/// The [window extended style] passed to [`CreateWindowEx`].
+		///
+		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD windowExStyle = WS_EX_LEFT | WS_EX_CLIENTEDGE;
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::none_none;
+	};
+
+}
+
+namespace _wl_internal {
+
+	/** Control raw window. */
+	class RawControl final : wl::NonMovable {
+	public:
+		RawControl(wl::WindowParent &parent, wl::opts::Control options);
+
+		[[nodiscard]] constexpr HWND hwnd() const { return _rawBase.hwnd(); }
+
+		RawBase _rawBase{};
 	};
 
 }

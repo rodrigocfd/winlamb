@@ -13,30 +13,30 @@ namespace wl::events {
 		ListViewEvents(wl::WindowParent &owner, WORD ctrlId) : _events{owner, ctrlId} { }
 
 	public:
-		void lvn_begin_drag(std::function<void(NMLISTVIEW&)> cb);
-		void lvn_begin_label_edit(std::function<bool(NMLVDISPINFOW&)> cb);
-		void lvn_begin_r_drag(std::function<void(NMLISTVIEW&)> cb);
-		void lvn_begin_scroll(std::function<void(NMLVSCROLL&)> cb);
-		void lvn_column_click(std::function<void(NMLISTVIEW&)> cb);
-		void lvn_column_drop_down(std::function<void(NMLISTVIEW&)> cb);
-		void lvn_column_overflow_click(std::function<void(NMLISTVIEW&)> cb);
-		void lvn_delete_all_items(std::function<bool(NMLISTVIEW&)> cb);
-		void lvn_delete_item(std::function<void(NMLISTVIEW&)> cb);
-		void lvn_end_label_edit(std::function<bool(NMLVDISPINFOW&)> cb);
-		void lvn_end_scroll(std::function<void(NMLVSCROLL&)> cb);
-		void lvn_insert_item(std::function<void(NMLISTVIEW&)> cb);
-		void lvn_item_activate(std::function<void(NMITEMACTIVATE&)> cb);
-		void lvn_item_changed(std::function<void(NMLISTVIEW&)> cb);
-		void lvn_item_changing(std::function<bool(NMLISTVIEW&)> cb);
-		void lvn_key_down(std::function<void(NMLVKEYDOWN&)> cb);
-		void nm_click(std::function<void(NMITEMACTIVATE&)> cb);
-		void nm_custom_draw(std::function<DWORD(NMLVCUSTOMDRAW&)> cb);
-		void nm_dbl_clk(std::function<void(NMITEMACTIVATE&)> cb);
-		void nm_kill_focus(std::function<void(NMHDR&)> cb);
-		void nm_r_click(std::function<void(NMITEMACTIVATE&)> cb);
-		void nm_r_dbl_clk(std::function<void(NMITEMACTIVATE&)> cb);
-		void nm_released_capture(std::function<void(NMHDR&)> cb);
-		void nm_set_focus(std::function<void(NMHDR&)> cb);
+		void lvn_begin_drag(std::function<void(NMLISTVIEW&)> &&cb);
+		void lvn_begin_label_edit(std::function<bool(NMLVDISPINFOW&)> &&cb);
+		void lvn_begin_r_drag(std::function<void(NMLISTVIEW&)> &&cb);
+		void lvn_begin_scroll(std::function<void(NMLVSCROLL&)> &&cb);
+		void lvn_column_click(std::function<void(NMLISTVIEW&)> &&cb);
+		void lvn_column_drop_down(std::function<void(NMLISTVIEW&)> &&cb);
+		void lvn_column_overflow_click(std::function<void(NMLISTVIEW&)> &&cb);
+		void lvn_delete_all_items(std::function<bool(NMLISTVIEW&)> &&cb);
+		void lvn_delete_item(std::function<void(NMLISTVIEW&)> &&cb);
+		void lvn_end_label_edit(std::function<bool(NMLVDISPINFOW&)> &&cb);
+		void lvn_end_scroll(std::function<void(NMLVSCROLL&)> &&cb);
+		void lvn_insert_item(std::function<void(NMLISTVIEW&)> &&cb);
+		void lvn_item_activate(std::function<void(NMITEMACTIVATE&)> &&cb);
+		void lvn_item_changed(std::function<void(NMLISTVIEW&)> &&cb);
+		void lvn_item_changing(std::function<bool(NMLISTVIEW&)> &&cb);
+		void lvn_key_down(std::function<void(NMLVKEYDOWN&)> &&cb);
+		void nm_click(std::function<void(NMITEMACTIVATE&)> &&cb);
+		void nm_custom_draw(std::function<DWORD(NMLVCUSTOMDRAW&)> &&cb);
+		void nm_dbl_clk(std::function<void(NMITEMACTIVATE&)> &&cb);
+		void nm_kill_focus(std::function<void(NMHDR&)> &&cb);
+		void nm_r_click(std::function<void(NMITEMACTIVATE&)> &&cb);
+		void nm_r_dbl_clk(std::function<void(NMITEMACTIVATE&)> &&cb);
+		void nm_released_capture(std::function<void(NMHDR&)> &&cb);
+		void nm_set_focus(std::function<void(NMHDR&)> &&cb);
 
 	private:
 		_wl_internal::EventsNativeCtrl _events;
@@ -230,7 +230,7 @@ namespace wl {
 		/// Allows message events to be added.
 		///
 		/// The events must be added before the control is created on the screen.
-		[[nodiscard]] events::ListViewEvents& on() { return _events; }
+		[[nodiscard]] constexpr events::ListViewEvents& on() { return _events; }
 
 		/// Sets one or more [extended styles].
 		///

@@ -25,13 +25,18 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
+class Contro final : wl::NonMovable {
+public:
+	Contro(wl::WindowParent &parent);
+	wl::WindowControl wnd;
+};
+
 class RawMain final : wl::NonMovable {
 public:
 	RawMain();
-
 	wl::WindowMain wnd;
 	wl::ListView lst;
-
+	Contro ctl{wnd};
 private:
 	int on_create(wl::wm::Create);
 };

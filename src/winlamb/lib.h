@@ -23,7 +23,7 @@ namespace wl::opts { }
 #include "runnable.h"
 #include "str.h"
 #include "vec.h"
-#include "window-dialog.h"
+#include "window-dlg.h"
 #include "window-raw.h"
 #include "window-user.h"
 #include "window.h"
