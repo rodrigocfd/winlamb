@@ -233,7 +233,9 @@ RawControl::RawControl(WindowParent &parent, opts::Control options) {
 		ATOM atom = _rawBase.register_class(hInst, options.className, options.classStyle,
 			0, options.hbrBackground, options.hCursor);
 		_rawBase.create_window(options.windowExStyle, atom, nullptr, options.windowStyle,
-			options.pos, options.size, pParent->hwnd(), NativeCtrl::valid_ctrl_id(options.ctrlId), hInst);
+			options.pos, options.size, pParent->hwnd(),
+			reinterpret_cast<HMENU>(NativeCtrl::valid_ctrl_id(options.ctrlId)),
+			hInst);
 		pParent->wnd_msg()._layout.add(hwnd(), options.layout);
 	});
 }

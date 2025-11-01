@@ -99,7 +99,7 @@ namespace _wl_internal {
 		WindowMsg &_owner;
 		wl::events::WindowEvents _subclassEvents{false};
 
-		static HMENU valid_ctrl_id(WORD ctrlId);
+		static WORD valid_ctrl_id(WORD ctrlId);
 	};
 
 }

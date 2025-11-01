@@ -372,34 +372,34 @@ std::optional<ListView::Item> ListView::ItemCollection::topmost_visible() const 
 ////////////////////////////////////////////////////////////////////////////////
 
 ListView::ListView(WindowParent &owner, opts::ListView options)
-	: _ctrl{owner}, _events{owner, options.ctrlId}, _hMenuContext{options.hMenuContext}
+	: _ctrl{owner}, _events{owner, NativeCtrl::valid_ctrl_id(options.ctrlId)}, _hMenuContext{options.hMenuContext}
 {
 	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, pOwner = &owner, options]() {
-		_ctrl.create_wnd(options.ctrlId, options.windowExStyle, WC_LISTVIEWW, nullptr,
+		_ctrl.create_wnd(ctrl_id(), options.windowExStyle, WC_LISTVIEWW, nullptr,
 			options.windowStyle | options.ctrlStyle,
 			options.pos, options.size);
 		set_extended_style(true, options.ctrlExStyle);
 		_ctrl._owner._layout.add(hwnd(), options.layout);
 	});
 
-	custom_events(options.ctrlId);
+	custom_events();
 }
 
 ListView::ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId, Lay layout)
-	: _ctrl{owner}, _events{owner, ctrlId}
+	: _ctrl{owner}, _events{owner, NativeCtrl::valid_ctrl_id(ctrlId)}
 {
-	_hMenuContext = LoadMenuW(GetModuleHandle(nullptr), MAKEINTRESOURCEW(contextMenuId));
+	_hMenuContext = LoadMenuW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(contextMenuId));
 	#ifdef _DEBUG
 	if (!_hMenuContext)
 		throw std::invalid_argument("ListView context menu failed to load.");
 	#endif
 
-	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, ctrlId, layout]() {
-		_ctrl.assign_dlg(ctrlId);
+	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, layout]() {
+		_ctrl.assign_dlg(ctrl_id());
 		_ctrl._owner._layout.add(hwnd(), layout);
 	});
 
-	custom_events(ctrlId);
+	custom_events();
 }
 
 const ListView& ListView::set_extended_style(bool doSet, DWORD exStyle) const {
@@ -407,24 +407,24 @@ const ListView& ListView::set_extended_style(bool doSet, DWORD exStyle) const {
 	return *this;
 }
 
-void ListView::custom_events(WORD ctrlId) {
-	_ctrl.subclass_on().wm_get_dlg_code([this, ctrlId](wm::GetDlgCode p) {
+void ListView::custom_events() {
+	_ctrl.subclass_on().wm_get_dlg_code([this](wm::GetDlgCode p) {
 		if (!p.is_query() && p.vkey_code() == VK_RETURN) { // Enter key
 			NMLVKEYDOWN nmlvkd{
 				.hdr{
 					.hwndFrom = hwnd(),
-					.idFrom = ctrlId,
+					.idFrom = ctrl_id(),
 					.code = LVN_KEYDOWN,
 				},
 				.wVKey = VK_RETURN,
 			};
 			HWND hParent = GetAncestor(hwnd(), GA_PARENT);
-			SendMessageW(hParent, WM_NOTIFY, ctrlId, reinterpret_cast<LPARAM>(&nmlvkd)); // send Enter key to parent
+			SendMessageW(hParent, WM_NOTIFY, ctrl_id(), reinterpret_cast<LPARAM>(&nmlvkd)); // send Enter key to parent
 		}
 		return static_cast<WORD>(DefSubclassProc(hwnd(), WM_GETDLGCODE, p.wparam(), p.lparam())); // let system define DLGC
 	});
 
-	_ctrl._owner._preEvents.wm_notify(ctrlId, LVN_KEYDOWN, [this](wm::Notify p) {
+	_ctrl._owner._preEvents.wm_notify(ctrl_id(), LVN_KEYDOWN, [this](wm::Notify p) {
 		NMLVKEYDOWN &nmk = p.hdr<NMLVKEYDOWN>();
 		bool hasCtrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
 
@@ -436,7 +436,7 @@ void ListView::custom_events(WORD ctrlId) {
 		}
 	});
 
-	_ctrl._owner._preEvents.wm_notify(ctrlId, NM_RCLICK, [this](wm::Notify p) {
+	_ctrl._owner._preEvents.wm_notify(ctrl_id(), NM_RCLICK, [this](wm::Notify p) {
 		NMITEMACTIVATE &nmi = p.hdr<NMITEMACTIVATE>();
 		bool hasCtrl = nmi.uKeyFlags & LVKF_CONTROL;
 		bool hasShift = nmi.uKeyFlags & LVKF_SHIFT;

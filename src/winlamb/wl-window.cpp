@@ -168,7 +168,7 @@ void NativeCtrl::create_wnd(WORD ctrlId, DWORD exStyle, LPCWSTR className,
 	#endif
 
 	_wnd._hWnd = CreateWindowExW(exStyle, className, title, style,
-		pos.x, pos.y, size.cx, size.cy, _owner.hwnd(), valid_ctrl_id(ctrlId),
+		pos.x, pos.y, size.cx, size.cy, _owner.hwnd(), reinterpret_cast<HMENU>(valid_ctrl_id(ctrlId)),
 		reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(_owner.hwnd(), GWLP_HINSTANCE)), nullptr);
 	#ifdef _DEBUG
 	if (!hwnd())
@@ -225,7 +225,7 @@ LRESULT CALLBACK NativeCtrl::subclass_proc(HWND hWnd, UINT msg, WPARAM wp, LPARA
 	return ret.has_value() ? ret.value() : DefSubclassProc(hWnd, msg, wp, lp);
 }
 
-HMENU NativeCtrl::valid_ctrl_id(WORD ctrlId) {
+WORD NativeCtrl::valid_ctrl_id(WORD ctrlId) {
 	static WORD globalCtrId = 0xdfff; // https://stackoverflow.com/a/18192766/6923555
-	return reinterpret_cast<HMENU>(static_cast<UINT_PTR>(ctrlId ? ctrlId : globalCtrId--));
+	return ctrlId ? ctrlId : globalCtrId--;
 }

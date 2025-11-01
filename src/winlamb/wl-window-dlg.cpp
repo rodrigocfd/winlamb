@@ -141,7 +141,7 @@ DlgControl::DlgControl(WindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos,
 	parent.wnd_msg()._preEvents.wm_create_or_init_dialog([this, pParent = &parent, ctrlId, pos, layout]() {
 		HINSTANCE hInst = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(pParent->hwnd(), GWLP_HINSTANCE));
 		_dlgBase.create_dialog_param(hInst, pParent->hwnd());
-		SetWindowLongPtrW(hwnd(), GWLP_ID, reinterpret_cast<LONG_PTR>(NativeCtrl::valid_ctrl_id(ctrlId))); // give the control its ID
+		SetWindowLongPtrW(hwnd(), GWLP_ID, NativeCtrl::valid_ctrl_id(ctrlId)); // give the control its ID
 		SetWindowPos(hwnd(), nullptr, pos.x, pos.y, 0, 0, SWP_NOZORDER | SWP_NOMOVE);
 		pParent->wnd_msg()._layout.add(hwnd(), layout);
 	});

@@ -227,6 +227,9 @@ namespace wl {
 		/** Returns the wrapped window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const { return _ctrl.hwnd(); }
 
+		/** Returns the control ID. */
+		[[nodiscard]] constexpr WORD ctrl_id() const { return _events._events._ctrlId; }
+
 		/// Allows message events to be added.
 		///
 		/// The events must be added before the control is created on the screen.
@@ -244,7 +247,7 @@ namespace wl {
 		const ListView& set_extended_style(bool doSet, DWORD exStyle) const;
 
 	private:
-		void custom_events(WORD ctrlId);
+		void custom_events();
 		void show_context_menu(bool followCursor, bool hasCtrl, bool hasShift);
 
 		_wl_internal::NativeCtrl _ctrl;
