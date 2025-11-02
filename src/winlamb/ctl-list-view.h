@@ -47,8 +47,8 @@ namespace wl::events {
 
 namespace wl::opts {
 
-	/** Options to create a ListView programmatically. */
-	struct ListView final {
+	/** Options to create a `ListView` programmatically. */
+	struct ListViewOpts final {
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
@@ -96,10 +96,23 @@ namespace wl::opts {
 		///
 		/// Defaults to an auto-generated number.
 		WORD ctrlId = 0;
-		/** Optional ListView context menu. */
+		/// Context menu resource to be loaded as the context menu with [`LoadMenu`].
+		/// If defined, overwrites `hMenuContext`.
+		///
+		/// This menu will be owned by the ListView, and destroyed automatically.
+		///
+		/// [`LoadMenu`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadmenuw
+		WORD contextMenuId = 0;
+		/// Optional ListView context menu, usually created programmatically with [`CreatePopupMenu`].
+		///
+		/// This menu will be owned by the ListView, and destroyed automatically.
+		///
+		/// Ignored if you define `contextMenuId`.
+		///
+		/// [`CreatePopupMenu`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createpopupmenu
 		HMENU hMenuContext = nullptr;
 		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::none_none;
+		Lay layout = Lay::hold_hold;
 	};
 
 }
@@ -108,10 +121,67 @@ namespace wl {
 
 	/// @brief Native [list view] control.
 	///
+	/// Example of creating a window with a `ListView` programmatically, .h and .cpp files:
+	///
+	/// ```cpp
+	/// class MyMain final : wl::NonMovable {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{};
+	///     wl::ListView lv{wnd};
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
+	///
+	/// MyMain::MyMain() {
+	///     wnd.setup().size = wl::dpi::sz(500, 300);
+	///
+	///     lv.setup().pos = wl::dpi::pt(10, 10);
+	///     lv.setup().size = wl::dpi::sz(400, 200);
+	///
+	///     wnd.on().wm_create([this](wl::wm::Create p) {
+	///         lv.set_extended_style(true, LVS_EX_FULLROWSELECT);
+	///         return 0;
+	///     });
+	///
+	///     lv.on().lvn_item_changed([this](NMLISTVIEW &p) {
+	///         UINT numSel = lv.items.selected_count();
+	///     });
+	/// }
+	/// ```
+	///
+	/// Example of creating a window with a `ListView` from a dialog resource, .h and .cpp files:
+	///
+	/// ```cpp
+	/// class MyMain final : wl::NonMovable {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{DLG_MAIN, ICO_MAIN};
+	///     wl::ListView lv{wnd, LST_FILES, wl::Lay::hold_hold};
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
+	///
+	/// MyMain::MyMain() {
+	///     wnd.on().wm_init_dialog([this](wl::wm::InitDialog p) {
+	///         lv.set_extended_style(true, LVS_EX_FULLROWSELECT);
+	///         return true;
+	///     });
+	///
+	///     lv.on().lvn_item_changed([this](NMLISTVIEW &p) {
+	///         UINT numSel = lv.items.selected_count();
+	///     });
+	/// }
+	/// ```
+	///
 	/// [list view]: https://learn.microsoft.com/en-us/windows/win32/controls/list-view-controls-overview
 	class ListView final : NonMovable {
 	public:
-		/** A single column of the ListView. */
+		/** @brief A single column of the ListView. */
 		class Column final {
 		public:
 			constexpr Column(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
@@ -147,7 +217,7 @@ namespace wl {
 			int _index;
 		};
 
-		/** Operations over the columns. */
+		/** @brief Operations over the columns. */
 		class ColumnCollection final : NonMovable {
 		private:
 			constexpr explicit ColumnCollection(const ListView *pOwner) : _pOwner{pOwner} { }
@@ -162,7 +232,7 @@ namespace wl {
 			friend ListView;
 		};
 
-		/** A single item of the ListView. */
+		/** @brief A single item of the ListView. */
 		class Item final {
 		public:
 			constexpr Item(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
@@ -185,7 +255,7 @@ namespace wl {
 			int _index;
 		};
 
-		/** Operations over the items. */
+		/** @brief Operations over the items. */
 		class ItemCollection final : NonMovable {
 		private:
 			constexpr explicit ItemCollection(const ListView *pOwner) : _pOwner{pOwner} { }
@@ -212,17 +282,26 @@ namespace wl {
 
 		/// Constructs the list view programmatically with [`CreateWindowEx`].
 		///
+		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
+		///
+		/// Further options can be defined with the `setup` method.
+		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		ListView(WindowParent &owner, opts::ListView options);
+		explicit ListView(WindowParent &owner, WORD ctrlId = 0);
 
-		/** Constructs the list view from the dialog resource. */
-		ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId = 0, Lay layout = Lay::none_none);
+		/// Constructs the list view from the dialog resource.
+		///
+		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		ListView(WindowParent &owner, WORD ctrlId, Lay layout, WORD contextMenuId = 0);
 
 		/** Column methods. */
 		ColumnCollection cols{this};
 
 		/** Item methods. */
 		ItemCollection items{this};
+
+		/** For controls created programmatically defines additional creation options. */
+		[[nodiscard]] constexpr opts::ListViewOpts& setup() { return _opts; }
 
 		/** Returns the wrapped window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const { return _ctrl.hwnd(); }
@@ -237,12 +316,6 @@ namespace wl {
 
 		/// Sets one or more [extended styles].
 		///
-		/// Example:
-		///
-		/// ```cpp
-		/// myList.set_extended_style(true, LVS_EX_FULLROWSELECT);
-		/// ```
-		///
 		/// [extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/extended-list-view-styles
 		const ListView& set_extended_style(bool doSet, DWORD exStyle) const;
 
@@ -252,7 +325,7 @@ namespace wl {
 
 		_wl_internal::NativeCtrl _ctrl;
 		events::ListViewEvents _events;
-		HMENU _hMenuContext = nullptr;
+		opts::ListViewOpts _opts{};
 	};
 
 }

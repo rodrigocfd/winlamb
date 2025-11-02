@@ -22,8 +22,8 @@ namespace _wl_internal {
 
 namespace wl::opts {
 
-	/** Options to create a WindowMain programmatically. */
-	struct Main final {
+	/** Options to create a `WindowMain` programmatically. */
+	struct MainOpts final {
 		/// Class name passed to [`WNDCLASSEX`].
 		///
 		/// Defaults to an auto-generated string.
@@ -103,13 +103,13 @@ namespace _wl_internal {
 	/** Main raw window. */
 	class RawMain final : wl::NonMovable {
 	public:
-		explicit RawMain(wl::opts::Main options);
+		RawMain();
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _rawBase.hwnd(); }
 		int run(HINSTANCE hInst, int cmdShow);
 
 		RawBase _rawBase{};
-		wl::opts::Main _opts;
+		wl::opts::MainOpts _opts{};
 		HWND _hWndChildPrevFocus = nullptr;
 	};
 
@@ -119,8 +119,8 @@ namespace wl { class WindowParent; }
 
 namespace wl::opts {
 
-	/** Options to create a WindowModal programmatically. */
-	struct Modal final {
+	/** Options to create a `WindowModal` programmatically. */
+	struct ModalOpts final {
 		/// Class name passed to [`WNDCLASSEX`].
 		///
 		/// Defaults to an auto-generated string.
@@ -194,14 +194,14 @@ namespace _wl_internal {
 	/** Modal raw window. */
 	class RawModal final : wl::NonMovable {
 	public:
-		RawModal(const wl::WindowParent &parent, wl::opts::Modal options);
+		explicit RawModal(const wl::WindowParent &parent);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _rawBase.hwnd(); }
 		void show();
 
 		RawBase _rawBase{};
 		const wl::WindowParent &_parent;
-		wl::opts::Modal _opts;
+		wl::opts::ModalOpts _opts{};
 		HWND _hWndChildPrevFocusParent = nullptr;
 	};
 
@@ -209,8 +209,8 @@ namespace _wl_internal {
 
 namespace wl::opts {
 
-	/** Options to create a WindowControl programmatically. */
-	struct Control final {
+	/** Options to create a `WindowControl` programmatically. */
+	struct ControlOpts final {
 		/// Class name passed to [`WNDCLASSEX`].
 		///
 		/// Defaults to an auto-generated string.
@@ -269,7 +269,7 @@ namespace wl::opts {
 		/// Defaults to an auto-generated number.
 		WORD ctrlId = 0;
 		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::none_none;
+		Lay layout = Lay::hold_hold;
 	};
 
 }
@@ -279,11 +279,12 @@ namespace _wl_internal {
 	/** Control raw window. */
 	class RawControl final : wl::NonMovable {
 	public:
-		RawControl(wl::WindowParent &parent, wl::opts::Control options);
+		RawControl(wl::WindowParent &parent);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _rawBase.hwnd(); }
 
 		RawBase _rawBase{};
+		wl::opts::ControlOpts _opts{};
 	};
 
 }

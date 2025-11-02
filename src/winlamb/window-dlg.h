@@ -61,7 +61,7 @@ namespace _wl_internal {
 	/** Control dialog window. */
 	class DlgControl final : wl::NonMovable {
 	public:
-		DlgControl(wl::WindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos, wl::Lay layout = wl::Lay::none_none);
+		DlgControl(wl::WindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos, wl::Lay layout = wl::Lay::hold_hold);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _dlgBase.hwnd(); }
 

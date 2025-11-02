@@ -4,9 +4,9 @@
 
 namespace _wl_internal {
 
-	constexpr BYTE LAY_H_REPOS  = 0b0000'0001;
+	constexpr BYTE LAY_H_MOVE  = 0b0000'0001;
 	constexpr BYTE LAY_H_RESIZE = 0b0000'0010;
-	constexpr BYTE LAY_V_REPOS  = 0b0000'0100;
+	constexpr BYTE LAY_V_MOVE  = 0b0000'0100;
 	constexpr BYTE LAY_V_RESIZE = 0b0000'1000;
 
 }
@@ -16,35 +16,35 @@ namespace wl {
 	/** Specifies the horizontal and vertical behavior for a control when the parent window is resized. */
 	enum class Lay : BYTE {
 		/** When parent is resized, nothing happens. */
-		none_none = 0,
+		hold_hold = 0,
 		/// When parent resizes:
 		/// - horizontal: nothing happens;
 		/// - vertical: control moves anchored at bottom.
-		none_repos = _wl_internal::LAY_V_REPOS,
+		hold_move = _wl_internal::LAY_V_MOVE,
 		/// When parent resizes:
 		/// - horizontal: nothing happens;
 		/// - vertical: control is resized together.
-		none_resize = _wl_internal::LAY_V_RESIZE,
+		hold_resize = _wl_internal::LAY_V_RESIZE,
 		/// When parent resizes:
 		/// - horizontal: control moves anchored at right;
 		/// - vertical: nothing happens.
-		repos_none = _wl_internal::LAY_H_REPOS,
+		move_hold = _wl_internal::LAY_H_MOVE,
 		/// When parent resizes:
 		/// - horizontal: control moves anchored at right;
 		/// - vertical: control moves anchored at bottom.
-		repos_repos = _wl_internal::LAY_H_REPOS | _wl_internal::LAY_V_REPOS,
+		move_move = _wl_internal::LAY_H_MOVE | _wl_internal::LAY_V_MOVE,
 		/// When parent resizes:
 		/// - horizontal: control moves anchored at right;
 		/// - vertical: control is resized together.
-		repos_resize = _wl_internal::LAY_H_REPOS | _wl_internal::LAY_V_RESIZE,
+		move_resize = _wl_internal::LAY_H_MOVE | _wl_internal::LAY_V_RESIZE,
 		/// When parent resizes:
 		/// - horizontal: control is resized together;
 		/// - vertical: nothing happens.
-		resize_none = _wl_internal::LAY_H_RESIZE,
+		resize_hold = _wl_internal::LAY_H_RESIZE,
 		/// When parent resizes:
 		/// - horizontal: control is resized together;
 		/// - vertical: control moves anchored at bottom.
-		resize_repos = _wl_internal::LAY_H_RESIZE | _wl_internal::LAY_V_REPOS,
+		resize_move = _wl_internal::LAY_H_RESIZE | _wl_internal::LAY_V_MOVE,
 		/// When parent resizes:
 		/// - horizontal: control is resized together;
 		/// - vertical: control is resized together.

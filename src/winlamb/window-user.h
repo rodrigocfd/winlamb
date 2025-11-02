@@ -58,22 +58,22 @@ namespace wl {
 	/// class MyMain final : wl::NonMovable {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd;
+	///     wl::WindowMain wnd{};
 	/// };
 	/// ```
 	///
 	/// ```cpp
 	/// RUN_MAIN(MyMain, wnd)
 	///
-	/// wl::opts::Main wndOpts{
-	///     .title = L"My main window",
-	///     .size  = wl::dpi::sz(500, 300),
-	///     .style = wl::opts::Main{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
-	/// };
+	/// MyMain::MyMain() {
+	///     wnd.setup().title = L"My main window";
+	///     wnd.setup().size = wl::dpi::sz(500, 300);
+	///     wnd.setup().style |= WS_SIZEBOX | WS_MAXIMIZEBOX;
 	///
-	/// MyMain::MyMain()
-	///     : wnd{wndOpts}
-	/// {
+	///     wnd.on().wm_create([this](wl::wm::Create p) {
+	///         wnd.set_title(L"A new title");
+	///         return 0;
+	///     });
 	/// }
 	/// ```
 	///
@@ -91,26 +91,19 @@ namespace wl {
 	/// RUN_MAIN(MyMain, wnd)
 	///
 	/// MyMain::MyMain() {
+	///     wnd.on().wm_init_dialog([this](wl::wm::InitDialog p) {
+	///         wnd.set_title(L"A new title");
+	///         return true;
+	///     });
 	/// }
 	/// ```
 	class WindowMain final : public WindowParent {
 	public:
 		/// Constructs the main window programmatically with [`CreateWindowEx`].
 		///
-		/// Example:
-		///
-		/// ```cpp
-		/// wl::opts::Main wndOpts{
-		///     .title = L"My main window",
-		///     .size  = wl::dpi::sz(500, 300),
-		///     .style = wl::opts::Main{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
-		/// };
-		/// wl::WindowMain wnd{wndOpts};
-		/// ```
-		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		WindowMain(opts::Main options)
-			: _rawMain{std::make_optional<_wl_internal::RawMain>(options)} { }
+		WindowMain()
+			: _rawMain{std::make_optional<_wl_internal::RawMain>()} { }
 
 		/// Constructs the main window from a dialog resource with [`CreateDialogParam`].
 		///
@@ -123,6 +116,9 @@ namespace wl {
 		/// [`CreateDialogParam`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createdialogparamw
 		WindowMain(WORD dlgId, WORD iconId = 0, WORD accelTblId = 0)
 			: _dlgMain{std::make_optional<_wl_internal::DlgMain>(dlgId, iconId, accelTblId)} { }
+
+		/** For windows created programmatically, defines additional creation options. */
+		[[nodiscard]] constexpr opts::MainOpts& setup() { return _rawMain.value()._opts; }
 
 		/// Calls [`GetWindowText`] to retrieve the window title.
 		///
@@ -159,26 +155,26 @@ namespace wl {
 		/// Example:
 		///
 		/// ```cpp
-		/// void show_my_modal(wl::WindowParent &wnd) {
-		///     wl::opts::Modal opts{
-		///         .title = L"My modal",
-		///         .size  = wl::dpi::sz(400, 200),
-		///     };
-		///     wl::WindowModal myModal{wnd, opts};
+		/// void show_my_modal(const wl::WindowParent &wnd) {
+		///     wl::WindowModal myModal{wnd};
+		///     myModal.setup().title = L"My modal title";
+		///     myModal.setup().size = wl::dpi::sz(400, 200);
 		///     myModal.show();
 		/// }
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		WindowModal(WindowParent &parent, opts::Modal options)
-			: _rawModal{std::make_optional<_wl_internal::RawModal>(parent, options)} { }
+		explicit WindowModal(const WindowParent &parent)
+			: _rawModal{std::make_optional<_wl_internal::RawModal>(parent)} { }
 
 		/// Constructs the modal window from a dialog resource with [`DialogBoxParam`].
+		///
+		/// The `dlgId` parameter must identify a dialog resource.
 		///
 		/// Example:
 		///
 		/// ```cpp
-		/// void show_my_modal(wl::WindowParent &wnd) {
+		/// void show_my_modal(const wl::WindowParent &wnd) {
 		///     wl::WindowModal myModal{wnd, DLG_MAIN};
 		///     myModal.show();
 		/// }
@@ -187,6 +183,9 @@ namespace wl {
 		/// [`DialogBoxParam`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxparamw
 		WindowModal(const WindowParent &parent, WORD dlgId)
 			: _dlgModal{std::make_optional<_wl_internal::DlgModal>(parent, dlgId)} { }
+
+		/** For windows created programmatically, defines additional creation options. */
+		[[nodiscard]] constexpr opts::ModalOpts& setup() { return _rawModal.value()._opts; }
 
 		/// Calls [`GetWindowText`] to retrieve the window title.
 		///
@@ -213,20 +212,52 @@ namespace wl {
 
 namespace wl {
 
-	/** @brief Custom control window. */
+	/// @brief Custom control window.
+	///
+	/// Example of creating a custom control programmatically, .h and .cpp files:
+	///
+	/// ```cpp
+	/// class MyControl final : wl::NonMovable {
+	/// public:
+	///     MyControl(wl::WindowParent &parent);
+	///     wl::WindowControl wnd;
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// MyControl::MyControl(wl::WindowParent &parent)
+	///     : wnd{parent}
+	/// {
+	///     wnd.setup().pos = wl::dpi::pt(420, 10);
+	///     wnd.setup().size = wl::dpi::sz(80, 80);
+	///     wnd.setup().layout = wl::Lay::move_hold;
+	///
+	///     wnd.on().wm_paint([this]() {
+	///         PAINTSTRUCT ps{};
+	///         HDC hdc = BeginPaint(wnd.hwnd(), &ps);
+	///         LineTo(hdc, 60, 60);
+	///         EndPaint(wnd.hwnd(), &ps);
+	///     });
+	/// }
+	/// ```
 	class WindowControl final : public WindowParent {
 	public:
 		/// Constructs the custom control window programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		WindowControl(WindowParent &parent, opts::Control options)
-			: _rawControl{std::make_optional<_wl_internal::RawControl>(parent, options)} { }
+		explicit WindowControl(WindowParent &parent)
+			: _rawControl{std::make_optional<_wl_internal::RawControl>(parent)} { }
 
 		/// Constructs the custom control window from a dialog resource with [`CreateDialogParam`].
 		///
+		/// The `dlgId` parameter must identify a dialog resource.
+		///
 		/// [`CreateDialogParam`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createdialogparamw
-		WindowControl(wl::WindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos, wl::Lay layout = wl::Lay::none_none)
+		WindowControl(wl::WindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos, wl::Lay layout = wl::Lay::hold_hold)
 			: _dlgControl{std::make_optional<_wl_internal::DlgControl>(parent, dlgId, ctrlId, pos, layout)} { }
+
+		/** For controls programmatically, defines additional creation options. */
+		[[nodiscard]] constexpr opts::ControlOpts& setup() { return _rawControl.value()._opts; }
 
 	private:
 		[[nodiscard]] constexpr const _wl_internal::WindowMsg& wnd_msg() const override { return get_wnd_msg(_rawControl, _dlgControl); }

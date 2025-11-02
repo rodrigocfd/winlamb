@@ -13,7 +13,7 @@ public:
 
 	wl::WindowMain wnd{DLG_MAIN, ICO_MAIN};
 	wl::DropFiles dropFiles{wnd};
-	wl::ListView lstFiles{wnd, LST_FILES, MNU_FILES, wl::Lay::resize_resize};
+	wl::ListView lstFiles{wnd, LST_FILES, wl::Lay::resize_resize, MNU_FILES};
 
 private:
 	bool on_init_dialog(wl::wm::InitDialog);
@@ -29,13 +29,15 @@ class Contro final : wl::NonMovable {
 public:
 	Contro(wl::WindowParent &parent);
 	wl::WindowControl wnd;
+private:
+	void on_paint();
 };
 
 class RawMain final : wl::NonMovable {
 public:
 	RawMain();
-	wl::WindowMain wnd;
-	wl::ListView lst;
+	wl::WindowMain wnd{};
+	wl::ListView lst{wnd};
 	Contro ctl{wnd};
 private:
 	int on_create(wl::wm::Create);

@@ -10,10 +10,6 @@ DlgMain::DlgMain() {
 	lstFiles.on().lvn_item_changed(std::bind(&DlgMain::on_lst_files_item_changed, this, std::placeholders::_1));
 	wnd.on().wm_command(MNU_FILES_ABOUT, std::bind(&DlgMain::on_about, this));
 
-	dropFiles.on_drop([](const std::vector<std::wstring> &files) {
-
-	});
-
 	// dlg.on().wm_notify(0x333, LVN_DELETEITEM, [this](wl::wm::Notify n) {
 	// 	auto p = n.pHdr<NMLINK>();
 	// 	return 0;
@@ -80,37 +76,37 @@ void DlgMain::on_about() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-wl::opts::Control ctlOpts{
-	.pos    = wl::dpi::pt(420, 10),
-	.size   = wl::dpi::sz(80, 80),
-	.layout = wl::Lay::repos_none,
-};
-
 Contro::Contro(wl::WindowParent &parent)
-	: wnd{parent, ctlOpts}
+	: wnd{parent}
 {
+	wnd.setup().pos = wl::dpi::pt(420, 10);
+	wnd.setup().size = wl::dpi::sz(80, 80);
+	wnd.setup().layout = wl::Lay::move_hold;
+
+	wnd.on().wm_paint(std::bind(&Contro::on_paint, this));
+}
+
+void Contro::on_paint() {
+	PAINTSTRUCT ps{};
+	HDC hdc = BeginPaint(wnd.hwnd(), &ps);
+	LineTo(hdc, 60, 60);
+	EndPaint(wnd.hwnd(), &ps);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-wl::opts::Main wndOpts{
-	.iconId = ICO_MAIN,
-	.title  = L"Together",
-	.size   = wl::dpi::sz(550, 300),
-	.style  = wl::opts::Main{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
-};
-wl::opts::ListView lstOpts{
-	.pos    = wl::dpi::pt(10, 10),
-	.size   = wl::dpi::sz(400, 200),
-	.ctrlId = LST_FILES,
-	.layout = wl::Lay::resize_resize,
-};
+RawMain::RawMain() {
+	wnd.setup().iconId = ICO_MAIN;
+	wnd.setup().title = L"My main window";
+	wnd.setup().size = wl::dpi::sz(550, 300);
+	wnd.setup().style |= WS_SIZEBOX | WS_MAXIMIZEBOX;
 
-RawMain::RawMain()
-	: wnd{wndOpts}, lst{wnd, lstOpts}
-{
+	lst.setup().pos = wl::dpi::pt(10, 10);
+	lst.setup().size = wl::dpi::sz(400, 200);
+	lst.setup().layout = wl::Lay::resize_resize;
+	lst.setup().contextMenuId = MNU_FILES;
+
 	wnd.on().wm_create(std::bind(&RawMain::on_create, this, std::placeholders::_1));
-
 
 
 }

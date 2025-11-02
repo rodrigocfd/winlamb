@@ -371,29 +371,22 @@ std::optional<ListView::Item> ListView::ItemCollection::topmost_visible() const 
 
 ////////////////////////////////////////////////////////////////////////////////
 
-ListView::ListView(WindowParent &owner, opts::ListView options)
-	: _ctrl{owner}, _events{owner, NativeCtrl::valid_ctrl_id(options.ctrlId)}, _hMenuContext{options.hMenuContext}
+ListView::ListView(WindowParent &owner, WORD ctrlId)
+	: _ctrl{owner}, _events{owner, NativeCtrl::valid_ctrl_id(ctrlId)}
 {
-	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, pOwner = &owner, options]() {
-		_ctrl.create_wnd(ctrl_id(), options.windowExStyle, WC_LISTVIEWW, nullptr,
-			options.windowStyle | options.ctrlStyle,
-			options.pos, options.size);
-		set_extended_style(true, options.ctrlExStyle);
-		_ctrl._owner._layout.add(hwnd(), options.layout);
+	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() {
+		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, WC_LISTVIEWW, nullptr,
+			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, _opts.size);
+		set_extended_style(true, _opts.ctrlExStyle);
+		_ctrl._owner._layout.add(hwnd(), _opts.layout);
 	});
 
 	custom_events();
 }
 
-ListView::ListView(WindowParent &owner, WORD ctrlId, WORD contextMenuId, Lay layout)
+ListView::ListView(WindowParent &owner, WORD ctrlId, Lay layout, WORD contextMenuId)
 	: _ctrl{owner}, _events{owner, NativeCtrl::valid_ctrl_id(ctrlId)}
 {
-	_hMenuContext = LoadMenuW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(contextMenuId));
-	#ifdef _DEBUG
-	if (!_hMenuContext)
-		throw std::invalid_argument("ListView context menu failed to load.");
-	#endif
-
 	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, layout]() {
 		_ctrl.assign_dlg(ctrl_id());
 		_ctrl._owner._layout.add(hwnd(), layout);
@@ -445,13 +438,23 @@ void ListView::custom_events() {
 	});
 
 	_ctrl._owner._postEvents.wm(WM_DESTROY, [this](wm::Msg) {
-		if (_hMenuContext)
-			DestroyMenu(_hMenuContext);
+		if (_opts.hMenuContext)
+			DestroyMenu(_opts.hMenuContext);
 	});
 }
 
 void ListView::show_context_menu(bool followCursor, bool hasCtrl, bool hasShift) {
-	if (!_hMenuContext) return;
+	if (!_opts.hMenuContext) {
+		if (_opts.contextMenuId) {
+			_opts.hMenuContext = LoadMenuW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(_opts.contextMenuId));
+			#ifdef _DEBUG
+			if (!_opts.hMenuContext)
+				throw std::invalid_argument("ListView context menu resource failed to load.");
+			#endif
+		} else {
+			return; // no context menu defined
+		}
+	}
 
 	POINT menuPos{};
 	if (followCursor) { // usually when fired by a right-click
@@ -476,7 +479,11 @@ void ListView::show_context_menu(bool followCursor, bool hasCtrl, bool hasShift)
 	}
 
 	HWND hParent = GetParent(hwnd());
-	HMENU hSubMenu = GetSubMenu(_hMenuContext, 0); // pop the first submenu
+	HMENU hSubMenu = GetSubMenu(_opts.hMenuContext, 0); // pop the first submenu
+	#ifdef _DEBUG
+	if (!hSubMenu)
+		throw std::invalid_argument("ListView failed to load context submenu.");
+	#endif
 	ClientToScreen(hwnd(), &menuPos); // from listview to screen
 	SetForegroundWindow(hParent);
 	TrackPopupMenu(hSubMenu, TPM_LEFTBUTTON, menuPos.x, menuPos.y, 0, hParent, nullptr);

@@ -4,7 +4,7 @@ using namespace _wl_internal;
 using namespace wl;
 
 void Layout::add(HWND hCtrl, wl::Lay layout) {
-	if (layout == Lay::none_none)
+	if (layout == Lay::hold_hold)
 		return; // nothing to do, don't even bother adding the control
 
 	HWND hParent = GetParent(hCtrl);
@@ -39,7 +39,7 @@ void Layout::rearrange(wm::Size p) {
 	for (auto &&ctrl : _ctrls) {
 		WORD flags = SWP_NOZORDER;
 		switch (ctrl.layout) {
-		case Lay::repos_repos: // repos both horz and vert
+		case Lay::move_move: // repos both horz and vert
 			flags |= SWP_NOSIZE;
 			break;
 		case Lay::resize_resize: // resize both horz and vert
@@ -47,10 +47,10 @@ void Layout::rearrange(wm::Size p) {
 		}
 
 		DeferWindowPos(hdwp, ctrl.hCtrl, nullptr,
-			(static_cast<BYTE>(ctrl.layout) & LAY_H_REPOS)
+			(static_cast<BYTE>(ctrl.layout) & LAY_H_MOVE)
 				? p.sz().cx - _szOrig.cx + ctrl.rcOrig.left
 				: ctrl.rcOrig.left, // keep original horz pos
-			(static_cast<BYTE>(ctrl.layout) & LAY_V_REPOS)
+			(static_cast<BYTE>(ctrl.layout) & LAY_V_MOVE)
 				? p.sz().cy - _szOrig.cy + ctrl.rcOrig.top
 				: ctrl.rcOrig.top, // keep original vert pos
 			(static_cast<BYTE>(ctrl.layout) & LAY_H_RESIZE)

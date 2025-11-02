@@ -124,9 +124,7 @@ LRESULT CALLBACK RawBase::raw_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RawMain::RawMain(opts::Main options)
-	: _opts{options}
-{
+RawMain::RawMain() {
 	_rawBase._wndMsg._preEvents.wm(WM_ACTIVATE, [this](wm::Activate p) {
 		if (!p.is_minimized()) { // https://devblogs.microsoft.com/oldnewthing/20140521-00/?p=943
 			if (p.active_state() == WA_INACTIVE) {
@@ -178,15 +176,15 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RawModal::RawModal(const WindowParent &parent, opts::Modal options)
-	: _parent{parent}, _opts{options}
+RawModal::RawModal(const WindowParent &parent)
+	: _parent{parent}
 {
 	_rawBase._wndMsg._preEvents.wm(WM_SETFOCUS, [this](wm::SetFocus) {
 		_rawBase.focus_first_child();
 	});
 
-	_rawBase._wndMsg._userEvents.wm_close([this, pParent = &parent]() {
-		EnableWindow(pParent->hwnd(), TRUE); // re-enable parent
+	_rawBase._wndMsg._userEvents.wm_close([this]() {
+		EnableWindow(_parent.hwnd(), TRUE); // re-enable parent
 		if (_hWndChildPrevFocusParent)
 			SetFocus(_hWndChildPrevFocusParent); // could be on WM_DESTROY as well
 		DestroyWindow(hwnd()); // then destroy modal
@@ -227,15 +225,15 @@ void RawModal::show() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RawControl::RawControl(WindowParent &parent, opts::Control options) {
-	parent.wnd_msg()._preEvents.wm_create_or_init_dialog([this, pParent = &parent, options]() {
+RawControl::RawControl(WindowParent &parent) {
+	parent.wnd_msg()._preEvents.wm_create_or_init_dialog([this, pParent = &parent]() {
 		HINSTANCE hInst = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(pParent->hwnd(), GWLP_HINSTANCE));
-		ATOM atom = _rawBase.register_class(hInst, options.className, options.classStyle,
-			0, options.hbrBackground, options.hCursor);
-		_rawBase.create_window(options.windowExStyle, atom, nullptr, options.windowStyle,
-			options.pos, options.size, pParent->hwnd(),
-			reinterpret_cast<HMENU>(NativeCtrl::valid_ctrl_id(options.ctrlId)),
+		ATOM atom = _rawBase.register_class(hInst, _opts.className, _opts.classStyle,
+			0, _opts.hbrBackground, _opts.hCursor);
+		_rawBase.create_window(_opts.windowExStyle, atom, nullptr, _opts.windowStyle,
+			_opts.pos, _opts.size, pParent->hwnd(),
+			reinterpret_cast<HMENU>(NativeCtrl::valid_ctrl_id(_opts.ctrlId)),
 			hInst);
-		pParent->wnd_msg()._layout.add(hwnd(), options.layout);
+		pParent->wnd_msg()._layout.add(hwnd(), _opts.layout);
 	});
 }
