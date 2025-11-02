@@ -84,6 +84,8 @@ Contro::Contro(wl::WindowParent &parent)
 	wnd.setup().layout = wl::Lay::move_hold;
 
 	wnd.on().wm_paint(std::bind(&Contro::on_paint, this));
+
+
 }
 
 void Contro::on_paint() {
@@ -101,10 +103,10 @@ RawMain::RawMain() {
 	wnd.setup().size = wl::dpi::sz(550, 300);
 	wnd.setup().style |= WS_SIZEBOX | WS_MAXIMIZEBOX;
 
-	lst.setup().pos = wl::dpi::pt(10, 10);
-	lst.setup().size = wl::dpi::sz(400, 200);
-	lst.setup().layout = wl::Lay::resize_resize;
-	lst.setup().contextMenuId = MNU_FILES;
+	lv.setup().pos = wl::dpi::pt(10, 10);
+	lv.setup().size = wl::dpi::sz(400, 200);
+	lv.setup().layout = wl::Lay::resize_resize;
+	lv.setup().contextMenuId = MNU_FILES;
 
 	wnd.on().wm_create(std::bind(&RawMain::on_create, this, std::placeholders::_1));
 
@@ -114,10 +116,10 @@ RawMain::RawMain() {
 #include "id3v2/tag.h"
 
 int RawMain::on_create(wl::wm::Create) {
-	lst.cols.add(L"First", 200);
-	lst.cols.add(L"Second", 1).set_justif(HDF_CENTER).set_width_to_fill();
-	lst.items.add(L"Bronco kid", {L"Surreal"});
-	lst.items.add(L"Ground control", {L"to major tom"});
+	lv.cols.add(L"First", wl::dpi::x(200));
+	lv.cols.add(L"Second", 1).set_justif(HDF_CENTER).set_width_to_fill();
+	lv.items.add(L"Bronco kid", {L"Surreal"});
+	lv.items.add(L"Ground control", {L"to major tom"});
 
 	// id3v2::Tag tag{L"D:\\Music\\mp3\\Eagles - 1976 - Hotel California\\01 Eagles - Hotel California.mp3"};
 	id3v2::Tag tag{L"D:\\Music\\mp3\\Megadeth - 1988 - So Far, So Good\\01 Megadeth - Into the Lungs of Hell.mp3"};

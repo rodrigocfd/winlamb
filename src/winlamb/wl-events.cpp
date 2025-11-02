@@ -143,10 +143,15 @@ EVENT_ARGS(wm_power_broadcast, WM_POWERBROADCAST, wm::PowerBroadcast)
 EVENT_ARGS(wm_r_button_dbl_clk, WM_RBUTTONDBLCLK, wm::RButtonDblClk)
 EVENT_ARGS(wm_r_button_down, WM_RBUTTONDOWN, wm::RButtonDown)
 EVENT_ARGS(wm_r_button_up, WM_RBUTTONUP, wm::RButtonUp)
+EVENT_ARGS_RET(wm_set_cursor, WM_SETCURSOR, wm::SetCursor, bool)
 EVENT_ARGS(wm_set_focus, WM_SETFOCUS, wm::SetFocus)
+EVENT_ARGS(wm_show_window, WM_SHOWWINDOW, wm::ShowWindow)
 EVENT_ARGS(wm_size, WM_SIZE, wm::Size)
 EVENT_ARGS(wm_sizing, WM_SIZING, wm::Sizing)
+EVENT_NO_ARGS(wm_time_change, WM_TIMECHANGE)
 EVENT_ARGS(wm_v_scroll, WM_VSCROLL, wm::VScroll)
+EVENT_ARGS(wm_window_pos_changed, WM_WINDOWPOSCHANGED, wm::WindowPosChanged)
+EVENT_ARGS(wm_window_pos_changing, WM_WINDOWPOSCHANGING, wm::WindowPosChanging)
 
 bool WindowEvents::has_message() const {
 	return !_inis.empty() || !_msgs.empty() || !_cmds.empty() || !_nfys.empty();

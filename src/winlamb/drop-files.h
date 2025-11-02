@@ -16,7 +16,7 @@ namespace wl {
 	/// Example, .h and .cpp files:
 	///
 	/// ```cpp
-	/// class MyMain final : wl::NonMovable {
+	/// class MyMain final {
 	/// public:
 	///     MyMain();
 	///     wl::WindowMain wnd{DLG_MAIN, ICO_MAIN};
@@ -30,7 +30,7 @@ namespace wl {
 	/// MyMain::MyMain() {
 	///     // ...
 	///
-	///     dropFiles.on_drop([](const std::vector<std::wstring> &files) {
+	///     dropFiles.on_drop([](const std::vector<std::wstring> &files) -> void {
 	///         // ...
 	///     });
 	/// }

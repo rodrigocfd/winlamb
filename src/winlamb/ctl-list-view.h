@@ -124,7 +124,7 @@ namespace wl {
 	/// Example of creating a window with a `ListView` programmatically, .h and .cpp files:
 	///
 	/// ```cpp
-	/// class MyMain final : wl::NonMovable {
+	/// class MyMain final {
 	/// public:
 	///     MyMain();
 	///     wl::WindowMain wnd{};
@@ -141,12 +141,12 @@ namespace wl {
 	///     lv.setup().pos = wl::dpi::pt(10, 10);
 	///     lv.setup().size = wl::dpi::sz(400, 200);
 	///
-	///     wnd.on().wm_create([this](wl::wm::Create p) {
+	///     wnd.on().wm_create([this](wl::wm::Create p) -> int {
 	///         lv.set_extended_style(true, LVS_EX_FULLROWSELECT);
 	///         return 0;
 	///     });
 	///
-	///     lv.on().lvn_item_changed([this](NMLISTVIEW &p) {
+	///     lv.on().lvn_item_changed([this](NMLISTVIEW &p) -> void {
 	///         UINT numSel = lv.items.selected_count();
 	///     });
 	/// }
@@ -155,7 +155,7 @@ namespace wl {
 	/// Example of creating a window with a `ListView` from a dialog resource, .h and .cpp files:
 	///
 	/// ```cpp
-	/// class MyMain final : wl::NonMovable {
+	/// class MyMain final {
 	/// public:
 	///     MyMain();
 	///     wl::WindowMain wnd{DLG_MAIN, ICO_MAIN};
@@ -167,12 +167,12 @@ namespace wl {
 	/// RUN_MAIN(MyMain, wnd)
 	///
 	/// MyMain::MyMain() {
-	///     wnd.on().wm_init_dialog([this](wl::wm::InitDialog p) {
+	///     wnd.on().wm_init_dialog([this](wl::wm::InitDialog p) -> bool {
 	///         lv.set_extended_style(true, LVS_EX_FULLROWSELECT);
 	///         return true;
 	///     });
 	///
-	///     lv.on().lvn_item_changed([this](NMLISTVIEW &p) {
+	///     lv.on().lvn_item_changed([this](NMLISTVIEW &p) -> void {
 	///         UINT numSel = lv.items.selected_count();
 	///     });
 	/// }
@@ -223,8 +223,19 @@ namespace wl {
 			constexpr explicit ColumnCollection(const ListView *pOwner) : _pOwner{pOwner} { }
 
 		public:
+			/** Returns the column at the given index. */
 			[[nodiscard]] constexpr Column operator[](int index) const { return Column{*_pOwner, index}; }
+
+			/// Adds a new column with the given width.
+			///
+			/// Example:
+			///
+			/// ```cpp
+			/// lv.cols.add(L"First column", wl::dpi::x(200));
+			/// ```
 			Column add(WStrPtr text, UINT width) const;
+
+			/** Returns the column count. */
 			[[nodiscard]] UINT count() const;
 
 		private:
@@ -261,18 +272,66 @@ namespace wl {
 			constexpr explicit ItemCollection(const ListView *pOwner) : _pOwner{pOwner} { }
 
 		public:
+			/** Returns the item at the given index. */
 			[[nodiscard]] constexpr Item operator[](int index) const { return Item{*_pOwner, index}; }
+
+			/// Adds a new item, defining the text for the first column.
+			/// Optionally, you can provide texts for the subsequent columns, and the icon index.
+			///
+			/// Example:
+			///
+			/// ```cpp
+			/// lv.items.add(L"My item", {L"Column 2", L"Column 3"});
+			/// ```
 			Item add(WStrPtr text, std::initializer_list<WStrPtr> otherColumnsTexts = {}, int icon = -1) const;
+
+			/** Returns the item count. */
 			[[nodiscard]] UINT count() const;
+
+			/** Deletes all items. */
 			void delete_all() const;
+
+			/** Deletes the selected items. */
 			void delete_selected() const;
+
+			/** Returns the focused item, if any. */
 			[[nodiscard]] std::optional<Item> focused() const;
+
+			/// Calls [`ListView_MapIDToIndex`] to return the item with the given unique ID.
+			///
+			/// [`ListView_MapIDToIndex`]: https://learn.microsoft.com/en-us/windows/win32/api/commctrl/nf-commctrl-listview_mapidtoindex
 			[[nodiscard]] std::optional<Item> get_by_unique_id(UINT uid) const;
+
+			/// Calls [`ListView_HitTestEx`] to return the item at the given position, relative to the list view's client area, if any.
+			///
+			/// [`ListView_HitTestEx`]: https://learn.microsoft.com/en-us/windows/win32/api/commctrl/nf-commctrl-listview_hittestex
 			[[nodiscard]] std::optional<Item> hit_test(POINT pt) const;
+
+			/** Selects or deselects all items. */
 			void select_all(bool doSelect) const;
+
+			/** Returns the selected items. */
 			[[nodiscard]] std::vector<Item> selected() const;
+
+			/** Returns the selected item count. */
 			[[nodiscard]] UINT selected_count() const;
+
+			/// Calls [`ListView_SortItemsEx`] to sort the items according to the callback.
+			///
+			/// Example sorting the items by the text of the 3rd column:
+			///
+			/// ```cpp
+			/// lv.items.sort([](wl::ListView::Item a, wl::ListView::Item b) -> int {
+			///     return wl::str::cmp_i(a.text(2), b.text(2));
+			/// });
+			/// ```
+			///
+			/// [`ListView_SortItemsEx`]: https://learn.microsoft.com/en-us/windows/win32/api/commctrl/nf-commctrl-listview_sortitemsex
 			void sort(std::function<int(Item, Item)> cb) const;
+
+			/// Calls [`ListView_GetTopIndex`] to return the topmost visible item, if any.
+			///
+			/// [`ListView_GetTopIndex`]: https://learn.microsoft.com/en-us/windows/win32/api/commctrl/nf-commctrl-listview_gettopindex
 			[[nodiscard]] std::optional<Item> topmost_visible() const;
 
 		private:

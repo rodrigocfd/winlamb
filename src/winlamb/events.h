@@ -162,10 +162,22 @@ namespace wl::wm {
 		[[nodiscard]] const POWERBROADCAST_SETTING& event_data() const { return *reinterpret_cast<const POWERBROADCAST_SETTING*>(lp); }
 	};
 
+	struct SetCursor : protected Msg {
+		constexpr SetCursor(const Msg &p) : Msg{p} { }
+		[[nodiscard]] HWND cursor_hwnd() const              { return reinterpret_cast<HWND>(wp); }
+		[[nodiscard]] constexpr short hit_test_code() const { return static_cast<short>(LOWORD(lp)); }
+		[[nodiscard]] constexpr WORD  mouse_msg_id() const  { return HIWORD(lp); }
+	};
 
 	struct SetFocus : protected Msg {
 		constexpr SetFocus(const Msg &p) : Msg{p} { }
 		[[nodiscard]] HWND hwnd_losing_focus() const { return reinterpret_cast<HWND>(wp); }
+	};
+
+	struct ShowWindow : protected Msg {
+		constexpr ShowWindow(const Msg &p) : Msg{p} { }
+		[[nodiscard]] constexpr bool is_shown() const { return wp == TRUE; }
+		[[nodiscard]] constexpr WORD status() const   { return static_cast<WORD>(lp); }
 	};
 
 	struct Size : protected Msg {
@@ -183,6 +195,16 @@ namespace wl::wm {
 		constexpr Sizing(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr WORD edge() const          { return static_cast<WORD>(wp); }
 		[[nodiscard]] RECT&          screen_coords() const { return *reinterpret_cast<RECT*>(lp); }
+	};
+
+	struct WindowPosChanged : protected Msg {
+		constexpr WindowPosChanged(const Msg &p) : Msg{p} { }
+		[[nodiscard]] const WINDOWPOS& info() const { return *reinterpret_cast<const WINDOWPOS*>(lp); }
+	};
+
+	struct WindowPosChanging : protected Msg {
+		constexpr WindowPosChanging(const Msg &p) : Msg{p} { }
+		[[nodiscard]] WINDOWPOS& info() const { return *reinterpret_cast<WINDOWPOS*>(lp); }
 	};
 
 }
@@ -253,7 +275,7 @@ namespace wl::events {
 		/// Example:
 		///
 		/// ```cpp
-		/// myWindow.on().wm(WM_ENTERIDLE, [](wl::wm::Msg p) {
+		/// wnd.on().wm(WM_ENTERIDLE, [](wl::wm::Msg p) -> LRESULT {
 		///     // ...
 		///     return 0;
 		/// });
@@ -267,7 +289,7 @@ namespace wl::events {
 		/// Example:
 		///
 		/// ```cpp
-		/// myWindow.on().wm_create([](wl::wm::Create p) {
+		/// wnd.on().wm_create([](wl::wm::Create p) -> int {
 		///     // ...
 		///     return 0;
 		/// });
@@ -283,7 +305,7 @@ namespace wl::events {
 		/// Example:
 		///
 		/// ```cpp
-		/// myWindow.on().wm_init_dialog([](wl::wm::InitDialog p) {
+		/// wnd.on().wm_init_dialog([](wl::wm::InitDialog p) -> bool {
 		///     // ...
 		///     return true;
 		/// });
@@ -297,7 +319,7 @@ namespace wl::events {
 		/// Example:
 		///
 		/// ```cpp
-		/// myWindow.on().wm_command(BTN_MAIN, BN_CLICKED, []() {
+		/// wnd.on().wm_command(BTN_MAIN, BN_CLICKED, []() -> void {
 		///     // ...
 		/// });
 		/// ```
@@ -312,7 +334,7 @@ namespace wl::events {
 		/// Example:
 		///
 		/// ```cpp
-		/// myWindow.on().wm_command(IDCANCEL, []() {
+		/// wnd.on().wm_command(IDCANCEL, []() -> void {
 		///     // ...
 		/// });
 		/// ```
@@ -327,7 +349,7 @@ namespace wl::events {
 		/// Example:
 		///
 		/// ```cpp
-		/// myWindow.on().wm_notify(LST_MAIN, LVN_BEGINDRAG, [](wl::wm::Notify p) {
+		/// wnd.on().wm_notify(LST_MAIN, LVN_BEGINDRAG, [](wl::wm::Notify p) -> LRESULT {
 		///     // ...
 		///     return 0;
 		/// });
@@ -368,10 +390,15 @@ namespace wl::events {
 		void wm_r_button_dbl_clk(std::function<void(wl::wm::RButtonDblClk)> &&cb);
 		void wm_r_button_down(std::function<void(wl::wm::RButtonDown)> &&cb);
 		void wm_r_button_up(std::function<void(wl::wm::RButtonUp)> &&cb);
+		void wm_set_cursor(std::function<bool(wl::wm::SetCursor)> &&cb);
 		void wm_set_focus(std::function<void(wl::wm::SetFocus)> &&cb);
+		void wm_show_window(std::function<void(wl::wm::ShowWindow)> &&cb);
 		void wm_size(std::function<void(wl::wm::Size)> &&cb);
 		void wm_sizing(std::function<void(wl::wm::Sizing)> &&cb);
+		void wm_time_change(std::function<void()> &&cb);
 		void wm_v_scroll(std::function<void(wl::wm::VScroll)> &&cb);
+		void wm_window_pos_changed(std::function<void(wl::wm::WindowPosChanged)> &&cb);
+		void wm_window_pos_changing(std::function<void(wl::wm::WindowPosChanging)> &&cb);
 
 	private:
 		[[nodiscard]] bool has_message() const;

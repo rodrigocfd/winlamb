@@ -55,7 +55,7 @@ namespace wl {
 	/// Example of creating a window programmatically, .h and .cpp files:
 	///
 	/// ```cpp
-	/// class MyMain final : wl::NonMovable {
+	/// class MyMain final {
 	/// public:
 	///     MyMain();
 	///     wl::WindowMain wnd{};
@@ -70,7 +70,7 @@ namespace wl {
 	///     wnd.setup().size = wl::dpi::sz(500, 300);
 	///     wnd.setup().style |= WS_SIZEBOX | WS_MAXIMIZEBOX;
 	///
-	///     wnd.on().wm_create([this](wl::wm::Create p) {
+	///     wnd.on().wm_create([this](wl::wm::Create p) -> int {
 	///         wnd.set_title(L"A new title");
 	///         return 0;
 	///     });
@@ -80,7 +80,7 @@ namespace wl {
 	/// Example of creating a window from a dialog resource, .h and .cpp files:
 	///
 	/// ```cpp
-	/// class MyMain final : wl::NonMovable {
+	/// class MyMain final {
 	/// public:
 	///     MyMain();
 	///     wl::WindowMain wnd{DLG_MAIN, ICO_MAIN};
@@ -91,12 +91,39 @@ namespace wl {
 	/// RUN_MAIN(MyMain, wnd)
 	///
 	/// MyMain::MyMain() {
-	///     wnd.on().wm_init_dialog([this](wl::wm::InitDialog p) {
+	///     wnd.on().wm_init_dialog([this](wl::wm::InitDialog p) -> bool {
 	///         wnd.set_title(L"A new title");
 	///         return true;
 	///     });
 	/// }
 	/// ```
+	///
+	/// Instead of writing lambdas directly inside your class constructor, you can alternatively [`std::bind`] methods:
+	///
+	/// ```cpp
+	/// class MyMain final {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{DLG_MAIN, ICO_MAIN};
+	/// private:
+	///     bool on_init_dialog(wl::wm::InitDialog p);
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
+	///
+	/// MyMain::MyMain() {
+	///     wnd.on().wm_init_dialog(std::bind(&MyMain::on_init_dialog, this, std::placeholders::_1));
+	/// }
+	///
+	/// bool MyMain::on_init_dialog(wl::wm::InitDialog p) {
+	///     wnd.set_title(L"A new title");
+	///     return true;
+	/// }
+	/// ```
+	///
+	/// [`std::bind`]: https://en.cppreference.com/w/cpp/utility/functional/bind.html
 	class WindowMain final : public WindowParent {
 	public:
 		/// Constructs the main window programmatically with [`CreateWindowEx`].
@@ -217,7 +244,7 @@ namespace wl {
 	/// Example of creating a custom control programmatically, .h and .cpp files:
 	///
 	/// ```cpp
-	/// class MyControl final : wl::NonMovable {
+	/// class MyControl final {
 	/// public:
 	///     MyControl(wl::WindowParent &parent);
 	///     wl::WindowControl wnd;
@@ -232,7 +259,7 @@ namespace wl {
 	///     wnd.setup().size = wl::dpi::sz(80, 80);
 	///     wnd.setup().layout = wl::Lay::move_hold;
 	///
-	///     wnd.on().wm_paint([this]() {
+	///     wnd.on().wm_paint([this]() -> void {
 	///         PAINTSTRUCT ps{};
 	///         HDC hdc = BeginPaint(wnd.hwnd(), &ps);
 	///         LineTo(hdc, 60, 60);

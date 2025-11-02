@@ -7,7 +7,7 @@
 #define DLG_MAIN        1000
 #define LST_FILES       1001
 
-class DlgMain final : wl::NonMovable {
+class DlgMain final {
 public:
 	DlgMain();
 
@@ -25,7 +25,7 @@ private:
 
 ////////////////////////////////////////////////////////////////////////////////
 
-class Contro final : wl::NonMovable {
+class Contro final {
 public:
 	Contro(wl::WindowParent &parent);
 	wl::WindowControl wnd;
@@ -33,11 +33,11 @@ private:
 	void on_paint();
 };
 
-class RawMain final : wl::NonMovable {
+class RawMain final {
 public:
 	RawMain();
 	wl::WindowMain wnd{};
-	wl::ListView lst{wnd};
+	wl::ListView lv{wnd};
 	Contro ctl{wnd};
 private:
 	int on_create(wl::wm::Create);

@@ -1,2 +1,4 @@
+cd src/winlamb
 rm -rf docs/
-doxygen src/winlamb/doxyfile.ini
+doxygen doxyfile.ini
+cd -

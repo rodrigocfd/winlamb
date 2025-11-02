@@ -87,9 +87,8 @@ std::wstring wl::str::fmt_error(DWORD errorCode) {
 		nullptr, errorCode, LANG_USER_DEFAULT, reinterpret_cast<LPWSTR>(&pBuf), 0, nullptr);
 
 	if (!nChars) [[unlikely]] {
-		std::wstring crashMsg = str::fmt(L"FormatMessage failed with error %d.", GetLastError());
-		MessageBoxW(nullptr, crashMsg.c_str(), L"Critical error", MB_ICONERROR);
-		return crashMsg;
+		std::wstring msg = str::fmt(L"FormatMessage failed with error %d.", GetLastError());
+		throw std::runtime_error(str::to_ansi(msg));
 	}
 
 	std::wstring finalBuf(pBuf, nChars);
