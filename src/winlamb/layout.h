@@ -4,16 +4,16 @@
 
 namespace _wl_internal {
 
-	constexpr BYTE LAY_H_MOVE  = 0b0000'0001;
+	constexpr BYTE LAY_H_MOVE   = 0b0000'0001;
 	constexpr BYTE LAY_H_RESIZE = 0b0000'0010;
-	constexpr BYTE LAY_V_MOVE  = 0b0000'0100;
+	constexpr BYTE LAY_V_MOVE   = 0b0000'0100;
 	constexpr BYTE LAY_V_RESIZE = 0b0000'1000;
 
 }
 
 namespace wl {
 
-	/** Specifies the horizontal and vertical behavior for a control when the parent window is resized. */
+	/** @brief Specifies the horizontal and vertical behavior for a control when the parent window is resized. */
 	enum class Lay : BYTE {
 		/** When parent is resized, nothing happens. */
 		hold_hold = 0,

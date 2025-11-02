@@ -122,6 +122,24 @@ namespace wl {
 		/// ```
 		[[nodiscard]] constexpr void** pptr() { return reinterpret_cast<void**>(&_p); }
 
+		/// Returns the wrapped COM pointer, setting the current pointer to `nullptr`, so that `release` won't be called.
+		///
+		/// It's your responsability to release the returned pointer, or a resource leak will occur.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// wl::ComPtr<IFileOpenDialog> ifod{CLSID_FileOpenDialog, CLSCTX_INPROC_SERVER};
+		/// IFileOpenDialog *pLeaked = ifod.leak();
+		///
+		/// wl::ComPtr<IFileOpenDialog> later{pLeaked}; // take ownership again
+		/// ```
+		[[nodiscard]] T* leak() {
+			T *ptr = _p;
+			_p = nullptr;
+			return ptr;
+		}
+
 		/// Calls [`IUnknown::Release`] on the current pointer, then calls [`CoCreateInstance`].
 		///
 		/// Example:

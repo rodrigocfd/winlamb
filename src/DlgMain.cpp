@@ -79,6 +79,7 @@ void DlgMain::on_about() {
 Contro::Contro(wl::WindowParent &parent)
 	: wnd{parent}
 {
+	wnd.setup().windowExStyle |= WS_EX_CLIENTEDGE;
 	wnd.setup().pos = wl::dpi::pt(420, 10);
 	wnd.setup().size = wl::dpi::sz(80, 80);
 	wnd.setup().layout = wl::Lay::move_hold;

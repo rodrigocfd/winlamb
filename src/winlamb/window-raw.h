@@ -54,9 +54,7 @@ namespace wl::opts {
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::opts::Main wndOpts{
-		///     .size = wl::dpi::sz(500, 300),
-		/// };
+		/// wnd.setup().size = wl::dpi::sz(500, 300);
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -66,9 +64,7 @@ namespace wl::opts {
 		/// For a resizable window, use:
 		///
 		/// ```cpp
-		/// wl::opts::Main wndOpts{
-		///     .style = wl::opts::Main{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
-		/// };
+		/// wnd.setup().style |= WS_SIZEBOX | WS_MAXIMIZEBOX;
 		/// ```
 		///
 		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -151,9 +147,7 @@ namespace wl::opts {
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::opts::Main wndOpts{
-		///     .size = wl::dpi::sz(400, 200),
-		/// };
+		/// wnd.setup().size = wl::dpi::sz(400, 200);
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -163,9 +157,7 @@ namespace wl::opts {
 		/// For a resizable window, use:
 		///
 		/// ```cpp
-		/// wl::opts::Main wndOpts{
-		///     .style = wl::opts::Modal{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
-		/// };
+		/// wnd.setup().style |= WS_SIZEBOX | WS_MAXIMIZEBOX;
 		/// ```
 		///
 		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -235,9 +227,7 @@ namespace wl::opts {
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::opts::Control ctrlOpts{
-		///     .pos = wl::dpi::pt(10, 10),
-		/// };
+		/// wnd.setup().pos = wl::dpi::pt(10, 10);
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -247,9 +237,7 @@ namespace wl::opts {
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::opts::Control ctrlOpts{
-		///     .pos = wl::dpi::sz(100, 100),
-		/// };
+		/// wnd.setup().pos = wl::dpi::sz(100, 100);
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -261,9 +249,15 @@ namespace wl::opts {
 		DWORD windowStyle = WS_CHILD | WS_TABSTOP | WS_GROUP | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
+		/// Example adding a border:
+		///
+		/// ```cpp
+		/// wnd.setup().windowExStyle |= WS_EX_CLIENTEDGE;
+		/// ```
+		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowExStyle = WS_EX_LEFT | WS_EX_CLIENTEDGE;
+		DWORD windowExStyle = WS_EX_LEFT;
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.

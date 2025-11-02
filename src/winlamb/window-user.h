@@ -144,7 +144,9 @@ namespace wl {
 		WindowMain(WORD dlgId, WORD iconId = 0, WORD accelTblId = 0)
 			: _dlgMain{std::make_optional<_wl_internal::DlgMain>(dlgId, iconId, accelTblId)} { }
 
-		/** For windows created programmatically, defines additional creation options. */
+		/// For a window created programmatically, defines additional creation options.
+		///
+		/// If a dialog window, throws an exception.
 		[[nodiscard]] constexpr opts::MainOpts& setup() { return _rawMain.value()._opts; }
 
 		/// Calls [`GetWindowText`] to retrieve the window title.
@@ -211,7 +213,9 @@ namespace wl {
 		WindowModal(const WindowParent &parent, WORD dlgId)
 			: _dlgModal{std::make_optional<_wl_internal::DlgModal>(parent, dlgId)} { }
 
-		/** For windows created programmatically, defines additional creation options. */
+		/// For a window created programmatically, defines additional creation options.
+		///
+		/// If a dialog window, throws an exception.
 		[[nodiscard]] constexpr opts::ModalOpts& setup() { return _rawModal.value()._opts; }
 
 		/// Calls [`GetWindowText`] to retrieve the window title.
@@ -272,23 +276,24 @@ namespace wl {
 		/// Constructs the custom control window programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		explicit WindowControl(WindowParent &parent)
-			: _rawControl{std::make_optional<_wl_internal::RawControl>(parent)} { }
+		explicit WindowControl(WindowParent &parent);
 
 		/// Constructs the custom control window from a dialog resource with [`CreateDialogParam`].
 		///
 		/// The `dlgId` parameter must identify a dialog resource.
 		///
 		/// [`CreateDialogParam`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createdialogparamw
-		WindowControl(wl::WindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos, wl::Lay layout = wl::Lay::hold_hold)
-			: _dlgControl{std::make_optional<_wl_internal::DlgControl>(parent, dlgId, ctrlId, pos, layout)} { }
+		WindowControl(wl::WindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos, wl::Lay layout = wl::Lay::hold_hold);
 
-		/** For controls programmatically, defines additional creation options. */
+		/// For a control created programmatically, defines additional creation options.
+		///
+		/// If a dialog control, throws an exception.
 		[[nodiscard]] constexpr opts::ControlOpts& setup() { return _rawControl.value()._opts; }
 
 	private:
 		[[nodiscard]] constexpr const _wl_internal::WindowMsg& wnd_msg() const override { return get_wnd_msg(_rawControl, _dlgControl); }
 		[[nodiscard]] constexpr _wl_internal::WindowMsg& wnd_msg() override             { return get_wnd_msg(_rawControl, _dlgControl); }
+		void paint_custom_border(wm::NcPaint p) const;
 
 		std::optional<_wl_internal::RawControl> _rawControl{}; // either one
 		std::optional<_wl_internal::DlgControl> _dlgControl{};

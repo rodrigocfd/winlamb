@@ -153,7 +153,9 @@ namespace wl::wm {
 
 	struct NcPaint : protected Msg {
 		constexpr NcPaint(const Msg &p) : Msg{p} { }
-		[[nodiscard]] HRGN hrgn() const { return reinterpret_cast<HRGN>(wp); }
+		[[nodiscard]] constexpr WPARAM wparam() const { return wp; }
+		[[nodiscard]] constexpr LPARAM lparam() const { return lp; }
+		[[nodiscard]] HRGN      hrgn() const          { return reinterpret_cast<HRGN>(wp); }
 	};
 
 	struct PowerBroadcast : protected Msg {
@@ -412,8 +414,8 @@ namespace wl::events {
 		std::vector<Cmd> _cmds{}; // WM_COMMAND
 		std::vector<Nfy> _nfys{}; // WM_NOTIFY
 
-		friend _wl_internal::WindowMsg; // message processing
-		friend _wl_internal::NativeCtrl; // subclass processing
+		friend _wl_internal::WindowMsg; // ctor, message processing
+		friend _wl_internal::NativeCtrl; // ctor, subclass processing
 	};
 
 }
