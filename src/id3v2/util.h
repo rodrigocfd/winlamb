@@ -6,7 +6,7 @@
 
 namespace id3v2 {
 
-	// String encoding.
+	/** String encoding. */
 	enum class Enc : BYTE {
 		iso88591 = 0x00,
 		unicode  = 0x01,
@@ -41,6 +41,6 @@ namespace id3v2::synch_safe {
 namespace id3v2::conv {
 
 	[[nodiscard]] UINT uint_from_be_bytes(std::span<BYTE> src);
-	void serialize_be(std::vector<BYTE> &dest, UINT n);
+	void uint_serialize_be(std::vector<BYTE> &dest, UINT n);
 
 }

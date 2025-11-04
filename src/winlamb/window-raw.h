@@ -85,7 +85,7 @@ namespace wl::opts {
 		/// In most applications, the window loop calls [`IsDialogMessage`] so child control messages will properly work.
 		/// However, this has the side-effect of inhibiting [`WM_CHAR`] messages from being sent, which is bad for applications like text editors.
 		///
-		/// So if your application has no child controls and needs to process `WM_CHAR` messages, pass false to suppress `IsDialogMessage` call.
+		/// So if your application has no child controls and needs to process `WM_CHAR` messages, pass `false` to suppress `IsDialogMessage` call.
 		///
 		/// [`IsDialogMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-isdialogmessagew
 		/// [`WM_CHAR`]: https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-char
@@ -172,7 +172,7 @@ namespace wl::opts {
 		/// In most applications, the window loop calls [`IsDialogMessage`] so child control messages will properly work.
 		/// However, this has the side-effect of inhibiting [`WM_CHAR`] messages from being sent, which is bad for applications like text editors.
 		///
-		/// So if your application has no child controls and needs to process `WM_CHAR` messages, pass false to suppress `IsDialogMessage` call.
+		/// So if your application has no child controls and needs to process `WM_CHAR` messages, pass `false` to suppress `IsDialogMessage` call.
 		///
 		/// [`IsDialogMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-isdialogmessagew
 		/// [`WM_CHAR`]: https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-char

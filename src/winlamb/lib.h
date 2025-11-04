@@ -18,6 +18,7 @@ namespace wl::opts { }
 #include "drop-files.h"
 #include "events.h"
 #include "file.h"
+#include "image-list.h"
 #include "layout.h"
 #include "path.h"
 #include "runnable.h"

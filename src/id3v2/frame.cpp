@@ -8,7 +8,6 @@ using std::vector;
 using std::wstring;
 using namespace id3v2;
 
-// Descriptions for PicType enumeration.
 const LPCWSTR id3v2::PIC_TYPE_NAMES[] = {
 	L"Other",
 	L"32x32 pixels 'file icon' (PNG only)",
@@ -77,7 +76,7 @@ void Frame::serialize_header(vector<BYTE> &dest) const {
 	str_engine::serialize_str_ascii(dest, _name4);
 
 	size_t szBody = serializable_size(); // don't count 10-byte header
-	conv::serialize_be(dest, static_cast<DWORD>(szBody));
+	conv::uint_serialize_be(dest, static_cast<DWORD>(szBody));
 
 	wl::vec::append(dest, _flags);
 }

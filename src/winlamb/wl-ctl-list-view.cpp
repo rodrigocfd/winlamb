@@ -53,9 +53,8 @@ std::vector<std::wstring> ListView::Column::item_texts() const {
 	UINT count = _pOwner->items.count();
 	std::vector<std::wstring> texts;
 	texts.reserve(count);
-	for (UINT i = 0; i < count; ++i) {
+	for (UINT i = 0; i < count; ++i)
 		texts.emplace_back(_pOwner->items[i].text(_index));
-	}
 	return texts;
 }
 
@@ -215,6 +214,25 @@ const ListView::Item& ListView::Item::focus() const {
 	return *this;
 }
 
+int ListView::Item::icon_index() const {
+	LVITEMW lvi{
+		.mask = LVIF_IMAGE,
+		.iItem = _index,
+	};
+	ListView_GetItem(_pOwner->hwnd(), &lvi);
+	return lvi.iImage;
+}
+
+const ListView::Item& ListView::Item::set_icon_index(int iconIndex) const {
+	LVITEMW lvi{
+		.mask = LVIF_IMAGE,
+		.iItem = _index,
+		.iImage = iconIndex,
+	};
+	ListView_SetItem(_pOwner->hwnd(), &lvi);
+	return *this;
+}
+
 const ListView::Item& ListView::Item::remove() const {
 	ListView_DeleteItem(_pOwner->hwnd(), _index);
 	return *this;
@@ -271,13 +289,13 @@ bool ListView::Item::is_visible() const {
 ////////////////////////////////////////////////////////////////////////////////
 
 ListView::Item ListView::ItemCollection::add(WStrPtr text,
-	std::initializer_list<WStrPtr> otherColumnsTexts, int icon) const
+	std::initializer_list<WStrPtr> otherColumnsTexts, int iconIndex) const
 {
 	LVITEMW lvi{
-		.mask = LVIF_TEXT | static_cast<UINT>(icon != -1 ? LVIF_IMAGE : 0),
+		.mask = LVIF_TEXT | static_cast<UINT>(iconIndex != -1 ? LVIF_IMAGE : 0),
 		.iItem = 0x0fff'ffff, // insert as the last item
 		.pszText = text.lpwstr(),
-		.iImage = icon,
+		.iImage = iconIndex,
 	};
 	int index = ListView_InsertItem(_pOwner->hwnd(), &lvi);
 	Item newItem{*_pOwner, index};
@@ -376,7 +394,7 @@ ListView::ListView(WindowParent &owner, WORD ctrlId)
 {
 	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() {
 		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, WC_LISTVIEWW, nullptr,
-			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, _opts.size);
+			_opts.windowStyle | _opts.ctrlStyle | LVS_SHAREIMAGELISTS, _opts.pos, _opts.size);
 		set_extended_style(true, _opts.ctrlExStyle);
 		_ctrl._owner._layout.add(hwnd(), _opts.layout);
 	});
@@ -398,6 +416,22 @@ ListView::ListView(WindowParent &owner, WORD ctrlId, Lay layout, WORD contextMen
 const ListView& ListView::set_extended_style(bool doSet, DWORD exStyle) const {
 	ListView_SetExtendedListViewStyleEx(hwnd(), exStyle, doSet ? exStyle : 0);
 	return *this;
+}
+
+ImageList& ListView::image_list_16() {
+	if (!_hImg16.himagelist()) { // not created yet?
+		_hImg16.create(16, 16, ILC_COLOR32);
+		ListView_SetImageList(hwnd(), _hImg16.himagelist(), LVSIL_SMALL);
+	}
+	return _hImg16;
+}
+
+ImageList& ListView::image_list_32() {
+	if (!_hImg32.himagelist()) { // not created yet?
+		_hImg32.create(32, 32, ILC_COLOR32);
+		ListView_SetImageList(hwnd(), _hImg32.himagelist(), LVSIL_NORMAL);
+	}
+	return _hImg32;
 }
 
 void ListView::custom_events() {

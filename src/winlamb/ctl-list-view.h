@@ -2,6 +2,7 @@
 #include "lib-include-win.h"
 #include <CommCtrl.h>
 #include "window-user.h"
+#include "image-list.h"
 
 namespace wl { class ListView; }
 
@@ -54,9 +55,7 @@ namespace wl::opts {
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::opts::ListView lvOpts{
-		///     .pos = wl::dpi::pt(10, 10),
-		/// };
+		/// lv.setup().pos = wl::dpi::pt(10, 10);
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -66,9 +65,7 @@ namespace wl::opts {
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::opts::ListView lvOpts{
-		///     .pos = wl::dpi::sz(120, 120),
-		/// };
+		/// lv.setup().size = wl::dpi::sz(120, 120);
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -84,6 +81,8 @@ namespace wl::opts {
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD windowExStyle = WS_EX_LEFT | WS_EX_CLIENTEDGE;
 		/// The [ListView style] passed to [`CreateWindowEx`].
+		///
+		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be set.
 		///
 		/// [ListView style]: https://learn.microsoft.com/en-us/windows/win32/controls/list-view-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -186,30 +185,46 @@ namespace wl {
 		public:
 			constexpr Column(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
 
+			/** Returns the index of the column. */
 			[[nodiscard]] constexpr int index() const { return _index; }
 
-			// Returns the texts of all items under this column.
+			/** Returns the texts of all items under this column. */
 			[[nodiscard]] std::vector<std::wstring> item_texts() const;
 
-			// Returns the texts of the selected items under this column.
+			/** Returns the texts of the selected items under this column. */
 			[[nodiscard]] std::vector<std::wstring> selected_item_texts() const;
 
-			// Returns HDF_CENTER, HDF_LEFT or HDF_RIGHT justification.
+			/** Returns `HDF_CENTER`, `HDF_LEFT` or `HDF_RIGHT` justification. */
 			[[nodiscard]] int justif() const;
 
-			// Sets HDF_CENTER, HDF_LEFT or HDF_RIGHT justification.
+			/** Sets `HDF_CENTER`, `HDF_LEFT` or `HDF_RIGHT` justification. */
 			const Column& set_justif(WORD hdf) const;
 
-			// Returns HDF_SORTUP (ascending) or HDF_SORTDOWN (descending).
+			/** Returns `HDF_SORTUP` (ascending) or `HDF_SORTDOWN` (descending). */
 			[[nodiscard]] WORD sort_arrow() const;
 
-			// Sets HDF_SORTUP (ascending) or HDF_SORTDOWN (descending).
+			/** Sets `HDF_SORTUP` (ascending) or `HDF_SORTDOWN` (descending). */
 			const Column& set_sort_arrow(WORD hdf) const;
 
+			/** Returns the text of the column. */
 			[[nodiscard]] std::wstring text() const;
+
+			/** Sets the text of the column. */
 			const Column& set_text(WStrPtr text) const;
+
+			/** Returns the width of the column, in pixels. */
 			[[nodiscard]] UINT width() const;
+
+			/// Sets the width of the column, in pixels.
+			///
+			/// Prefer using DPI-aware values:
+			///
+			/// ```cpp
+			/// lv.cols[0].set_width(wl::dpi::x(100));
+			/// ```
 			const Column& set_width(UINT width) const;
+
+			/** Stretches the width so that it will fill the remaning space. */
 			const Column& set_width_to_fill() const;
 
 		private:
@@ -253,6 +268,8 @@ namespace wl {
 			const Item& set_data(LPARAM data) const;
 			[[nodiscard]] bool is_focused() const;
 			const Item& focus() const;
+			[[nodiscard]] int icon_index() const;
+			const Item& set_icon_index(int iconIndex) const;
 			const Item& remove() const;
 			[[nodiscard]] bool is_selected() const;
 			const Item& select(bool doSelect) const;
@@ -276,14 +293,16 @@ namespace wl {
 			[[nodiscard]] constexpr Item operator[](int index) const { return Item{*_pOwner, index}; }
 
 			/// Adds a new item, defining the text for the first column.
-			/// Optionally, you can provide texts for the subsequent columns, and the icon index.
+			/// Optionally, you can provide texts for the subsequent columns.
+			///
+			/// The optional `iconIndex` refers to the zero-based index of an icon previusly added to one of the image lists.
 			///
 			/// Example:
 			///
 			/// ```cpp
 			/// lv.items.add(L"My item", {L"Column 2", L"Column 3"});
 			/// ```
-			Item add(WStrPtr text, std::initializer_list<WStrPtr> otherColumnsTexts = {}, int icon = -1) const;
+			Item add(WStrPtr text, std::initializer_list<WStrPtr> otherColumnsTexts = {}, int iconIndex = -1) const;
 
 			/** Returns the item count. */
 			[[nodiscard]] UINT count() const;
@@ -371,12 +390,32 @@ namespace wl {
 		/// Allows message events to be added.
 		///
 		/// The events must be added before the control is created on the screen.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// lv.on().lvn_item_changed([](NMLISTVIEW &p) -> void {
+		///     // ...
+		/// });
+		/// ```
 		[[nodiscard]] constexpr events::ListViewEvents& on() { return _events; }
 
 		/// Sets one or more [extended styles].
 		///
+		/// Example:
+		///
+		/// ```cpp
+		/// lv.set_extended_style(true, LVS_EX_FULLROWSELECT);
+		/// ```
+		///
 		/// [extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/extended-list-view-styles
 		const ListView& set_extended_style(bool doSet, DWORD exStyle) const;
+
+		/** Retrieves the associated 16x16 `ImageList`. It will be automatically created if not yet. */
+		ImageList& image_list_16();
+
+		/** Retrieves the associated 32x32 `ImageList`. It will be automatically created if not yet. */
+		ImageList& image_list_32();
 
 	private:
 		void custom_events();
@@ -385,6 +424,7 @@ namespace wl {
 		_wl_internal::NativeCtrl _ctrl;
 		events::ListViewEvents _events;
 		opts::ListViewOpts _opts{};
+		ImageList _hImg16{}, _hImg32{};
 	};
 
 }

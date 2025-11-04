@@ -4,7 +4,7 @@
 
 namespace id3v2 {
 
-	// FramePicture types.
+	/** FramePicture types. */
 	enum class PicType : BYTE {
 		other = 0x00,
 		file_icon_png_32,
@@ -29,12 +29,12 @@ namespace id3v2 {
 		publisher_logo,
 	};
 
-	// Descriptions for PicType enumeration.
+	/** Descriptions for PicType enumeration. */
 	extern const LPCWSTR PIC_TYPE_NAMES[];
 
 	/////////////////////////////////////////////////////////////////////////////
 
-	// Pure abstract class, base to all frames.
+	/** Pure abstract class, base to all frames. */
 	class Frame {
 	public:
 		virtual ~Frame() { }
@@ -44,16 +44,16 @@ namespace id3v2 {
 			: _name4{std::move(name4)}, _declaredSize{declaredSize}, _flags{flags} { }
 
 	public:
-		// Static method; returns a new polymorphic Frame.
+		/** Static method; returns a new polymorphic Frame. */
 		static std::unique_ptr<Frame> parse(std::span<BYTE> src);
 
-		// Static method; tries to create a new polymorphic frame with the simple text.
+		/** Static method; tries to create a new polymorphic frame with the simple text. */
 		static std::unique_ptr<Frame> new_simple_text(wl::WStrPtr name4, wl::WStrPtr text);
 
-		[[nodiscard]] constexpr LPCWSTR name4() const      { return _name4.c_str(); }
-		[[nodiscard]] constexpr UINT declared_size() const { return _declaredSize; }
-
+		[[nodiscard]] constexpr LPCWSTR name4() const             { return _name4.c_str(); }
+		[[nodiscard]] constexpr UINT declared_size() const        { return _declaredSize; }
 		[[nodiscard]] constexpr std::array<BYTE, 2> flags() const { return _flags; }
+
 		[[nodiscard]] virtual std::wstring as_simple_text() const = 0;
 		virtual void force_simple_text(wl::WStrPtr text) = 0;
 		[[nodiscard]] virtual size_t serializable_size() const = 0;

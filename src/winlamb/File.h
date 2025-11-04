@@ -75,6 +75,20 @@ namespace wl {
 		/** Returns the wrapped file handle. */
 		[[nodiscard]] constexpr HANDLE hfile() const { return _hFile; }
 
+		/// Returns the wrapped `HANDLE`, setting the current `HANDLE` to `nullptr`, so that `close` won't be called.
+		///
+		/// It's your responsability to close the returned `HANDLE`, or a resource leak will occur.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// wl::File f{L"C:\\Temp\\foo.txt", wl::File::Access::existing_read_only};
+		/// HANDLE pLeaked = f.leak();
+		///
+		/// wl::File f2{pLeaked}; // take ownership again
+		/// ```
+		[[nodiscard]] HANDLE leak();
+
 		/// Calls [`CloseHandle`] immediately.
 		///
 		/// This method is automatically called by the destructor.
@@ -115,11 +129,24 @@ namespace wl {
 		///
 		/// ```cpp
 		/// wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::existing_read_only};
-		/// std::vector<BYTE> contents = myFile.read();
+		/// std::vector<BYTE> contents = myFile.read(40);
 		/// ```
 		///
 		/// [`ReadFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-readfile
-		[[nodiscard]] std::vector<BYTE> read(size_t numBytes = 0) const;
+		[[nodiscard]] std::vector<BYTE> read(size_t numBytes) const;
+
+		/// Calls [`SetFilePointerEx`] to rewind the current file pointer, then [`ReadFile`] to return a vector with the entire file.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::existing_read_only};
+		/// std::vector<BYTE> contents = myFile.read_all();
+		/// ```
+		///
+		/// [`SetFilePointerEx`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-setfilepointerex
+		/// [`ReadFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-readfile
+		[[nodiscard]] std::vector<BYTE> read_all() const;
 
 		/// Calls [`ReadFile`] and copies the file contents into `buf`, up to `buf.size()`.
 		///
@@ -127,7 +154,7 @@ namespace wl {
 		///
 		/// ```cpp
 		/// wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::existing_read_only};
-		/// std::vector<BYTE> buf(100, 0x00);
+		/// std::vector<BYTE> buf(40, 0x00);
 		/// myFile.read_buf(buf);
 		/// ```
 		///
@@ -150,7 +177,7 @@ namespace wl {
 		/// [`WriteFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-writefile
 		template<std::ranges::contiguous_range R>
 			requires std::ranges::sized_range<R>
-		const File& write(R &&contents) const { return write_ptr(contents.data(), contents.size()); }
+		const File& write(R &&contents) const { return write_from_ptr(contents.data(), contents.size()); }
 
 		/// Calls [`WriteFile`] to write data to the file.
 		///
@@ -167,7 +194,7 @@ namespace wl {
 		///
 		/// [`WriteFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-writefile
 		template<std::input_iterator It, std::sentinel_for<It> End>
-		const File& write(It first, End last) const { return write_ptr(&*first, std::distance(first, last)); }
+		const File& write(It first, End last) const { return write_from_ptr(&*first, std::distance(first, last)); }
 
 		/// Calls [`GetFileTime`] and returns creation, last access and last write times.
 		///
@@ -188,7 +215,7 @@ namespace wl {
 
 	private:
 		HANDLE _hFile = nullptr;
-		const File& write_ptr(const BYTE *p, size_t n) const;
+		const File& write_from_ptr(const BYTE *p, size_t n) const;
 	};
 
 }

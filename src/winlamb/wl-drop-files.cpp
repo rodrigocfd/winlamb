@@ -1,5 +1,4 @@
 #include "drop-files.h"
-using namespace _wl_internal;
 using namespace wl;
 
 DropFiles::DropFiles(WindowParent &owner) {

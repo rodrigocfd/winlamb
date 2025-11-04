@@ -72,20 +72,22 @@ wstring id3v2::str_engine::parse_str_iso88591(span<BYTE> src) {
 	if (src.empty()) return {};
 
 	wstring buf(src.size(), L'\0');
-	for (UINT i = 0; i < src.size(); ++i) {
+	for (UINT i = 0; i < src.size(); ++i)
 		buf[i] = src[i];
-	}
+
 	return buf;
 }
 
 wstring id3v2::str_engine::parse_str_unicode(span<WORD> src) {
 	bool isLE = true;
 	if (src[0] == BOM_LE || src[0] == BOM_BE) { // we have a BOM
-		if (src[0] == BOM_BE) isLE = false;
+		if (src[0] == BOM_BE)
+			isLE = false;
 		src = src.subspan(1); // skip BOM
 	}
 
-	if (src.empty()) return {};
+	if (src.empty())
+		return {};
 
 	wstring buf(src.size(), L'\0');
 	for (UINT i = 0; i < src.size(); ++i) {
@@ -157,9 +159,9 @@ UINT id3v2::conv::uint_from_be_bytes(span<BYTE> src) {
 	return MAKELONG(MAKEWORD(src[3], src[2]), MAKEWORD(src[1], src[0]));
 }
 
-void id3v2::conv::serialize_be(vector<BYTE> &dest, UINT n) {
+void id3v2::conv::uint_serialize_be(vector<BYTE> &dest, UINT n) {
 	wl::vec::append(dest, {
-		LOBYTE(LOWORD(n)), HIBYTE(LOWORD(n)),
-		LOBYTE(HIWORD(n)), HIBYTE(HIWORD(n)),
+		HIBYTE(HIWORD(n)), LOBYTE(HIWORD(n)),
+		HIBYTE(LOWORD(n)), LOBYTE(LOWORD(n)),
 	});
 }

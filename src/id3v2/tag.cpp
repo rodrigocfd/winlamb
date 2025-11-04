@@ -34,7 +34,7 @@ const Frame* Tag::frame_by_name4(wl::WStrPtr name4) const {
 }
 
 Frame* Tag::frame_by_name4(wl::WStrPtr name4) {
-	return const_cast<Frame*>(std::as_const(*this).frame_by_name4(name4));
+	return const_cast<Frame*>(std::as_const(*this).frame_by_name4(name4)); // https://stackoverflow.com/a/47369227/6923555
 }
 
 void Tag::remove_frame_if(function<bool(const Frame&)> cb) {
@@ -69,9 +69,8 @@ LPCWSTR Tag::replay_gain_status() const {
 
 vector<BYTE> Tag::serialize() const {
 	size_t szTag = 10; // start with 10-byte tag header
-	for (auto &&frame : _frames) {
-		szTag += frame->serializable_size();
-	}
+	for (auto &&frame : _frames)
+		szTag += frame->serializable_size() + 10; // plus 10-byte frame header
 
 	vector<BYTE> blob{};
 	blob.reserve(szTag);
@@ -81,7 +80,7 @@ vector<BYTE> Tag::serialize() const {
 	blob.emplace_back(0x00); // flags
 
 	UINT szTagSeri = synch_safe::encode(static_cast<DWORD>(szTag) - 10); // don't count 10-byte tag header
-	conv::serialize_be(blob, szTagSeri);
+	conv::uint_serialize_be(blob, szTagSeri);
 
 	for (auto &&frame : _frames)
 		frame->serialize(blob);
@@ -91,8 +90,7 @@ vector<BYTE> Tag::serialize() const {
 
 void Tag::save_to_file(wl::WStrPtr mp3File) {
 	wl::File fout{mp3File, wl::File::Access::existing_rw};
-	vector<BYTE> currentContents = fout.read(); // copy the whole file into memory
-
+	vector<BYTE> currentContents = fout.read_all(); // copy the whole file into memory
 	Tag oldTag{currentContents}; // so we can have the MP3 offset
 	fout.truncate();
 
@@ -144,6 +142,7 @@ size_t Tag::parse_header(span<BYTE> src) {
 }
 
 void Tag::parse_frames(span<BYTE> src) {
+	_mp3Offset = 10; // start with the tag header
 	for (;;) {
 		if (is_mp3_magic(src))
 			return;// we found the beginning of the MP3 file, no padding

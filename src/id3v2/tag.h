@@ -8,7 +8,7 @@
 
 namespace id3v2 {
 
-	// Each MP3 file has one tag.
+	/** Each MP3 file has one tag. */
 	class Tag final : wl::NonCopyable {
 	public:
 		explicit Tag(wl::WStrPtr mp3File);

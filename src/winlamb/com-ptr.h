@@ -132,7 +132,7 @@ namespace wl {
 		/// wl::ComPtr<IFileOpenDialog> ifod{CLSID_FileOpenDialog, CLSCTX_INPROC_SERVER};
 		/// IFileOpenDialog *pLeaked = ifod.leak();
 		///
-		/// wl::ComPtr<IFileOpenDialog> later{pLeaked}; // take ownership again
+		/// wl::ComPtr<IFileOpenDialog> ifod2{pLeaked}; // take ownership again
 		/// ```
 		[[nodiscard]] T* leak() {
 			T *ptr = _p;

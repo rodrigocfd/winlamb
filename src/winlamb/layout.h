@@ -55,7 +55,7 @@ namespace wl {
 
 namespace _wl_internal {
 
-	/** Rearranges position and size of each control when the parent resizes, according to Lay flags. */
+	/** Rearranges position and size of each control when the parent resizes, according to `Lay` flags. */
 	class Layout final {
 	public:
 		struct Ctrl final {

@@ -8,6 +8,12 @@ File& File::operator=(File &&other) noexcept {
 	return *this;
 }
 
+HANDLE File::leak() {
+	HANDLE h = _hFile;
+	_hFile = nullptr;
+	return h;
+}
+
 void File::close() noexcept {
 	if (_hFile) {
 		CloseHandle(_hFile);
@@ -75,6 +81,11 @@ std::vector<BYTE> File::read(size_t numBytes) const {
 	return buf;
 }
 
+std::vector<BYTE> File::read_all() const {
+	set_ptr_offset(0);
+	return read(size());
+}
+
 const File& File::read_buf(std::vector<BYTE> &buf) const {
 	DWORD read = 0;
 	if (!ReadFile(_hFile, buf.data(), static_cast<DWORD>(buf.size()), &read, nullptr)) [[unlikely]] {
@@ -110,7 +121,7 @@ const File& File::truncate() const {
 	return *this;
 }
 
-const File& File::write_ptr(const BYTE *p, size_t n) const {
+const File& File::write_from_ptr(const BYTE *p, size_t n) const {
 	DWORD written = 0;
 	if (!WriteFile(_hFile, p, static_cast<DWORD>(n), &written, nullptr)) [[unlikely]] {
 		throw std::system_error(GetLastError(), std::system_category(), "WriteFile failed");
