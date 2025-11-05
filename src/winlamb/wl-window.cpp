@@ -141,19 +141,11 @@ NativeCtrl::NativeCtrl(WindowParent &owner)
 {
 }
 
-WindowEvents& NativeCtrl::subclass_on() {
-	#ifdef _DEBUG
-	if (hwnd())
-		throw std::logic_error("Cannot add subclass events after the control is created.");
-	#endif
-	return _subclassEvents;
-}
-
 void NativeCtrl::create_wnd(WORD ctrlId, DWORD exStyle, LPCWSTR className,
 	LPCWSTR title, DWORD style, POINT pos, SIZE size)
 {
 	#ifdef _DEBUG
-	if (hwnd())
+	if (_wnd.hwnd())
 		throw std::logic_error("Cannot create control twice.");
 	if (!_owner.hwnd())
 		throw std::logic_error("Cannot create control before parent.");
@@ -163,7 +155,7 @@ void NativeCtrl::create_wnd(WORD ctrlId, DWORD exStyle, LPCWSTR className,
 		pos.x, pos.y, size.cx, size.cy, _owner.hwnd(), reinterpret_cast<HMENU>(valid_ctrl_id(ctrlId)),
 		reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(_owner.hwnd(), GWLP_HINSTANCE)), nullptr);
 	#ifdef _DEBUG
-	if (!hwnd())
+	if (!_wnd.hwnd())
 		throw std::system_error(GetLastError(), std::system_category(), "NativeCtrl: CreateWindowEx failed");
 	#endif
 
@@ -172,7 +164,7 @@ void NativeCtrl::create_wnd(WORD ctrlId, DWORD exStyle, LPCWSTR className,
 
 void NativeCtrl::assign_dlg(WORD ctrlId) {
 	#ifdef _DEBUG
-	if (hwnd())
+	if (_wnd.hwnd())
 		throw std::logic_error("Cannot assign control twice.");
 	if (!_owner.hwnd())
 		throw std::logic_error("Cannot assign control before parent.");
@@ -180,7 +172,7 @@ void NativeCtrl::assign_dlg(WORD ctrlId) {
 
 	_wnd._hWnd = GetDlgItem(_owner.hwnd(), ctrlId);
 	#ifdef _DEBUG
-	if (!hwnd())
+	if (!_wnd.hwnd())
 		throw std::system_error(GetLastError(), std::system_category(), "NativeCtrl: GetDlgItem failed");
 	#endif
 
@@ -190,7 +182,7 @@ void NativeCtrl::assign_dlg(WORD ctrlId) {
 void NativeCtrl::install_subclass() {
 	static UINT_PTR subclassId = 0;
 	if (_subclassEvents.has_message()) {
-		BOOL ret = SetWindowSubclass(hwnd(), subclass_proc, ++subclassId, reinterpret_cast<DWORD_PTR>(this));
+		BOOL ret = SetWindowSubclass(_wnd.hwnd(), subclass_proc, ++subclassId, reinterpret_cast<DWORD_PTR>(this));
 		#ifdef _DEBUG
 		if (!ret)
 			throw std::runtime_error("SetWindowSubclass failed.");

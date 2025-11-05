@@ -9,8 +9,10 @@
 namespace id3v2 {
 
 	/** Each MP3 file has one tag. */
-	class Tag final : wl::NonCopyable {
+	class Tag final {
 	public:
+		Tag(Tag&&) = delete; // non-copyable, non-movable
+
 		explicit Tag(wl::WStrPtr mp3File);
 		explicit Tag(std::span<BYTE> src) { parse(src); }
 

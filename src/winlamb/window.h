@@ -50,8 +50,10 @@ namespace _wl_internal {
 
 	/// Stores the pre, user and post window messages for container windows.
 	/// Exposes exception-safe multi-threading operations.
-	class WindowMsg final : wl::NonMovable {
+	class WindowMsg final {
 	public:
+		WindowMsg(WindowMsg&&) = delete; // non-copyable, non-movable
+
 		constexpr explicit WindowMsg(bool isDlg)
 			: _isDlg{isDlg}, _preEvents{isDlg}, _userEvents{isDlg}, _postEvents{isDlg} { }
 
@@ -91,12 +93,12 @@ namespace wl { class WindowParent; }
 namespace _wl_internal {
 
 	/** Base to all native controls. */
-	class NativeCtrl final : wl::NonMovable {
+	class NativeCtrl final {
 	public:
+		NativeCtrl(NativeCtrl&&) = delete; // non-copyable, non-movable
+
 		explicit NativeCtrl(wl::WindowParent &owner);
 
-		[[nodiscard]] constexpr HWND hwnd() const { return _wnd.hwnd(); }
-		[[nodiscard]] wl::events::WindowEvents& subclass_on();
 		void create_wnd(WORD ctrlId, DWORD exStyle, LPCWSTR className,
 			LPCWSTR title, DWORD style, POINT pos, SIZE size);
 		void assign_dlg(WORD ctrlId);
@@ -110,6 +112,29 @@ namespace _wl_internal {
 		wl::events::WindowEvents _subclassEvents{false};
 
 		static WORD valid_ctrl_id(WORD ctrlId);
+	};
+
+}
+
+namespace wl {
+
+	/** @brief Pure abstract class; implemented by all native controls. */
+	class WindowNativeControl {
+	private:
+		WindowNativeControl(WindowNativeControl&&) = delete; // non-copyable, non-movable
+
+	public:
+		constexpr WindowNativeControl() = default;
+
+		/** Returns the wrapped window handle. */
+		[[nodiscard]] constexpr HWND hwnd() const { return nat_ctrl()._wnd.hwnd(); }
+
+		/** Returns the control ID. */
+		[[nodiscard]] constexpr WORD ctrl_id() const { return ev_nat_ctrl()._ctrlId; }
+
+	private:
+		[[nodiscard]] virtual constexpr const _wl_internal::NativeCtrl& nat_ctrl() const = 0;
+		[[nodiscard]] virtual constexpr const _wl_internal::EventsNativeCtrl& ev_nat_ctrl() const = 0;
 	};
 
 }

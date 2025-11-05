@@ -77,7 +77,7 @@ namespace wl::wm {
 		constexpr GetDlgCode(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr WPARAM wparam() const { return wp; }
 		[[nodiscard]] constexpr LPARAM lparam() const { return lp; }
-		[[nodiscard]] constexpr BYTE   vkey_code() const { return static_cast<BYTE>(wm); }
+		[[nodiscard]] constexpr BYTE   vkey_code() const { return static_cast<BYTE>(wp); }
 		[[nodiscard]] constexpr bool   is_query() const  { return lp == 0; }
 		[[nodiscard]] MSG*             msg() const       { return this->is_query() ? nullptr : reinterpret_cast<MSG*>(lp); }
 		[[nodiscard]] bool             has_alt() const   { return (GetAsyncKeyState(VK_MENU) & 0x8000) != 0; }
@@ -217,7 +217,7 @@ namespace _wl_internal {
 	class NativeCtrl;
 
 	/** Library-internal window message callbacks. */
-	class EventsInternal final : wl::NonMovable {
+	class EventsInternal final {
 	public:
 		struct Msg final {
 			UINT wm;
@@ -228,6 +228,8 @@ namespace _wl_internal {
 			int code;
 			std::function<void(wl::wm::Notify)> cb;
 		};
+
+		EventsInternal(EventsInternal&&) = delete; // non-copyable, non-movable
 
 		constexpr explicit EventsInternal(bool isDlg) : _isDlg{isDlg} { }
 
@@ -249,8 +251,8 @@ namespace _wl_internal {
 
 namespace wl::events {
 
-	/** @brief Native window message callbacks. */
-	class WindowEvents final : wl::NonMovable {
+	/** @brief Native `WindowParent` message callbacks. */
+	class WindowEvents final {
 	private:
 		struct Msg final {
 			UINT wm;
@@ -266,6 +268,8 @@ namespace wl::events {
 			int code;
 			std::function<LRESULT(wl::wm::Notify)> cb;
 		};
+
+		WindowEvents(WindowEvents&&) = delete; // non-copyable, non-movable
 
 		constexpr explicit WindowEvents(bool isDlg) : _isDlg{isDlg} { }
 
@@ -426,8 +430,10 @@ namespace _wl_internal {
 
 	/// Base to all native control events.
 	/// Actually just holds a pointer to parent events, which is where the events are added.
-	class EventsNativeCtrl final : wl::NonMovable {
+	class EventsNativeCtrl final {
 	public:
+		EventsNativeCtrl(EventsNativeCtrl&&) = delete; // non-copyable, non-movable
+
 		EventsNativeCtrl(wl::WindowParent &owner, WORD ctrlId);
 
 		WindowMsg &_owner;

@@ -396,6 +396,7 @@ ListView::ListView(WindowParent &owner, WORD ctrlId, Lay layout, WORD contextMen
 
 	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
 		_ctrl.assign_dlg(ctrl_id());
+		SetWindowLongPtrW(hwnd(), GWL_STYLE, GetWindowLongPtrW(hwnd(), GWL_STYLE) | LVS_SHAREIMAGELISTS);
 		_ctrl._owner._layout.add(hwnd(), layout);
 	});
 
@@ -424,8 +425,8 @@ ImageList& ListView::image_list_32() {
 }
 
 void ListView::custom_events() {
-	_ctrl.subclass_on().wm_get_dlg_code([this](wm::GetDlgCode p) {
-		if (!p.is_query() && p.vkey_code() == VK_RETURN) { // Enter key
+	_ctrl._subclassEvents.wm_get_dlg_code([this](wm::GetDlgCode p) -> WORD {
+		if (!p.is_query() && p.msg()->message == WM_KEYDOWN && p.vkey_code() == VK_RETURN) { // Enter key
 			NMLVKEYDOWN nmlvkd{
 				.hdr{
 					.hwndFrom = hwnd(),
@@ -472,7 +473,7 @@ void ListView::show_context_menu(bool followCursor, bool hasCtrl, bool hasShift)
 			_opts.hMenuContext = LoadMenuW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(_opts.contextMenuId));
 			#ifdef _DEBUG
 			if (!_opts.hMenuContext)
-				throw std::invalid_argument("ListView context menu resource failed to load.");
+				throw std::invalid_argument("LoadMenu failed to load ListView context menu resource.");
 			#endif
 		} else {
 			return; // no context menu defined
@@ -505,10 +506,14 @@ void ListView::show_context_menu(bool followCursor, bool hasCtrl, bool hasShift)
 	HMENU hSubMenu = GetSubMenu(_opts.hMenuContext, 0); // pop the first submenu
 	#ifdef _DEBUG
 	if (!hSubMenu)
-		throw std::invalid_argument("ListView failed to load context submenu.");
+		throw std::invalid_argument("GetSubMenu failed to load ListView context submenu.");
 	#endif
 	ClientToScreen(hwnd(), &menuPos); // from listview to screen
 	SetForegroundWindow(hParent);
-	TrackPopupMenu(hSubMenu, TPM_LEFTBUTTON, menuPos.x, menuPos.y, 0, hParent, nullptr);
+	BOOL retTrk = TrackPopupMenu(hSubMenu, TPM_LEFTBUTTON, menuPos.x, menuPos.y, 0, hParent, nullptr);
+	#ifdef _DEBUG
+	if (!retTrk)
+		throw std::runtime_error("TrackPopupMenu failed to load ListView context submenu.");
+	#endif
 	PostMessageW(hParent, WM_NULL, 0, 0); // necessary according to TrackPopupMenu docs
 }

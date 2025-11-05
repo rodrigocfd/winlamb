@@ -6,9 +6,14 @@ namespace wl {
 
 	class DropFiles;
 
-	/** @brief Pure abstract class; implemented by any window which can contain child controls. */
-	class WindowParent : NonMovable {
+	/** @brief Pure abstract class; implemented by all windows which can host child controls. */
+	class WindowParent {
+	private:
+		WindowParent(WindowParent&&) = delete; // non-copyable, non-movable
+
 	public:
+		constexpr WindowParent() = default;
+
 		/** Returns the window handle. */
 		[[nodiscard]] constexpr virtual HWND hwnd() const { return wnd_msg().hwnd(); }
 

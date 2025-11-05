@@ -4,8 +4,12 @@
 namespace _wl_internal {
 
 	/** Base to all raw container windows. */
-	class RawBase final : wl::NonMovable {
+	class RawBase final {
 	public:
+		RawBase(RawBase&&) = delete; // non-copyable, non-movable
+
+		constexpr RawBase() = default;
+
 		[[nodiscard]] constexpr HWND hwnd() const { return _wndMsg.hwnd(); }
 		[[nodiscard]] ATOM register_class(HINSTANCE hInst, LPCWSTR className, DWORD classStyle,
 			WORD iconId, HBRUSH hbrBackground, HCURSOR hCursor);
@@ -97,8 +101,10 @@ namespace wl::opts {
 namespace _wl_internal {
 
 	/** Main raw window. */
-	class RawMain final : wl::NonMovable {
+	class RawMain final {
 	public:
+		RawMain(RawMain&&) = delete; // non-copyable, non-movable
+
 		RawMain();
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _rawBase.hwnd(); }
@@ -184,8 +190,10 @@ namespace wl::opts {
 namespace _wl_internal {
 
 	/** Modal raw window. */
-	class RawModal final : wl::NonMovable {
+	class RawModal final {
 	public:
+		RawModal(RawModal&&) = delete; // non-copyable, non-movable
+
 		explicit RawModal(const wl::WindowParent &parent);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _rawBase.hwnd(); }
@@ -271,8 +279,10 @@ namespace wl::opts {
 namespace _wl_internal {
 
 	/** Control raw window. */
-	class RawControl final : wl::NonMovable {
+	class RawControl final {
 	public:
+		RawControl(RawControl&&) = delete; // non-copyable, non-movable
+
 		RawControl(wl::WindowParent &parent);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _rawBase.hwnd(); }

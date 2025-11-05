@@ -4,8 +4,10 @@
 namespace _wl_internal {
 
 	/** Base to all dialog container windows. */
-	class DlgBase final : wl::NonMovable {
+	class DlgBase final {
 	public:
+		DlgBase(DlgBase&&) = delete; // non-copyable, non-movable
+
 		constexpr DlgBase(WORD dlgId) : _wndMsg{true}, _dlgId{dlgId} { }
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _wndMsg.hwnd(); }
@@ -25,8 +27,10 @@ namespace _wl_internal {
 namespace _wl_internal {
 
 	/** Main dialog window. */
-	class DlgMain final : wl::NonMovable {
+	class DlgMain final {
 	public:
+		DlgMain(DlgMain&&) = delete; // non-copyable, non-movable
+
 		DlgMain(WORD dlgId, WORD iconId, WORD accelTblId);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _dlgBase.hwnd(); }
@@ -43,8 +47,10 @@ namespace wl { class WindowParent; }
 namespace _wl_internal {
 
 	/** Modal dialog window. */
-	class DlgModal final : wl::NonMovable {
+	class DlgModal final {
 	public:
+		DlgModal(DlgModal&&) = delete; // non-copyable, non-movable
+
 		DlgModal(const wl::WindowParent &parent, WORD dlgId);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _dlgBase.hwnd(); }
@@ -59,8 +65,10 @@ namespace _wl_internal {
 namespace _wl_internal {
 
 	/** Control dialog window. */
-	class DlgControl final : wl::NonMovable {
+	class DlgControl final {
 	public:
+		DlgControl(DlgControl&&) = delete; // non-copyable, non-movable
+
 		DlgControl(wl::WindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos, wl::Lay layout = wl::Lay::hold_hold);
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _dlgBase.hwnd(); }

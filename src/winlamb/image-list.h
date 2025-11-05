@@ -5,7 +5,7 @@
 namespace wl {
 
 	/** @brief Manages a `HIMAGELIST`. */
-	class ImageList final : NonCopyable {
+	class ImageList final {
 	public:
 		~ImageList() { destroy(); }
 

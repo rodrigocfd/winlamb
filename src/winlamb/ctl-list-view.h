@@ -8,9 +8,11 @@ namespace wl { class ListView; }
 
 namespace wl::events {
 
-	/** @brief Native list view message callbacks. */
-	class ListViewEvents final : wl::NonMovable {
+	/** @brief Native `ListView` message callbacks. */
+	class ListViewEvents final {
 	private:
+		ListViewEvents(ListViewEvents&&) = delete; // non-copyable, non-movable
+
 		ListViewEvents(wl::WindowParent &owner, WORD ctrlId) : _events{owner, ctrlId} { }
 
 	public:
@@ -178,7 +180,7 @@ namespace wl {
 	/// ```
 	///
 	/// [list view]: https://learn.microsoft.com/en-us/windows/win32/controls/list-view-controls-overview
-	class ListView final : NonMovable {
+	class ListView final : public WindowNativeControl {
 	public:
 		/** @brief A single column of the ListView. */
 		class Column final {
@@ -233,8 +235,10 @@ namespace wl {
 		};
 
 		/** @brief Operations over the columns. */
-		class ColumnCollection final : NonMovable {
+		class ColumnCollection final {
 		private:
+			ColumnCollection(ColumnCollection&&) = delete; // non-copyable, non-movable
+
 			constexpr explicit ColumnCollection(const ListView *pOwner) : _pOwner{pOwner} { }
 
 		public:
@@ -284,8 +288,10 @@ namespace wl {
 		};
 
 		/** @brief Operations over the items. */
-		class ItemCollection final : NonMovable {
+		class ItemCollection final {
 		private:
+			ItemCollection(ItemCollection&&) = delete; // non-copyable, non-movable
+
 			constexpr explicit ItemCollection(const ListView *pOwner) : _pOwner{pOwner} { }
 
 		public:
@@ -381,12 +387,6 @@ namespace wl {
 		/** For controls created programmatically, defines additional creation options. */
 		[[nodiscard]] constexpr opts::ListViewOpts& setup() { return _opts; }
 
-		/** Returns the wrapped window handle. */
-		[[nodiscard]] constexpr HWND hwnd() const { return _ctrl.hwnd(); }
-
-		/** Returns the control ID. */
-		[[nodiscard]] constexpr WORD ctrl_id() const { return _events._events._ctrlId; }
-
 		/// Allows message events to be added.
 		///
 		/// The events must be added before the control is created on the screen.
@@ -427,6 +427,8 @@ namespace wl {
 		ImageList& image_list_32();
 
 	private:
+		[[nodiscard]] constexpr const _wl_internal::NativeCtrl& nat_ctrl() const override          { return _ctrl; }
+		[[nodiscard]] constexpr const _wl_internal::EventsNativeCtrl& ev_nat_ctrl() const override { return _events._events; }
 		void custom_events();
 		void show_context_menu(bool followCursor, bool hasCtrl, bool hasShift);
 

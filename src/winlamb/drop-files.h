@@ -39,7 +39,10 @@ namespace wl {
 	/// [`IDropTarget`]: https://learn.microsoft.com/en-us/windows/win32/api/oleidl/nn-oleidl-idroptarget
 	/// [`RegisterDragDrop`]: https://learn.microsoft.com/en-us/windows/win32/api/ole2/nf-ole2-registerdragdrop
 	/// [`RevokeDragDrop`]: https://learn.microsoft.com/en-us/windows/win32/api/ole2/nf-ole2-revokedragdrop
-	class DropFiles final : public IDropTarget, NonMovable {
+	class DropFiles final : public IDropTarget {
+	private:
+		DropFiles(DropFiles&&) = delete; // non-copyable, non-movable
+
 	public:
 		explicit DropFiles(WindowParent &owner);
 

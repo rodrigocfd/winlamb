@@ -7,9 +7,11 @@ namespace wl { class Button; }
 
 namespace wl::events {
 
-	/** @brief Native button control message callbacks. */
-	class ButtonEvents final : wl::NonMovable {
+	/** @brief Native `Button` control message callbacks. */
+	class ButtonEvents final {
 	private:
+		ButtonEvents(ButtonEvents&&) = delete; // non-copyable, non-movable
+
 		ButtonEvents(wl::WindowParent &owner, WORD ctrlId) : _events{owner, ctrlId} { }
 
 	public:
@@ -86,7 +88,7 @@ namespace wl {
 	/// @brief Native [button] control.
 	///
 	/// [button]: https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#push-buttons
-	class Button final : NonMovable {
+	class Button final : public WindowNativeControl {
 	public:
 		/// Constructs the button programmatically with [`CreateWindowEx`].
 		///
@@ -104,12 +106,6 @@ namespace wl {
 
 		/** For controls created programmatically, defines additional creation options. */
 		[[nodiscard]] constexpr opts::ButtonOpts& setup() { return _opts; }
-
-		/** Returns the wrapped window handle. */
-		[[nodiscard]] constexpr HWND hwnd() const { return _ctrl.hwnd(); }
-
-		/** Returns the control ID. */
-		[[nodiscard]] constexpr WORD ctrl_id() const { return _events._events._ctrlId; }
 
 		/// Allows message events to be added.
 		///
@@ -149,6 +145,9 @@ namespace wl {
 		const Button& trigger_click() const;
 
 	private:
+		[[nodiscard]] constexpr const _wl_internal::NativeCtrl& nat_ctrl() const override          { return _ctrl; }
+		[[nodiscard]] constexpr const _wl_internal::EventsNativeCtrl& ev_nat_ctrl() const override { return _events._events; }
+
 		_wl_internal::NativeCtrl _ctrl;
 		events::ButtonEvents _events;
 		opts::ButtonOpts _opts{};

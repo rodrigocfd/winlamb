@@ -13,7 +13,7 @@ namespace wl {
 	/// wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::existing_read_only};
 	/// std::vector<BYTE> contents = myFile.read();
 	/// ```
-	class File final : NonCopyable {
+	class File final {
 	public:
 		/** @brief Requested access to open/create a file. */
 		enum class Access {
@@ -32,6 +32,10 @@ namespace wl {
 			SYSTEMTIME creation{}, lastAccess{}, lastWrite{};
 		};
 
+	private:
+
+
+	public:
 		/// Destructor.
 		///
 		/// Calls [`CloseHandle`].
@@ -232,7 +236,7 @@ namespace wl {
 	/// wl::FileMapped myFile{L"C:\\Temp\\foo.txt", wl::FileMapped::Access::existing_read_only};
 	/// std::span<BYTE> myView = myFile.view();
 	/// ```
-	class FileMapped final : NonCopyable {
+	class FileMapped final {
 	public:
 		/** @brief Requested access to open a file. */
 		enum class Access {
