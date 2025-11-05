@@ -1,7 +1,7 @@
 #include "DlgMain.h"
 
-RUN_MAIN(DlgMain, wnd)
-// RUN_MAIN(RawMain, wnd)
+// RUN_MAIN(DlgMain, wnd)
+RUN_MAIN(RawMain, wnd)
 
 DlgMain::DlgMain() {
 	wnd.on().wm_init_dialog(std::bind(&DlgMain::on_init_dialog, this, std::placeholders::_1));

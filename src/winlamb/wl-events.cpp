@@ -100,15 +100,15 @@ void WindowEvents::wm_notify(WORD idFrom, int code, std::function<LRESULT(wm::No
 
 #define EVENT_NO_ARGS(name, msg) \
 	void WindowEvents::name(std::function<void()> &&cb) { \
-		wm(msg, [cb = std::move(cb), isDlg = _isDlg](wm::Msg) { cb(); return isDlg ? TRUE : 0; }); \
+		wm(msg, [cb = std::move(cb), isDlg = _isDlg](wm::Msg) -> LRESULT { cb(); return isDlg ? TRUE : 0; }); \
 	}
 #define EVENT_ARGS(name, msg, ty) \
 	void WindowEvents::name(std::function<void(ty)> &&cb) { \
-		wm(msg, [cb = std::move(cb), isDlg = _isDlg](wm::Msg p) { cb(p); return isDlg ? TRUE : 0; }); \
+		wm(msg, [cb = std::move(cb), isDlg = _isDlg](wm::Msg p) -> LRESULT { cb(p); return isDlg ? TRUE : 0; }); \
 	}
 #define EVENT_ARGS_RET(name, msg, ty, tyret) \
 	void WindowEvents::name(std::function<tyret(ty)> &&cb) { \
-		wm(msg, [cb = std::move(cb)](wm::Msg p) { return cb(p); }); \
+		wm(msg, [cb = std::move(cb)](wm::Msg p) -> LRESULT { return cb(p); }); \
 	}
 
 EVENT_ARGS(wm_activate, WM_ACTIVATE, wm::Activate)

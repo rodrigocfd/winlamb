@@ -1,5 +1,4 @@
 #pragma once
-#include <stdexcept>
 #include "lib-include-win.h"
 
 namespace _wl_internal {

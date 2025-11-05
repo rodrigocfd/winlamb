@@ -378,7 +378,7 @@ namespace wl {
 		/** Item methods. */
 		ItemCollection items{this};
 
-		/** For controls created programmatically defines additional creation options. */
+		/** For controls created programmatically, defines additional creation options. */
 		[[nodiscard]] constexpr opts::ListViewOpts& setup() { return _opts; }
 
 		/** Returns the wrapped window handle. */
@@ -398,7 +398,16 @@ namespace wl {
 		///     // ...
 		/// });
 		/// ```
-		[[nodiscard]] constexpr events::ListViewEvents& on() { return _events; }
+		[[nodiscard]] events::ListViewEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+
+		/// [Subclasses] the control allowing message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		///
+		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
+		[[nodiscard]] events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
 		/// Sets one or more [extended styles].
 		///

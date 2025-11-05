@@ -1,4 +1,5 @@
 #pragma once
+#include <stdexcept>
 #include "layout.h"
 #include "str.h"
 
@@ -55,7 +56,6 @@ namespace _wl_internal {
 			: _isDlg{isDlg}, _preEvents{isDlg}, _userEvents{isDlg}, _postEvents{isDlg} { }
 
 		[[nodiscard]] constexpr HWND hwnd() const { return _wnd.hwnd(); }
-		[[nodiscard]] wl::events::WindowEvents& on();
 		void ui_thread(std::function<void()> cb) const;
 
 		struct ProcResult final {
@@ -73,6 +73,16 @@ namespace _wl_internal {
 		wl::events::WindowEvents _userEvents;
 		EventsInternal _postEvents;
 	};
+
+	/** Validates event access. */
+	template<typename E>
+	E& valid_event(HWND hWnd, E &events) {
+		#ifdef _DEBUG
+		if (hWnd)
+			throw std::logic_error("Cannot add events after the window or control is created.");
+		#endif
+		return events;
+	}
 
 }
 

@@ -32,14 +32,6 @@ void Window::set_text(WStrPtr text) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-WindowEvents& WindowMsg::on() {
-	#ifdef _DEBUG
-	if (hwnd())
-		throw std::logic_error("Cannot add events after the window is created.");
-	#endif
-	return _userEvents;
-}
-
 struct ThreadPack final {
 	std::function<void()> cb;
 };

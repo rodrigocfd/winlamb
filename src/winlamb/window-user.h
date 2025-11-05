@@ -15,7 +15,7 @@ namespace wl {
 		/// Allows message events to be added.
 		///
 		/// The events must be added before the window is created on the screen.
-		[[nodiscard]] virtual events::WindowEvents& on() { return wnd_msg().on(); }
+		[[nodiscard]] virtual events::WindowEvents& on() { return _wl_internal::valid_event(hwnd(), wnd_msg()._userEvents); }
 
 		/// Blocks the current thread and runs `cb` in the UI thread.
 		///

@@ -14,6 +14,7 @@ namespace wl::opts { }
 #include "lib-include-win.h"
 
 #include "com-ptr.h"
+#include "ctl-button.h"
 #include "ctl-list-view.h"
 #include "drop-files.h"
 #include "events.h"

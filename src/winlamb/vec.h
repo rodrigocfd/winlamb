@@ -33,7 +33,7 @@ namespace wl::vec {
 	///
 	/// ```cpp
 	/// std::vector<int> nums{2, 2, 2, 2};
-	/// bool allTwo = wl::vec::all_if(nums, [](const int &n) {
+	/// bool allTwo = wl::vec::all_if(nums, [](const int &n) -> bool {
 	///     return n == 2;
 	/// });
 	/// ```
@@ -70,7 +70,7 @@ namespace wl::vec {
 	///
 	/// ```cpp
 	/// std::vector<int> nums{1, 2, 3, 4};
-	/// bool anyTwo = wl::vec::any_if(nums, [](const int &n) {
+	/// bool anyTwo = wl::vec::any_if(nums, [](const int &n) -> bool {
 	///     return n == 2;
 	/// });
 	/// ```
@@ -178,7 +178,7 @@ namespace wl::vec {
 	///
 	/// ```cpp
 	/// std::vector<int> nums{1, 2, 3, 4};
-	/// int *pFound = wl::vec::find_if(nums, [](const int &n) {
+	/// int *pFound = wl::vec::find_if(nums, [](const int &n) -> bool {
 	///     return n == 2;
 	/// });
 	/// if (pFound) {
@@ -220,7 +220,7 @@ namespace wl::vec {
 	///
 	/// ```cpp
 	/// std::vector<int> nums{1, 2, 3, 4};
-	/// int *pFound = wl::vec::find_rev_if(nums, [](const int &n) {
+	/// int *pFound = wl::vec::find_rev_if(nums, [](const int &n) -> bool {
 	///     return n == 2;
 	/// });
 	/// if (pFound) {
@@ -259,7 +259,7 @@ namespace wl::vec {
 	///
 	/// ```cpp
 	/// std::vector<int> nums{1, 2, 3, 4};
-	/// std::optional<size_t> idx2 = wl::vec::index_if(nums, [](const int &n) {
+	/// std::optional<size_t> idx2 = wl::vec::index_if(nums, [](const int &n) -> bool {
 	///     return n == 2;
 	/// });
 	/// ```
@@ -295,7 +295,7 @@ namespace wl::vec {
 	///
 	/// ```cpp
 	/// std::vector<int> nums{1, 2, 3, 4};
-	/// std::optional<size_t> idx2 = wl::vec::index_rev_if(nums, [](const int &n) {
+	/// std::optional<size_t> idx2 = wl::vec::index_rev_if(nums, [](const int &n) -> bool {
 	///     return n == 2;
 	/// });
 	/// ```
@@ -368,7 +368,7 @@ namespace wl::vec {
 	///
 	/// ```cpp
 	/// std::vector<int> nums{1, 2, 3, 4};
-	/// wl::vec::remove_if(nums, [](const int& n) {
+	/// wl::vec::remove_if(nums, [](const int& n) -> bool {
 	///     return n < 2;
 	/// });
 	/// ```
@@ -441,7 +441,7 @@ namespace wl::vec {
 	///
 	/// ```cpp
 	/// std::vector<int> nums{1, 2, 3, 4};
-	/// std::vector<std::wstring> strs = wl::vec::transform(nums, [](const int& n) {
+	/// std::vector<std::wstring> strs = wl::vec::transform(nums, [](const int& n) -> std::wstring {
 	///     return L"num " + std::to_wstring(n);
 	/// });
 	/// ```

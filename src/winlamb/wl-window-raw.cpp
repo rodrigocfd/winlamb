@@ -125,7 +125,7 @@ LRESULT CALLBACK RawBase::raw_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
 ////////////////////////////////////////////////////////////////////////////////
 
 RawMain::RawMain() {
-	_rawBase._wndMsg._preEvents.wm(WM_ACTIVATE, [this](wm::Activate p) {
+	_rawBase._wndMsg._preEvents.wm(WM_ACTIVATE, [this](wm::Activate p) -> void {
 		if (!p.is_minimized()) { // https://devblogs.microsoft.com/oldnewthing/20140521-00/?p=943
 			if (p.active_state() == WA_INACTIVE) {
 				if (HWND hWndFocus = GetFocus(); hWndFocus && IsChild(hwnd(), hWndFocus)) {
@@ -137,11 +137,11 @@ RawMain::RawMain() {
 		}
 	});
 
-	_rawBase._wndMsg._preEvents.wm(WM_SETFOCUS, [this](wm::SetFocus) {
+	_rawBase._wndMsg._preEvents.wm(WM_SETFOCUS, [this](wm::SetFocus) -> void {
 		_rawBase.focus_first_child();
 	});
 
-	_rawBase._wndMsg._userEvents.wm_nc_destroy([]() {
+	_rawBase._wndMsg._userEvents.wm_nc_destroy([]() -> void {
 		PostQuitMessage(0);
 	});
 }
@@ -179,11 +179,11 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 RawModal::RawModal(const WindowParent &parent)
 	: _parent{parent}
 {
-	_rawBase._wndMsg._preEvents.wm(WM_SETFOCUS, [this](wm::SetFocus) {
+	_rawBase._wndMsg._preEvents.wm(WM_SETFOCUS, [this](wm::SetFocus) -> void {
 		_rawBase.focus_first_child();
 	});
 
-	_rawBase._wndMsg._userEvents.wm_close([this]() {
+	_rawBase._wndMsg._userEvents.wm_close([this]() -> void {
 		EnableWindow(_parent.hwnd(), TRUE); // re-enable parent
 		if (_hWndChildPrevFocusParent)
 			SetFocus(_hWndChildPrevFocusParent); // could be on WM_DESTROY as well
@@ -226,7 +226,7 @@ void RawModal::show() {
 ////////////////////////////////////////////////////////////////////////////////
 
 RawControl::RawControl(WindowParent &parent) {
-	parent.wnd_msg()._preEvents.wm_create_or_init_dialog([this, pParent = &parent]() {
+	parent.wnd_msg()._preEvents.wm_create_or_init_dialog([this, pParent = &parent]() -> void {
 		HINSTANCE hInst = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(pParent->hwnd(), GWLP_HINSTANCE));
 		ATOM atom = _rawBase.register_class(hInst, _opts.className, _opts.classStyle,
 			0, _opts.hbrBackground, _opts.hCursor);

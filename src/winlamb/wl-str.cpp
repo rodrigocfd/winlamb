@@ -456,7 +456,7 @@ EncodingInfo EncodingInfo::guess(std::span<BYTE> src) {
 
 	if (guess_utf8(src)) return {Encoding::utf8, 0}; // UTF-8 without BOM
 
-	bool hasNonAnsiChar = std::any_of(src.begin(), src.end(), [](BYTE ch) { return ch > 0x7f; });
+	bool hasNonAnsiChar = std::any_of(src.begin(), src.end(), [](BYTE ch) -> bool { return ch > 0x7f; });
 	return hasNonAnsiChar
 		? EncodingInfo{Encoding::win_1252, 0} // by exclusion, not assertive
 		: EncodingInfo{Encoding::ansi, 0};
