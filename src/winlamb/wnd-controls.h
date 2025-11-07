@@ -1,124 +1,84 @@
 #pragma once
 #include "lib-include-win.h"
-#include <CommCtrl.h>
-#include "window-user.h"
+#include "str.h"
+#include "wnd-interfaces.h"
+#include "wnd-funcs.h"
+#include "wnd-opts.h"
+#include "events-ctl.h"
 #include "image-list.h"
 
-namespace wl { class ListView; }
-
-namespace wl::events {
-
-	/** @brief Native `ListView` message callbacks. */
-	class ListViewEvents final {
-	private:
-		ListViewEvents(ListViewEvents&&) = delete; // non-copyable, non-movable
-
-		ListViewEvents(wl::WindowParent &owner, WORD ctrlId) : _events{owner, ctrlId} { }
-
-	public:
-		void lvn_begin_drag(std::function<void(NMLISTVIEW&)> &&cb);
-		void lvn_begin_label_edit(std::function<bool(NMLVDISPINFOW&)> &&cb);
-		void lvn_begin_r_drag(std::function<void(NMLISTVIEW&)> &&cb);
-		void lvn_begin_scroll(std::function<void(NMLVSCROLL&)> &&cb);
-		void lvn_column_click(std::function<void(NMLISTVIEW&)> &&cb);
-		void lvn_column_drop_down(std::function<void(NMLISTVIEW&)> &&cb);
-		void lvn_column_overflow_click(std::function<void(NMLISTVIEW&)> &&cb);
-		void lvn_delete_all_items(std::function<bool(NMLISTVIEW&)> &&cb);
-		void lvn_delete_item(std::function<void(NMLISTVIEW&)> &&cb);
-		void lvn_end_label_edit(std::function<bool(NMLVDISPINFOW&)> &&cb);
-		void lvn_end_scroll(std::function<void(NMLVSCROLL&)> &&cb);
-		void lvn_insert_item(std::function<void(NMLISTVIEW&)> &&cb);
-		void lvn_item_activate(std::function<void(NMITEMACTIVATE&)> &&cb);
-		void lvn_item_changed(std::function<void(NMLISTVIEW&)> &&cb);
-		void lvn_item_changing(std::function<bool(NMLISTVIEW&)> &&cb);
-		void lvn_key_down(std::function<void(NMLVKEYDOWN&)> &&cb);
-		void nm_click(std::function<void(NMITEMACTIVATE&)> &&cb);
-		void nm_custom_draw(std::function<DWORD(NMLVCUSTOMDRAW&)> &&cb);
-		void nm_dbl_clk(std::function<void(NMITEMACTIVATE&)> &&cb);
-		void nm_kill_focus(std::function<void(NMHDR&)> &&cb);
-		void nm_r_click(std::function<void(NMITEMACTIVATE&)> &&cb);
-		void nm_r_dbl_clk(std::function<void(NMITEMACTIVATE&)> &&cb);
-		void nm_released_capture(std::function<void(NMHDR&)> &&cb);
-		void nm_set_focus(std::function<void(NMHDR&)> &&cb);
-
-	private:
-		_wl_internal::EventsNativeCtrl _events;
-		friend wl::ListView; // ctor
-	};
-
-}
-
-namespace wl::opts {
-
-	/** Options to create a `ListView` programmatically. */
-	struct ListViewOpts final {
-		/// Control position passed to [`CreateWindowEx`].
-		///
-		/// Prefer using DPI-aware values:
-		///
-		/// ```cpp
-		/// lv.setup().pos = wl::dpi::pt(10, 10);
-		/// ```
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
-		/// Control size passed to [`CreateWindowEx`].
-		///
-		/// Prefer using DPI-aware values:
-		///
-		/// ```cpp
-		/// lv.setup().size = wl::dpi::sz(120, 120);
-		/// ```
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size = {.cx = 120, .cy = 120};
-		/// The [window style] passed to [`CreateWindowEx`].
-		///
-		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
-		/// The [window extended style] passed to [`CreateWindowEx`].
-		///
-		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowExStyle = WS_EX_LEFT | WS_EX_CLIENTEDGE;
-		/// The [ListView style] passed to [`CreateWindowEx`].
-		///
-		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be set.
-		///
-		/// [ListView style]: https://learn.microsoft.com/en-us/windows/win32/controls/list-view-window-styles
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD ctrlStyle = LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS;
-		/// The [ListView extended styles] applied right after the control is created.
-		///
-		/// [ListView extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/extended-list-view-styles
-		DWORD ctrlExStyle = LVS_EX_FULLROWSELECT;
-		/// Control ID.
-		///
-		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/// Context menu resource to be loaded as the context menu with [`LoadMenu`].
-		/// If defined, overwrites `hMenuContext`.
-		///
-		/// This menu will be owned by the ListView, and destroyed automatically.
-		///
-		/// [`LoadMenu`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadmenuw
-		WORD contextMenuId = 0;
-		/// Optional ListView context menu, usually created programmatically with [`CreatePopupMenu`].
-		///
-		/// This menu will be owned by the ListView, and destroyed automatically.
-		///
-		/// Ignored if you define `contextMenuId`.
-		///
-		/// [`CreatePopupMenu`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createpopupmenu
-		HMENU hMenuContext = nullptr;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
-	};
-
-}
-
 namespace wl {
+
+	/// @brief Native [button] control.
+	///
+	/// [button]: https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#push-buttons
+	class Button final : public WindowChild {
+	public:
+		/// Constructs the button programmatically with [`CreateWindowEx`].
+		///
+		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
+		///
+		/// Further options can be defined with the `setup` method.
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		explicit Button(WindowParent &owner, WORD ctrlId = 0);
+
+		/// Constructs the button from the dialog resource.
+		///
+		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		Button(WindowParent &owner, WORD ctrlId, Lay layout);
+
+		/** Returns the wrapped window handle. */
+		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
+
+		/** Returns the control ID. */
+		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
+
+		/** For controls created programmatically, defines additional creation options. */
+		[[nodiscard]] constexpr opts::ButtonOpts& setup() { return _opts; }
+
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// btn.on().bn_clicked([]() -> void {
+		///     // ...
+		/// });
+		/// ```
+		[[nodiscard]] events::ButtonEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+
+		/// [Subclasses] the control allowing message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		///
+		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
+		[[nodiscard]] events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+
+		/// Calls [`GetWindowText`] to return the button text.
+		///
+		/// [`GetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowtextw
+		[[nodiscard]] std::wstring text() const { return _wl_internal::wnd_text(hwnd()); }
+
+		/// Calls [`SetWindowText`] to set the button text.
+		///
+		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
+		const Button& set_text(WStrPtr text) const;
+
+		/// Sends a [`BM_CLICK`] message to fire the button click.
+		///
+		/// [`BM_CLICK`]: https://learn.microsoft.com/en-us/windows/win32/controls/bm-click
+		const Button& trigger_click() const;
+
+	private:
+		_wl_internal::NativeCtrlBase _ctrl;
+		events::ButtonEvents _events;
+		opts::ButtonOpts _opts{};
+	};
 
 	/// @brief Native [list view] control.
 	///
@@ -180,7 +140,7 @@ namespace wl {
 	/// ```
 	///
 	/// [list view]: https://learn.microsoft.com/en-us/windows/win32/controls/list-view-controls-overview
-	class ListView final : public WindowNativeControl {
+	class ListView final : public WindowChild {
 	public:
 		/** @brief A single column of the ListView. */
 		class Column final {
@@ -384,6 +344,12 @@ namespace wl {
 		/** Item methods. */
 		ItemCollection items{this};
 
+		/** Returns the wrapped window handle. */
+		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
+
+		/** Returns the control ID. */
+		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
+
 		/** For controls created programmatically, defines additional creation options. */
 		[[nodiscard]] constexpr opts::ListViewOpts& setup() { return _opts; }
 
@@ -427,12 +393,10 @@ namespace wl {
 		ImageList& image_list_32();
 
 	private:
-		[[nodiscard]] constexpr const _wl_internal::NativeCtrl& nat_ctrl() const override          { return _ctrl; }
-		[[nodiscard]] constexpr const _wl_internal::EventsNativeCtrl& ev_nat_ctrl() const override { return _events._events; }
 		void custom_events();
 		void show_context_menu(bool followCursor, bool hasCtrl, bool hasShift);
 
-		_wl_internal::NativeCtrl _ctrl;
+		_wl_internal::NativeCtrlBase _ctrl;
 		events::ListViewEvents _events;
 		opts::ListViewOpts _opts{};
 		ImageList _hImg16{}, _hImg32{};

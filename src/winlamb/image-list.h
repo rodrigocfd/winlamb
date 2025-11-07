@@ -1,6 +1,7 @@
 #pragma once
-#include "str.h"
+#include "lib-include-win.h"
 #include <CommCtrl.h>
+#include "str.h"
 
 namespace wl {
 

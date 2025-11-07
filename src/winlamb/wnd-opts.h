@@ -1,28 +1,7 @@
 #pragma once
-#include "window.h"
-
-namespace _wl_internal {
-
-	/** Base to all raw container windows. */
-	class RawBase final {
-	public:
-		RawBase(RawBase&&) = delete; // non-copyable, non-movable
-
-		constexpr RawBase() = default;
-
-		[[nodiscard]] constexpr HWND hwnd() const { return _wndMsg.hwnd(); }
-		[[nodiscard]] ATOM register_class(HINSTANCE hInst, LPCWSTR className, DWORD classStyle,
-			WORD iconId, HBRUSH hbrBackground, HCURSOR hCursor);
-		void create_window(DWORD exStyle, ATOM className, LPCWSTR title, DWORD style,
-			POINT pos, SIZE sz, HWND hParent, HMENU hMenu, HINSTANCE hInst);
-		void focus_first_child() const;
-
-		static LRESULT CALLBACK raw_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp);
-
-		WindowMsg _wndMsg{false};
-	};
-
-}
+#include "lib-include-win.h"
+#include <CommCtrl.h>
+#include "layout.h"
 
 namespace wl::opts {
 
@@ -96,31 +75,6 @@ namespace wl::opts {
 		bool processDlgMsgs = true;
 	};
 
-}
-
-namespace _wl_internal {
-
-	/** Main raw window. */
-	class RawMain final {
-	public:
-		RawMain(RawMain&&) = delete; // non-copyable, non-movable
-
-		RawMain();
-
-		[[nodiscard]] constexpr HWND hwnd() const { return _rawBase.hwnd(); }
-		int run(HINSTANCE hInst, int cmdShow);
-
-		RawBase _rawBase{};
-		wl::opts::MainOpts _opts{};
-		HWND _hWndChildPrevFocus = nullptr;
-	};
-
-}
-
-namespace wl { class WindowParent; }
-
-namespace wl::opts {
-
 	/** Options to create a `WindowModal` programmatically. */
 	struct ModalOpts final {
 		/// Class name passed to [`WNDCLASSEX`].
@@ -184,30 +138,6 @@ namespace wl::opts {
 		/// [`WM_CHAR`]: https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-char
 		bool processDlgMsgs = true;
 	};
-
-}
-
-namespace _wl_internal {
-
-	/** Modal raw window. */
-	class RawModal final {
-	public:
-		RawModal(RawModal&&) = delete; // non-copyable, non-movable
-
-		explicit RawModal(const wl::WindowParent &parent);
-
-		[[nodiscard]] constexpr HWND hwnd() const { return _rawBase.hwnd(); }
-		void show();
-
-		RawBase _rawBase{};
-		const wl::WindowParent &_parent;
-		wl::opts::ModalOpts _opts{};
-		HWND _hWndChildPrevFocusParent = nullptr;
-	};
-
-}
-
-namespace wl::opts {
 
 	/** Options to create a `WindowControl` programmatically. */
 	struct ControlOpts final {
@@ -274,21 +204,119 @@ namespace wl::opts {
 		Lay layout = Lay::hold_hold;
 	};
 
-}
+	/** Options to create a `Button` programmatically. */
+	struct ButtonOpts final {
+		/// Control text passed to [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		LPCWSTR text = nullptr;
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// lv.setup().pos = wl::dpi::pt(10, 10);
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		POINT pos{};
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// lv.setup().size = wl::dpi::sz(88, 26);
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SIZE size = {.cx = 88, .cy = 26};
+		/// The [window style] passed to [`CreateWindowEx`].
+		///
+		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		/// The [window extended style] passed to [`CreateWindowEx`].
+		///
+		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD windowExStyle = WS_EX_LEFT;
+		/// The [Button style] passed to [`CreateWindowEx`].
+		///
+		/// [Button style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD ctrlStyle = BS_PUSHBUTTON;
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
+	};
 
-namespace _wl_internal {
-
-	/** Control raw window. */
-	class RawControl final {
-	public:
-		RawControl(RawControl&&) = delete; // non-copyable, non-movable
-
-		RawControl(wl::WindowParent &parent);
-
-		[[nodiscard]] constexpr HWND hwnd() const { return _rawBase.hwnd(); }
-
-		RawBase _rawBase{};
-		wl::opts::ControlOpts _opts{};
+	/** Options to create a `ListView` programmatically. */
+	struct ListViewOpts final {
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// lv.setup().pos = wl::dpi::pt(10, 10);
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		POINT pos{};
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// lv.setup().size = wl::dpi::sz(120, 120);
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SIZE size = {.cx = 120, .cy = 120};
+		/// The [window style] passed to [`CreateWindowEx`].
+		///
+		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		/// The [window extended style] passed to [`CreateWindowEx`].
+		///
+		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD windowExStyle = WS_EX_LEFT | WS_EX_CLIENTEDGE;
+		/// The [ListView style] passed to [`CreateWindowEx`].
+		///
+		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be set.
+		///
+		/// [ListView style]: https://learn.microsoft.com/en-us/windows/win32/controls/list-view-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD ctrlStyle = LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS;
+		/// The [ListView extended styles] applied right after the control is created.
+		///
+		/// [ListView extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/extended-list-view-styles
+		DWORD ctrlExStyle = LVS_EX_FULLROWSELECT;
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/// Context menu resource to be loaded as the context menu with [`LoadMenu`].
+		/// If defined, overwrites `hMenuContext`.
+		///
+		/// This menu will be owned by the ListView, and destroyed automatically.
+		///
+		/// [`LoadMenu`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadmenuw
+		WORD contextMenuId = 0;
+		/// Optional ListView context menu, usually created programmatically with [`CreatePopupMenu`].
+		///
+		/// This menu will be owned by the ListView, and destroyed automatically.
+		///
+		/// Ignored if you define `contextMenuId`.
+		///
+		/// [`CreatePopupMenu`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createpopupmenu
+		HMENU hMenuContext = nullptr;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
 	};
 
 }

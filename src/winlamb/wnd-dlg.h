@@ -1,5 +1,6 @@
 #pragma once
-#include "window.h"
+#include "lib-include-win.h"
+#include "wnd-base.h"
 
 namespace _wl_internal {
 
@@ -8,9 +9,8 @@ namespace _wl_internal {
 	public:
 		DlgBase(DlgBase&&) = delete; // non-copyable, non-movable
 
-		constexpr DlgBase(WORD dlgId) : _wndMsg{true}, _dlgId{dlgId} { }
+		constexpr DlgBase(WORD dlgId) : _wndBase{true}, _dlgId{dlgId} { }
 
-		[[nodiscard]] constexpr HWND hwnd() const { return _wndMsg.hwnd(); }
 		void create_dialog_param(HINSTANCE hInst, HWND hParent);
 		void dialog_box_param(HINSTANCE hInst, HWND hParent);
 		void set_icon(HINSTANCE hInst, WORD iconId) const;
@@ -18,13 +18,9 @@ namespace _wl_internal {
 
 		static INT_PTR CALLBACK dlg_proc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp);
 
-		WindowMsg _wndMsg;
+		WndBase _wndBase;
 		WORD _dlgId;
 	};
-
-}
-
-namespace _wl_internal {
 
 	/** Main dialog window. */
 	class DlgMain final {
@@ -32,19 +28,11 @@ namespace _wl_internal {
 		DlgMain(DlgMain&&) = delete; // non-copyable, non-movable
 
 		DlgMain(WORD dlgId, WORD iconId, WORD accelTblId);
-
-		[[nodiscard]] constexpr HWND hwnd() const { return _dlgBase.hwnd(); }
 		int run(HINSTANCE hInst, int cmdShow);
 
 		DlgBase _dlgBase;
 		WORD _iconId, _accelTblId;
 	};
-
-}
-
-namespace wl { class WindowParent; }
-
-namespace _wl_internal {
 
 	/** Modal dialog window. */
 	class DlgModal final {
@@ -52,26 +40,18 @@ namespace _wl_internal {
 		DlgModal(DlgModal&&) = delete; // non-copyable, non-movable
 
 		DlgModal(const wl::WindowParent &parent, WORD dlgId);
-
-		[[nodiscard]] constexpr HWND hwnd() const { return _dlgBase.hwnd(); }
 		void show();
 
 		DlgBase _dlgBase;
 		const wl::WindowParent &_parent;
 	};
 
-}
-
-namespace _wl_internal {
-
 	/** Control dialog window. */
 	class DlgControl final {
 	public:
 		DlgControl(DlgControl&&) = delete; // non-copyable, non-movable
 
-		DlgControl(wl::WindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos, wl::Lay layout = wl::Lay::hold_hold);
-
-		[[nodiscard]] constexpr HWND hwnd() const { return _dlgBase.hwnd(); }
+		DlgControl(wl::WindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos, wl::Lay layout);
 
 		DlgBase _dlgBase;
 	};

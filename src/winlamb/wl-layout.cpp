@@ -1,7 +1,7 @@
 #include <system_error>
 #include "layout.h"
-using namespace _wl_internal;
 using namespace wl;
+using namespace _wl_internal;
 
 void Layout::add(HWND hCtrl, wl::Lay layout) {
 	if (layout == Lay::hold_hold)

@@ -1,8 +1,9 @@
 #include <system_error>
-#include "window-raw.h"
-#include "window-user.h"
-using namespace _wl_internal;
+#include "wnd-raw.h"
+#include "str.h"
+#include "wnd-funcs.h"
 using namespace wl;
+using namespace _wl_internal;
 
 ATOM RawBase::register_class(HINSTANCE hInst, LPCWSTR className, DWORD classStyle,
 	WORD iconId, HBRUSH hbrBackground, HCURSOR hCursor)
@@ -70,7 +71,7 @@ void RawBase::create_window(DWORD exStyle, ATOM className, LPCWSTR title, DWORD 
 	POINT pos, SIZE sz, HWND hParent, HMENU hMenu, HINSTANCE hInst)
 {
 	#ifdef _DEBUG
-	if (hwnd())
+	if (_wndBase._hWnd)
 		throw std::logic_error("Cannot create window twice.");
 	#endif
 
@@ -83,9 +84,9 @@ void RawBase::create_window(DWORD exStyle, ATOM className, LPCWSTR title, DWORD 
 }
 
 void RawBase::focus_first_child() const {
-	if (HWND hWndFocus = GetFocus(); hWndFocus == hwnd()) {
+	if (HWND hWndFocus = GetFocus(); hWndFocus == _wndBase._hWnd) {
 		// https://stackoverflow.com/a/2835220/6923555
-		HWND hWndFirstChild = GetWindow(hwnd(), GW_CHILD);
+		HWND hWndFirstChild = GetWindow(_wndBase._hWnd, GW_CHILD);
 		if (hWndFirstChild) // the window may be chidless
 			SetFocus(hWndFirstChild);
 	}
@@ -96,7 +97,7 @@ LRESULT CALLBACK RawBase::raw_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
 	switch (msg) {
 	case WM_NCCREATE:
 		pSelf = reinterpret_cast<RawBase*>(reinterpret_cast<const CREATESTRUCTW*>(lp)->lpCreateParams);
-		pSelf->_wndMsg._wnd._hWnd = hWnd;
+		pSelf->_wndBase._hWnd = hWnd;
 		SetWindowLongPtrW(hWnd, GWLP_USERDATA, reinterpret_cast<LONG_PTR>(pSelf));
 		break;
 	default:
@@ -108,11 +109,11 @@ LRESULT CALLBACK RawBase::raw_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
 	if (!pSelf) return 0;
 
 	// Execute the event handlers.
-	WindowMsg::ProcResult ret = pSelf->_wndMsg.process_msgs(msg, wp, lp);
+	WndBase::ProcResult ret = pSelf->_wndBase.process_msgs(msg, wp, lp);
 
 	if (msg == WM_NCDESTROY) { // always check
 		SetWindowLongPtrW(hWnd, GWLP_USERDATA, 0);
-		pSelf->_wndMsg._wnd._hWnd = nullptr;
+		pSelf->_wndBase._hWnd = nullptr;
 	}
 
 	if (ret.userRet.has_value()) {
@@ -125,10 +126,10 @@ LRESULT CALLBACK RawBase::raw_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
 ////////////////////////////////////////////////////////////////////////////////
 
 RawMain::RawMain() {
-	_rawBase._wndMsg._preEvents.wm(WM_ACTIVATE, [this](wm::Activate p) -> void {
+	_rawBase._wndBase._preEvents.wm(WM_ACTIVATE, [this](wm::Activate p) -> void {
 		if (!p.is_minimized()) { // https://devblogs.microsoft.com/oldnewthing/20140521-00/?p=943
 			if (p.active_state() == WA_INACTIVE) {
-				if (HWND hWndFocus = GetFocus(); hWndFocus && IsChild(hwnd(), hWndFocus)) {
+				if (HWND hWndFocus = GetFocus(); hWndFocus && IsChild(_rawBase._wndBase._hWnd, hWndFocus)) {
 					_hWndChildPrevFocus = hWndFocus; // save previously focused control
 				}
 			} else if (_hWndChildPrevFocus) {
@@ -137,11 +138,11 @@ RawMain::RawMain() {
 		}
 	});
 
-	_rawBase._wndMsg._preEvents.wm(WM_SETFOCUS, [this](wm::SetFocus) -> void {
+	_rawBase._wndBase._preEvents.wm(WM_SETFOCUS, [this](wm::SetFocus) -> void {
 		_rawBase.focus_first_child();
 	});
 
-	_rawBase._wndMsg._userEvents.wm_nc_destroy([]() -> void {
+	_rawBase._wndBase._userEvents.wm_nc_destroy([]() -> void {
 		PostQuitMessage(0);
 	});
 }
@@ -168,10 +169,10 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 		ptWndCenter, {.cx = rcWnd.right - rcWnd.left, .cy = rcWnd.bottom - rcWnd.top},
 		nullptr, _opts.hMenu, hInst);
 
-	ShowWindow(hwnd(), cmdShow);
-	UpdateWindow(hwnd());
+	ShowWindow(_rawBase._wndBase._hWnd, cmdShow);
+	UpdateWindow(_rawBase._wndBase._hWnd);
 
-	return _rawBase._wndMsg.main_loop(_opts.hAccelTable, _opts.processDlgMsgs);
+	return _rawBase._wndBase.main_loop(_opts.hAccelTable, _opts.processDlgMsgs);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -179,15 +180,15 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 RawModal::RawModal(const WindowParent &parent)
 	: _parent{parent}
 {
-	_rawBase._wndMsg._preEvents.wm(WM_SETFOCUS, [this](wm::SetFocus) -> void {
+	_rawBase._wndBase._preEvents.wm(WM_SETFOCUS, [this](wm::SetFocus) -> void {
 		_rawBase.focus_first_child();
 	});
 
-	_rawBase._wndMsg._userEvents.wm_close([this]() -> void {
+	_rawBase._wndBase._userEvents.wm_close([this]() -> void {
 		EnableWindow(_parent.hwnd(), TRUE); // re-enable parent
 		if (_hWndChildPrevFocusParent)
 			SetFocus(_hWndChildPrevFocusParent); // could be on WM_DESTROY as well
-		DestroyWindow(hwnd()); // then destroy modal
+		DestroyWindow(_rawBase._wndBase._hWnd); // then destroy modal
 	});
 }
 
@@ -220,20 +221,18 @@ void RawModal::show() {
 		ptWndCenter, {.cx = rcWnd.right - rcWnd.left, .cy = rcWnd.bottom - rcWnd.top},
 		nullptr, nullptr, hInst);
 
-	_rawBase._wndMsg.modal_loop(_opts.processDlgMsgs);
+	_rawBase._wndBase.modal_loop(_opts.processDlgMsgs);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 RawControl::RawControl(WindowParent &parent) {
-	parent.wnd_msg()._preEvents.wm_create_or_init_dialog([this, pParent = &parent]() -> void {
+	parent.wnd_base()._preEvents.wm_create_or_init_dialog([this, pParent = &parent]() -> void {
 		HINSTANCE hInst = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(pParent->hwnd(), GWLP_HINSTANCE));
 		ATOM atom = _rawBase.register_class(hInst, _opts.className, _opts.classStyle,
 			0, _opts.hbrBackground, _opts.hCursor);
 		_rawBase.create_window(_opts.windowExStyle, atom, nullptr, _opts.windowStyle,
-			_opts.pos, _opts.size, pParent->hwnd(),
-			reinterpret_cast<HMENU>(NativeCtrl::valid_ctrl_id(_opts.ctrlId)),
-			hInst);
-		pParent->wnd_msg()._layout.add(hwnd(), _opts.layout);
+			_opts.pos, _opts.size, pParent->hwnd(), reinterpret_cast<HMENU>(valid_ctrl_id(_opts.ctrlId)), hInst);
+		pParent->wnd_base()._layout.add(_rawBase._wndBase._hWnd, _opts.layout);
 	});
 }

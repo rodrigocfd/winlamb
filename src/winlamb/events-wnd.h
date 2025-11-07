@@ -213,31 +213,28 @@ namespace wl::wm {
 
 namespace _wl_internal {
 
-	class WindowMsg;
-	class NativeCtrl;
-
-	/** Library-internal window message callbacks. */
-	class EventsInternal final {
+	/** Keeps pre and post internal events. */
+	class InternalEvents final {
 	public:
-		struct Msg final {
+		struct Msg final { // ordinary WM messages
 			UINT wm;
 			std::function<void(wl::wm::Msg)> cb;
 		};
-		struct Nfy final {
+		struct Nfy final { // WM_NOTIFY messages
 			WORD idFrom;
 			int code;
 			std::function<void(wl::wm::Notify)> cb;
 		};
 
-		EventsInternal(EventsInternal&&) = delete; // non-copyable, non-movable
+		InternalEvents(InternalEvents&&) = delete; // non-copyable, non-movable
 
-		constexpr explicit EventsInternal(bool isDlg) : _isDlg{isDlg} { }
+		constexpr explicit InternalEvents(bool isDlg) : _isDlg{isDlg} { }
 
 		void wm_create_or_init_dialog(std::function<void()> &&cb);
 		void wm(UINT msg, std::function<void(wl::wm::Msg)> &&cb);
 		void wm_notify(WORD idFrom, int code, std::function<void(wl::wm::Notify)> &&cb);
 
-		void clear_inis(); // WM_CREATE and WM_INITDIALOG
+		void clear_inis(); // will delete WM_CREATE and WM_INITDIALOG
 		void clear();
 		[[nodiscard]] bool process_all(wl::wm::Msg procMsg) const;
 
@@ -249,21 +246,26 @@ namespace _wl_internal {
 
 }
 
+namespace _wl_internal {
+	class WndBase;
+	class NativeCtrlBase;
+}
+
 namespace wl::events {
 
-	/** @brief Native `WindowParent` message callbacks. */
+	/** @brief Native `WindowParent` events. */
 	class WindowEvents final {
 	private:
-		struct Msg final {
+		struct Msg final { // ordinary WM messages
 			UINT wm;
 			std::function<LRESULT(wl::wm::Msg)> cb;
 		};
-		struct Cmd final {
+		struct Cmd final { // WM_COMMAND messages
 			WORD cmdId;
 			WORD notifCode;
 			std::function<void()> cb;
 		};
-		struct Nfy final {
+		struct Nfy final { // WM_NOTIFY messages
 			WORD idFrom;
 			int code;
 			std::function<LRESULT(wl::wm::Notify)> cb;
@@ -418,26 +420,8 @@ namespace wl::events {
 		std::vector<Cmd> _cmds{}; // WM_COMMAND
 		std::vector<Nfy> _nfys{}; // WM_NOTIFY
 
-		friend _wl_internal::WindowMsg; // ctor, message processing
-		friend _wl_internal::NativeCtrl; // ctor, subclass processing
-	};
-
-}
-
-namespace wl { class WindowParent; }
-
-namespace _wl_internal {
-
-	/// Base to all native control events.
-	/// Actually just holds a pointer to parent events, which is where the events are added.
-	class EventsNativeCtrl final {
-	public:
-		EventsNativeCtrl(EventsNativeCtrl&&) = delete; // non-copyable, non-movable
-
-		EventsNativeCtrl(wl::WindowParent &owner, WORD ctrlId);
-
-		WindowMsg &_owner;
-		WORD _ctrlId;
+		friend _wl_internal::WndBase;
+		friend _wl_internal::NativeCtrlBase; // subclassing uses these events
 	};
 
 }

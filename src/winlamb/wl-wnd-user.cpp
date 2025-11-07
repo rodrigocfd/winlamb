@@ -1,14 +1,18 @@
-#include "lib-include-win.h"
+#include "wnd-user.h"
 #include <Uxtheme.h>
 #include <vsstyle.h>
-#include "window-user.h"
-using namespace _wl_internal;
 using namespace wl;
+using namespace _wl_internal;
 
 int WindowMain::run(HINSTANCE hInst, int cmdShow) {
 	return _rawMain.has_value()
 		? _rawMain.value().run(hInst, cmdShow)
 		: _dlgMain.value().run(hInst, cmdShow);
+}
+
+const WindowMain& WindowMain::set_title(WStrPtr title) const {
+	set_wnd_text(hwnd(), title);
+	return *this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -17,6 +21,11 @@ void WindowModal::show() {
 	return _rawModal.has_value()
 		? _rawModal.value().show()
 		: _dlgModal.value().show();
+}
+
+const WindowModal& WindowModal::set_title(WStrPtr title) const {
+	_wl_internal::set_wnd_text(hwnd(), title);
+	return *this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -31,6 +40,10 @@ WindowControl::WindowControl(WindowParent &parent, WORD dlgId, WORD ctrlId, POIN
 	: _dlgControl{std::make_optional<DlgControl>(parent, dlgId, ctrlId, pos, layout)}
 {
 	on().wm_nc_paint(std::bind(&WindowControl::paint_custom_border, this, std::placeholders::_1));
+}
+
+WORD WindowControl::ctrl_id() const {
+	return GetDlgCtrlID(hwnd());
 }
 
 void WindowControl::paint_custom_border(wm::NcPaint p) const {

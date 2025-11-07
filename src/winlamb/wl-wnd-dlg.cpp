@@ -1,12 +1,12 @@
 #include <system_error>
-#include "window-dlg.h"
-#include "window-user.h"
-using namespace _wl_internal;
+#include "wnd-dlg.h"
+#include "wnd-funcs.h"
 using namespace wl;
+using namespace _wl_internal;
 
 void DlgBase::create_dialog_param(HINSTANCE hInst, HWND hParent) {
 	#ifdef _DEBUG
-	if (hwnd())
+	if (_wndBase._hWnd)
 		throw std::logic_error("Cannot create dialog twice.");
 	#endif
 
@@ -20,7 +20,7 @@ void DlgBase::create_dialog_param(HINSTANCE hInst, HWND hParent) {
 
 void DlgBase::dialog_box_param(HINSTANCE hInst, HWND hParent) {
 	#ifdef _DEBUG
-	if (hwnd())
+	if (_wndBase._hWnd)
 		throw std::logic_error("Cannot create dialog twice.");
 	#endif
 
@@ -43,8 +43,8 @@ void DlgBase::set_icon(HINSTANCE hInst, WORD iconId) const {
 		throw std::system_error(GetLastError(), std::system_category(), "DlgBase: LoadImage 32x32 failed");
 	#endif
 
-	SendMessageW(hwnd(), WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon16));
-	SendMessageW(hwnd(), WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon32));
+	SendMessageW(_wndBase._hWnd, WM_SETICON, ICON_SMALL, reinterpret_cast<LPARAM>(hIcon16));
+	SendMessageW(_wndBase._hWnd, WM_SETICON, ICON_BIG, reinterpret_cast<LPARAM>(hIcon32));
 }
 
 HACCEL DlgBase::load_accel(HINSTANCE hInst, WORD accelTblId) const {
@@ -63,7 +63,7 @@ INT_PTR CALLBACK DlgBase::dlg_proc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp) {
 	switch (msg) {
 	case WM_INITDIALOG:
 		pSelf = reinterpret_cast<DlgBase*>(lp);
-		pSelf->_wndMsg._wnd._hWnd = hDlg;
+		pSelf->_wndBase._hWnd = hDlg;
 		SetWindowLongPtrW(hDlg, DWLP_USER, reinterpret_cast<LONG_PTR>(pSelf));
 		break;
 	default:
@@ -75,11 +75,11 @@ INT_PTR CALLBACK DlgBase::dlg_proc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp) {
 	if (!pSelf) return FALSE;
 
 	// Execute the event handlers.
-	WindowMsg::ProcResult ret = pSelf->_wndMsg.process_msgs(msg, wp, lp);
+	WndBase::ProcResult ret = pSelf->_wndBase.process_msgs(msg, wp, lp);
 
 	if (msg == WM_NCDESTROY) { // always check
 		SetWindowLongPtrW(hDlg, DWLP_USER, 0);
-		pSelf->_wndMsg._wnd._hWnd = nullptr;
+		pSelf->_wndBase._hWnd = nullptr;
 	}
 
 	if (ret.userRet.has_value()) {
@@ -100,11 +100,11 @@ INT_PTR CALLBACK DlgBase::dlg_proc(HWND hDlg, UINT msg, WPARAM wp, LPARAM lp) {
 DlgMain::DlgMain(WORD dlgId, WORD iconId, WORD accelTblId)
 	: _dlgBase{dlgId}, _iconId{iconId}, _accelTblId{accelTblId}
 {
-	_dlgBase._wndMsg._userEvents.wm_close([this]() -> void {
-		DestroyWindow(hwnd());
+	_dlgBase._wndBase._userEvents.wm_close([this]() -> void {
+		DestroyWindow(_dlgBase._wndBase._hWnd);
 	});
 
-	_dlgBase._wndMsg._userEvents.wm_nc_destroy([]() -> void {
+	_dlgBase._wndBase._userEvents.wm_nc_destroy([]() -> void {
 		PostQuitMessage(0);
 	});
 }
@@ -113,9 +113,9 @@ int DlgMain::run(HINSTANCE hInst, int cmdShow) {
 	_dlgBase.create_dialog_param(hInst, nullptr);
 	_dlgBase.set_icon(hInst, _iconId);
 	HACCEL hAccel = _dlgBase.load_accel(hInst, _accelTblId);
-	ShowWindow(hwnd(), cmdShow);
+	ShowWindow(_dlgBase._wndBase._hWnd, cmdShow);
 
-	return _dlgBase._wndMsg.main_loop(hAccel, true);
+	return _dlgBase._wndBase.main_loop(hAccel, true);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -123,8 +123,8 @@ int DlgMain::run(HINSTANCE hInst, int cmdShow) {
 DlgModal::DlgModal(const WindowParent &parent, WORD dlgId)
 	: _parent{parent}, _dlgBase{dlgId}
 {
-	_dlgBase._wndMsg._userEvents.wm_close([this]() -> void {
-		EndDialog(hwnd(), 0);
+	_dlgBase._wndBase._userEvents.wm_close([this]() -> void {
+		EndDialog(_dlgBase._wndBase._hWnd, 0);
 	});
 }
 
@@ -138,11 +138,11 @@ void DlgModal::show() {
 DlgControl::DlgControl(WindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos, Lay layout)
 	: _dlgBase{dlgId}
 {
-	parent.wnd_msg()._preEvents.wm_create_or_init_dialog([this, pParent = &parent, ctrlId, pos, layout]() -> void {
+	parent.wnd_base()._preEvents.wm_create_or_init_dialog([this, pParent = &parent, ctrlId, pos, layout]() -> void {
 		HINSTANCE hInst = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(pParent->hwnd(), GWLP_HINSTANCE));
 		_dlgBase.create_dialog_param(hInst, pParent->hwnd());
-		SetWindowLongPtrW(hwnd(), GWLP_ID, NativeCtrl::valid_ctrl_id(ctrlId)); // give the control its ID
-		SetWindowPos(hwnd(), nullptr, pos.x, pos.y, 0, 0, SWP_NOZORDER | SWP_NOMOVE);
-		pParent->wnd_msg()._layout.add(hwnd(), layout);
+		SetWindowLongPtrW(_dlgBase._wndBase._hWnd, GWLP_ID, valid_ctrl_id(ctrlId)); // give the control its ID
+		SetWindowPos(_dlgBase._wndBase._hWnd, nullptr, pos.x, pos.y, 0, 0, SWP_NOZORDER | SWP_NOMOVE);
+		pParent->wnd_base()._layout.add(_dlgBase._wndBase._hWnd, layout);
 	});
 }

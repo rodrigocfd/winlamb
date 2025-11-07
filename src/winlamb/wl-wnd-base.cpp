@@ -1,48 +1,23 @@
+#include <memory>
 #include <system_error>
-#include <thread>
-#include "window.h"
-#include "window-user.h"
-#include "runnable.h"
+#include "wnd-base.h"
+#include "wnd-interfaces.h"
+#include "wnd-funcs.h"
 #include <CommCtrl.h>
-using namespace _wl_internal;
 using namespace wl;
-using namespace wl::events;
-
-std::wstring Window::text() const {
-	UINT len = GetWindowTextLengthW(hwnd());
-	if (!len) {
-		DWORD err = GetLastError();
-		if (err != ERROR_SUCCESS) [[unlikely]] {
-			throw std::system_error(err, std::system_category(), "GetWindowTextLength failed");
-		}
-		return std::wstring{}; // actual empty string
-	}
-
-	std::wstring buf(len + 1, L'\0'); // alloc receiving buffer
-	GetWindowTextW(hwnd(), buf.data(), len + 1);
-	buf.resize(len);
-	return buf;
-}
-
-void Window::set_text(WStrPtr text) const {
-	if (!SetWindowTextW(hwnd(), text)) [[unlikely]] {
-		throw std::system_error(GetLastError(), std::system_category(), "SetWindowText failed");
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////////
+using namespace _wl_internal;
 
 struct ThreadPack final {
 	std::function<void()> cb;
 };
 static constexpr UINT WM_THREAD = WM_APP + 0x3fff; // last WM_APP value
 
-void WindowMsg::ui_thread(std::function<void()> cb) const {
+void WndBase::ui_thread(std::function<void()> &&cb) const {
 	auto pPack = std::make_unique<ThreadPack>(std::move(cb));
-	SendMessageW(hwnd(), WM_THREAD, WM_THREAD, reinterpret_cast<LPARAM>(pPack.release()));
+	SendMessageW(_hWnd, WM_THREAD, WM_THREAD, reinterpret_cast<LPARAM>(pPack.release()));
 }
 
-WindowMsg::ProcResult WindowMsg::process_msgs(UINT msg, WPARAM wp, LPARAM lp) {
+WndBase::ProcResult WndBase::process_msgs(UINT msg, WPARAM wp, LPARAM lp) {
 	switch (msg) {
 	case WM_THREAD:
 		if (wp == WM_THREAD) { // additional safety check
@@ -75,7 +50,7 @@ WindowMsg::ProcResult WindowMsg::process_msgs(UINT msg, WPARAM wp, LPARAM lp) {
 	return {hasPre, hasPost, userRet};
 }
 
-int WindowMsg::main_loop(HACCEL hAccel, bool processDlgMsgs) {
+int WndBase::main_loop(HACCEL hAccel, bool processDlgMsgs) {
 	MSG msg{};
 	BOOL ret = FALSE;
 	for (;;) {
@@ -89,14 +64,14 @@ int WindowMsg::main_loop(HACCEL hAccel, bool processDlgMsgs) {
 
 		// If a child window, will retrieve its top-level parent.
 		// If a top-level, use itself.
-		HWND hWndTopLevel = GetAncestor(hwnd(), GA_ROOT);
+		HWND hWndTopLevel = GetAncestor(_hWnd, GA_ROOT);
 		if (!hWndTopLevel) hWndTopLevel = msg.hwnd;
 
 		// If we have an accelerator table, try to translate the message.
-		if (hAccel && TranslateAcceleratorW(hwnd(), hAccel, &msg)) continue;
+		if (hAccel && TranslateAcceleratorW(_hWnd, hAccel, &msg)) continue;
 
 		// Try to process keyboard actions for child controls.
-		if (processDlgMsgs && IsDialogMessageW(hwnd(), &msg)) continue;
+		if (processDlgMsgs && IsDialogMessageW(_hWnd, &msg)) continue;
 
 		TranslateMessage(&msg);
 		DispatchMessageW(&msg);
@@ -104,7 +79,7 @@ int WindowMsg::main_loop(HACCEL hAccel, bool processDlgMsgs) {
 	return static_cast<int>(msg.wParam); // can be used as program return value
 }
 
-void WindowMsg::modal_loop(bool processDlgMsgs) {
+void WndBase::modal_loop(bool processDlgMsgs) {
 	MSG msg{};
 	for (;;) {
 		if (BOOL ret = GetMessageW(&msg, nullptr, 0, 0); ret == -1) [[unlikely]] {
@@ -113,76 +88,76 @@ void WindowMsg::modal_loop(bool processDlgMsgs) {
 			break; // our modal was destroyed
 		}
 
-		if (!hwnd() || !IsWindow(hwnd())) break; // our modal was destroyed
+		if (!_hWnd || !IsWindow(_hWnd)) break; // our modal was destroyed
 
 		// If a child window, will retrieve its top-level parent.
 		// If a top-level, use itself.
-		HWND hWndTopLevel = GetAncestor(hwnd(), GA_ROOT);
-		if (!hWndTopLevel) hWndTopLevel = hwnd();
+		HWND hWndTopLevel = GetAncestor(_hWnd, GA_ROOT);
+		if (!hWndTopLevel) hWndTopLevel = _hWnd;
 
 		// Try to process keyboard actions for child controls.
-		if (processDlgMsgs && IsDialogMessageW(hwnd(), &msg)) {
+		if (processDlgMsgs && IsDialogMessageW(_hWnd, &msg)) {
 			// Processed all keyboard actions for child controls.
-			if (!hwnd()) break; // our modal was destroyed
+			if (!_hWnd) break; // our modal was destroyed
 			else continue;
 		}
 
 		TranslateMessage(&msg);
 		DispatchMessageW(&msg);
 
-		if (!hwnd() || !IsWindow(hwnd())) break; // our modal was destroyed
+		if (!_hWnd || !IsWindow(_hWnd)) break; // our modal was destroyed
 	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-NativeCtrl::NativeCtrl(WindowParent &owner)
-	: _owner{owner.wnd_msg()}
+NativeCtrlBase::NativeCtrlBase(WindowParent &owner)
+	: _parentWndBase{owner.wnd_base()}
 {
 }
 
-void NativeCtrl::create_wnd(WORD ctrlId, DWORD exStyle, LPCWSTR className,
+void NativeCtrlBase::create_wnd(WORD ctrlId, DWORD exStyle, LPCWSTR className,
 	LPCWSTR title, DWORD style, POINT pos, SIZE size)
 {
 	#ifdef _DEBUG
-	if (_wnd.hwnd())
+	if (_hWnd)
 		throw std::logic_error("Cannot create control twice.");
-	if (!_owner.hwnd())
+	if (!_parentWndBase._hWnd)
 		throw std::logic_error("Cannot create control before parent.");
 	#endif
 
-	_wnd._hWnd = CreateWindowExW(exStyle, className, title, style,
-		pos.x, pos.y, size.cx, size.cy, _owner.hwnd(), reinterpret_cast<HMENU>(valid_ctrl_id(ctrlId)),
-		reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(_owner.hwnd(), GWLP_HINSTANCE)), nullptr);
+	_hWnd = CreateWindowExW(exStyle, className, title, style,
+		pos.x, pos.y, size.cx, size.cy, _parentWndBase._hWnd, reinterpret_cast<HMENU>(valid_ctrl_id(ctrlId)),
+		reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(_parentWndBase._hWnd, GWLP_HINSTANCE)), nullptr);
 	#ifdef _DEBUG
-	if (!_wnd.hwnd())
-		throw std::system_error(GetLastError(), std::system_category(), "NativeCtrl: CreateWindowEx failed");
+	if (!_hWnd)
+		throw std::system_error(GetLastError(), std::system_category(), "NativeCtrlBase: CreateWindowEx failed");
 	#endif
 
 	install_subclass();
 }
 
-void NativeCtrl::assign_dlg(WORD ctrlId) {
+void NativeCtrlBase::assign_dlg(WORD ctrlId) {
 	#ifdef _DEBUG
-	if (_wnd.hwnd())
+	if (_hWnd)
 		throw std::logic_error("Cannot assign control twice.");
-	if (!_owner.hwnd())
+	if (!_parentWndBase._hWnd)
 		throw std::logic_error("Cannot assign control before parent.");
 	#endif
 
-	_wnd._hWnd = GetDlgItem(_owner.hwnd(), ctrlId);
+	_hWnd = GetDlgItem(_parentWndBase._hWnd, ctrlId);
 	#ifdef _DEBUG
-	if (!_wnd.hwnd())
-		throw std::system_error(GetLastError(), std::system_category(), "NativeCtrl: GetDlgItem failed");
+	if (!_hWnd)
+		throw std::system_error(GetLastError(), std::system_category(), "NativeCtrlBase: GetDlgItem failed");
 	#endif
 
 	install_subclass();
 }
 
-void NativeCtrl::install_subclass() {
+void NativeCtrlBase::install_subclass() {
 	static UINT_PTR subclassId = 0;
 	if (_subclassEvents.has_message()) {
-		BOOL ret = SetWindowSubclass(_wnd.hwnd(), subclass_proc, ++subclassId, reinterpret_cast<DWORD_PTR>(this));
+		BOOL ret = SetWindowSubclass(_hWnd, subclass_proc, ++subclassId, reinterpret_cast<DWORD_PTR>(this));
 		#ifdef _DEBUG
 		if (!ret)
 			throw std::runtime_error("SetWindowSubclass failed.");
@@ -190,10 +165,10 @@ void NativeCtrl::install_subclass() {
 	}
 }
 
-LRESULT CALLBACK NativeCtrl::subclass_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp,
+LRESULT CALLBACK NativeCtrlBase::subclass_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp,
 	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
 {
-	NativeCtrl *pSelf = reinterpret_cast<NativeCtrl*>(dwRefData);
+	NativeCtrlBase *pSelf = reinterpret_cast<NativeCtrlBase*>(dwRefData);
 
 	std::optional<LRESULT> ret{};
 	if (pSelf)
@@ -207,9 +182,4 @@ LRESULT CALLBACK NativeCtrl::subclass_proc(HWND hWnd, UINT msg, WPARAM wp, LPARA
 	}
 
 	return ret.has_value() ? ret.value() : DefSubclassProc(hWnd, msg, wp, lp);
-}
-
-WORD NativeCtrl::valid_ctrl_id(WORD ctrlId) {
-	static WORD globalCtrId = 0xdfff; // https://stackoverflow.com/a/18192766/6923555
-	return ctrlId ? ctrlId : globalCtrId--;
 }

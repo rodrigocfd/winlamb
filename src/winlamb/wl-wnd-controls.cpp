@@ -1,39 +1,38 @@
-#include <stdexcept>
-#include "ctl-list-view.h"
-#include "events-ctl-macros.h"
-using namespace _wl_internal;
+#include <system_error>
+#include "wnd-controls.h"
 using namespace wl;
-using namespace wl::events;
+using namespace _wl_internal;
 
-EVENT_NFY_ARG(ListViewEvents, lvn_begin_drag, LVN_BEGINDRAG, NMLISTVIEW)
-EVENT_NFY_ARG_RET_BOOL(ListViewEvents, lvn_begin_label_edit, LVN_BEGINLABELEDITW, NMLVDISPINFOW)
-EVENT_NFY_ARG(ListViewEvents, lvn_begin_r_drag, LVN_BEGINRDRAG, NMLISTVIEW)
-EVENT_NFY_ARG(ListViewEvents, lvn_begin_scroll, LVN_BEGINSCROLL, NMLVSCROLL)
-EVENT_NFY_ARG(ListViewEvents, lvn_column_click, LVN_COLUMNCLICK, NMLISTVIEW)
-EVENT_NFY_ARG(ListViewEvents, lvn_column_drop_down, LVN_COLUMNDROPDOWN, NMLISTVIEW)
-EVENT_NFY_ARG(ListViewEvents, lvn_column_overflow_click, LVN_COLUMNOVERFLOWCLICK, NMLISTVIEW)
-EVENT_NFY_ARG_RET_BOOL(ListViewEvents, lvn_delete_all_items, LVN_DELETEALLITEMS, NMLISTVIEW)
-EVENT_NFY_ARG(ListViewEvents, lvn_delete_item, LVN_DELETEITEM, NMLISTVIEW)
-EVENT_NFY_ARG_RET_BOOL(ListViewEvents, lvn_end_label_edit, LVN_ENDLABELEDITW, NMLVDISPINFOW)
-EVENT_NFY_ARG(ListViewEvents, lvn_end_scroll, LVN_ENDSCROLL, NMLVSCROLL)
-EVENT_NFY_ARG(ListViewEvents, lvn_insert_item, LVN_INSERTITEM, NMLISTVIEW)
-EVENT_NFY_ARG(ListViewEvents, lvn_item_activate, LVN_ITEMACTIVATE, NMITEMACTIVATE)
-EVENT_NFY_ARG(ListViewEvents, lvn_item_changed, LVN_ITEMCHANGED, NMLISTVIEW)
-EVENT_NFY_ARG_RET_BOOL(ListViewEvents, lvn_item_changing, LVN_ITEMCHANGING, NMLISTVIEW)
-EVENT_NFY_ARG(ListViewEvents, lvn_key_down, LVN_KEYDOWN, NMLVKEYDOWN)
-EVENT_NFY_ARG(ListViewEvents, nm_click, NM_CLICK, NMITEMACTIVATE)
-void ListViewEvents::nm_custom_draw(std::function<DWORD(NMLVCUSTOMDRAW&)> &&cb) {
-	_events._owner._userEvents.wm_notify(_events._ctrlId, NM_CUSTOMDRAW, [cb = std::move(cb)](wm::Notify p) -> LRESULT {
-		return cb(p.hdr<NMLVCUSTOMDRAW>());
+Button::Button(WindowParent &owner, WORD ctrlId)
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
+		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, L"BUTTON", _opts.text,
+			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, _opts.size);
+		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
 	});
 }
-EVENT_NFY_ARG(ListViewEvents, nm_dbl_clk, NM_DBLCLK, NMITEMACTIVATE)
-EVENT_NFY_ARG(ListViewEvents, nm_kill_focus, NM_KILLFOCUS, NMHDR)
-EVENT_NFY_ARG(ListViewEvents, nm_r_click, NM_RCLICK, NMITEMACTIVATE)
-EVENT_NFY_ARG(ListViewEvents, nm_r_dbl_clk, NM_RDBLCLK, NMITEMACTIVATE)
-EVENT_NFY_ARG(ListViewEvents, nm_released_capture, NM_RELEASEDCAPTURE, NMHDR)
-EVENT_NFY_ARG(ListViewEvents, nm_set_focus, NM_SETFOCUS, NMHDR)
 
+Button::Button(WindowParent &owner, WORD ctrlId, Lay layout)
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
+		_ctrl.assign_dlg(ctrl_id());
+		_ctrl._parentWndBase._layout.add(hwnd(), layout);
+	});
+}
+
+const Button& Button::set_text(WStrPtr text) const {
+	set_wnd_text(hwnd(), text);
+	return *this;
+}
+
+const Button& Button::trigger_click() const {
+	SendMessageW(hwnd(), BM_CLICK, 0, 0);
+	return *this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
 ////////////////////////////////////////////////////////////////////////////////
 
 std::vector<std::wstring> ListView::Column::item_texts() const {
@@ -377,27 +376,27 @@ std::optional<ListView::Item> ListView::ItemCollection::topmost_visible() const 
 ////////////////////////////////////////////////////////////////////////////////
 
 ListView::ListView(WindowParent &owner, WORD ctrlId)
-	: _ctrl{owner}, _events{owner, NativeCtrl::valid_ctrl_id(ctrlId)}
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
 {
-	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
 		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, WC_LISTVIEWW, nullptr,
 			_opts.windowStyle | _opts.ctrlStyle | LVS_SHAREIMAGELISTS, _opts.pos, _opts.size);
 		set_extended_style(true, _opts.ctrlExStyle);
-		_ctrl._owner._layout.add(hwnd(), _opts.layout);
+		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
 	});
 
 	custom_events();
 }
 
 ListView::ListView(WindowParent &owner, WORD ctrlId, Lay layout, WORD contextMenuId)
-	: _ctrl{owner}, _events{owner, NativeCtrl::valid_ctrl_id(ctrlId)}
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
 {
 	_opts.contextMenuId = contextMenuId;
 
-	_ctrl._owner._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
 		_ctrl.assign_dlg(ctrl_id());
 		SetWindowLongPtrW(hwnd(), GWL_STYLE, GetWindowLongPtrW(hwnd(), GWL_STYLE) | LVS_SHAREIMAGELISTS);
-		_ctrl._owner._layout.add(hwnd(), layout);
+		_ctrl._parentWndBase._layout.add(hwnd(), layout);
 	});
 
 	custom_events();
@@ -441,7 +440,7 @@ void ListView::custom_events() {
 		return static_cast<WORD>(DefSubclassProc(hwnd(), WM_GETDLGCODE, p.wparam(), p.lparam())); // let system define DLGC
 	});
 
-	_ctrl._owner._preEvents.wm_notify(ctrl_id(), LVN_KEYDOWN, [this](wm::Notify p) -> void {
+	_ctrl._parentWndBase._preEvents.wm_notify(ctrl_id(), LVN_KEYDOWN, [this](wm::Notify p) -> void {
 		NMLVKEYDOWN &nmk = p.hdr<NMLVKEYDOWN>();
 		bool hasCtrl = GetAsyncKeyState(VK_CONTROL) & 0x8000;
 
@@ -453,7 +452,7 @@ void ListView::custom_events() {
 		}
 	});
 
-	_ctrl._owner._preEvents.wm_notify(ctrl_id(), NM_RCLICK, [this](wm::Notify p) -> void {
+	_ctrl._parentWndBase._preEvents.wm_notify(ctrl_id(), NM_RCLICK, [this](wm::Notify p) -> void {
 		NMITEMACTIVATE &nmi = p.hdr<NMITEMACTIVATE>();
 		bool hasCtrl = nmi.uKeyFlags & LVKF_CONTROL;
 		bool hasShift = nmi.uKeyFlags & LVKF_SHIFT;
@@ -461,7 +460,7 @@ void ListView::custom_events() {
 		show_context_menu(true, hasCtrl, hasShift);
 	});
 
-	_ctrl._owner._postEvents.wm(WM_DESTROY, [this](wm::Msg) -> void {
+	_ctrl._parentWndBase._postEvents.wm(WM_DESTROY, [this](wm::Msg) -> void {
 		if (_opts.hMenuContext)
 			DestroyMenu(_opts.hMenuContext);
 	});

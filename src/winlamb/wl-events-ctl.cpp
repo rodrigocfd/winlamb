@@ -1,0 +1,76 @@
+#include "events-ctl.h"
+using namespace wl;
+using namespace wl::events;
+using namespace _wl_internal;
+
+#define EVENT_CLS
+#define EVENT_CMD(method, cmd) \
+	void EVENT_CLS::method(std::function<void()> &&cb) { \
+		_ctrlEvents._parentWndBase._userEvents.wm_command(_ctrlEvents._ctrlId, cmd, std::move(cb)); \
+	}
+#define EVENT_NFY_ARG(method, nm, argty) \
+	void EVENT_CLS::method(std::function<void(argty&)> &&cb) { \
+		_ctrlEvents._parentWndBase._userEvents.wm_notify(_ctrlEvents._ctrlId, nm, \
+			[this, cb = std::move(cb)](wm::Notify p) -> LRESULT { \
+				cb(p.hdr<argty>()); \
+				return _ctrlEvents._parentWndBase._isDlg ? TRUE : 0; \
+			}); \
+	}
+#define EVENT_NFY_ARG_RET_BOOL(method, nm, argty) \
+	void EVENT_CLS::method(std::function<bool(argty&)> &&cb) { \
+		_ctrlEvents._parentWndBase._userEvents.wm_notify(_ctrlEvents._ctrlId, nm, \
+			[cb = std::move(cb)](wm::Notify p) -> LRESULT { \
+				return cb(p.hdr<argty>()); \
+			}); \
+	}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#undef EVENT_CLS
+#define EVENT_CLS ButtonEvents
+EVENT_NFY_ARG(bcn_drop_down, BCN_DROPDOWN, NMBCDROPDOWN)
+EVENT_NFY_ARG(bcn_hot_item_change, BCN_HOTITEMCHANGE, NMBCHOTITEM)
+EVENT_CMD(bn_clicked, BN_CLICKED)
+EVENT_CMD(bn_dbl_clk, BN_DBLCLK)
+EVENT_CMD(bn_kill_focus, BN_KILLFOCUS)
+EVENT_CMD(bn_set_focus, BN_SETFOCUS)
+void ButtonEvents::nm_custom_draw(std::function<DWORD(NMCUSTOMDRAW&)> &&cb) {
+	_ctrlEvents._parentWndBase._userEvents.wm_notify(_ctrlEvents._ctrlId, NM_CUSTOMDRAW,
+		[cb = std::move(cb)](wm::Notify p) -> LRESULT {
+			return cb(p.hdr<NMCUSTOMDRAW>());
+		});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+#undef EVENT_CLS
+#define EVENT_CLS ListViewEvents
+EVENT_NFY_ARG(lvn_begin_drag, LVN_BEGINDRAG, NMLISTVIEW)
+EVENT_NFY_ARG_RET_BOOL(lvn_begin_label_edit, LVN_BEGINLABELEDITW, NMLVDISPINFOW)
+EVENT_NFY_ARG(lvn_begin_r_drag, LVN_BEGINRDRAG, NMLISTVIEW)
+EVENT_NFY_ARG(lvn_begin_scroll, LVN_BEGINSCROLL, NMLVSCROLL)
+EVENT_NFY_ARG(lvn_column_click, LVN_COLUMNCLICK, NMLISTVIEW)
+EVENT_NFY_ARG(lvn_column_drop_down, LVN_COLUMNDROPDOWN, NMLISTVIEW)
+EVENT_NFY_ARG(lvn_column_overflow_click, LVN_COLUMNOVERFLOWCLICK, NMLISTVIEW)
+EVENT_NFY_ARG_RET_BOOL(lvn_delete_all_items, LVN_DELETEALLITEMS, NMLISTVIEW)
+EVENT_NFY_ARG(lvn_delete_item, LVN_DELETEITEM, NMLISTVIEW)
+EVENT_NFY_ARG_RET_BOOL(lvn_end_label_edit, LVN_ENDLABELEDITW, NMLVDISPINFOW)
+EVENT_NFY_ARG(lvn_end_scroll, LVN_ENDSCROLL, NMLVSCROLL)
+EVENT_NFY_ARG(lvn_insert_item, LVN_INSERTITEM, NMLISTVIEW)
+EVENT_NFY_ARG(lvn_item_activate, LVN_ITEMACTIVATE, NMITEMACTIVATE)
+EVENT_NFY_ARG(lvn_item_changed, LVN_ITEMCHANGED, NMLISTVIEW)
+EVENT_NFY_ARG_RET_BOOL(lvn_item_changing, LVN_ITEMCHANGING, NMLISTVIEW)
+EVENT_NFY_ARG(lvn_key_down, LVN_KEYDOWN, NMLVKEYDOWN)
+EVENT_NFY_ARG(nm_click, NM_CLICK, NMITEMACTIVATE)
+void ListViewEvents::nm_custom_draw(std::function<DWORD(NMLVCUSTOMDRAW&)> &&cb) {
+	_ctrlEvents._parentWndBase._userEvents.wm_notify(_ctrlEvents._ctrlId, NM_CUSTOMDRAW,
+		[cb = std::move(cb)](wm::Notify p) -> LRESULT {
+			return cb(p.hdr<NMLVCUSTOMDRAW>());
+		});
+}
+EVENT_NFY_ARG(nm_dbl_clk, NM_DBLCLK, NMITEMACTIVATE)
+EVENT_NFY_ARG(nm_kill_focus, NM_KILLFOCUS, NMHDR)
+EVENT_NFY_ARG(nm_r_click, NM_RCLICK, NMITEMACTIVATE)
+EVENT_NFY_ARG(nm_r_dbl_clk, NM_RDBLCLK, NMITEMACTIVATE)
+EVENT_NFY_ARG(nm_released_capture, NM_RELEASEDCAPTURE, NMHDR)
+EVENT_NFY_ARG(nm_set_focus, NM_SETFOCUS, NMHDR)

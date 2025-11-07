@@ -1,11 +1,12 @@
 #pragma once
 #include <functional>
 #include <optional>
+#include <string>
 #include <vector>
 #include "lib-include-win.h"
 #include <oleidl.h>
 #include <shellapi.h>
-#include "window-user.h"
+#include "wnd-interfaces.h"
 
 namespace wl {
 

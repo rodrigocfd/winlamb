@@ -1,12 +1,13 @@
 #include "drop-files.h"
+#include "wnd-base.h"
 using namespace wl;
 
 DropFiles::DropFiles(WindowParent &owner) {
-	owner.wnd_msg()._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
+	owner.wnd_base()._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
 		RegisterDragDrop(pOwner->hwnd(), this);
 	});
 
-	owner.wnd_msg()._postEvents.wm(WM_DESTROY, [pOwner = &owner](wm::Msg) -> void {
+	owner.wnd_base()._postEvents.wm(WM_DESTROY, [pOwner = &owner](wm::Msg) -> void {
 		RevokeDragDrop(pOwner->hwnd());
 	});
 }

@@ -1,6 +1,8 @@
 #pragma once
 
-// Proper #include <Windows.h>
+/*******************************************************************************
+ * WinLamb proper #include <Windows.h>.
+ ******************************************************************************/
 
 #include <sdkddkver.h>
 #define NOMINMAX

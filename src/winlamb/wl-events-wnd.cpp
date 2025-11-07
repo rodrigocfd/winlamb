@@ -1,15 +1,15 @@
 #include <stdexcept>
-#include "events.h"
-#include "window-user.h"
-using namespace _wl_internal;
+#include "events-wnd.h"
+#include "wnd-interfaces.h"
 using namespace wl;
 using namespace wl::events;
+using namespace _wl_internal;
 
-void EventsInternal::wm_create_or_init_dialog(std::function<void()> &&cb) {
+void InternalEvents::wm_create_or_init_dialog(std::function<void()> &&cb) {
 	_inis.emplace_back(cb);
 }
 
-void EventsInternal::wm(UINT msg, std::function<void(wl::wm::Msg)> &&cb) {
+void InternalEvents::wm(UINT msg, std::function<void(wl::wm::Msg)> &&cb) {
 	#ifdef _DEBUG
 	if (msg == WM_CREATE || msg == WM_INITDIALOG || msg == WM_NOTIFY)
 		throw std::logic_error("For WM_CREATE, WM_INITDIALOG, WM_NOTIFY, use the specific event methods.");
@@ -17,21 +17,21 @@ void EventsInternal::wm(UINT msg, std::function<void(wl::wm::Msg)> &&cb) {
 	_msgs.emplace_back(msg, cb);
 }
 
-void EventsInternal::wm_notify(WORD idFrom, int code, std::function<void(wl::wm::Notify)> &&cb) {
+void InternalEvents::wm_notify(WORD idFrom, int code, std::function<void(wl::wm::Notify)> &&cb) {
 	_nfys.emplace_back(idFrom, code, cb);
 }
 
-void EventsInternal::clear_inis() {
+void InternalEvents::clear_inis() {
 	std::vector<std::function<void()>>{}.swap(_inis); // https://stackoverflow.com/a/13944912/6923555
 }
 
-void EventsInternal::clear() {
+void InternalEvents::clear() {
 	clear_inis();
 	std::vector<Msg>{}.swap(_msgs);
 	std::vector<Nfy>{}.swap(_nfys);
 }
 
-bool EventsInternal::process_all(wm::Msg procMsg) const {
+bool InternalEvents::process_all(wm::Msg procMsg) const {
 	bool atLeastOne = false;
 
 	switch (procMsg.wm) {
@@ -210,11 +210,4 @@ std::optional<LRESULT> WindowEvents::process_last(wm::Msg procMsg) const {
 	}
 
 	return std::nullopt;
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-EventsNativeCtrl::EventsNativeCtrl(WindowParent &owner, WORD ctrlId)
-	: _owner{owner.wnd_msg()}, _ctrlId{ctrlId}
-{
 }

@@ -1,3 +1,4 @@
+#include <stdexcept>
 #include "util.h"
 using std::initializer_list;
 using std::span;
