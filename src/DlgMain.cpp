@@ -112,6 +112,9 @@ RawMain::RawMain() {
 	chk.setup().pos = wl::dpi::pt(110, 10);
 	chk.setup().text = L"&Check me";
 
+	cmb.setup().pos = wl::dpi::pt(200, 10);
+	cmb.setup().texts = {L"Hello", L"World"};
+
 	lv.setup().pos = wl::dpi::pt(10, 50);
 	lv.setup().size = wl::dpi::sz(400, 200);
 	lv.setup().layout = wl::Lay::resize_resize;
@@ -132,6 +135,16 @@ RawMain::RawMain() {
 	chk.on().bn_clicked([this]() -> void {
 		std::wstring title = wl::str::fmt(L"Check box is %s", chk.is_checked() ? L"YES" : L"NO");
 		wnd.set_title(title);
+	});
+
+	cmb.on().cbn_sel_change([this]() -> void {
+		std::optional<std::wstring> selText = cmb.items.selected_text();
+		if (selText.has_value()) {
+			std::wstring title = wl::str::fmt(L"Selected: %s", selText.value().c_str());
+			wnd.set_title(title);
+		} else {
+			wnd.set_title(L"No selection");
+		}
 	});
 
 }

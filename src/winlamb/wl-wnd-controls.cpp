@@ -46,6 +46,7 @@ CheckBox::CheckBox(WindowParent &owner, WORD ctrlId)
 			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, _opts.size);
 		apply_ui_font(hwnd());
 		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
+		set_state(_opts.state);
 	});
 }
 
@@ -69,10 +70,78 @@ const CheckBox& CheckBox::set_state(WORD bstFlag) const {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+////////////////////////////////////////////////////////////////////////////////
+
+std::wstring ComboBox::ItemCollection::operator[](int index) const {
+	size_t nChars = SendMessageW(_pOwner->hwnd(), CB_GETLBTEXTLEN, index, 0);
+	std::wstring s(nChars + 1, L'\0');
+	SendMessageW(_pOwner->hwnd(), CB_GETLBTEXT, index, reinterpret_cast<LPARAM>(s.data()));
+	s.resize(nChars);
+	return s;
+}
+
+void ComboBox::ItemCollection::add(WStrPtr text) const {
+	SendMessageW(_pOwner->hwnd(), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(text.operator LPCWSTR()));
+}
+
+void ComboBox::ItemCollection::add(std::initializer_list<WStrPtr> texts) const {
+	for (auto &&s : texts)
+		add(s);
+}
+
+size_t ComboBox::ItemCollection::count() const {
+	return SendMessageW(_pOwner->hwnd(), CB_GETCOUNT, 0, 0);
+}
+
+void ComboBox::ItemCollection::delete_all() const {
+	SendMessageW(_pOwner->hwnd(), CB_RESETCONTENT, 0, 0);
+}
+
+void ComboBox::ItemCollection::select(int index) const {
+	SendMessageW(_pOwner->hwnd(), CB_SETCURSEL, index, 0);
+}
+
+int ComboBox::ItemCollection::selected_index() const {
+	return static_cast<int>(SendMessageW(_pOwner->hwnd(), CB_GETCURSEL, 0, 0));
+}
+
+std::optional<std::wstring> ComboBox::ItemCollection::selected_text() const {
+	int selIdx = selected_index();
+	return selIdx == -1 ? std::nullopt : std::make_optional(operator[](selIdx));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+ComboBox::ComboBox(WindowParent &owner, WORD ctrlId)
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
+		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, L"COMBOBOX", nullptr,
+			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, {.cx = _opts.width});
+		apply_ui_font(hwnd());
+		for (auto &&s : _opts.texts)
+			items.add(s);
+		std::vector<std::wstring>{}.swap(_opts.texts);
+		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
+	});
+}
+
+ComboBox::ComboBox(WindowParent &owner, WORD ctrlId, Lay layout)
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
+		_ctrl.assign_dlg(ctrl_id());
+		_ctrl._parentWndBase._layout.add(hwnd(), layout);
+	});
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 ////////////////////////////////////////////////////////////////////////////////
 
 std::vector<std::wstring> ListView::Column::item_texts() const {
-	UINT count = _pOwner->items.count();
+	size_t count = _pOwner->items.count();
 	std::vector<std::wstring> texts;
 	texts.reserve(count);
 	for (UINT i = 0; i < count; ++i)
@@ -175,7 +244,7 @@ const ListView::Column& ListView::Column::set_width(UINT width) const {
 }
 
 const ListView::Column& ListView::Column::set_width_to_fill() const {
-	UINT numCols = _pOwner->cols.count();
+	size_t numCols = _pOwner->cols.count();
 	if (numCols == 0) return *this;
 
 	UINT cxUsed = 0;
@@ -201,7 +270,7 @@ ListView::Column ListView::ColumnCollection::add(WStrPtr text, UINT width) const
 	return {*_pOwner, index}; // return newly added column
 }
 
-UINT ListView::ColumnCollection::count() const {
+size_t ListView::ColumnCollection::count() const {
 	HWND hHeader = ListView_GetHeader(_pOwner->hwnd());
 	return Header_GetItemCount(hHeader);
 }
@@ -330,7 +399,7 @@ ListView::Item ListView::ItemCollection::add(WStrPtr text,
 	return newItem; // return newly added item
 }
 
-UINT ListView::ItemCollection::count() const {
+size_t ListView::ItemCollection::count() const {
 	return ListView_GetItemCount(_pOwner->hwnd());
 }
 
@@ -382,7 +451,7 @@ std::vector<ListView::Item> ListView::ItemCollection::selected() const {
 	return items;
 }
 
-UINT ListView::ItemCollection::selected_count() const {
+size_t ListView::ItemCollection::selected_count() const {
 	return ListView_GetSelectedCount(_pOwner->hwnd());
 }
 

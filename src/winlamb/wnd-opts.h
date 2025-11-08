@@ -160,6 +160,22 @@ namespace wl::opts {
 		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
 		HCURSOR hCursor = nullptr;
 
+		/// The [window style] passed to [`CreateWindowEx`].
+		///
+		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD windowStyle = WS_CHILD | WS_TABSTOP | WS_GROUP | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+		/// The [window extended style] passed to [`CreateWindowEx`].
+		///
+		/// Example adding a border:
+		///
+		/// ```cpp
+		/// wnd.setup().windowExStyle |= WS_EX_CLIENTEDGE;
+		/// ```
+		///
+		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD windowExStyle = WS_EX_LEFT;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
@@ -180,28 +196,12 @@ namespace wl::opts {
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		SIZE size = {.cx = 100, .cy = 100};
-		/// The [window style] passed to [`CreateWindowEx`].
-		///
-		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowStyle = WS_CHILD | WS_TABSTOP | WS_GROUP | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
-		/// The [window extended style] passed to [`CreateWindowEx`].
-		///
-		/// Example adding a border:
-		///
-		/// ```cpp
-		/// wnd.setup().windowExStyle |= WS_EX_CLIENTEDGE;
-		/// ```
-		///
-		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowExStyle = WS_EX_LEFT;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
 		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
 	};
 
 	/** Options to create a `Button` programmatically. */
@@ -210,26 +210,6 @@ namespace wl::opts {
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		LPCWSTR text = nullptr;
-		/// Control position passed to [`CreateWindowEx`].
-		///
-		/// Prefer using DPI-aware values:
-		///
-		/// ```cpp
-		/// lv.setup().pos = wl::dpi::pt(10, 10);
-		/// ```
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
-		/// Control size passed to [`CreateWindowEx`].
-		///
-		/// Prefer using DPI-aware values:
-		///
-		/// ```cpp
-		/// lv.setup().size = wl::dpi::sz(88, 26);
-		/// ```
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size = {.cx = 88, .cy = 26};
 		/// The [window style] passed to [`CreateWindowEx`].
 		///
 		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -245,26 +225,12 @@ namespace wl::opts {
 		/// [Button style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD ctrlStyle = BS_PUSHBUTTON;
-		/// Control ID.
-		///
-		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
-	};
-
-	/** Options to create a `CheckBox` programmatically. */
-	struct CheckBoxOpts final {
-		/// Control text passed to [`CreateWindowEx`].
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		LPCWSTR text = nullptr;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// lv.setup().pos = wl::dpi::pt(10, 10);
+		/// btn.setup().pos = wl::dpi::pt(10, 10);
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -274,13 +240,25 @@ namespace wl::opts {
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// lv.setup().size = wl::dpi::sz(88, 26);
+		/// btn.setup().size = wl::dpi::sz(88, 26);
 		/// ```
 		///
-		/// If not defined, the `CheckBox` will resize to automatically fit its initial text.
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SIZE size = {.cx = 88, .cy = 26};
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+	};
+
+	/** Options to create a `CheckBox` programmatically. */
+	struct CheckBoxOpts final {
+		/// Control text passed to [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size{};
+		LPCWSTR text = nullptr;
 		/// The [window style] passed to [`CreateWindowEx`].
 		///
 		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -296,6 +274,28 @@ namespace wl::opts {
 		/// [CheckBox style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD ctrlStyle = BS_AUTOCHECKBOX;
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// chk.setup().pos = wl::dpi::pt(10, 10);
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		POINT pos{};
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// chk.setup().size = wl::dpi::sz(88, 26);
+		/// ```
+		///
+		/// If not defined, the `CheckBox` will resize to automatically fit its initial text.
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SIZE size{};
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
@@ -306,14 +306,29 @@ namespace wl::opts {
 		WORD state = BST_UNCHECKED;
 	};
 
-	/** Options to create a `ListView` programmatically. */
-	struct ListViewOpts final {
+	/** Options to create a `ComboBox` programmatically. */
+	struct ComboBoxOpts final {
+		/// The [window style] passed to [`CreateWindowEx`].
+		///
+		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		/// The [window extended style] passed to [`CreateWindowEx`].
+		///
+		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD windowExStyle = WS_EX_LEFT;
+		/// The [ComboBox style] passed to [`CreateWindowEx`].
+		///
+		/// [ComboBox style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD ctrlStyle = CBS_DROPDOWNLIST;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// lv.setup().pos = wl::dpi::pt(10, 10);
+		/// cmb.setup().pos = wl::dpi::pt(10, 10);
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -323,11 +338,29 @@ namespace wl::opts {
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// lv.setup().size = wl::dpi::sz(120, 120);
+		/// cmb.setup().width = wl::dpi::x(100);
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size = {.cx = 120, .cy = 120};
+		int width = 100;
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
+		/// Texts to be added.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// cmb.setup().texts = {L"Hello", L"World"};
+		/// ```
+		std::vector<std::wstring> texts{};
+	};
+
+	/** Options to create a `ListView` programmatically. */
+	struct ListViewOpts final {
 		/// The [window style] passed to [`CreateWindowEx`].
 		///
 		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -349,6 +382,28 @@ namespace wl::opts {
 		///
 		/// [ListView extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/extended-list-view-styles
 		DWORD ctrlExStyle = LVS_EX_FULLROWSELECT;
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// lv.setup().pos = wl::dpi::pt(10, 10);
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		POINT pos{};
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// lv.setup().size = wl::dpi::sz(120, 120);
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SIZE size = {.cx = 120, .cy = 120};
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
@@ -368,8 +423,6 @@ namespace wl::opts {
 		///
 		/// [`CreatePopupMenu`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createpopupmenu
 		HMENU hMenuContext = nullptr;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
 	};
 
 }

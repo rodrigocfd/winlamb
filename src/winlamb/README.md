@@ -6,7 +6,8 @@ Goals:
 
 * simplify the process of writing native GUI Win32 applications;
 * lay a scalable foundation for large, complex programs;
-* support high-performance applications.
+* support high-performance applications;
+* build windows programmatically or from dialog resources.
 
 ## Installation
 
@@ -83,6 +84,8 @@ Native controls are the Win32 built-in widgets.
 | -- | -- |
 | `wl::Button` | [Button](https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#push-buttons) control. |
 | `wl::CheckBox` | [CheckBox](https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#check-boxes) control. |
+| `wl::ComboBox` | [ComboBox](https://learn.microsoft.com/en-us/windows/win32/controls/about-combo-boxes) control. |
+| `wl::ListView` | [ListView](https://learn.microsoft.com/en-us/windows/win32/controls/list-view-controls-overview) control. |
 
 A few utility entities are included for convenience:
 

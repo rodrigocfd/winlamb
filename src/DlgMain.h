@@ -14,6 +14,7 @@ public:
 	wl::WindowMain wnd{DLG_MAIN, ICO_MAIN};
 	wl::DropFiles dropFiles{wnd};
 	wl::ListView lstFiles{wnd, LST_FILES, wl::Lay::resize_resize, MNU_FILES};
+	wl::Button btn{wnd, 33, wl::Lay::hold_hold};
 
 private:
 	bool on_init_dialog(wl::wm::InitDialog);
@@ -39,6 +40,7 @@ public:
 	wl::WindowMain wnd{};
 	wl::Button btn{wnd};
 	wl::CheckBox chk{wnd};
+	wl::ComboBox cmb{wnd};
 	wl::ListView lv{wnd};
 	Contro ctl{wnd};
 };

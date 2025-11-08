@@ -24,6 +24,7 @@ namespace _wl_internal {
 namespace wl {
 	class Button;
 	class CheckBox;
+	class ComboBox;
 	class ListView;
 }
 
@@ -49,6 +50,31 @@ namespace wl::events {
 		_wl_internal::NativeCtrlEvents _ctrlEvents;
 		friend wl::Button;
 		friend wl::CheckBox;
+	};
+
+	/** @brief Native `ComboBox` control events. */
+	class ComboBoxEvents final {
+	private:
+		ComboBoxEvents(ComboBoxEvents&&) = delete; // non-copyable, non-movable
+
+		ComboBoxEvents(wl::WindowParent &owner, WORD ctrlId) : _ctrlEvents{owner, ctrlId} { }
+
+	public:
+		void cbn_close_up(std::function<void()> &&cb);
+		void cbn_dbl_clk(std::function<void()> &&cb);
+		void cbn_drop_down(std::function<void()> &&cb);
+		void cbn_edit_change(std::function<void()> &&cb);
+		void cbn_edit_update(std::function<void()> &&cb);
+		void cbn_err_space(std::function<void()> &&cb);
+		void cbn_kill_focus(std::function<void()> &&cb);
+		void cbn_sel_change(std::function<void()> &&cb);
+		void cbn_sel_end_cancel(std::function<void()> &&cb);
+		void cbn_sel_end_ok(std::function<void()> &&cb);
+		void cbn_set_focus(std::function<void()> &&cb);
+
+	private:
+		_wl_internal::NativeCtrlEvents _ctrlEvents;
+		friend wl::ComboBox;
 	};
 
 	/** @brief Native `ListView` events. */

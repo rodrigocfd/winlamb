@@ -36,6 +36,26 @@ namespace wl {
 	///     });
 	/// }
 	/// ```
+	/// Example of creating a window with a button from a dialog resource, .h and .cpp files:
+	///
+	/// ```cpp
+	/// class MyMain final {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{DLG_MAIN, ICO_MAIN};
+	///     wl::Button btn{wnd, BTN_HELLO, wl::Lay::hold_hold};
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
+	///
+	/// MyMain::MyMain() {
+	///     btn.on().bn_clicked([this]() -> void {
+	///         MessageBoxW(wnd.hwnd(), L"Button clicked", L"Hello", MB_ICONINFORMATION);
+	///     });
+	/// }
+	/// ```
 	///
 	/// [button]: https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#push-buttons
 	class Button final : public WindowChild {
@@ -168,7 +188,7 @@ namespace wl {
 		/// Example:
 		///
 		/// ```cpp
-		/// btn.on().bn_clicked([]() -> void {
+		/// chk.on().bn_clicked([]() -> void {
 		///     // ...
 		/// });
 		/// ```
@@ -217,6 +237,134 @@ namespace wl {
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::ButtonEvents _events;
 		opts::CheckBoxOpts _opts{};
+	};
+
+	/// @brief Native [combo box] control.
+	///
+	/// Example of creating a window with a combo box programmatically, .h and .cpp files:
+	///
+	/// ```cpp
+	/// class MyMain final {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{};
+	///     wl::ComboBox cmb{wnd};
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
+	///
+	/// MyMain::MyMain() {
+	///     wnd.setup().title = L"My main window";
+	///
+	///     cmb.setup().pos = wl::dpi::pt(10, 10);
+	///     cmb.setup().texts = {L"Hello", L"World"};
+	///
+	///     cmb.on().cbn_sel_change([this]() -> void {
+	///         std::optional<std::wstring> selText = cmb.items.selected_text();
+	///         if (selText.has_value()) {
+	///             std::wstring title = wl::str::fmt(L"Selected: %s", selText.value().c_str());
+	///             wnd.set_title(title);
+	///         } else {
+	///             wnd.set_title(L"No selection");
+	///         }
+	///     });
+	/// }
+	/// ```
+	///
+	/// [combo box]: https://learn.microsoft.com/en-us/windows/win32/controls/about-combo-boxes
+	class ComboBox final : public WindowChild {
+	public:
+		/** @brief Operations over the items. */
+		class ItemCollection final {
+		private:
+			ItemCollection(ItemCollection&&) = delete; // non-copyable, non-movable
+
+			constexpr explicit ItemCollection(const ComboBox *pOwner) : _pOwner{pOwner} { }
+
+		public:
+			/** Returns the item at the given index. */
+			[[nodiscard]] std::wstring operator[](int index) const;
+
+			/** Adds a new item. */
+			void add(WStrPtr text) const;
+
+			/** Adds multiple new items. */
+			void add(std::initializer_list<WStrPtr> texts) const;
+
+			/** Returns the item count. */
+			[[nodiscard]] size_t count() const;
+
+			/** Removes all items. */
+			void delete_all() const;
+
+			/** Selects the item with the given index, or `-1` for none. */
+			void select(int index) const;
+
+			/** Returns the zero-based index of the selected item, or `-1` if none. */
+			[[nodiscard]] int selected_index() const;
+
+			/** Returns the text of the selected item, if any. */
+			[[nodiscard]] std::optional<std::wstring> selected_text() const;
+
+		private:
+			const ComboBox *_pOwner;
+			friend ComboBox;
+		};
+
+		/// Constructs the button programmatically with [`CreateWindowEx`].
+		///
+		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
+		///
+		/// Further options can be defined with the `setup` method.
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		explicit ComboBox(WindowParent &owner, WORD ctrlId = 0);
+
+		/// Constructs the button from the dialog resource.
+		///
+		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		ComboBox(WindowParent &owner, WORD ctrlId, Lay layout);
+
+		/** Item methods. */
+		ItemCollection items{this};
+
+		/** Returns the wrapped window handle. */
+		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
+
+		/** Returns the control ID. */
+		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
+
+		/** For controls created programmatically, defines additional creation options. */
+		[[nodiscard]] constexpr opts::ComboBoxOpts& setup() { return _opts; }
+
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// btn.on().bn_clicked([]() -> void {
+		///     // ...
+		/// });
+		/// ```
+		[[nodiscard]] events::ComboBoxEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+
+		/// [Subclasses] the control allowing message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		///
+		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
+		[[nodiscard]] events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+
+	private:
+		_wl_internal::NativeCtrlBase _ctrl;
+		events::ComboBoxEvents _events;
+		opts::ComboBoxOpts _opts{};
 	};
 
 	/// @brief Native [list view] control.
@@ -354,7 +502,7 @@ namespace wl {
 			Column add(WStrPtr text, UINT width) const;
 
 			/** Returns the column count. */
-			[[nodiscard]] UINT count() const;
+			[[nodiscard]] size_t count() const;
 
 		private:
 			const ListView *_pOwner;
@@ -410,7 +558,7 @@ namespace wl {
 			Item add(WStrPtr text, std::initializer_list<WStrPtr> otherColumnsTexts = {}, int iconIndex = -1) const;
 
 			/** Returns the item count. */
-			[[nodiscard]] UINT count() const;
+			[[nodiscard]] size_t count() const;
 
 			/** Deletes all items. */
 			void delete_all() const;
@@ -438,7 +586,7 @@ namespace wl {
 			[[nodiscard]] std::vector<Item> selected() const;
 
 			/** Returns the selected item count. */
-			[[nodiscard]] UINT selected_count() const;
+			[[nodiscard]] size_t selected_count() const;
 
 			/// Calls [`ListView_SortItemsEx`] to sort the items according to the callback.
 			///

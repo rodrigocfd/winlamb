@@ -44,6 +44,22 @@ void ButtonEvents::nm_custom_draw(std::function<DWORD(NMCUSTOMDRAW&)> &&cb) {
 ////////////////////////////////////////////////////////////////////////////////
 
 #undef EVENT_CLS
+#define EVENT_CLS ComboBoxEvents
+EVENT_CMD(cbn_close_up, CBN_CLOSEUP)
+EVENT_CMD(cbn_dbl_clk, CBN_DBLCLK)
+EVENT_CMD(cbn_drop_down, CBN_DROPDOWN)
+EVENT_CMD(cbn_edit_change, CBN_EDITCHANGE)
+EVENT_CMD(cbn_edit_update, CBN_EDITUPDATE)
+EVENT_CMD(cbn_err_space, CBN_ERRSPACE)
+EVENT_CMD(cbn_kill_focus, CBN_KILLFOCUS)
+EVENT_CMD(cbn_sel_change, CBN_SELCHANGE)
+EVENT_CMD(cbn_sel_end_cancel, CBN_SELENDCANCEL)
+EVENT_CMD(cbn_sel_end_ok, CBN_SELENDOK)
+EVENT_CMD(cbn_set_focus, CBN_SETFOCUS)
+
+////////////////////////////////////////////////////////////////////////////////
+
+#undef EVENT_CLS
 #define EVENT_CLS ListViewEvents
 EVENT_NFY_ARG(lvn_begin_drag, LVN_BEGINDRAG, NMLISTVIEW)
 EVENT_NFY_ARG_RET_BOOL(lvn_begin_label_edit, LVN_BEGINLABELEDITW, NMLVDISPINFOW)
