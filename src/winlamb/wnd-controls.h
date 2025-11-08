@@ -11,6 +11,32 @@ namespace wl {
 
 	/// @brief Native [button] control.
 	///
+	/// Example of creating a window with a button programmatically, .h and .cpp files:
+	///
+	/// ```cpp
+	/// class MyMain final {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{};
+	///     wl::Button btn{wnd};
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
+	///
+	/// MyMain::MyMain() {
+	///     wnd.setup().title = L"My main window";
+	///
+	///     btn.setup().pos = wl::dpi::pt(10, 10);
+	///     btn.setup().text = L"&Click me";
+	///
+	///     btn.on().bn_clicked([this]() -> void {
+	///         MessageBoxW(wnd.hwnd(), L"Button clicked", L"Hello", MB_ICONINFORMATION);
+	///     });
+	/// }
+	/// ```
+	///
 	/// [button]: https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#push-buttons
 	class Button final : public WindowChild {
 	public:
@@ -78,6 +104,119 @@ namespace wl {
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::ButtonEvents _events;
 		opts::ButtonOpts _opts{};
+	};
+
+	/// @brief Native [check box] control.
+	///
+	/// Example of creating a window with a check box programmatically, .h and .cpp files:
+	///
+	/// ```cpp
+	/// class MyMain final {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{};
+	///     wl::CheckBox chk{wnd};
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
+	///
+	/// MyMain::MyMain() {
+	///     wnd.setup().title = L"My main window";
+	///
+	///     chk.setup().pos = wl::dpi::pt(10, 10);
+	///     chk.setup().text = L"&Check me";
+	///
+	///     chk.on().bn_clicked([this]() -> void {
+	///         std::wstring title = wl::str::fmt(L"Check box is %s", chk.is_checked() ? L"YES" : L"NO");
+	///         wnd.set_title(title);
+	///     });
+	/// }
+	/// ```
+	///
+	/// [check box]: https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#check-boxes
+	class CheckBox final : public WindowChild {
+	public:
+		/// Constructs the button programmatically with [`CreateWindowEx`].
+		///
+		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
+		///
+		/// Further options can be defined with the `setup` method.
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		explicit CheckBox(WindowParent &owner, WORD ctrlId = 0);
+
+		/// Constructs the button from the dialog resource.
+		///
+		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		CheckBox(WindowParent &owner, WORD ctrlId, Lay layout);
+
+		/** Returns the wrapped window handle. */
+		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
+
+		/** Returns the control ID. */
+		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
+
+		/** For controls created programmatically, defines additional creation options. */
+		[[nodiscard]] constexpr opts::CheckBoxOpts& setup() { return _opts; }
+
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// btn.on().bn_clicked([]() -> void {
+		///     // ...
+		/// });
+		/// ```
+		[[nodiscard]] events::ButtonEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+
+		/// [Subclasses] the control allowing message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		///
+		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
+		[[nodiscard]] events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+
+		/// Sends [`BM_GETCHECK`] and returns true if current state flag is `BST_CHECKED`.
+		///
+		/// [`BM_GETCHECK`]: https://learn.microsoft.com/en-us/windows/win32/controls/bm-getcheck
+		[[nodiscard]] bool is_checked() const { return state() == BST_CHECKED; }
+
+		/// Sends [`BM_SETCHECK`] to set the current state flag to `BST_CHECKED` or `BST_UNCHECKED`.
+		///
+		/// [`BM_SETCHECK`]: https://learn.microsoft.com/en-us/windows/win32/controls/bm-setcheck
+		const CheckBox& set_check(bool doCheck) const { set_state(doCheck ? BST_CHECKED : BST_UNCHECKED); }
+
+		/// Sends [`BM_GETCHECK`] to retrieve the current `BST` state flag.
+		///
+		/// Prefer using `is_checked`, which is simpler.
+		///
+		/// [`BM_GETCHECK`]: https://learn.microsoft.com/en-us/windows/win32/controls/bm-getcheck
+		[[nodiscard]] WORD state() const;
+
+		/// Sends [`BM_SETCHECK`] to set the current `BST` flag.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// chk.set_state(BST_CHECKED);
+		/// ```
+		///
+		/// Prefer using `set_check`, which is simpler.
+		///
+		/// [`BM_SETCHECK`]: https://learn.microsoft.com/en-us/windows/win32/controls/bm-setcheck
+		const CheckBox& set_state(WORD bstFlag) const;
+
+	private:
+		_wl_internal::NativeCtrlBase _ctrl;
+		events::ButtonEvents _events;
+		opts::CheckBoxOpts _opts{};
 	};
 
 	/// @brief Native [list view] control.

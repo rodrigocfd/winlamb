@@ -74,6 +74,19 @@ namespace wl::str {
 	/** Returns true if `s` contains `what`, starting from offset `off`. */
 	[[nodiscard]] bool contains(WStrPtr s, WStrPtr what, size_t off = 0);
 
+	/// Calls [`std::vswprintf`] to format the string, then passes it to [`OutputDebugString`].
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::wstring foo{L"foo"};
+	/// wl::str::dbg(L"this is %s", foo.c_str());
+	/// ```
+	///
+	/// [`std::vswprintf`]: https://en.cppreference.com/w/c/io/vfwprintf
+	/// [`OutputDebugString`]: https://learn.microsoft.com/en-us/windows/win32/api/debugapi/nf-debugapi-outputdebugstringw
+	void dbg(WStrPtr format, ...);
+
 	/** Returns true if `s` ends with `theEnd`, case-sensitive. */
 	[[nodiscard]] bool ends_with(WStrPtr s, WStrPtr theEnd);
 
@@ -93,6 +106,13 @@ namespace wl::str {
 	/// Calls [`std::vswprintf`] to format the string.
 	///
 	/// Prefer using C++20's [`std::format`], which is safer.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::wstring foo{L"foo"};
+	/// std::wstring formatted = wl::str::fmt(L"this is %s", foo.c_str());
+	/// ```
 	///
 	/// [`std::vswprintf`]: https://en.cppreference.com/w/c/io/vfwprintf
 	/// [`std::format`]: https://en.cppreference.com/w/cpp/utility/format/format.html
@@ -124,6 +144,9 @@ namespace wl::str {
 
 	/** Guesses the encoding and parses `src` into a `wstring`. */
 	[[nodiscard]] std::wstring parse(std::span<BYTE> src);
+
+	/** Returns a new string removing extra ampersands of keyboard accelerators: `"&He && she"` becomes `"He & she"`. */
+	std::wstring remove_accel_ampersands(WStrPtr s);
 
 	/** Removes the diacritics from `s`, in-place. */
 	void remove_diacritics(std::wstring &s);

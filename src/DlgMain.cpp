@@ -106,28 +106,32 @@ RawMain::RawMain() {
 	wnd.setup().size = wl::dpi::sz(550, 300);
 	wnd.setup().style |= WS_SIZEBOX | WS_MAXIMIZEBOX;
 
-	lv.setup().pos = wl::dpi::pt(10, 10);
+	btn.setup().pos = wl::dpi::pt(10, 10);
+	btn.setup().text = L"&Click me";
+
+	chk.setup().pos = wl::dpi::pt(110, 10);
+	chk.setup().text = L"&Check me";
+
+	lv.setup().pos = wl::dpi::pt(10, 50);
 	lv.setup().size = wl::dpi::sz(400, 200);
 	lv.setup().layout = wl::Lay::resize_resize;
 	lv.setup().contextMenuId = MNU_FILES;
 
-	wnd.on().wm_create(std::bind(&RawMain::on_create, this, std::placeholders::_1));
+	wnd.on().wm_create([this](wl::wm::Create p) -> int {
+		lv.cols.add(L"First", wl::dpi::x(200));
+		lv.cols.add(L"Second", 1).set_justif(HDF_CENTER).set_width_to_fill();
+		lv.items.add(L"Bronco kid", {L"Surreal"});
+		lv.items.add(L"Ground control", {L"to major tom"});
+		return 0;
+	});
 
+	btn.on().bn_clicked([this]() -> void {
+		MessageBoxW(wnd.hwnd(), L"Button clicked", L"Click", MB_ICONINFORMATION);
+	});
 
-}
+	chk.on().bn_clicked([this]() -> void {
+		std::wstring title = wl::str::fmt(L"Check box is %s", chk.is_checked() ? L"YES" : L"NO");
+		wnd.set_title(title);
+	});
 
-#include "id3v2/tag.h"
-
-int RawMain::on_create(wl::wm::Create) {
-	lv.cols.add(L"First", wl::dpi::x(200));
-	lv.cols.add(L"Second", 1).set_justif(HDF_CENTER).set_width_to_fill();
-	lv.items.add(L"Bronco kid", {L"Surreal"});
-	lv.items.add(L"Ground control", {L"to major tom"});
-
-	// LPCWSTR ff = L"c:\\users\\rodrigo\\desktop\\oo.mp3";
-	// id3v2::Tag tag{ff};
-	// tag.save_to_file(ff);
-
-	wnd.set_title(L"Shat out of hell");
-	return 0;
 }

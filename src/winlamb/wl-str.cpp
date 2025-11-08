@@ -23,6 +23,19 @@ bool wl::str::contains(WStrPtr s, WStrPtr what, size_t off) {
 	return sv.find(what, off) != std::wstring::npos;
 }
 
+void wl::str::dbg(WStrPtr format, ...) {
+	va_list args = nullptr;
+	va_start(args, format);
+	int len = std::vswprintf(nullptr, 0, format, args); // won't include terminating null
+
+	std::wstring buf(len + 2, L'\0'); // alloc receiving buffer with linebreak
+	std::vswprintf(buf.data(), buf.size(), format, args);
+	va_end(args);
+	buf.resize(len);
+	buf.push_back(L'\n');
+	OutputDebugStringW(buf.c_str());
+}
+
 bool wl::str::ends_with(WStrPtr s, WStrPtr theEnd) {
 	std::wstring_view sv{s};
 	return sv.ends_with(theEnd);
@@ -197,6 +210,20 @@ std::wstring wl::str::parse(std::span<BYTE> src) {
 		case bocu1:    throw std::invalid_argument("Binary ordered compression for Unicode: encoding not implemented.");
 		default:       throw std::invalid_argument("Unknown encoding.");
 	}
+}
+
+std::wstring wl::str::remove_accel_ampersands(WStrPtr s) {
+	size_t len = s.length();
+	std::wstring ret{};
+	ret.reserve(len);
+	for (size_t i = 0; i < len - 1; ++i) {
+		if (s[i] == L'&' && s[i + 1] != L'&')
+			continue;
+		ret.push_back(s[i]);
+	}
+	if (s[len - 1] != L'&')
+		ret.push_back(s[len - 1]);
+	return ret;
 }
 
 void wl::str::remove_diacritics(std::wstring &s) {

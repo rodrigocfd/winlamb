@@ -40,9 +40,32 @@ namespace wl {
 		/// The events must be added before the window is created on the screen.
 		[[nodiscard]] virtual events::WindowEvents& on() = 0;
 
-		/// Blocks the current thread and runs `cb` in the UI thread.
+		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in the UI thread.
+		/// After `cb` finishes, returns back to the calling thread.
 		///
-		/// Useful if you need to update the window from another thread.
+		/// Useful if you are processing something in a parallel thread, but need to update the UI.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// std::thread([this]() {
+		///
+		///     Sleep(5000); // do some parallel process
+		///
+		///     wnd.ui_thread([this]() {
+		///         wnd.set_title(L"First part complete"); // update UI
+		///     });
+		///
+		///     Sleep(5000); // do more parallel process
+		///
+		///     wnd.ui_thread([this]() {
+		///         wnd.set_title(L"Process finished"); // update UI again
+		///     });
+		///
+		/// }).detach();
+		/// ```
+		///
+		/// [`SendMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessagew
 		virtual void ui_thread(std::function<void()> &&cb) const = 0;
 
 	private:

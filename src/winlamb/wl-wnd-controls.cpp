@@ -9,6 +9,7 @@ Button::Button(WindowParent &owner, WORD ctrlId)
 	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
 		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, L"BUTTON", _opts.text,
 			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, _opts.size);
+		apply_ui_font(hwnd());
 		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
 	});
 }
@@ -29,6 +30,41 @@ const Button& Button::set_text(WStrPtr text) const {
 
 const Button& Button::trigger_click() const {
 	SendMessageW(hwnd(), BM_CLICK, 0, 0);
+	return *this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+CheckBox::CheckBox(WindowParent &owner, WORD ctrlId)
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
+		if (!_opts.size.cx && !_opts.size.cy)
+			_opts.size = calc_text_bound_box_with_check(str::remove_accel_ampersands(_opts.text));
+
+		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, L"BUTTON", _opts.text,
+			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, _opts.size);
+		apply_ui_font(hwnd());
+		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
+	});
+}
+
+CheckBox::CheckBox(WindowParent &owner, WORD ctrlId, Lay layout)
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
+		_ctrl.assign_dlg(ctrl_id());
+		_ctrl._parentWndBase._layout.add(hwnd(), layout);
+	});
+}
+
+WORD CheckBox::state() const {
+	return static_cast<WORD>(SendMessageW(hwnd(), BM_GETCHECK, 0, 0));
+}
+
+const CheckBox& CheckBox::set_state(WORD bstFlag) const {
+	bstFlag &= (BST_CHECKED | BST_INDETERMINATE | BST_UNCHECKED); // sanitize
+	SendMessageW(hwnd(), BM_SETCHECK, bstFlag, 0);
 	return *this;
 }
 
@@ -73,7 +109,7 @@ const ListView::Column& ListView::Column::set_justif(WORD hdf) const {
 	Header_GetItem(hHeader, _index, &hdi); // first, retrieve current
 
 	hdi.fmt &= ~(HDF_CENTER | HDF_LEFT | HDF_RIGHT); // clear all three
-	hdi.fmt |= (hdf & (HDF_LEFT | HDF_CENTER | HDF_RIGHT)); // filter in
+	hdi.fmt |= (hdf & (HDF_LEFT | HDF_CENTER | HDF_RIGHT)); // sanitize
 	Header_SetItem(hHeader, _index, &hdi);
 
 	return *this;
@@ -98,7 +134,7 @@ const ListView::Column& ListView::Column::set_sort_arrow(WORD hdf) const {
 
 		hdi.fmt &= ~(HDF_SORTDOWN | HDF_SORTUP); // clear all two
 		if (i == _index) // only the targeted column will have the flag set
-			hdi.fmt |= (hdf & (HDF_SORTDOWN | HDF_SORTUP)); // filter in
+			hdi.fmt |= (hdf & (HDF_SORTDOWN | HDF_SORTUP)); // sanitize
 
 		Header_SetItem(hHeader, i, &hdi);
 	}

@@ -37,8 +37,8 @@ class RawMain final {
 public:
 	RawMain();
 	wl::WindowMain wnd{};
+	wl::Button btn{wnd};
+	wl::CheckBox chk{wnd};
 	wl::ListView lv{wnd};
 	Contro ctl{wnd};
-private:
-	int on_create(wl::wm::Create);
 };

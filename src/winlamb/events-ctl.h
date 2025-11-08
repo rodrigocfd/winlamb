@@ -23,6 +23,7 @@ namespace _wl_internal {
 
 namespace wl {
 	class Button;
+	class CheckBox;
 	class ListView;
 }
 
@@ -47,6 +48,7 @@ namespace wl::events {
 	private:
 		_wl_internal::NativeCtrlEvents _ctrlEvents;
 		friend wl::Button;
+		friend wl::CheckBox;
 	};
 
 	/** @brief Native `ListView` events. */

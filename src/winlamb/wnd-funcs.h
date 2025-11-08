@@ -5,9 +5,15 @@
 
 namespace _wl_internal {
 
+	[[nodiscard]] HFONT ui_font();
+	void apply_ui_font(HWND hWnd);
+	void delete_ui_font();
+
 	[[nodiscard]] WORD valid_ctrl_id(WORD ctrlId);
 	[[nodiscard]] std::wstring wnd_text(HWND hWnd);
 	void set_wnd_text(HWND hWnd, wl::WStrPtr text);
+	[[nodiscard]] SIZE calc_text_bound_box(wl::WStrPtr text);
+	[[nodiscard]] SIZE calc_text_bound_box_with_check(wl::WStrPtr text);
 
 	/** Validates event access. */
 	template<typename E>

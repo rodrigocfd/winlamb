@@ -31,6 +31,7 @@ class MyMain final {
 public:
     MyMain();
     wl::WindowMain wnd{};
+    wl::Button btn{wnd};
 };
 ```
 
@@ -44,12 +45,57 @@ MyMain::MyMain() {
     wnd.setup().size = wl::dpi::sz(500, 300);
     wnd.setup().style |= WS_SIZEBOX | WS_MAXIMIZEBOX;
 
+    btn.setup().pos = wl::dpi::pt(10, 10);
+    btn.setup().text = L"&Click me";
+
     wnd.on().wm_create([this](wl::wm::Create p) -> int {
         wnd.set_title(L"A new title");
         return 0;
     });
+
+    btn.on().bn_clicked([this]() -> void {
+       MessageBoxW(wnd.hwnd(), L"Button clicked", L"Hello", MB_ICONINFORMATION);
+    });
 }
 ```
+
+## Classes
+
+Container classes represent windows which can host child controls.
+
+| Container class | Description |
+| -- | -- |
+| `wl::WindowMain` | Main window application. Usually, this is where your program starts. |
+| `wl::WindowModal` | A modal popup window. |
+| `wl::WindowControl` | A custom child control. |
+
+There are a few pure abstract classes (interfaces) which are implemented by windows and controls.
+
+| Interface | Description |
+| -- | -- |
+| `wl::Window` | Implemented by all windows. |
+| `wl::WindowParent` | Implemented by all windows which can host child controls. |
+| `wl::WindowChild` | Implemented by all child controls. |
+
+Native controls are the Win32 built-in widgets.
+
+| Native control | Description |
+| -- | -- |
+| `wl::Button` | [Button](https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#push-buttons) control. |
+| `wl::CheckBox` | [CheckBox](https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#check-boxes) control. |
+
+A few utility entities are included for convenience:
+
+| Utility | Description |
+| -- | -- |
+| `wl::ComPtr` | Templated COM smart pointer. |
+| `wl::DropFiles` | Implements [`IDropTarget`](https://learn.microsoft.com/en-us/windows/win32/api/oleidl/nn-oleidl-idroptarget) COM interface, allowing file drag & drop on the window. |
+| `wl::File` | Manages a file `HANDLE`. |
+| `wl::FileMapped` | Manages memory-mapped. |
+| `wl::dpi` | Adjusts pixel values according to the current system [DPI](https://learn.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows). |
+| `wl::path` | Filepath utilities. |
+| `wl::str` | UTF-16 wide string utilities. |
+| `wl::vec` | Vector, span and array utilities. |
 
 ## License
 

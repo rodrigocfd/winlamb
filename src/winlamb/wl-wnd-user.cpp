@@ -5,6 +5,10 @@ using namespace wl;
 using namespace _wl_internal;
 
 int WindowMain::run(HINSTANCE hInst, int cmdShow) {
+	struct DelGlobalFont final {
+		~DelGlobalFont() { _wl_internal::delete_ui_font(); } // make sure global font will be deleted
+	} globalUiFont{};
+
 	return _rawMain.has_value()
 		? _rawMain.value().run(hInst, cmdShow)
 		: _dlgMain.value().run(hInst, cmdShow);

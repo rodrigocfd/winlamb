@@ -79,21 +79,18 @@ const ImageList& ImageList::add_shell_ext(WStrPtr fileExt) const {
 	pathExt = L"*.";
 	pathExt.append(fileExt);
 
-	SHFILEINFOW shfi{};
-	DWORD_PTR hr = SHGetFileInfoW(pathExt.c_str(), FILE_ATTRIBUTE_NORMAL, &shfi, sizeof(SHFILEINFOW),
+	struct Shfi final {
+		~Shfi() { DestroyIcon(obj.hIcon); }
+		SHFILEINFOW obj{};
+	} shfi{};
+
+	DWORD_PTR hr = SHGetFileInfoW(pathExt.c_str(), FILE_ATTRIBUTE_NORMAL, &shfi.obj, sizeof(SHFILEINFOW),
 		SHGFI_USEFILEATTRIBUTES | SHGFI_ICON | (isIco16 ? SHGFI_SMALLICON : SHGFI_LARGEICON));
 	if (FAILED(hr)) [[unlikely]] {
 		throw std::system_error(static_cast<HRESULT>(hr), std::system_category(), "SHGetFileInfo failed");
 	}
 
-	struct DestroyableIcon final {
-		~DestroyableIcon() { DestroyIcon(hIcon); }
-		constexpr explicit DestroyableIcon(HICON h) : hIcon{h} { }
-		HICON hIcon;
-	};
-	DestroyableIcon destroyableIcon{shfi.hIcon}; // make sure it will be destroyed
-
-	return add_icon(shfi.hIcon);
+	return add_icon(shfi.obj.hIcon);
 }
 
 size_t ImageList::count() const {
