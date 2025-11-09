@@ -36,6 +36,7 @@ namespace wl {
 	///     });
 	/// }
 	/// ```
+	///
 	/// Example of creating a window with a button from a dialog resource, .h and .cpp files:
 	///
 	/// ```cpp
@@ -233,6 +234,21 @@ namespace wl {
 		/// [`BM_SETCHECK`]: https://learn.microsoft.com/en-us/windows/win32/controls/bm-setcheck
 		const CheckBox& set_state(WORD bstFlag) const;
 
+		/// Calls [`GetWindowText`] to return the check box text.
+		///
+		/// [`GetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowtextw
+		[[nodiscard]] std::wstring text() const { return _wl_internal::wnd_text(hwnd()); }
+
+		/// Calls [`SetWindowText`] to set the button text.
+		///
+		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
+		const CheckBox& set_text(WStrPtr text) const;
+
+		/// Calls [`SetWindowText`] to set the button text, then resizes the check box to fit the text exactly.
+		///
+		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
+		const CheckBox& set_text_resize(WStrPtr text) const;
+
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::ButtonEvents _events;
@@ -365,6 +381,94 @@ namespace wl {
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::ComboBoxEvents _events;
 		opts::ComboBoxOpts _opts{};
+	};
+
+	/// @brief Native [date and time picker] control.
+	///
+	/// Example of creating a window with a date and time picker programmatically, .h and .cpp files:
+	///
+	/// ```cpp
+	/// class MyMain final {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{};
+	///     wl::DateTimePicker dtp{wnd};
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
+	///
+	/// MyMain::MyMain() {
+	///     wnd.setup().title = L"My main window";
+	///
+	///     dtp.setup().pos = wl::dpi::pt(10, 10);
+	///
+	///     dtp.on().dtn_date_time_change([this](NMDATETIMECHANGE &p) -> void {
+	///         std::wstring title = wl::str::fmt(L"%d-%d-%d", p.st.wYear, p.st.wMonth, p.st.wDay);
+	///         wnd.set_title(title);
+	///     });
+	/// }
+	/// ```
+	///
+	/// [date and time picker]: https://learn.microsoft.com/en-us/windows/win32/controls/date-and-time-picker-controls
+	class DateTimePicker final : public WindowChild {
+	public:
+		/// Constructs the date and time picker programmatically with [`CreateWindowEx`].
+		///
+		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
+		///
+		/// Further options can be defined with the `setup` method.
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		explicit DateTimePicker(WindowParent &owner, WORD ctrlId = 0);
+
+		/// Constructs the date and time picker from the dialog resource.
+		///
+		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		DateTimePicker(WindowParent &owner, WORD ctrlId, Lay layout);
+
+		/** Returns the wrapped window handle. */
+		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
+
+		/** Returns the control ID. */
+		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
+
+		/** For controls created programmatically, defines additional creation options. */
+		[[nodiscard]] constexpr opts::DateTimePickerOpts& setup() { return _opts; }
+
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// dtp.on().dtn_date_time_change([](NMDATETIMECHANGE&) -> void {
+		///     // ...
+		/// });
+		/// ```
+		[[nodiscard]] events::DateTimePickerEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+
+		/// [Subclasses] the control allowing message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		///
+		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
+		[[nodiscard]] events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+
+		/** Returns the current date and time value. */
+		[[nodiscard]] SYSTEMTIME value() const;
+
+		/** Sets the current date and time value. */
+		const DateTimePicker& set_value(const SYSTEMTIME &st) const;
+
+	private:
+		_wl_internal::NativeCtrlBase _ctrl;
+		events::DateTimePickerEvents _events;
+		opts::DateTimePickerOpts _opts{};
 	};
 
 	/// @brief Native [list view] control.

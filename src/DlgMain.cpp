@@ -115,7 +115,9 @@ RawMain::RawMain() {
 	cmb.setup().pos = wl::dpi::pt(200, 10);
 	cmb.setup().texts = {L"Hello", L"World"};
 
-	lv.setup().pos = wl::dpi::pt(10, 50);
+	dtp.setup().pos = wl::dpi::pt(10, 48);
+
+	lv.setup().pos = wl::dpi::pt(10, 80);
 	lv.setup().size = wl::dpi::sz(400, 200);
 	lv.setup().layout = wl::Lay::resize_resize;
 	lv.setup().contextMenuId = MNU_FILES;
@@ -145,6 +147,11 @@ RawMain::RawMain() {
 		} else {
 			wnd.set_title(L"No selection");
 		}
+	});
+
+	dtp.on().dtn_date_time_change([this](NMDATETIMECHANGE &p) -> void {
+		std::wstring title = wl::str::fmt(L"%d-%d-%d", p.st.wYear, p.st.wMonth, p.st.wDay);
+		wnd.set_title(title);
 	});
 
 }

@@ -251,6 +251,7 @@ namespace _wl_internal {
 	class NativeCtrlBase;
 }
 
+/** @brief Events for windows and controls. */
 namespace wl::events {
 
 	/** @brief Native `WindowParent` events. */

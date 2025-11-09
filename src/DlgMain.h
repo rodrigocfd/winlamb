@@ -41,6 +41,7 @@ public:
 	wl::Button btn{wnd};
 	wl::CheckBox chk{wnd};
 	wl::ComboBox cmb{wnd};
+	wl::DateTimePicker dtp{wnd};
 	wl::ListView lv{wnd};
 	Contro ctl{wnd};
 };

@@ -3,6 +3,7 @@
 #include <CommCtrl.h>
 #include "layout.h"
 
+/** @brief Options to create window and controls programmatically. */
 namespace wl::opts {
 
 	/** Options to create a `WindowMain` programmatically. */
@@ -357,6 +358,53 @@ namespace wl::opts {
 		/// cmb.setup().texts = {L"Hello", L"World"};
 		/// ```
 		std::vector<std::wstring> texts{};
+	};
+
+	/** Options to create a `DateTimePicker` programmatically. */
+	struct DateTimePickerOpts final {
+		/// The [window style] passed to [`CreateWindowEx`].
+		///
+		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		/// The [window extended style] passed to [`CreateWindowEx`].
+		///
+		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD windowExStyle = WS_EX_LEFT | WS_EX_CLIENTEDGE;
+		/// The [ComboBox style] passed to [`CreateWindowEx`].
+		///
+		/// [ComboBox style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD ctrlStyle = DTS_LONGDATEFORMAT;
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// dtp.setup().pos = wl::dpi::pt(10, 10);
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		POINT pos{};
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// dtp.setup().size = wl::dpi::sz(230, 23);
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SIZE size = {.cx = 230, .cy = 23};
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
+		/** Initial date and time. */
+		SYSTEMTIME value{};
 	};
 
 	/** Options to create a `ListView` programmatically. */

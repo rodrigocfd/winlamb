@@ -69,7 +69,17 @@ const CheckBox& CheckBox::set_state(WORD bstFlag) const {
 	return *this;
 }
 
-////////////////////////////////////////////////////////////////////////////////
+const CheckBox& CheckBox::set_text(WStrPtr text) const {
+	set_wnd_text(hwnd(), text);
+	return *this;
+}
+
+const CheckBox& CheckBox::set_text_resize(WStrPtr text) const {
+	set_text(text);
+	SIZE bounds = calc_text_bound_box_with_check(str::remove_accel_ampersands(text));
+	SetWindowPos(hwnd(), nullptr, 0, 0, bounds.cx, bounds.cy, SWP_NOZORDER | SWP_NOMOVE);
+	return *this;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -111,7 +121,7 @@ std::optional<std::wstring> ComboBox::ItemCollection::selected_text() const {
 	return selIdx == -1 ? std::nullopt : std::make_optional(operator[](selIdx));
 }
 
-////////////////////////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------
 
 ComboBox::ComboBox(WindowParent &owner, WORD ctrlId)
 	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
@@ -120,10 +130,10 @@ ComboBox::ComboBox(WindowParent &owner, WORD ctrlId)
 		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, L"COMBOBOX", nullptr,
 			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, {.cx = _opts.width});
 		apply_ui_font(hwnd());
+		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
 		for (auto &&s : _opts.texts)
 			items.add(s);
 		std::vector<std::wstring>{}.swap(_opts.texts);
-		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
 	});
 }
 
@@ -137,6 +147,39 @@ ComboBox::ComboBox(WindowParent &owner, WORD ctrlId, Lay layout)
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+DateTimePicker::DateTimePicker(WindowParent &owner, WORD ctrlId)
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
+		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, DATETIMEPICK_CLASSW, nullptr,
+			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, _opts.size);
+		apply_ui_font(hwnd());
+		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
+		if (_opts.value.wYear)
+			set_value(_opts.value);
+	});
+}
+
+DateTimePicker::DateTimePicker(WindowParent &owner, WORD ctrlId, Lay layout)
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
+		_ctrl.assign_dlg(ctrl_id());
+		_ctrl._parentWndBase._layout.add(hwnd(), layout);
+	});
+}
+
+SYSTEMTIME DateTimePicker::value() const {
+	SYSTEMTIME st{};
+	DateTime_GetSystemtime(hwnd(), &st);
+	return st;
+}
+
+const DateTimePicker& DateTimePicker::set_value(const SYSTEMTIME &st) const {
+	DateTime_SetSystemtime(hwnd(), GDT_VALID, &st);
+	return *this;
+}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -258,7 +301,7 @@ const ListView::Column& ListView::Column::set_width_to_fill() const {
 	return set_width(rc.right - cxUsed);
 }
 
-////////////////////////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------
 
 ListView::Column ListView::ColumnCollection::add(WStrPtr text, UINT width) const {
 	LVCOLUMNW lvc{
@@ -275,7 +318,7 @@ size_t ListView::ColumnCollection::count() const {
 	return Header_GetItemCount(hHeader);
 }
 
-////////////////////////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------
 
 LPARAM ListView::Item::data() const {
 	LVITEMW lvi{
@@ -377,7 +420,7 @@ bool ListView::Item::is_visible() const {
 	return ListView_IsItemVisible(_pOwner->hwnd(), _index);
 }
 
-////////////////////////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------
 
 ListView::Item ListView::ItemCollection::add(WStrPtr text,
 	std::initializer_list<WStrPtr> otherColumnsTexts, int iconIndex) const
@@ -478,7 +521,7 @@ std::optional<ListView::Item> ListView::ItemCollection::topmost_visible() const 
 	return idx == -1 ? std::nullopt : std::make_optional(Item{*_pOwner, idx});
 }
 
-////////////////////////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------
 
 ListView::ListView(WindowParent &owner, WORD ctrlId)
 	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}

@@ -25,6 +25,7 @@ namespace wl {
 	class Button;
 	class CheckBox;
 	class ComboBox;
+	class DateTimePicker;
 	class ListView;
 }
 
@@ -75,6 +76,29 @@ namespace wl::events {
 	private:
 		_wl_internal::NativeCtrlEvents _ctrlEvents;
 		friend wl::ComboBox;
+	};
+
+	/** @brief Native `DateTimePicker` control events. */
+	class DateTimePickerEvents final {
+	private:
+		DateTimePickerEvents(DateTimePickerEvents&&) = delete; // non-copyable, non-movable
+
+		DateTimePickerEvents(wl::WindowParent &owner, WORD ctrlId) : _ctrlEvents{owner, ctrlId} { }
+
+	public:
+		void dtn_close_up(std::function<void()> &&cb);
+		void dtn_date_time_change(std::function<void(NMDATETIMECHANGE&)> &&cb);
+		void dtn_drop_down(std::function<void()> &&cb);
+		void dtn_format(std::function<void(NMDATETIMEFORMATW&)> &&cb);
+		void dtn_format_query(std::function<void(NMDATETIMEFORMATQUERYW&)> &&cb);
+		void dtn_user_string(std::function<void(NMDATETIMESTRINGW&)> &&cb);
+		void dtn_wm_key_down(std::function<void(NMDATETIMEWMKEYDOWNW&)> &&cb);
+		void nm_kill_focus(std::function<void()> &&cb);
+		void nm_set_focus(std::function<void()> &&cb);
+
+	private:
+		_wl_internal::NativeCtrlEvents _ctrlEvents;
+		friend wl::DateTimePicker;
 	};
 
 	/** @brief Native `ListView` events. */

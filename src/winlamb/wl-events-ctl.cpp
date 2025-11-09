@@ -8,6 +8,14 @@ using namespace _wl_internal;
 	void EVENT_CLS::method(std::function<void()> &&cb) { \
 		_ctrlEvents._parentWndBase._userEvents.wm_command(_ctrlEvents._ctrlId, cmd, std::move(cb)); \
 	}
+#define EVENT_NFY(method, nm) \
+	void EVENT_CLS::method(std::function<void()> &&cb) { \
+		_ctrlEvents._parentWndBase._userEvents.wm_notify(_ctrlEvents._ctrlId, nm, \
+			[this, cb = std::move(cb)](wm::Notify) -> LRESULT { \
+				cb(); \
+				return _ctrlEvents._parentWndBase._isDlg ? TRUE : 0; \
+			}); \
+	}
 #define EVENT_NFY_ARG(method, nm, argty) \
 	void EVENT_CLS::method(std::function<void(argty&)> &&cb) { \
 		_ctrlEvents._parentWndBase._userEvents.wm_notify(_ctrlEvents._ctrlId, nm, \
@@ -56,6 +64,20 @@ EVENT_CMD(cbn_sel_change, CBN_SELCHANGE)
 EVENT_CMD(cbn_sel_end_cancel, CBN_SELENDCANCEL)
 EVENT_CMD(cbn_sel_end_ok, CBN_SELENDOK)
 EVENT_CMD(cbn_set_focus, CBN_SETFOCUS)
+
+////////////////////////////////////////////////////////////////////////////////
+
+#undef EVENT_CLS
+#define EVENT_CLS DateTimePickerEvents
+EVENT_NFY(dtn_close_up, DTN_CLOSEUP)
+EVENT_NFY_ARG(dtn_date_time_change, DTN_DATETIMECHANGE, NMDATETIMECHANGE)
+EVENT_NFY(dtn_drop_down, DTN_DROPDOWN)
+EVENT_NFY_ARG(dtn_format, DTN_FORMATW, NMDATETIMEFORMATW)
+EVENT_NFY_ARG(dtn_format_query, DTN_FORMATQUERYW, NMDATETIMEFORMATQUERYW)
+EVENT_NFY_ARG(dtn_user_string, DTN_USERSTRINGW, NMDATETIMESTRINGW)
+EVENT_NFY_ARG(dtn_wm_key_down, DTN_WMKEYDOWNW, NMDATETIMEWMKEYDOWNW)
+EVENT_NFY(nm_kill_focus, NM_KILLFOCUS)
+EVENT_NFY(nm_set_focus, NM_SETFOCUS)
 
 ////////////////////////////////////////////////////////////////////////////////
 
