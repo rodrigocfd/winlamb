@@ -1,12 +1,21 @@
 #include <system_error>
 #include "wnd-controls.h"
+#include "runnable.h"
 using namespace wl;
 using namespace _wl_internal;
+
+constexpr bool operator==(const POINT a, const POINT b) { return a.x == b.x && a.y == b.y; }
+constexpr bool operator==(const SIZE a, const SIZE b) { return a.cx == b.cx && a.cy == b.cy; }
+
+////////////////////////////////////////////////////////////////////////////////
 
 Button::Button(WindowParent &owner, WORD ctrlId)
 	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
 {
 	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
+		if (_opts.size == opts::ButtonOpts{}.size)
+			_opts.size = dpi::sz(_opts.size); // special case: default size
+
 		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, L"BUTTON", _opts.text,
 			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, _opts.size);
 		apply_ui_font(hwnd());
@@ -127,6 +136,9 @@ ComboBox::ComboBox(WindowParent &owner, WORD ctrlId)
 	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
 {
 	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
+		if (_opts.width == opts::ComboBoxOpts{}.width)
+			_opts.width = dpi::x(_opts.width); // special case: default width
+
 		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, L"COMBOBOX", nullptr,
 			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, {.cx = _opts.width});
 		apply_ui_font(hwnd());
@@ -152,6 +164,9 @@ DateTimePicker::DateTimePicker(WindowParent &owner, WORD ctrlId)
 	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
 {
 	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
+		if (_opts.size == opts::DateTimePickerOpts{}.size)
+			_opts.size = dpi::sz(_opts.size); // special case: default size
+
 		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, DATETIMEPICK_CLASSW, nullptr,
 			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, _opts.size);
 		apply_ui_font(hwnd());
@@ -178,6 +193,36 @@ SYSTEMTIME DateTimePicker::value() const {
 
 const DateTimePicker& DateTimePicker::set_value(const SYSTEMTIME &st) const {
 	DateTime_SetSystemtime(hwnd(), GDT_VALID, &st);
+	return *this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+Edit::Edit(WindowParent &owner, WORD ctrlId)
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
+		if (_opts.size == opts::EditOpts{}.size)
+			_opts.size = dpi::sz(_opts.size); // special case: default size
+
+		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, L"EDIT", _opts.text,
+			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, _opts.size);
+		apply_ui_font(hwnd());
+		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
+	});
+}
+
+Edit::Edit(WindowParent &owner, WORD ctrlId, Lay layout)
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
+		_ctrl.assign_dlg(ctrl_id());
+		_ctrl._parentWndBase._layout.add(hwnd(), layout);
+	});
+}
+
+const Edit& Edit::set_text(WStrPtr text) const {
+	set_wnd_text(hwnd(), text);
 	return *this;
 }
 
@@ -320,25 +365,6 @@ size_t ListView::ColumnCollection::count() const {
 
 //------------------------------------------------------------------------------
 
-LPARAM ListView::Item::data() const {
-	LVITEMW lvi{
-		.mask = LVIF_PARAM,
-		.iItem = _index,
-	};
-	ListView_GetItem(_pOwner->hwnd(), &lvi);
-	return lvi.lParam;
-}
-
-const ListView::Item& ListView::Item::set_data(LPARAM data) const {
-	LVITEMW lvi{
-		.mask = LVIF_PARAM,
-		.iItem = _index,
-		.lParam = data,
-	};
-	ListView_SetItem(_pOwner->hwnd(), &lvi);
-	return *this;
-}
-
 bool ListView::Item::is_focused() const {
 	return ListView_GetItemState(_pOwner->hwnd(), _index, LVIS_FOCUSED) & LVIS_FOCUSED;
 }
@@ -418,6 +444,25 @@ UINT ListView::Item::unique_id() const {
 
 bool ListView::Item::is_visible() const {
 	return ListView_IsItemVisible(_pOwner->hwnd(), _index);
+}
+
+LPARAM ListView::Item::raw_data() const {
+	LVITEMW lvi{
+		.mask = LVIF_PARAM,
+		.iItem = _index,
+	};
+	ListView_GetItem(_pOwner->hwnd(), &lvi);
+	return lvi.lParam;
+}
+
+const ListView::Item& ListView::Item::set_raw_data(LPARAM data) const {
+	LVITEMW lvi{
+		.mask = LVIF_PARAM,
+		.iItem = _index,
+		.lParam = data,
+	};
+	ListView_SetItem(_pOwner->hwnd(), &lvi);
+	return *this;
 }
 
 //------------------------------------------------------------------------------
@@ -663,4 +708,41 @@ void ListView::show_context_menu(bool followCursor, bool hasCtrl, bool hasShift)
 		throw std::runtime_error("TrackPopupMenu failed to load ListView context submenu.");
 	#endif
 	PostMessageW(hParent, WM_NULL, 0, 0); // necessary according to TrackPopupMenu docs
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+Static::Static(WindowParent &owner, WORD ctrlId)
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
+		if (!_opts.size.cx && !_opts.size.cy)
+			_opts.size = calc_text_bound_box(str::remove_accel_ampersands(_opts.text));
+
+		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, L"STATIC", _opts.text,
+			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, _opts.size);
+		apply_ui_font(hwnd());
+		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
+	});
+}
+
+Static::Static(WindowParent &owner, WORD ctrlId, Lay layout)
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
+		_ctrl.assign_dlg(ctrl_id());
+		_ctrl._parentWndBase._layout.add(hwnd(), layout);
+	});
+}
+
+const Static& Static::set_text(WStrPtr text) const {
+	set_wnd_text(hwnd(), text);
+	return *this;
+}
+
+const Static& Static::set_text_resize(WStrPtr text) const {
+	set_text(text);
+	SIZE bounds = calc_text_bound_box(str::remove_accel_ampersands(text));
+	SetWindowPos(hwnd(), nullptr, 0, 0, bounds.cx, bounds.cy, SWP_NOZORDER | SWP_NOMOVE);
+	return *this;
 }

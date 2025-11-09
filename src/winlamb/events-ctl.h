@@ -26,7 +26,9 @@ namespace wl {
 	class CheckBox;
 	class ComboBox;
 	class DateTimePicker;
+	class Edit;
 	class ListView;
+	class Static;
 }
 
 namespace wl::events {
@@ -66,7 +68,6 @@ namespace wl::events {
 		void cbn_drop_down(std::function<void()> &&cb);
 		void cbn_edit_change(std::function<void()> &&cb);
 		void cbn_edit_update(std::function<void()> &&cb);
-		void cbn_err_space(std::function<void()> &&cb);
 		void cbn_kill_focus(std::function<void()> &&cb);
 		void cbn_sel_change(std::function<void()> &&cb);
 		void cbn_sel_end_cancel(std::function<void()> &&cb);
@@ -99,6 +100,27 @@ namespace wl::events {
 	private:
 		_wl_internal::NativeCtrlEvents _ctrlEvents;
 		friend wl::DateTimePicker;
+	};
+
+	/** @brief Native `Edit` control events. */
+	class EditEvents final {
+	private:
+		EditEvents(EditEvents&&) = delete; // non-copyable, non-movable
+
+		EditEvents(wl::WindowParent &owner, WORD ctrlId) : _ctrlEvents{owner, ctrlId} { }
+
+	public:
+		void en_change(std::function<void()> &&cb);
+		void en_h_scroll(std::function<void()> &&cb);
+		void en_kill_focus(std::function<void()> &&cb);
+		void en_max_text(std::function<void()> &&cb);
+		void en_set_focus(std::function<void()> &&cb);
+		void en_update(std::function<void()> &&cb);
+		void en_v_scroll(std::function<void()> &&cb);
+
+	private:
+		_wl_internal::NativeCtrlEvents _ctrlEvents;
+		friend wl::Edit;
 	};
 
 	/** @brief Native `ListView` events. */
@@ -137,6 +159,24 @@ namespace wl::events {
 	private:
 		_wl_internal::NativeCtrlEvents _ctrlEvents;
 		friend wl::ListView; // ctor
+	};
+
+	/** @brief Native `Static` events. */
+	class StaticEvents final {
+	private:
+		StaticEvents(StaticEvents&&) = delete; // non-copyable, non-movable
+
+		StaticEvents(wl::WindowParent &owner, WORD ctrlId) : _ctrlEvents{owner, ctrlId} { }
+
+	public:
+		void stn_clicked(std::function<void()> &&cb);
+		void stn_dbl_clk(std::function<void()> &&cb);
+		void stn_disable(std::function<void()> &&cb);
+		void stn_enable(std::function<void()> &&cb);
+
+	private:
+		_wl_internal::NativeCtrlEvents _ctrlEvents;
+		friend wl::Static;
 	};
 
 }

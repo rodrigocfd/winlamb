@@ -117,10 +117,15 @@ RawMain::RawMain() {
 
 	dtp.setup().pos = wl::dpi::pt(10, 48);
 
+	txt.setup().pos = wl::dpi::pt(250, 48);
+
 	lv.setup().pos = wl::dpi::pt(10, 80);
 	lv.setup().size = wl::dpi::sz(400, 200);
 	lv.setup().layout = wl::Lay::resize_resize;
 	lv.setup().contextMenuId = MNU_FILES;
+
+	lbl.setup().pos = wl::dpi::pt(320, 10);
+	lbl.setup().text = L"Label";
 
 	wnd.on().wm_create([this](wl::wm::Create p) -> int {
 		lv.cols.add(L"First", wl::dpi::x(200));
@@ -152,6 +157,15 @@ RawMain::RawMain() {
 	dtp.on().dtn_date_time_change([this](NMDATETIMECHANGE &p) -> void {
 		std::wstring title = wl::str::fmt(L"%d-%d-%d", p.st.wYear, p.st.wMonth, p.st.wDay);
 		wnd.set_title(title);
+	});
+
+	txt.on().en_change([this]() -> void {
+		std::wstring s = txt.text();
+		wnd.set_title(s);
+	});
+
+	lbl.on().stn_clicked([this]() -> void {
+		wnd.set_title(L"Label clicked");
 	});
 
 }

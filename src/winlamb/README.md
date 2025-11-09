@@ -84,9 +84,11 @@ Native controls are the Win32 built-in widgets.
 | -- | -- |
 | `wl::Button` | [Button](https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#push-buttons) control. |
 | `wl::CheckBox` | [CheckBox](https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#check-boxes) control. |
-| `wl::ComboBox` | [ComboBox](https://learn.microsoft.com/en-us/windows/win32/controls/about-combo-boxes) control. |
+| `wl::ComboBox` | [ComboBox](https://learn.microsoft.com/en-us/windows/win32/controls/about-combo-boxes) control (dropdown). |
 | `wl::DateTimePicker` | [DateTimePicker](https://learn.microsoft.com/en-us/windows/win32/controls/date-and-time-picker-controls) control. |
+| `wl::Edit` | [Edit](https://learn.microsoft.com/en-us/windows/win32/controls/about-edit-controls) control (textbox). |
 | `wl::ListView` | [ListView](https://learn.microsoft.com/en-us/windows/win32/controls/list-view-controls-overview) control. |
+| `wl::Static` | [Static](https://learn.microsoft.com/en-us/windows/win32/controls/about-static-controls) control (label). |
 
 A few utility entities are included for convenience:
 

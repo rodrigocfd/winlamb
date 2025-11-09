@@ -56,6 +56,14 @@ POINT wl::dpi::pt(int xVal, int yVal) {
 	return {.x = x(xVal), .y = y(yVal)};
 }
 
+POINT wl::dpi::pt(POINT value) {
+	return pt(value.x, value.y);
+}
+
 SIZE wl::dpi::sz(int xVal, int yVal) {
 	return {.cx = x(xVal), .cy = y(yVal)};
+}
+
+SIZE wl::dpi::sz(SIZE value) {
+	return sz(value.cx, value.cy);
 }

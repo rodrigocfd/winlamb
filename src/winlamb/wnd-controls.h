@@ -1,4 +1,5 @@
 #pragma once
+#include <type_traits>
 #include "lib-include-win.h"
 #include "str.h"
 #include "wnd-interfaces.h"
@@ -106,12 +107,12 @@ namespace wl {
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
-		/// Calls [`GetWindowText`] to return the button text.
+		/// Calls [`GetWindowText`] to return the control text.
 		///
 		/// [`GetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowtextw
 		[[nodiscard]] std::wstring text() const { return _wl_internal::wnd_text(hwnd()); }
 
-		/// Calls [`SetWindowText`] to set the button text.
+		/// Calls [`SetWindowText`] to set the control text.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
 		const Button& set_text(WStrPtr text) const;
@@ -234,12 +235,12 @@ namespace wl {
 		/// [`BM_SETCHECK`]: https://learn.microsoft.com/en-us/windows/win32/controls/bm-setcheck
 		const CheckBox& set_state(WORD bstFlag) const;
 
-		/// Calls [`GetWindowText`] to return the check box text.
+		/// Calls [`GetWindowText`] to return the control text.
 		///
 		/// [`GetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowtextw
 		[[nodiscard]] std::wstring text() const { return _wl_internal::wnd_text(hwnd()); }
 
-		/// Calls [`SetWindowText`] to set the button text.
+		/// Calls [`SetWindowText`] to set the control text.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
 		const CheckBox& set_text(WStrPtr text) const;
@@ -255,7 +256,7 @@ namespace wl {
 		opts::CheckBoxOpts _opts{};
 	};
 
-	/// @brief Native [combo box] control.
+	/// @brief Native [combo box] control (dropdown).
 	///
 	/// Example of creating a window with a combo box programmatically, .h and .cpp files:
 	///
@@ -471,9 +472,123 @@ namespace wl {
 		opts::DateTimePickerOpts _opts{};
 	};
 
+	/// @brief Native [edit] control (textbox).
+	///
+	/// Example of creating a window with an edit programmatically, .h and .cpp files:
+	///
+	/// ```cpp
+	/// class MyMain final {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{};
+	///     wl::Edit txt{wnd};
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
+	///
+	/// MyMain::MyMain() {
+	///     wnd.setup().title = L"My main window";
+	///
+	///     txt.setup().pos = wl::dpi::pt(10, 10);
+	///
+	///     txt.on().en_change([this]() -> void {
+	///         std::wstring s = txt.text();
+	///         wnd.set_title(s);
+	///     });
+	/// }
+	/// ```
+	///
+	/// Example of creating a window with an edit from a dialog resource, .h and .cpp files:
+	///
+	/// ```cpp
+	/// class MyMain final {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{DLG_MAIN, ICO_MAIN};
+	///     wl::Edit btn{wnd, TXT_HELLO, wl::Lay::hold_hold};
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
+	///
+	/// MyMain::MyMain() {
+	///     txt.on().en_change([this]() -> void {
+	///         std::wstring s = txt.text();
+	///         wnd.set_title(s);
+	///     });
+	/// }
+	/// ```
+	///
+	/// [edit]: https://learn.microsoft.com/en-us/windows/win32/controls/about-edit-controls
+	class Edit final : public WindowChild {
+	public:
+		/// Constructs the edit programmatically with [`CreateWindowEx`].
+		///
+		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
+		///
+		/// Further options can be defined with the `setup` method.
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		explicit Edit(WindowParent &owner, WORD ctrlId = 0);
+
+		/// Constructs the edit from the dialog resource.
+		///
+		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		Edit(WindowParent &owner, WORD ctrlId, Lay layout);
+
+		/** Returns the wrapped window handle. */
+		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
+
+		/** Returns the control ID. */
+		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
+
+		/** For controls created programmatically, defines additional creation options. */
+		[[nodiscard]] constexpr opts::EditOpts& setup() { return _opts; }
+
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// txt.on().en_change([this]() -> void {
+		///     // ...
+		/// });
+		/// ```
+		[[nodiscard]] events::EditEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+
+		/// [Subclasses] the control allowing message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		///
+		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
+		[[nodiscard]] events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+
+		/// Calls [`GetWindowText`] to return the control text.
+		///
+		/// [`GetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowtextw
+		[[nodiscard]] std::wstring text() const { return _wl_internal::wnd_text(hwnd()); }
+
+		/// Calls [`SetWindowText`] to set the control text.
+		///
+		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
+		const Edit& set_text(WStrPtr text) const;
+
+	private:
+		_wl_internal::NativeCtrlBase _ctrl;
+		events::EditEvents _events;
+		opts::EditOpts _opts{};
+	};
+
 	/// @brief Native [list view] control.
 	///
-	/// Example of creating a window with a `ListView` programmatically, .h and .cpp files:
+	/// Example of creating a window with a list view programmatically, .h and .cpp files:
 	///
 	/// ```cpp
 	/// class MyMain final {
@@ -504,7 +619,7 @@ namespace wl {
 	/// }
 	/// ```
 	///
-	/// Example of creating a window with a `ListView` from a dialog resource, .h and .cpp files:
+	/// Example of creating a window with a list view from a dialog resource, .h and .cpp files:
 	///
 	/// ```cpp
 	/// class MyMain final {
@@ -619,8 +734,25 @@ namespace wl {
 			constexpr Item(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
 
 			[[nodiscard]] constexpr int index() const { return _index; }
-			[[nodiscard]] LPARAM data() const;
-			const Item& set_data(LPARAM data) const;
+
+			template<typename T>
+			[[nodiscard]] T data() const {
+				if constexpr (std::is_pointer_v<T>) {
+					return reinterpret_cast<T>(raw_data());
+				} else {
+					return static_cast<T>(raw_data());
+				}
+			}
+			template<typename T>
+			const Item& set_data(T value) const {
+				if constexpr (std::is_pointer_v<T>) {
+					return set_raw_data(reinterpret_cast<LPARAM>(value));
+				} else {
+					return set_raw_data(static_cast<LPARAM>(value));
+				}
+				return *this;
+			}
+
 			[[nodiscard]] bool is_focused() const;
 			const Item& focus() const;
 			[[nodiscard]] int icon_index() const;
@@ -634,6 +766,8 @@ namespace wl {
 			[[nodiscard]] bool is_visible() const;
 
 		private:
+			[[nodiscard]] LPARAM raw_data() const;
+			const Item& set_raw_data(LPARAM data) const;
 			const ListView *_pOwner;
 			int _index;
 		};
@@ -791,6 +925,103 @@ namespace wl {
 		events::ListViewEvents _events;
 		opts::ListViewOpts _opts{};
 		ImageList _hImg16{}, _hImg32{};
+	};
+
+	/// @brief Native [static] control (label).
+	///
+	/// Example of creating a window with a static programmatically, .h and .cpp files:
+	///
+	/// ```cpp
+	/// class MyMain final {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{};
+	///     wl::Static lbl{wnd};
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
+	///
+	/// MyMain::MyMain() {
+	///     wnd.setup().title = L"My main window";
+	///
+	///     lbl.setup().pos = wl::dpi::pt(10, 10);
+	///     lbl.setup().text = L"Hello";
+	///
+	///     lbl.on().stn_clicked([this]() -> void {
+	///         wnd.set_title(L"Label clicked");
+	///     });
+	/// }
+	/// ```
+	///
+	/// [static]: https://learn.microsoft.com/en-us/windows/win32/controls/about-static-controls
+	class Static final : public WindowChild {
+	public:
+		/// Constructs the static programmatically with [`CreateWindowEx`].
+		///
+		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
+		///
+		/// Further options can be defined with the `setup` method.
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		explicit Static(WindowParent &owner, WORD ctrlId = 0);
+
+		/// Constructs the static from the dialog resource.
+		///
+		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		Static(WindowParent &owner, WORD ctrlId, Lay layout);
+
+		/** Returns the wrapped window handle. */
+		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
+
+		/** Returns the control ID. */
+		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
+
+		/** For controls created programmatically, defines additional creation options. */
+		[[nodiscard]] constexpr opts::StaticOpts& setup() { return _opts; }
+
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// lbl.on().stn_clicked([]() -> void {
+		///     // ...
+		/// });
+		/// ```
+		[[nodiscard]] events::StaticEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+
+		/// [Subclasses] the control allowing message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		///
+		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
+		[[nodiscard]] events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+
+		/// Calls [`GetWindowText`] to return the control text.
+		///
+		/// [`GetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowtextw
+		[[nodiscard]] std::wstring text() const { return _wl_internal::wnd_text(hwnd()); }
+
+		/// Calls [`SetWindowText`] to set the control text.
+		///
+		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
+		const Static& set_text(WStrPtr text) const;
+
+		/// Calls [`SetWindowText`] to set the text, then resizes the control to fit the text exactly.
+		///
+		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
+		const Static& set_text_resize(WStrPtr text) const;
+
+	private:
+		_wl_internal::NativeCtrlBase _ctrl;
+		events::StaticEvents _events;
+		opts::StaticOpts _opts{};
 	};
 
 }

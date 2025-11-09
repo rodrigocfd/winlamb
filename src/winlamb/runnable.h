@@ -29,10 +29,20 @@ namespace wl::dpi {
 	/// [`POINT`]: https://learn.microsoft.com/en-us/windows/win32/api/windef/ns-windef-point
 	POINT pt(int xVal, int yVal);
 
+	/// Returns a [`POINT`] with values adjusted according to the current horizontal and vertical system DPI.
+	///
+	/// [`POINT`]: https://learn.microsoft.com/en-us/windows/win32/api/windef/ns-windef-point
+	POINT pt(POINT value);
+
 	/// Returns a [`SIZE`] with values adjusted according to the current horizontal and vertical system DPI.
 	///
 	/// [`SIZE`]: https://learn.microsoft.com/en-us/windows/win32/api/windef/ns-windef-size
 	SIZE sz(int xVal, int yVal);
+
+	/// Returns a [`SIZE`] with values adjusted according to the current horizontal and vertical system DPI.
+	///
+	/// [`SIZE`]: https://learn.microsoft.com/en-us/windows/win32/api/windef/ns-windef-size
+	SIZE sz(SIZE value);
 
 }
 

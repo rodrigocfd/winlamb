@@ -58,7 +58,6 @@ EVENT_CMD(cbn_dbl_clk, CBN_DBLCLK)
 EVENT_CMD(cbn_drop_down, CBN_DROPDOWN)
 EVENT_CMD(cbn_edit_change, CBN_EDITCHANGE)
 EVENT_CMD(cbn_edit_update, CBN_EDITUPDATE)
-EVENT_CMD(cbn_err_space, CBN_ERRSPACE)
 EVENT_CMD(cbn_kill_focus, CBN_KILLFOCUS)
 EVENT_CMD(cbn_sel_change, CBN_SELCHANGE)
 EVENT_CMD(cbn_sel_end_cancel, CBN_SELENDCANCEL)
@@ -78,6 +77,18 @@ EVENT_NFY_ARG(dtn_user_string, DTN_USERSTRINGW, NMDATETIMESTRINGW)
 EVENT_NFY_ARG(dtn_wm_key_down, DTN_WMKEYDOWNW, NMDATETIMEWMKEYDOWNW)
 EVENT_NFY(nm_kill_focus, NM_KILLFOCUS)
 EVENT_NFY(nm_set_focus, NM_SETFOCUS)
+
+////////////////////////////////////////////////////////////////////////////////
+
+#undef EVENT_CLS
+#define EVENT_CLS EditEvents
+EVENT_CMD(en_change, EN_CHANGE)
+EVENT_CMD(en_h_scroll, EN_HSCROLL)
+EVENT_CMD(en_kill_focus, EN_KILLFOCUS)
+EVENT_CMD(en_max_text, EN_MAXTEXT)
+EVENT_CMD(en_set_focus, EN_SETFOCUS)
+EVENT_CMD(en_update, EN_UPDATE)
+EVENT_CMD(en_v_scroll, EN_VSCROLL)
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -112,3 +123,12 @@ EVENT_NFY_ARG(nm_r_click, NM_RCLICK, NMITEMACTIVATE)
 EVENT_NFY_ARG(nm_r_dbl_clk, NM_RDBLCLK, NMITEMACTIVATE)
 EVENT_NFY_ARG(nm_released_capture, NM_RELEASEDCAPTURE, NMHDR)
 EVENT_NFY_ARG(nm_set_focus, NM_SETFOCUS, NMHDR)
+
+////////////////////////////////////////////////////////////////////////////////
+
+#undef EVENT_CLS
+#define EVENT_CLS StaticEvents
+EVENT_CMD(stn_clicked, STN_CLICKED)
+EVENT_CMD(stn_dbl_clk, STN_DBLCLK)
+EVENT_CMD(stn_disable, STN_DISABLE)
+EVENT_CMD(stn_enable, STN_ENABLE)

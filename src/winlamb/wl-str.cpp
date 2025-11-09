@@ -214,6 +214,11 @@ std::wstring wl::str::parse(std::span<BYTE> src) {
 
 std::wstring wl::str::remove_accel_ampersands(WStrPtr s) {
 	size_t len = s.length();
+	if (!len)
+		return std::wstring{};
+	if (len == 1)
+		return std::wstring(1, s[0]);
+
 	std::wstring ret{};
 	ret.reserve(len);
 	for (size_t i = 0; i < len - 1; ++i) {
