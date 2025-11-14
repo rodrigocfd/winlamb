@@ -129,8 +129,7 @@ DlgModal::DlgModal(const WindowParent &parent, WORD dlgId)
 }
 
 void DlgModal::show() {
-	HINSTANCE hInst = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(_parent.hwnd(), GWLP_HINSTANCE));
-	_dlgBase.dialog_box_param(hInst, _parent.hwnd());
+	_dlgBase.dialog_box_param(wnd_hinst(_parent.hwnd()), _parent.hwnd());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -139,8 +138,7 @@ DlgControl::DlgControl(WindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos,
 	: _dlgBase{dlgId}
 {
 	parent.wnd_base()._preEvents.wm_create_or_init_dialog([this, pParent = &parent, ctrlId, pos, layout]() -> void {
-		HINSTANCE hInst = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(pParent->hwnd(), GWLP_HINSTANCE));
-		_dlgBase.create_dialog_param(hInst, pParent->hwnd());
+		_dlgBase.create_dialog_param(wnd_hinst(pParent->hwnd()), pParent->hwnd());
 		SetWindowLongPtrW(_dlgBase._wndBase._hWnd, GWLP_ID, valid_ctrl_id(ctrlId)); // give the control its ID
 		SetWindowPos(_dlgBase._wndBase._hWnd, nullptr, pos.x, pos.y, 0, 0, SWP_NOZORDER | SWP_NOMOVE);
 		pParent->wnd_base()._layout.add(_dlgBase._wndBase._hWnd, layout);

@@ -83,7 +83,7 @@ namespace wl {
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
 
 		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::ButtonOpts& setup() { return _opts; }
+		[[nodiscard]] constexpr opts::ButtonOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -96,7 +96,7 @@ namespace wl {
 		///     // ...
 		/// });
 		/// ```
-		[[nodiscard]] events::ButtonEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+		[[nodiscard]] constexpr events::ButtonEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
 
 		/// [Subclasses] the control allowing message events to be added.
 		///
@@ -105,7 +105,7 @@ namespace wl {
 		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
-		[[nodiscard]] events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
 		/// Calls [`GetWindowText`] to return the control text.
 		///
@@ -181,7 +181,7 @@ namespace wl {
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
 
 		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::CheckBoxOpts& setup() { return _opts; }
+		[[nodiscard]] constexpr opts::CheckBoxOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -194,7 +194,7 @@ namespace wl {
 		///     // ...
 		/// });
 		/// ```
-		[[nodiscard]] events::ButtonEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+		[[nodiscard]] constexpr events::ButtonEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
 
 		/// [Subclasses] the control allowing message events to be added.
 		///
@@ -203,7 +203,7 @@ namespace wl {
 		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
-		[[nodiscard]] events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
 		/// Sends [`BM_GETCHECK`] and returns true if current state flag is `BST_CHECKED`.
 		///
@@ -354,7 +354,7 @@ namespace wl {
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
 
 		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::ComboBoxOpts& setup() { return _opts; }
+		[[nodiscard]] constexpr opts::ComboBoxOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -367,7 +367,7 @@ namespace wl {
 		///     // ...
 		/// });
 		/// ```
-		[[nodiscard]] events::ComboBoxEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+		[[nodiscard]] constexpr events::ComboBoxEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
 
 		/// [Subclasses] the control allowing message events to be added.
 		///
@@ -376,7 +376,7 @@ namespace wl {
 		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
-		[[nodiscard]] events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
@@ -436,7 +436,7 @@ namespace wl {
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
 
 		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::DateTimePickerOpts& setup() { return _opts; }
+		[[nodiscard]] constexpr opts::DateTimePickerOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -449,7 +449,7 @@ namespace wl {
 		///     // ...
 		/// });
 		/// ```
-		[[nodiscard]] events::DateTimePickerEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+		[[nodiscard]] constexpr events::DateTimePickerEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
 
 		/// [Subclasses] the control allowing message events to be added.
 		///
@@ -458,7 +458,7 @@ namespace wl {
 		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
-		[[nodiscard]] events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
 		/** Returns the current date and time value. */
 		[[nodiscard]] SYSTEMTIME value() const;
@@ -546,7 +546,7 @@ namespace wl {
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
 
 		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::EditOpts& setup() { return _opts; }
+		[[nodiscard]] constexpr opts::EditOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -559,7 +559,7 @@ namespace wl {
 		///     // ...
 		/// });
 		/// ```
-		[[nodiscard]] events::EditEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+		[[nodiscard]] constexpr events::EditEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
 
 		/// [Subclasses] the control allowing message events to be added.
 		///
@@ -568,7 +568,7 @@ namespace wl {
 		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
-		[[nodiscard]] events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
 		/// Calls [`GetWindowText`] to return the control text.
 		///
@@ -648,7 +648,7 @@ namespace wl {
 	/// [list view]: https://learn.microsoft.com/en-us/windows/win32/controls/list-view-controls-overview
 	class ListView final : public WindowChild {
 	public:
-		/** @brief A single column of the ListView. */
+		/** @brief A single column of the `ListView`. */
 		class Column final {
 		public:
 			constexpr Column(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
@@ -728,7 +728,7 @@ namespace wl {
 			friend ListView;
 		};
 
-		/** @brief A single item of the ListView. */
+		/** @brief A single item of the `ListView`. */
 		class Item final {
 		public:
 			constexpr Item(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
@@ -876,7 +876,7 @@ namespace wl {
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
 
 		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::ListViewOpts& setup() { return _opts; }
+		[[nodiscard]] constexpr opts::ListViewOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -889,7 +889,7 @@ namespace wl {
 		///     // ...
 		/// });
 		/// ```
-		[[nodiscard]] events::ListViewEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+		[[nodiscard]] constexpr events::ListViewEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
 
 		/// [Subclasses] the control allowing message events to be added.
 		///
@@ -898,7 +898,7 @@ namespace wl {
 		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
-		[[nodiscard]] events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
 		/// Sets one or more [extended styles].
 		///
@@ -979,7 +979,7 @@ namespace wl {
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
 
 		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::StaticOpts& setup() { return _opts; }
+		[[nodiscard]] constexpr opts::StaticOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -992,7 +992,7 @@ namespace wl {
 		///     // ...
 		/// });
 		/// ```
-		[[nodiscard]] events::StaticEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+		[[nodiscard]] constexpr events::StaticEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
 
 		/// [Subclasses] the control allowing message events to be added.
 		///
@@ -1001,7 +1001,7 @@ namespace wl {
 		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
-		[[nodiscard]] events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
 		/// Calls [`GetWindowText`] to return the control text.
 		///
@@ -1024,4 +1024,128 @@ namespace wl {
 		opts::StaticOpts _opts{};
 	};
 
+	/// @brief Native [status bar] control.
+	///
+	/// Example of creating a window with a status bar, .h and .cpp files:
+	///
+	/// ```cpp
+	/// class MyMain final {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{};
+	///     wl::StatusBar sb{wnd};
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
+	///
+	/// MyMain::MyMain() {
+	///     wnd.setup().title = L"My main window";
+	///
+	///     sb.setup().part_resizable(1, L"First");
+	///     sb.setup().part_fixed(wl::dpi::x(200), L"Second");
+	///
+	///     sb.on().nm_click([this](NMMOUSE& p) -> bool {
+	///         MessageBoxW(wnd.hwnd(), L"Status bar clicked", L"Click", MB_ICONINFORMATION);
+	///         return true;
+	///     });
+	/// }
+	/// ```
+	///
+	/// [status bar]: https://learn.microsoft.com/en-us/windows/win32/controls/status-bars
+	class StatusBar final : public WindowChild {
+	public:
+		/** @brief A single part of the `StatusBar`. */
+		class Part final {
+		public:
+			constexpr Part(const StatusBar &owner, int index) : _pOwner{&owner}, _index{index} { }
+
+			/** Returns the index of the part. */
+			[[nodiscard]] constexpr int index() const { return _index; }
+
+			/** Returns the text of the part. */
+			[[nodiscard]] std::wstring text() const;
+
+			/** Sets the text of the part. */
+			const Part& set_text(WStrPtr text) const;
+
+		private:
+			const StatusBar *_pOwner;
+			int _index;
+		};
+
+		/** @brief Operations over the parts. */
+		class PartCollection final {
+		private:
+			PartCollection(PartCollection&&) = delete; // no-copyable, non-movable
+
+			constexpr explicit PartCollection(const StatusBar *pOwner) : _pOwner{pOwner} { }
+
+		public:
+			/** Returns the part at the given index. */
+			[[nodiscard]] constexpr Part operator[](int index) const { return Part{*_pOwner, index}; }
+
+		private:
+			const StatusBar *_pOwner;
+			friend StatusBar;
+		};
+
+		/// Constructs the status bar programmatically with [`CreateWindowEx`].
+		///
+		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		explicit StatusBar(WindowParent &owner, WORD ctrlId = 0);
+
+		/** Part methods. */
+		PartCollection parts{this};
+
+		/** Returns the wrapped window handle. */
+		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
+
+		/** Returns the control ID. */
+		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
+
+		/** Defines additional creation options. */
+		[[nodiscard]] constexpr opts::StatusBarOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
+
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// sb.on().nm_click([](NMMOUSE &p) -> booo {
+		///     // ...
+		///     return true;
+		/// });
+		/// ```
+		[[nodiscard]] constexpr events::StatusBarEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+
+		/// [Subclasses] the control allowing message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		///
+		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
+		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+
+	private:
+		void resize_to_fit_parent(wm::Size p);
+
+		_wl_internal::NativeCtrlBase _ctrl;
+		events::StatusBarEvents _events;
+		opts::StatusBarOpts _opts{};
+
+		struct PartData final {
+			int sizePixels = 0; // one used, the other zero
+			int resizeWeight = 0;
+			[[nodiscard]] constexpr bool is_fixed_width() const { return resizeWeight == 0; }
+		};
+		std::vector<PartData> _partsData{};
+		std::vector<int> _rightEdges{}; // buffer to speed up resize calls
+	};
 }

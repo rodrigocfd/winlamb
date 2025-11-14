@@ -29,6 +29,7 @@ namespace wl {
 	class Edit;
 	class ListView;
 	class Static;
+	class StatusBar;
 }
 
 namespace wl::events {
@@ -177,6 +178,25 @@ namespace wl::events {
 	private:
 		_wl_internal::NativeCtrlEvents _ctrlEvents;
 		friend wl::Static;
+	};
+
+	/** @brief Native `StatusBar` events. */
+	class StatusBarEvents final {
+	private:
+		StatusBarEvents(StatusBarEvents&&) = delete; // non-copyable, non-movable
+
+		StatusBarEvents(wl::WindowParent &owner, WORD ctrlId) : _ctrlEvents{owner, ctrlId} { }
+
+	public:
+		void nm_click(std::function<bool(NMMOUSE&)> &&cb);
+		void nm_dbl_clk(std::function<bool(NMMOUSE&)> &&cb);
+		void nm_r_click(std::function<bool(NMMOUSE&)> &&cb);
+		void nm_r_dbl_clk(std::function<bool(NMMOUSE&)> &&cb);
+		void sbn_simple_mode_change(std::function<void(NMMOUSE&)> &&cb);
+
+	private:
+		_wl_internal::NativeCtrlEvents _ctrlEvents;
+		friend wl::StatusBar;
 	};
 
 }

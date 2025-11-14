@@ -127,8 +127,8 @@ void NativeCtrlBase::create_wnd(WORD ctrlId, DWORD exStyle, LPCWSTR className,
 	#endif
 
 	_hWnd = CreateWindowExW(exStyle, className, title, style,
-		pos.x, pos.y, size.cx, size.cy, _parentWndBase._hWnd, reinterpret_cast<HMENU>(valid_ctrl_id(ctrlId)),
-		reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(_parentWndBase._hWnd, GWLP_HINSTANCE)), nullptr);
+		pos.x, pos.y, size.cx, size.cy, _parentWndBase._hWnd,
+		reinterpret_cast<HMENU>(valid_ctrl_id(ctrlId)), wnd_hinst(_parentWndBase._hWnd), nullptr);
 	#ifdef _DEBUG
 	if (!_hWnd)
 		throw std::system_error(GetLastError(), std::system_category(), "NativeCtrlBase: CreateWindowEx failed");

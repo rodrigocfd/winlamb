@@ -132,3 +132,13 @@ EVENT_CMD(stn_clicked, STN_CLICKED)
 EVENT_CMD(stn_dbl_clk, STN_DBLCLK)
 EVENT_CMD(stn_disable, STN_DISABLE)
 EVENT_CMD(stn_enable, STN_ENABLE)
+
+////////////////////////////////////////////////////////////////////////////////
+
+#undef EVENT_CLS
+#define EVENT_CLS StatusBarEvents
+EVENT_NFY_ARG_RET_BOOL(nm_click, NM_CLICK, NMMOUSE)
+EVENT_NFY_ARG_RET_BOOL(nm_dbl_clk, NM_DBLCLK, NMMOUSE)
+EVENT_NFY_ARG_RET_BOOL(nm_r_click, NM_RCLICK, NMMOUSE)
+EVENT_NFY_ARG_RET_BOOL(nm_r_dbl_clk, NM_RDBLCLK, NMMOUSE)
+EVENT_NFY_ARG(sbn_simple_mode_change, SBN_SIMPLEMODECHANGE, NMMOUSE)

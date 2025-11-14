@@ -103,7 +103,7 @@ void Contro::on_paint() {
 RawMain::RawMain() {
 	wnd.setup().iconId = ICO_MAIN;
 	wnd.setup().title = L"My main window";
-	wnd.setup().size = wl::dpi::sz(550, 300);
+	wnd.setup().size = wl::dpi::sz(550, 320);
 	wnd.setup().style |= WS_SIZEBOX | WS_MAXIMIZEBOX;
 
 	btn.setup().pos = wl::dpi::pt(10, 10);
@@ -126,6 +126,9 @@ RawMain::RawMain() {
 
 	lbl.setup().pos = wl::dpi::pt(320, 10);
 	lbl.setup().text = L"Label";
+
+	sb.setup().part_resizable(1, L"Rezee");
+	sb.setup().part_fixed(wl::dpi::x(200), L"Second");
 
 	wnd.on().wm_create([this](wl::wm::Create p) -> int {
 		lv.cols.add(L"First", wl::dpi::x(200));
@@ -166,6 +169,11 @@ RawMain::RawMain() {
 
 	lbl.on().stn_clicked([this]() -> void {
 		wnd.set_title(L"Label clicked");
+	});
+
+	sb.on().nm_click([this](NMMOUSE& p) -> bool {
+		MessageBoxW(wnd.hwnd(), L"Status bar clicked", L"Click", MB_ICONINFORMATION);
+		return true;
 	});
 
 }

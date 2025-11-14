@@ -2,6 +2,11 @@
 #include "lib-include-win.h"
 #include <CommCtrl.h>
 #include "layout.h"
+#include "str.h"
+
+namespace wl {
+	class StatusBar;
+}
 
 /** @brief Options to create window and controls programmatically. */
 namespace wl::opts {
@@ -571,6 +576,40 @@ namespace wl::opts {
 		WORD ctrlId = 0;
 		/** Horizontal and vertical behavior of the control when the parent window is resized. */
 		Lay layout = Lay::hold_hold;
+	};
+
+	/** Options to create a `StatusBar` programmatically. */
+	struct StatusBarOpts final {
+		/// Adds a fixed part to the `StatusBar`. When the parent window is resized, this part will keep its width.
+		///
+		/// Prefer using a DPI-aware width:
+		///
+		/// ```cpp
+		/// sb.setup().part_fixed(wl::dpi::x(200), L"Foo");
+		/// ```
+		void part_fixed(UINT width, WStrPtr text = L"") { _parts.emplace_back(width, 0, text.operator LPCWSTR()); }
+
+		/// Adds a resizable part to the `StatusBar`. When the parent window is resized, this part will resize as well.
+		///
+		/// How `resizeWeight` works:
+		/// - Suppose you have 3 parts, respectively with weights of 1, 1 and 2.
+		/// - If available client area is 400px, respective part widths will be 100, 100 and 200px.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// sb.setup().part_fixed(1, L"Foo");
+		/// ```
+		void part_resizable(UINT resizeWeight, WStrPtr text = L"") { _parts.emplace_back(0, resizeWeight, text.operator LPCWSTR()); }
+
+	private:
+		struct Part final {
+			int sizePixels = 0; // one used, the other zero
+			int resizeWeight = 0;
+			std::wstring text{};
+		};
+		std::vector<Part> _parts{};
+		friend wl::StatusBar;
 	};
 
 }

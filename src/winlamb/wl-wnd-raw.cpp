@@ -193,7 +193,7 @@ RawModal::RawModal(const WindowParent &parent)
 }
 
 void RawModal::show() {
-	HINSTANCE hInst = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(_parent.hwnd(), GWLP_HINSTANCE));
+	HINSTANCE hInst = wnd_hinst(_parent.hwnd());
 	ATOM atom = _rawBase.register_class(hInst, _opts.className, _opts.classStyle,
 		_opts.iconId, _opts.hbrBackground, _opts.hCursor);
 
@@ -228,7 +228,7 @@ void RawModal::show() {
 
 RawControl::RawControl(WindowParent &parent) {
 	parent.wnd_base()._preEvents.wm_create_or_init_dialog([this, pParent = &parent]() -> void {
-		HINSTANCE hInst = reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(pParent->hwnd(), GWLP_HINSTANCE));
+		HINSTANCE hInst = wnd_hinst(pParent->hwnd());
 		ATOM atom = _rawBase.register_class(hInst, _opts.className, _opts.classStyle,
 			0, _opts.hbrBackground, _opts.hCursor);
 		_rawBase.create_window(_opts.windowExStyle, atom, nullptr, _opts.windowStyle,

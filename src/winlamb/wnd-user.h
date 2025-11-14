@@ -119,10 +119,15 @@ namespace wl {
 		/** Returns the window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return wnd_base()._hWnd; };
 
+		/// For a window created programmatically, defines additional creation options.
+		///
+		/// If a dialog window, throws an exception.
+		[[nodiscard]] constexpr opts::MainOpts& setup() { return _wl_internal::valid_opts(hwnd(), _rawMain.value()._opts); }
+
 		/// Allows message events to be added.
 		///
 		/// The events must be added before the window is created on the screen.
-		[[nodiscard]] events::WindowEvents& on() override { return wnd_base()._userEvents; };
+		[[nodiscard]] constexpr events::WindowEvents& on() override { return _wl_internal::valid_event(hwnd(), wnd_base()._userEvents); };
 
 		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in the UI thread.
 		/// After `cb` finishes, returns back to the calling thread.
@@ -151,11 +156,6 @@ namespace wl {
 		///
 		/// [`SendMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessagew
 		void ui_thread(std::function<void()> &&cb) const override { wnd_base().ui_thread(std::move(cb)); }
-
-		/// For a window created programmatically, defines additional creation options.
-		///
-		/// If a dialog window, throws an exception.
-		[[nodiscard]] constexpr opts::MainOpts& setup() { return _rawMain.value()._opts; }
 
 		/// Calls [`GetWindowText`] to retrieve the window title.
 		///
@@ -220,10 +220,15 @@ namespace wl {
 		/** Returns the window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return wnd_base()._hWnd; };
 
+		/// For a window created programmatically, defines additional creation options.
+		///
+		/// If a dialog window, throws an exception.
+		[[nodiscard]] constexpr opts::ModalOpts& setup() { return _wl_internal::valid_opts(hwnd(), _rawModal.value()._opts); }
+
 		/// Allows message events to be added.
 		///
 		/// The events must be added before the window is created on the screen.
-		[[nodiscard]] events::WindowEvents& on() override { return wnd_base()._userEvents; };
+		[[nodiscard]] constexpr events::WindowEvents& on() override { return _wl_internal::valid_event(hwnd(), wnd_base()._userEvents); };
 
 		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in the UI thread.
 		/// After `cb` finishes, returns back to the calling thread.
@@ -252,11 +257,6 @@ namespace wl {
 		///
 		/// [`SendMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessagew
 		void ui_thread(std::function<void()> &&cb) const override { wnd_base().ui_thread(std::move(cb)); }
-
-		/// For a window created programmatically, defines additional creation options.
-		///
-		/// If a dialog window, throws an exception.
-		[[nodiscard]] constexpr opts::ModalOpts& setup() { return _rawModal.value()._opts; }
 
 		/// Calls [`GetWindowText`] to retrieve the window title.
 		///
@@ -324,10 +324,18 @@ namespace wl {
 		/** Returns the window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return wnd_base()._hWnd; };
 
+		/** Returns the control ID. */
+		[[nodiscard]] WORD ctrl_id() const override;
+
+		/// For a control created programmatically, defines additional creation options.
+		///
+		/// If a dialog control, throws an exception.
+		[[nodiscard]] constexpr opts::ControlOpts& setup() { return _wl_internal::valid_opts(hwnd(), _rawControl.value()._opts); }
+
 		/// Allows message events to be added.
 		///
 		/// The events must be added before the window is created on the screen.
-		[[nodiscard]] events::WindowEvents& on() override { return wnd_base()._userEvents; };
+		[[nodiscard]] constexpr events::WindowEvents& on() override { return _wl_internal::valid_event(hwnd(), wnd_base()._userEvents); };
 
 		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in the UI thread.
 		/// After `cb` finishes, returns back to the calling thread.
@@ -356,14 +364,6 @@ namespace wl {
 		///
 		/// [`SendMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessagew
 		void ui_thread(std::function<void()> &&cb) const override { wnd_base().ui_thread(std::move(cb)); }
-
-		/** Returns the control ID. */
-		[[nodiscard]] WORD ctrl_id() const override;
-
-		/// For a control created programmatically, defines additional creation options.
-		///
-		/// If a dialog control, throws an exception.
-		[[nodiscard]] constexpr opts::ControlOpts& setup() { return _rawControl.value()._opts; }
 
 	private:
 		[[nodiscard]] constexpr const _wl_internal::WndBase& wnd_base() const override { return get_wnd_base(_rawControl, _dlgControl); }

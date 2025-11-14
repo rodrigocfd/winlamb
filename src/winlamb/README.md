@@ -89,6 +89,7 @@ Native controls are the Win32 built-in widgets.
 | `wl::Edit` | [Edit](https://learn.microsoft.com/en-us/windows/win32/controls/about-edit-controls) control (textbox). |
 | `wl::ListView` | [ListView](https://learn.microsoft.com/en-us/windows/win32/controls/list-view-controls-overview) control. |
 | `wl::Static` | [Static](https://learn.microsoft.com/en-us/windows/win32/controls/about-static-controls) control (label). |
+| `wl::StatusBar` | [StatusBar](https://learn.microsoft.com/en-us/windows/win32/controls/status-bars) control. |
 
 A few utility entities are included for convenience:
 

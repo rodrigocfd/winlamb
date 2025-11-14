@@ -24,6 +24,10 @@ void _wl_internal::delete_ui_font() {
 	}
 }
 
+HINSTANCE _wl_internal::wnd_hinst(HWND hWnd) {
+	return reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hWnd, GWLP_HINSTANCE));
+}
+
 WORD _wl_internal::valid_ctrl_id(WORD ctrlId) {
 	static WORD globalCtrId = 0xdfff; // https://stackoverflow.com/a/18192766/6923555
 	return ctrlId ? ctrlId : globalCtrId--;
