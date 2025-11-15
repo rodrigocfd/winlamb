@@ -375,6 +375,14 @@ const ListView::Item& ListView::Item::focus() const {
 }
 
 int ListView::Item::icon_index() const {
+	#ifdef _DEBUG
+	if (!_pOwner->_imgList16.himagelist()
+			|| !_pOwner->_imgList16.count()
+			|| !_pOwner->_imgList32.himagelist()
+			|| !_pOwner->_imgList32.count())
+		throw std::logic_error("No icons have been added to any image list.");
+	#endif
+
 	LVITEMW lvi{
 		.mask = LVIF_IMAGE,
 		.iItem = _index,
@@ -384,6 +392,14 @@ int ListView::Item::icon_index() const {
 }
 
 const ListView::Item& ListView::Item::set_icon_index(int iconIndex) const {
+	#ifdef _DEBUG
+	if (!_pOwner->_imgList16.himagelist()
+			|| !_pOwner->_imgList16.count()
+			|| !_pOwner->_imgList32.himagelist()
+			|| !_pOwner->_imgList32.count())
+		throw std::logic_error("No icons have been added to any image list.");
+	#endif
+
 	LVITEMW lvi{
 		.mask = LVIF_IMAGE,
 		.iItem = _index,
@@ -600,20 +616,20 @@ const ListView& ListView::set_extended_style(bool doSet, DWORD exStyle) const {
 	return *this;
 }
 
-ImageList& ListView::image_list_16() {
-	if (!_hImg16.himagelist()) { // not created yet?
-		_hImg16.create(16, 16, ILC_COLOR32);
-		ListView_SetImageList(hwnd(), _hImg16.himagelist(), LVSIL_SMALL);
+IconStore& ListView::icons_16() {
+	if (!_imgList16.himagelist()) { // not created yet?
+		_imgList16.create();
+		ListView_SetImageList(hwnd(), _imgList16.himagelist(), LVSIL_SMALL);
 	}
-	return _hImg16;
+	return _imgList16;
 }
 
-ImageList& ListView::image_list_32() {
-	if (!_hImg32.himagelist()) { // not created yet?
-		_hImg32.create(32, 32, ILC_COLOR32);
-		ListView_SetImageList(hwnd(), _hImg32.himagelist(), LVSIL_NORMAL);
+IconStore& ListView::icons_32() {
+	if (!_imgList32.himagelist()) { // not created yet?
+		_imgList32.create();
+		ListView_SetImageList(hwnd(), _imgList32.himagelist(), LVSIL_NORMAL);
 	}
-	return _hImg32;
+	return _imgList32;
 }
 
 void ListView::custom_events() {
@@ -763,6 +779,17 @@ const StatusBar::Part& StatusBar::Part::set_text(WStrPtr text) const {
 	return *this;
 }
 
+const StatusBar::Part& StatusBar::Part::set_icon_index(int iconIndex) const {
+	#ifdef _DEBUG
+	if (!_pOwner->_iconStore16.count())
+		throw std::logic_error("No icons have been added to the icon store.");
+	#endif
+
+	SendMessageW(_pOwner->hwnd(), SB_SETICON, _index,
+		reinterpret_cast<LPARAM>(_pOwner->_iconStore16.get(iconIndex)));
+	return *this;
+}
+
 //------------------------------------------------------------------------------
 
 StatusBar::StatusBar(WindowParent &owner, WORD ctrlId)
@@ -774,17 +801,21 @@ StatusBar::StatusBar(WindowParent &owner, WORD ctrlId)
 		DWORD style = WS_CHILD | WS_VISIBLE | SBARS_TOOLTIPS | (isParentResizable ? SBARS_SIZEGRIP : 0);
 		_ctrl.create_wnd(ctrl_id(), WS_EX_LEFT, STATUSCLASSNAMEW, nullptr, style, {}, {});
 
-		_partsData.reserve(_opts._parts.size());
 		_rightEdges.resize(_opts._parts.size(), 0);
-		for (auto &&part : _opts._parts)
-			_partsData.emplace_back(part.sizePixels, part.resizeWeight);
+		_partsData.reserve(_opts._parts.size());
+		for (auto &&optPart : _opts._parts)
+			_partsData.emplace_back(optPart.sizePixels, optPart.resizeWeight);
 
 		RECT rcParent{};
 		GetClientRect(pOwner->hwnd(), &rcParent);
 		resize_to_fit_parent(wm::Msg{WM_SIZE, SIZE_RESTORED, MAKELPARAM(rcParent.right, 0)}); // will create the parts
 
-		for (UINT i = 0; i < _partsData.size(); ++i)
+		for (UINT i = 0; i < _partsData.size(); ++i) { // add text and icon
 			parts[i].set_text(_opts._parts[i].text);
+			if (_opts._parts[i].iconIndex != -1)
+				parts[i].set_icon_index(_opts._parts[i].iconIndex);
+		}
+		std::vector<opts::StatusBarOpts::Part>{}.swap(_opts._parts);
 	});
 
 	_ctrl._parentWndBase._preEvents.wm(WM_SIZE, [this](wm::Size p) -> void {

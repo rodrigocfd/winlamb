@@ -64,7 +64,7 @@ SIZE _wl_internal::calc_text_bound_box(WStrPtr text) {
 
 	struct Desktop final {
 		~Desktop() {
-			if (hFontPrev) SelectObject(hdcCloned, hFontPrev);
+			if (hFontPrev) SelectObject(hdcCloned, hFontPrev); // make sure resources will be freed
 			if (hdcCloned) DeleteDC(hdcCloned);
 			if (hdcOrig) ReleaseDC(hWnd, hdcOrig);
 		}

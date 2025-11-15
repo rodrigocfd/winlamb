@@ -587,7 +587,16 @@ namespace wl::opts {
 		/// ```cpp
 		/// sb.setup().part_fixed(wl::dpi::x(200), L"Foo");
 		/// ```
-		void part_fixed(UINT width, WStrPtr text = L"") { _parts.emplace_back(width, 0, text.operator LPCWSTR()); }
+		///
+		/// If you want to pass a zero-based `iconIndex`, you must feed the icon first:
+		///
+		/// ```cpp
+		/// sb.icons().add_resource(ICO_FOO);
+		/// sb.setup().part_fixed(wl::dpi::x(200), L"Foo", 0);
+		/// ```
+		void part_fixed(UINT width, WStrPtr text = L"", int iconIndex = -1) {
+			_parts.emplace_back(width, 0, text.operator LPCWSTR(), iconIndex);
+		}
 
 		/// Adds a resizable part to the `StatusBar`. When the parent window is resized, this part will resize as well.
 		///
@@ -600,13 +609,23 @@ namespace wl::opts {
 		/// ```cpp
 		/// sb.setup().part_fixed(1, L"Foo");
 		/// ```
-		void part_resizable(UINT resizeWeight, WStrPtr text = L"") { _parts.emplace_back(0, resizeWeight, text.operator LPCWSTR()); }
+		///
+		/// If you want to pass a zero-based `iconIndex`, you must feed the icon first:
+		///
+		/// ```cpp
+		/// sb.icons().add_resource(ICO_FOO);
+		/// sb.setup().part_fixed(1, L"Foo", 0);
+		/// ```
+		void part_resizable(UINT resizeWeight, WStrPtr text = L"", int iconIndex = -1) {
+			_parts.emplace_back(0, resizeWeight, text.operator LPCWSTR(), iconIndex);
+		}
 
 	private:
 		struct Part final {
 			int sizePixels = 0; // one used, the other zero
 			int resizeWeight = 0;
 			std::wstring text{};
+			int iconIndex = -1;
 		};
 		std::vector<Part> _parts{};
 		friend wl::StatusBar;

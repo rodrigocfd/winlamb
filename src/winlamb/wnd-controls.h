@@ -6,7 +6,7 @@
 #include "wnd-funcs.h"
 #include "wnd-opts.h"
 #include "events-ctl.h"
-#include "image-list.h"
+#include "icon-store.h"
 
 namespace wl {
 
@@ -653,7 +653,7 @@ namespace wl {
 		public:
 			constexpr Column(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
 
-			/** Returns the index of the column. */
+			/** Returns the zero-based index of the column. */
 			[[nodiscard]] constexpr int index() const { return _index; }
 
 			/** Returns the texts of all items under this column. */
@@ -733,8 +733,10 @@ namespace wl {
 		public:
 			constexpr Item(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
 
+			/** Returns the zero-based index of the item. */
 			[[nodiscard]] constexpr int index() const { return _index; }
 
+			/** Returns the data associated with the item. */
 			template<typename T>
 			[[nodiscard]] T data() const {
 				if constexpr (std::is_pointer_v<T>) {
@@ -743,6 +745,8 @@ namespace wl {
 					return static_cast<T>(raw_data());
 				}
 			}
+
+			/** Sets the data associated with the item. */
 			template<typename T>
 			const Item& set_data(T value) const {
 				if constexpr (std::is_pointer_v<T>) {
@@ -753,16 +757,41 @@ namespace wl {
 				return *this;
 			}
 
+			/** Returns true if the item is the currently focused one. Only one item can be focused at a time. */
 			[[nodiscard]] bool is_focused() const;
+
+			/** Sets this item as the focused one. Only one item can be focused at a time. */
 			const Item& focus() const;
+
+			/** Returns the zero-based index of the `ImageList` icon associated to the item. */
 			[[nodiscard]] int icon_index() const;
+
+			/** Sets the zero-based index of the `ImageList` icon associated to the item. */
 			const Item& set_icon_index(int iconIndex) const;
+
+			/** Deletes the item from the list view. */
 			const Item& remove() const;
+
+			/** Returns true if the item is currently selected. */
 			[[nodiscard]] bool is_selected() const;
+
+			/** Selects or deselects the item. */
 			const Item& select(bool doSelect) const;
+
+			/** Retrieves the text under a column for the item. */
 			[[nodiscard]] std::wstring text(UINT columnIndex = 0) const;
+
+			/** Sets the text under a column for the item. */
 			const Item& set_text(WStrPtr text, UINT columnIndex = 0) const;
+
+			/// Calls [`ListView_MapIndexToID`] to retrieve the unique ID of the item.
+			///
+			/// Differently from the item index, this ID is guaranteed to remain the same for the whole lifetime of the list view.
+			///
+			/// [`ListView_MapIndexToID`]: https://learn.microsoft.com/en-us/windows/win32/api/commctrl/nf-commctrl-listview_mapindextoid
 			[[nodiscard]] UINT unique_id() const;
+
+			/** Returns true if the item is currently visible in the list view. */
 			[[nodiscard]] bool is_visible() const;
 
 		private:
@@ -808,6 +837,8 @@ namespace wl {
 			[[nodiscard]] std::optional<Item> focused() const;
 
 			/// Calls [`ListView_MapIDToIndex`] to return the item with the given unique ID.
+			///
+			/// Differently from the item index, this ID is guaranteed to remain the same for the whole lifetime of the list view.
 			///
 			/// [`ListView_MapIDToIndex`]: https://learn.microsoft.com/en-us/windows/win32/api/commctrl/nf-commctrl-listview_mapidtoindex
 			[[nodiscard]] std::optional<Item> get_by_unique_id(UINT uid) const;
@@ -911,11 +942,11 @@ namespace wl {
 		/// [extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/extended-list-view-styles
 		const ListView& set_extended_style(bool doSet, DWORD exStyle) const;
 
-		/** Retrieves the associated 16x16 `ImageList`. It will be automatically created if not yet. */
-		ImageList& image_list_16();
+		/** Retrieves the 16x16 `IconStore`. */
+		IconStore& icons_16();
 
-		/** Retrieves the associated 32x32 `ImageList`. It will be automatically created if not yet. */
-		ImageList& image_list_32();
+		/** Retrieves the 32x32 `IconStore`. */
+		IconStore& icons_32();
 
 	private:
 		void custom_events();
@@ -924,7 +955,7 @@ namespace wl {
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::ListViewEvents _events;
 		opts::ListViewOpts _opts{};
-		ImageList _hImg16{}, _hImg32{};
+		_wl_internal::ImageList _imgList16{{16, 16}}, _imgList32{{32, 32}};
 	};
 
 	/// @brief Native [static] control (label).
@@ -1070,6 +1101,12 @@ namespace wl {
 			/** Sets the text of the part. */
 			const Part& set_text(WStrPtr text) const;
 
+			/** Returns true is the part has fixed width. */
+			[[nodiscard]] constexpr bool is_fixed_width() const { return _pOwner->_partsData[_index].is_fixed_width(); }
+
+			/** Sets the zero-based index of the `ImageList` icon associated to the item. */
+			const Part& set_icon_index(int iconIndex) const;
+
 		private:
 			const StatusBar *_pOwner;
 			int _index;
@@ -1085,6 +1122,9 @@ namespace wl {
 		public:
 			/** Returns the part at the given index. */
 			[[nodiscard]] constexpr Part operator[](int index) const { return Part{*_pOwner, index}; }
+
+			/** Returns the number of parts. */
+			[[nodiscard]] constexpr size_t count() const { return _pOwner->_partsData.size(); }
 
 		private:
 			const StatusBar *_pOwner;
@@ -1133,12 +1173,16 @@ namespace wl {
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
+		/** Retrieves the 16x16 `IconStore`. */
+		constexpr IconStore& icons() { return _iconStore16; }
+
 	private:
 		void resize_to_fit_parent(wm::Size p);
 
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::StatusBarEvents _events;
 		opts::StatusBarOpts _opts{};
+		_wl_internal::HIconStore _iconStore16{{16, 16}};
 
 		struct PartData final {
 			int sizePixels = 0; // one used, the other zero

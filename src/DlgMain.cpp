@@ -18,7 +18,7 @@ DlgMain::DlgMain() {
 
 bool DlgMain::on_init_dialog(wl::wm::InitDialog) {
 	lstFiles.set_extended_style(true, LVS_EX_FULLROWSELECT);
-	lstFiles.image_list_16().add_shell_ext(L"doc");
+	lstFiles.icons_16().add_shell_ext(L"doc");
 
 	lstFiles.cols.add(L"Faster", 300);
 	lstFiles.cols.add(L"Rapids", 300);
@@ -127,8 +127,10 @@ RawMain::RawMain() {
 	lbl.setup().pos = wl::dpi::pt(320, 10);
 	lbl.setup().text = L"Label";
 
-	sb.setup().part_resizable(1, L"Rezee");
-	sb.setup().part_fixed(wl::dpi::x(200), L"Second");
+	sb.icons().add_resource(ICO_MAIN);
+	sb.icons().add_shell_ext(L"xlsx");
+	sb.setup().part_resizable(1, L"Rezee", 0);
+	sb.setup().part_fixed(wl::dpi::x(200), L"Second", 1);
 
 	wnd.on().wm_create([this](wl::wm::Create p) -> int {
 		lv.cols.add(L"First", wl::dpi::x(200));

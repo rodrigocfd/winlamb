@@ -19,13 +19,19 @@ All WinLamb entities are enclosed in the `wl` namespace.
 
 ## Example
 
-The example below is a full Win32 program consisting of a single window, managed by `wl::WindowMain`.
+The example below is a full native Win32 program consisting of a single window, managed by `wl::WindowMain`. Note there's no need to write a [message loop](https://learn.microsoft.com/en-us/windows/win32/winmsg/using-messages-and-message-queues) or [register a window](https://learn.microsoft.com/en-us/windows/win32/winmsg/about-window-classes).
 
-Note there's no need to write a [message loop](https://learn.microsoft.com/en-us/windows/win32/winmsg/using-messages-and-message-queues) or [register a window](https://learn.microsoft.com/en-us/windows/win32/winmsg/about-window-classes). The [`WM_CREATE`](https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-create) message is handled with a lambda, and the `RUN_MAIN` macro takes care of writing the [`WinMain`](https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point) entry point for you.
+This is what's happening:
 
-* Declaration: MyMain.h
+* under the hood, the `wnd.on().wm_create()` call will handle the [`WM_CREATE`](https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-create) message with a lambda;
+* the `btn.on().bn_clicked()` call will handle a [`WM_COMMAND`](https://learn.microsoft.com/en-us/windows/win32/menurc/wm-command) message for a [`BN_CLICKED`](https://learn.microsoft.com/en-us/windows/win32/controls/bn-clicked) notification, for the given button;
+* and finally, the `RUN_MAIN` macro takes care of writing the [`WinMain`](https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point) entry point for you.
+
+The whole code, .h and .cpp files:
 
 ```cpp
+// -- MyMain.h declaration file --
+
 #include <winlamb/lib.h>
 
 class MyMain final {
@@ -36,9 +42,9 @@ public:
 };
 ```
 
-* Implementation: MyMain.cpp
-
 ```cpp
+// -- MyMain.cpp implementation file --
+
 RUN_MAIN(MyMain, wnd)
 
 MyMain::MyMain() {
