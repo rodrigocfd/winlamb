@@ -103,7 +103,7 @@ void Contro::on_paint() {
 RawMain::RawMain() {
 	wnd.setup().iconId = ICO_MAIN;
 	wnd.setup().title = L"My main window";
-	wnd.setup().size = wl::dpi::sz(550, 320);
+	wnd.setup().size = wl::dpi::sz(660, 320);
 	wnd.setup().style |= WS_SIZEBOX | WS_MAXIMIZEBOX;
 
 	btn.setup().pos = wl::dpi::pt(10, 10);
@@ -123,6 +123,8 @@ RawMain::RawMain() {
 	lv.setup().size = wl::dpi::sz(400, 200);
 	lv.setup().layout = wl::Lay::resize_resize;
 	lv.setup().contextMenuId = MNU_FILES;
+
+	mcal.setup().pos = wl::dpi::pt(420, 100);
 
 	lbl.setup().pos = wl::dpi::pt(320, 10);
 	lbl.setup().text = L"Label";

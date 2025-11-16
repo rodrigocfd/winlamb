@@ -28,6 +28,7 @@ namespace wl {
 	class DateTimePicker;
 	class Edit;
 	class ListView;
+	class MonthCalendar;
 	class Static;
 	class StatusBar;
 }
@@ -159,7 +160,26 @@ namespace wl::events {
 
 	private:
 		_wl_internal::NativeCtrlEvents _ctrlEvents;
-		friend wl::ListView; // ctor
+		friend wl::ListView;
+	};
+
+	/** @brief Native `MonthCalendar` events. */
+	class MonthCalendarEvents final {
+	private:
+		MonthCalendarEvents(MonthCalendarEvents&&) = delete; // non-copyable, non-movable
+
+		MonthCalendarEvents(wl::WindowParent &owner, WORD ctrlId) : _ctrlEvents{owner, ctrlId} { }
+
+	public:
+		void mcn_get_day_state(std::function<void(NMDAYSTATE&)> &&cb);
+		void mcn_sel_change(std::function<void(NMSELCHANGE&)> &&cb);
+		void mcn_select(std::function<void(NMSELCHANGE&)> &&cb);
+		void mcn_view_change(std::function<void(NMVIEWCHANGE&)> &&cb);
+		void nm_released_capture(std::function<void()> &&cb);
+
+	private:
+		_wl_internal::NativeCtrlEvents _ctrlEvents;
+		friend wl::MonthCalendar;
 	};
 
 	/** @brief Native `Static` events. */

@@ -527,6 +527,43 @@ namespace wl::opts {
 		HMENU hMenuContext = nullptr;
 	};
 
+	/** Options to create a `MonthCalendar` programmatically. */
+	struct MonthCalendarOpts final {
+		/// The [window style] passed to [`CreateWindowEx`].
+		///
+		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		/// The [window extended style] passed to [`CreateWindowEx`].
+		///
+		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD windowExStyle = WS_EX_LEFT;
+		/// The [Static style] passed to [`CreateWindowEx`].
+		///
+		/// [Static style]: https://learn.microsoft.com/en-us/windows/win32/controls/static-control-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD ctrlStyle = 0;
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// mcal.setup().pos = wl::dpi::pt(10, 10);
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		POINT pos{};
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
+		/** Initial date and time. */
+		SYSTEMTIME value{};
+	};
+
 	/** Options to create a `Static` programmatically. */
 	struct StaticOpts final {
 		/// Control text passed to [`CreateWindowEx`].

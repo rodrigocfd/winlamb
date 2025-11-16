@@ -728,6 +728,46 @@ void ListView::show_context_menu(bool followCursor, bool hasCtrl, bool hasShift)
 
 ////////////////////////////////////////////////////////////////////////////////
 
+MonthCalendar::MonthCalendar(WindowParent &owner, WORD ctrlId)
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
+		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, MONTHCAL_CLASSW, nullptr,
+			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, {});
+
+		RECT rcBounds{};
+		SendMessageW(hwnd(), MCM_GETMINREQRECT, 0, reinterpret_cast<LPARAM>(&rcBounds)); // request ideal size
+		SetWindowPos(hwnd(), nullptr, 0, 0, rcBounds.right, rcBounds.bottom, SWP_NOZORDER | SWP_NOMOVE);
+
+		if (_opts.value.wYear && _opts.value.wMonth)
+			set_value(_opts.value);
+
+		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
+	});
+}
+
+MonthCalendar::MonthCalendar(WindowParent &owner, WORD ctrlId, Lay layout)
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
+		_ctrl.assign_dlg(ctrl_id());
+		_ctrl._parentWndBase._layout.add(hwnd(), layout);
+	});
+}
+
+SYSTEMTIME MonthCalendar::value() const {
+	SYSTEMTIME st{};
+	SendMessageW(hwnd(), MCM_GETCURSEL, 0, reinterpret_cast<LPARAM>(&st));
+	return st;
+}
+
+const MonthCalendar& MonthCalendar::set_value(const SYSTEMTIME &st) const {
+	SendMessageW(hwnd(), MCM_SETCURSEL, 0, reinterpret_cast<LPARAM>(&st));
+	return *this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 Static::Static(WindowParent &owner, WORD ctrlId)
 	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
 {

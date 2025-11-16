@@ -958,6 +958,68 @@ namespace wl {
 		_wl_internal::ImageList _imgList16{{16, 16}}, _imgList32{{32, 32}};
 	};
 
+	/// @brief Native [month calendar] control.
+	///
+	/// [month calendar]: https://learn.microsoft.com/en-us/windows/win32/controls/month-calendar-controls
+	class MonthCalendar final : public WindowChild {
+	public:
+		/// Constructs the month calendar programmatically with [`CreateWindowEx`].
+		///
+		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
+		///
+		/// Further options can be defined with the `setup` method.
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		explicit MonthCalendar(WindowParent &owner, WORD ctrlId = 0);
+
+		/// Constructs the month calendar from the dialog resource.
+		///
+		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		MonthCalendar(WindowParent &owner, WORD ctrlId, Lay layout);
+
+		/** Returns the wrapped window handle. */
+		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
+
+		/** Returns the control ID. */
+		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
+
+		/** For controls created programmatically, defines additional creation options. */
+		[[nodiscard]] constexpr opts::MonthCalendarOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
+
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// mcal.on().mcn_sel_change([](NMSELCHANGE &p) -> void {
+		///     // ...
+		/// });
+		/// ```
+		[[nodiscard]] constexpr events::MonthCalendarEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+
+		/// [Subclasses] the control allowing message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		///
+		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
+		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+
+		/** Returns the current date and time value. */
+		[[nodiscard]] SYSTEMTIME value() const;
+
+		/** Sets the current date and time value. */
+		const MonthCalendar& set_value(const SYSTEMTIME &st) const;
+
+	private:
+		_wl_internal::NativeCtrlBase _ctrl;
+		events::MonthCalendarEvents _events;
+		opts::MonthCalendarOpts _opts{};
+	};
+
 	/// @brief Native [static] control (label).
 	///
 	/// Example of creating a window with a static programmatically, .h and .cpp files:

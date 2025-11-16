@@ -43,6 +43,7 @@ public:
 	wl::DateTimePicker dtp{wnd};
 	wl::Edit txt{wnd};
 	wl::ListView lv{wnd};
+	wl::MonthCalendar mcal{wnd};
 	wl::Static lbl{wnd};
 	wl::StatusBar sb{wnd};
 	Contro ctl{wnd};

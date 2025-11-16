@@ -127,6 +127,16 @@ EVENT_NFY_ARG(nm_set_focus, NM_SETFOCUS, NMHDR)
 ////////////////////////////////////////////////////////////////////////////////
 
 #undef EVENT_CLS
+#define EVENT_CLS MonthCalendarEvents
+EVENT_NFY_ARG(mcn_get_day_state, MCN_GETDAYSTATE, NMDAYSTATE)
+EVENT_NFY_ARG(mcn_sel_change, MCN_SELCHANGE, NMSELCHANGE)
+EVENT_NFY_ARG(mcn_select, MCN_SELECT, NMSELCHANGE)
+EVENT_NFY_ARG(mcn_view_change, MCN_VIEWCHANGE, NMVIEWCHANGE)
+EVENT_NFY(nm_released_capture, NM_RELEASEDCAPTURE)
+
+////////////////////////////////////////////////////////////////////////////////
+
+#undef EVENT_CLS
 #define EVENT_CLS StaticEvents
 EVENT_CMD(stn_clicked, STN_CLICKED)
 EVENT_CMD(stn_dbl_clk, STN_DBLCLK)
