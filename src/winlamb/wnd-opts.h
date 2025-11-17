@@ -631,8 +631,8 @@ namespace wl::opts {
 		/// sb.icons().add_resource(ICO_FOO);
 		/// sb.setup().part_fixed(wl::dpi::x(200), L"Foo", 0);
 		/// ```
-		void part_fixed(UINT width, WStrPtr text = L"", int iconIndex = -1) {
-			_parts.emplace_back(width, 0, text.operator LPCWSTR(), iconIndex);
+		void part_fixed(UINT width, WStrView text = L"", int iconIndex = -1) {
+			_parts.emplace_back(width, 0, text.c_str(), iconIndex);
 		}
 
 		/// Adds a resizable part to the `StatusBar`. When the parent window is resized, this part will resize as well.
@@ -653,8 +653,8 @@ namespace wl::opts {
 		/// sb.icons().add_resource(ICO_FOO);
 		/// sb.setup().part_fixed(1, L"Foo", 0);
 		/// ```
-		void part_resizable(UINT resizeWeight, WStrPtr text = L"", int iconIndex = -1) {
-			_parts.emplace_back(0, resizeWeight, text.operator LPCWSTR(), iconIndex);
+		void part_resizable(UINT resizeWeight, WStrView text = L"", int iconIndex = -1) {
+			_parts.emplace_back(0, resizeWeight, text.c_str(), iconIndex);
 		}
 
 	private:

@@ -17,7 +17,7 @@ wstring id3v2::str_engine::parse_str_ascii(span<BYTE> src) {
 	return s;
 }
 
-void id3v2::str_engine::serialize_str_ascii(vector<BYTE> &dest, wl::WStrPtr s) {
+void id3v2::str_engine::serialize_str_ascii(vector<BYTE> &dest, wl::WStrView s) {
 	size_t len = s.length();
 	for (size_t i = 0; i < len; ++i) // won't serialize terminating null
 		dest.emplace_back(static_cast<BYTE>(s[i]));
@@ -33,9 +33,9 @@ Enc id3v2::str_engine::parse_enc(span<BYTE> &src) {
 	return encByte;
 }
 
-Enc id3v2::str_engine::serializable_enc(initializer_list<wl::WStrPtr> strs) {
+Enc id3v2::str_engine::serializable_enc(initializer_list<wl::WStrView> strs) {
 	for (auto str : strs) {
-		for (auto ch : wstring_view{str}) {
+		for (auto ch : wstring_view{str.c_str()}) {
 			if (ch > 0xff)
 				return Enc::unicode;
 		}
@@ -97,7 +97,7 @@ wstring id3v2::str_engine::parse_str_unicode(span<WORD> src) {
 	return buf;
 }
 
-size_t id3v2::str_engine::serializable_size(Enc encByte, wl::WStrPtr s) {
+size_t id3v2::str_engine::serializable_size(Enc encByte, wl::WStrView s) {
 	switch (encByte) {
 	case Enc::iso88591:
 		return s.length() + 1; // plus terminating null
@@ -108,11 +108,11 @@ size_t id3v2::str_engine::serializable_size(Enc encByte, wl::WStrPtr s) {
 	}
 }
 
-void id3v2::str_engine::serialize_str(Enc encByte, vector<BYTE> &dest, wl::WStrPtr s) {
+void id3v2::str_engine::serialize_str(Enc encByte, vector<BYTE> &dest, wl::WStrView s) {
 	if (encByte == Enc::unicode)
 		wl::vec::append(dest, {LOBYTE(BOM_LE), HIBYTE(BOM_LE)}); // BOM bytes serialized as little-endian
 
-	for (auto ch : wstring_view{s}) {
+	for (auto ch : wstring_view{s.c_str()}) {
 		switch (encByte) {
 		case Enc::iso88591:
 			dest.emplace_back(static_cast<BYTE>(ch));

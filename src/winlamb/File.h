@@ -64,7 +64,7 @@ namespace wl {
 		/// ```
 		///
 		/// [`CreateFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
-		File(WStrPtr path, Access access) { open(path, access); }
+		File(WStrView path, Access access) { open(path, access); }
 
 		/// Move-assignment operator.
 		///
@@ -107,7 +107,7 @@ namespace wl {
 		/// ```
 		///
 		/// [`CreateFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
-		File& open(WStrPtr path, Access access);
+		File& open(WStrView path, Access access);
 
 		/// Returns the current file size by calling [`GetFileSizeEx`].
 		///
@@ -273,7 +273,7 @@ namespace wl {
 		/// [`CreateFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
 		/// [`CreateFileMapping`]: https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-createfilemappingw
 		/// [`MapViewOfFile`]: https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-mapviewoffile
-		FileMapped(WStrPtr path, Access access) { open(path, access); }
+		FileMapped(WStrView path, Access access) { open(path, access); }
 
 		/// Move-assignment operator.
 		///
@@ -306,7 +306,7 @@ namespace wl {
 		/// [`CreateFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
 		/// [`CreateFileMapping`]: https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-createfilemappingw
 		/// [`MapViewOfFile`]: https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-mapviewoffile
-		FileMapped& open(WStrPtr path, Access access);
+		FileMapped& open(WStrView path, Access access);
 
 		/** Returns the file size. This value is cached. */
 		[[nodiscard]] constexpr size_t size() const { return _sz; }

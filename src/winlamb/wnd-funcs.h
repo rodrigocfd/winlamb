@@ -12,9 +12,9 @@ namespace _wl_internal {
 	[[nodiscard]] WORD valid_ctrl_id(WORD ctrlId);
 	[[nodiscard]] HINSTANCE wnd_hinst(HWND hWnd);
 	[[nodiscard]] std::wstring wnd_text(HWND hWnd);
-	void set_wnd_text(HWND hWnd, wl::WStrPtr text);
-	[[nodiscard]] SIZE calc_text_bound_box(wl::WStrPtr text);
-	[[nodiscard]] SIZE calc_text_bound_box_with_check(wl::WStrPtr text);
+	void set_wnd_text(HWND hWnd, wl::WStrView text);
+	[[nodiscard]] SIZE calc_text_bound_box(wl::WStrView text);
+	[[nodiscard]] SIZE calc_text_bound_box_with_check(wl::WStrView text);
 
 	/** Validates opts access. */
 	template<typename O>

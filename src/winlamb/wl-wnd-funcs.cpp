@@ -49,14 +49,14 @@ std::wstring _wl_internal::wnd_text(HWND hWnd) {
 	return buf;
 }
 
-void _wl_internal::set_wnd_text(HWND hWnd, WStrPtr text) {
-	if (!SetWindowTextW(hWnd, text)) [[unlikely]] {
+void _wl_internal::set_wnd_text(HWND hWnd, WStrView text) {
+	if (!SetWindowTextW(hWnd, text.c_str())) [[unlikely]] {
 		throw std::system_error(GetLastError(), std::system_category(), "SetWindowText failed");
 	}
 }
 
-SIZE _wl_internal::calc_text_bound_box(WStrPtr text) {
-	std::wstring wtext{text};
+SIZE _wl_internal::calc_text_bound_box(WStrView text) {
+	std::wstring wtext{text.c_str()};
 	str::trim(wtext);
 	bool isEmpty = wtext.empty();
 	if (isEmpty)
@@ -96,7 +96,7 @@ SIZE _wl_internal::calc_text_bound_box(WStrPtr text) {
 	return bounds;
 }
 
-SIZE _wl_internal::calc_text_bound_box_with_check(wl::WStrPtr text) {
+SIZE _wl_internal::calc_text_bound_box_with_check(wl::WStrView text) {
 	SIZE bounds = calc_text_bound_box(text);
 	bounds.cx += GetSystemMetrics(SM_CXMENUCHECK) + GetSystemMetrics(SM_CXEDGE); // https://stackoverflow.com/a/1165052/6923555
 

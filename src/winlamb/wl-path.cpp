@@ -2,22 +2,22 @@
 #include <system_error>
 #include "path.h"
 
-std::wstring wl::path::dir_from(WStrPtr p) {
-	std::wstring ret{p};
+std::wstring wl::path::dir_from(WStrView p) {
+	std::wstring ret{p.c_str()};
 	size_t found = ret.find_last_of(L'\\'); // won't include trailing backslash
 	if (found != std::wstring::npos)
 		ret.resize(found);
 	return ret;
 }
 
-void wl::path::dir_list(WStrPtr dirPath, std::function<void(const std::wstring &p)> &&cb) {
+void wl::path::dir_list(WStrView dirPath, std::function<void(const std::wstring &p)> &&cb) {
 	if (!is_dir(dirPath)) [[unlikely]] {
 		throw std::invalid_argument("Not a directory: " + str::to_ansi(dirPath) + ".");
 	}
 
 	std::wstring userPath{};
 	userPath.reserve(dirPath.length() + 2);
-	userPath = dirPath;
+	userPath = dirPath.c_str();
 	if (userPath.back() != L'\\') userPath.push_back(L'\\');
 	std::wstring basePath{userPath}; // to concat the found file names
 	userPath.push_back(L'*');
@@ -57,7 +57,7 @@ void wl::path::dir_list(WStrPtr dirPath, std::function<void(const std::wstring &
 	}
 }
 
-std::vector<std::wstring> wl::path::dir_list(WStrPtr dirPath) {
+std::vector<std::wstring> wl::path::dir_list(WStrView dirPath) {
 	std::vector<std::wstring> ret{};
 	dir_list(dirPath, [&ret](const std::wstring &p) -> void {
 		ret.emplace_back(p);
@@ -65,7 +65,7 @@ std::vector<std::wstring> wl::path::dir_list(WStrPtr dirPath) {
 	return ret;
 }
 
-void wl::path::dir_walk(WStrPtr dirPath, std::function<void(const std::wstring &p)> &&cb) {
+void wl::path::dir_walk(WStrView dirPath, std::function<void(const std::wstring &p)> &&cb) {
 	dir_list(dirPath, [&cb](const std::wstring &p) -> void {
 		if (is_dir(p)) {
 			dir_walk(p, [&cb](const std::wstring &p) -> void { // recursively
@@ -77,7 +77,7 @@ void wl::path::dir_walk(WStrPtr dirPath, std::function<void(const std::wstring &
 	});
 }
 
-std::vector<std::wstring> wl::path::dir_walk(WStrPtr dirPath) {
+std::vector<std::wstring> wl::path::dir_walk(WStrView dirPath) {
 	std::vector<std::wstring> ret{};
 	dir_walk(dirPath, [&ret](const std::wstring &p) -> void {
 		ret.emplace_back(p);
@@ -95,24 +95,24 @@ std::wstring wl::path::exe_dir() {
 	return p;
 }
 
-bool wl::path::exists(WStrPtr p) {
-	DWORD attr = GetFileAttributesW(p);
+bool wl::path::exists(WStrView p) {
+	DWORD attr = GetFileAttributesW(p.c_str());
 	return attr != INVALID_FILE_ATTRIBUTES;
 }
 
-std::wstring wl::path::file_from(WStrPtr p) {
-	std::wstring ret{p};
+std::wstring wl::path::file_from(WStrView p) {
+	std::wstring ret{p.c_str()};
 	size_t found = ret.find_last_of(L'\\');
 	if (found != std::wstring::npos)
 		ret.erase(0, found + 1);
 	return ret;
 }
 
-bool wl::path::has_extension(const std::wstring &p, WStrPtr ext) {
+bool wl::path::has_extension(const std::wstring &p, WStrView ext) {
 	return str::ends_with_i(p, ext);
 }
 
-bool wl::path::has_extension(const std::wstring &p, std::initializer_list<WStrPtr> exts) {
+bool wl::path::has_extension(const std::wstring &p, std::initializer_list<WStrView> exts) {
 	for (auto &&ext : exts) {
 		if (has_extension(p, ext))
 			return true;
@@ -120,31 +120,31 @@ bool wl::path::has_extension(const std::wstring &p, std::initializer_list<WStrPt
 	return false;
 }
 
-static DWORD get_attrs(wl::WStrPtr p) {
-	DWORD attr = GetFileAttributesW(p);
+static DWORD get_attrs(wl::WStrView p) {
+	DWORD attr = GetFileAttributesW(p.c_str());
 	if (attr == INVALID_FILE_ATTRIBUTES) [[unlikely]] {
 		throw std::system_error(GetLastError(), std::system_category(), "GetFileAttributes failed");
 	}
 	return attr;
 }
 
-bool wl::path::is_dir(WStrPtr p) {
+bool wl::path::is_dir(WStrView p) {
 	return get_attrs(p) & FILE_ATTRIBUTE_DIRECTORY;
 }
 
-bool wl::path::is_hidden(WStrPtr p) {
+bool wl::path::is_hidden(WStrView p) {
 	return get_attrs(p) & FILE_ATTRIBUTE_HIDDEN;
 }
 
-bool wl::path::is_read_only(WStrPtr p) {
+bool wl::path::is_read_only(WStrView p) {
 	return get_attrs(p) & FILE_ATTRIBUTE_READONLY;
 }
 
-std::wstring wl::path::swap_extension(const std::wstring &p, WStrPtr newExt) {
+std::wstring wl::path::swap_extension(const std::wstring &p, WStrView newExt) {
 	size_t idxDot = p.find_last_of(L'.');
 	if (idxDot != std::wstring::npos) [[likely]] {
 		std::wstring p2{p.substr(0, idxDot + (newExt[0] == L'.' ? 0 : 1))};
-		p2.append(newExt);
+		p2.append(newExt.c_str());
 		return p2;
 	} else [[unlikely]] {
 		throw std::logic_error("File has no extension: " + str::to_ansi(p) + ".");

@@ -48,14 +48,14 @@ namespace id3v2 {
 		static std::unique_ptr<Frame> parse(std::span<BYTE> src);
 
 		/** Static method; tries to create a new polymorphic frame with the simple text. */
-		static std::unique_ptr<Frame> new_simple_text(wl::WStrPtr name4, wl::WStrPtr text);
+		static std::unique_ptr<Frame> new_simple_text(wl::WStrView name4, wl::WStrView text);
 
 		[[nodiscard]] constexpr LPCWSTR name4() const             { return _name4.c_str(); }
 		[[nodiscard]] constexpr UINT declared_size() const        { return _declaredSize; }
 		[[nodiscard]] constexpr std::array<BYTE, 2> flags() const { return _flags; }
 
 		[[nodiscard]] virtual std::wstring as_simple_text() const = 0;
-		virtual void force_simple_text(wl::WStrPtr text) = 0;
+		virtual void force_simple_text(wl::WStrView text) = 0;
 		[[nodiscard]] virtual size_t serializable_size() const = 0;
 		virtual void serialize(std::vector<BYTE> &dest) const = 0;
 
@@ -74,16 +74,16 @@ namespace id3v2 {
 		virtual ~FrameText() { }
 
 		FrameText(std::wstring &&name4, UINT declaredSize, std::array<BYTE, 2> flags, std::span<BYTE> src);
-		FrameText(std::wstring &&name4, wl::WStrPtr simpleText)
-			: Frame{std::move(name4), 0, {{0, 0}}}, _text{simpleText} { }
+		FrameText(std::wstring &&name4, wl::WStrView simpleText)
+			: Frame{std::move(name4), 0, {{0, 0}}}, _text{simpleText.c_str()} { }
 
 		[[nodiscard]] std::wstring as_simple_text() const override { return _text; }
-		void force_simple_text(wl::WStrPtr text) override          { _text = text; }
+		void force_simple_text(wl::WStrView text) override         { _text = text.c_str(); }
 		[[nodiscard]] size_t serializable_size() const override;
 		void serialize(std::vector<BYTE> &dest) const override;
 
 		[[nodiscard]] constexpr LPCWSTR text() const { return _text.c_str(); }
-		void set_text(wl::WStrPtr text)              { _text = text; }
+		void set_text(wl::WStrView text)             { _text = text.c_str(); }
 
 	private:
 		std::wstring _text{};
@@ -98,14 +98,14 @@ namespace id3v2 {
 		FrameUserText(std::wstring &&name4, UINT declaredSize, std::array<BYTE, 2> flags, std::span<BYTE> src);
 
 		[[nodiscard]] std::wstring as_simple_text() const override;
-		void force_simple_text(wl::WStrPtr text) override;
+		void force_simple_text(wl::WStrView text) override;
 		[[nodiscard]] size_t serializable_size() const override;
 		void serialize(std::vector<BYTE> &dest) const override;
 
 		[[nodiscard]] constexpr LPCWSTR descr() const { return _descr.c_str(); }
-		void set_descr(wl::WStrPtr descr)             { _descr = descr; }
+		void set_descr(wl::WStrView descr)            { _descr = descr.c_str(); }
 		[[nodiscard]] constexpr LPCWSTR text() const  { return _text.c_str(); }
-		void set_text(wl::WStrPtr text)               { _text = text; }
+		void set_text(wl::WStrView text)              { _text = text.c_str(); }
 
 	private:
 		std::wstring _descr{};
@@ -121,7 +121,7 @@ namespace id3v2 {
 		FrameBinary(std::wstring &&name4, UINT declaredSize, std::array<BYTE, 2> flags, std::span<BYTE> src);
 
 		[[nodiscard]] std::wstring as_simple_text() const override;
-		void force_simple_text(wl::WStrPtr text) override;
+		void force_simple_text(wl::WStrView text) override;
 		[[nodiscard]] size_t serializable_size() const override { return _bin.size(); }
 		void serialize(std::vector<BYTE> &dest) const override;
 
@@ -139,19 +139,19 @@ namespace id3v2 {
 		virtual ~FrameComment() { }
 
 		FrameComment(std::wstring &&name4, UINT declaredSize, std::array<BYTE, 2> flags, std::span<BYTE> src);
-		FrameComment(std::wstring &&name4, wl::WStrPtr simpleText)
-			: Frame{std::move(name4), 0, {{0, 0}}}, _lang3{L"eng"}, _text{simpleText} { }
+		FrameComment(std::wstring &&name4, wl::WStrView simpleText)
+			: Frame{std::move(name4), 0, {{0, 0}}}, _lang3{L"eng"}, _text{simpleText.c_str()} { }
 
 		[[nodiscard]] std::wstring as_simple_text() const override;
-		void force_simple_text(wl::WStrPtr text) override;
+		void force_simple_text(wl::WStrView text) override;
 		[[nodiscard]] size_t serializable_size() const override;
 		void serialize(std::vector<BYTE> &dest) const override;
 
 		[[nodiscard]] constexpr LPCWSTR lang3() const { return _lang3.c_str(); }
 		[[nodiscard]] constexpr LPCWSTR descr() const { return _descr.c_str(); }
-		void set_descr(wl::WStrPtr descr)             { _descr = descr; }
+		void set_descr(wl::WStrView descr)            { _descr = descr.c_str(); }
 		[[nodiscard]] constexpr LPCWSTR text() const  { return _text.c_str(); }
-		void set_text(wl::WStrPtr text)               { _text = text; }
+		void set_text(wl::WStrView text)              { _text = text.c_str(); }
 
 	private:
 		std::wstring _lang3{};
@@ -168,16 +168,16 @@ namespace id3v2 {
 		FramePicture(std::wstring &&name4, UINT declaredSize, std::array<BYTE, 2> flags, std::span<BYTE> src);
 
 		[[nodiscard]] std::wstring as_simple_text() const override;
-		void force_simple_text(wl::WStrPtr text) override;
+		void force_simple_text(wl::WStrView text) override;
 		[[nodiscard]] size_t serializable_size() const override;
 		void serialize(std::vector<BYTE> &dest) const override;
 
 		[[nodiscard]] constexpr LPCWSTR mime() const     { return _mime.c_str(); }
-		void set_mime(wl::WStrPtr mime)                  { _mime = mime; }
+		void set_mime(wl::WStrView mime)                 { _mime = mime.c_str(); }
 		[[nodiscard]] constexpr PicType pic_type() const { return _picType; }
 		void set_pic_type(PicType picType)               { _picType = picType; }
 		[[nodiscard]] constexpr LPCWSTR descr() const    { return _descr.c_str(); }
-		void set_descr(wl::WStrPtr descr)                { _descr = descr; }
+		void set_descr(wl::WStrView descr)               { _descr = descr.c_str(); }
 		[[nodiscard]] constexpr std::span<const BYTE> bin() const { return _bin; }
 		void set_bin(std::span<BYTE> bin)                         { std::vector(bin.begin(), bin.end()).swap(_bin); }
 
@@ -197,16 +197,16 @@ namespace id3v2 {
 		FrameGeob(std::wstring &&name4, UINT declaredSize, std::array<BYTE, 2> flags, std::span<BYTE> src);
 
 		[[nodiscard]] std::wstring as_simple_text() const override;
-		void force_simple_text(wl::WStrPtr text) override;
+		void force_simple_text(wl::WStrView text) override;
 		[[nodiscard]] size_t serializable_size() const override;
 		void serialize(std::vector<BYTE> &dest) const override;
 
 		[[nodiscard]] constexpr LPCWSTR mime() const      { return _mime.c_str(); }
-		void set_mime(wl::WStrPtr mime)                   { _mime = mime; }
+		void set_mime(wl::WStrView mime)                  { _mime = mime.c_str(); }
 		[[nodiscard]] constexpr LPCWSTR file_name() const { return _fileName.c_str(); }
-		void set_file_name(wl::WStrPtr fileName)          { _fileName = fileName; }
+		void set_file_name(wl::WStrView fileName)         { _fileName = fileName.c_str(); }
 		[[nodiscard]] constexpr LPCWSTR descr() const     { return _descr.c_str(); }
-		void set_descr(wl::WStrPtr descr)                 { _descr = descr; }
+		void set_descr(wl::WStrView descr)                { _descr = descr.c_str(); }
 		[[nodiscard]] constexpr std::span<const BYTE> enc_obj() const { return _encObj; }
 		void set_enc_obj(std::span<BYTE> encObj)                      { std::vector(encObj.begin(), encObj.end()).swap(_encObj); }
 

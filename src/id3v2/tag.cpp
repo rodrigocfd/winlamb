@@ -8,7 +8,7 @@ using std::vector;
 using std::wstring;
 using namespace id3v2;
 
-Tag::Tag(wl::WStrPtr mp3File) {
+Tag::Tag(wl::WStrView mp3File) {
 	const wl::FileMapped fin{mp3File, wl::FileMapped::Access::existing_read_only};
 	parse(fin.view());
 }
@@ -20,12 +20,12 @@ void Tag::parse(span<BYTE> src) {
 	parse_frames(src.subspan(10)); // skip 10-byte tag header
 }
 
-void Tag::add_frame_with_text(wl::WStrPtr name4, wl::WStrPtr text) {
+void Tag::add_frame_with_text(wl::WStrView name4, wl::WStrView text) {
 	unique_ptr<Frame> frame = Frame::new_simple_text(name4, text);
 	_frames.emplace_back(std::move(frame));
 }
 
-const Frame* Tag::frame_by_name4(wl::WStrPtr name4) const {
+const Frame* Tag::frame_by_name4(wl::WStrView name4) const {
 	for (auto &&frame : _frames) {
 		if (wl::str::eq_i(frame->name4(), name4))
 			return frame.get();
@@ -33,7 +33,7 @@ const Frame* Tag::frame_by_name4(wl::WStrPtr name4) const {
 	return nullptr;
 }
 
-Frame* Tag::frame_by_name4(wl::WStrPtr name4) {
+Frame* Tag::frame_by_name4(wl::WStrView name4) {
 	return const_cast<Frame*>(std::as_const(*this).frame_by_name4(name4)); // https://stackoverflow.com/a/47369227/6923555
 }
 
@@ -88,7 +88,7 @@ vector<BYTE> Tag::serialize() const {
 	return blob;
 }
 
-void Tag::save_to_file(wl::WStrPtr mp3File) {
+void Tag::save_to_file(wl::WStrView mp3File) {
 	wl::File fout{mp3File, wl::File::Access::existing_rw};
 	vector<BYTE> currentContents = fout.read_all(); // copy the whole file into memory
 	Tag oldTag{currentContents}; // so we can have the MP3 offset

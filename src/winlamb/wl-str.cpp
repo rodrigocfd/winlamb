@@ -4,65 +4,65 @@
 #include "str.h"
 using namespace wl;
 
-size_t WStrPtr::length() const {
+size_t WStrView::length() const {
 	return lstrlenW(_p);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-int wl::str::cmp(WStrPtr a, WStrPtr b) {
-	return lstrcmpW(a, b);
+int wl::str::cmp(WStrView a, WStrView b) {
+	return lstrcmpW(a.c_str(), b.c_str());
 }
 
-int wl::str::cmp_i(WStrPtr a, WStrPtr b) {
-	return lstrcmpiW(a, b);
+int wl::str::cmp_i(WStrView a, WStrView b) {
+	return lstrcmpiW(a.c_str(), b.c_str());
 }
 
-bool wl::str::contains(WStrPtr s, WStrPtr what, size_t off) {
-	std::wstring_view sv{s};
-	return sv.find(what, off) != std::wstring::npos;
+bool wl::str::contains(WStrView s, WStrView what, size_t off) {
+	std::wstring_view sv{s.c_str()};
+	return sv.find(what.c_str(), off) != std::wstring::npos;
 }
 
-void wl::str::dbg(WStrPtr format, ...) {
+void wl::str::dbg(WStrView format, ...) {
 	va_list args = nullptr;
 	va_start(args, format);
-	int len = std::vswprintf(nullptr, 0, format, args); // won't include terminating null
+	int len = std::vswprintf(nullptr, 0, format.c_str(), args); // won't include terminating null
 
 	std::wstring buf(len + 2, L'\0'); // alloc receiving buffer with linebreak
-	std::vswprintf(buf.data(), buf.size(), format, args);
+	std::vswprintf(buf.data(), buf.size(), format.c_str(), args);
 	va_end(args);
 	buf.resize(len);
 	buf.push_back(L'\n');
 	OutputDebugStringW(buf.c_str());
 }
 
-bool wl::str::ends_with(WStrPtr s, WStrPtr theEnd) {
-	std::wstring_view sv{s};
-	return sv.ends_with(theEnd);
+bool wl::str::ends_with(WStrView s, WStrView theEnd) {
+	std::wstring_view sv{s.c_str()};
+	return sv.ends_with(theEnd.c_str());
 }
 
-bool wl::str::ends_with_i(WStrPtr s, WStrPtr theEnd) {
+bool wl::str::ends_with_i(WStrView s, WStrView theEnd) {
 	size_t lenEnd = theEnd.length();
 	if (!lenEnd) return true;
 	if (s.empty() || lenEnd > s.length()) return false;
-	return !lstrcmpiW(s + s.length() - lenEnd, theEnd);
+	return !lstrcmpiW(s.c_str() + s.length() - lenEnd, theEnd.c_str());
 }
 
-bool wl::str::eq(WStrPtr a, WStrPtr b) {
-	return !lstrcmpW(a, b);
+bool wl::str::eq(WStrView a, WStrView b) {
+	return !lstrcmpW(a.c_str(), b.c_str());
 }
 
-bool wl::str::eq_i(WStrPtr a, WStrPtr b) {
-	return !lstrcmpiW(a, b);
+bool wl::str::eq_i(WStrView a, WStrView b) {
+	return !lstrcmpiW(a.c_str(), b.c_str());
 }
 
-std::wstring wl::str::fmt(WStrPtr format, ...) {
+std::wstring wl::str::fmt(WStrView format, ...) {
 	va_list args = nullptr;
 	va_start(args, format);
-	int len = std::vswprintf(nullptr, 0, format, args); // won't include terminating null
+	int len = std::vswprintf(nullptr, 0, format.c_str(), args); // won't include terminating null
 
 	std::wstring buf(len + 1, L'\0'); // alloc receiving buffer
-	std::vswprintf(buf.data(), buf.size(), format, args);
+	std::vswprintf(buf.data(), buf.size(), format.c_str(), args);
 	va_end(args);
 	buf.resize(len);
 	return buf;
@@ -110,7 +110,7 @@ std::wstring wl::str::fmt_error(DWORD errorCode) {
 	return finalBuf;
 }
 
-LPCWSTR wl::str::guess_line_break(WStrPtr s) {
+LPCWSTR wl::str::guess_line_break(WStrView s) {
 	for (size_t i = 0; i < s.length() - 1; ++i) {
 		if (s[i] == L'\r') {
 			return s[i + 1] == L'\n' ? L"\r\n" : L"\r"; // report the first one
@@ -121,19 +121,19 @@ LPCWSTR wl::str::guess_line_break(WStrPtr s) {
 	return nullptr; // unknown
 }
 
-std::optional<size_t> wl::str::index(WStrPtr s, WStrPtr what, size_t off) {
-	std::wstring_view sv{s};
-	size_t pos = sv.find(what, off);
+std::optional<size_t> wl::str::index(WStrView s, WStrView what, size_t off) {
+	std::wstring_view sv{s.c_str()};
+	size_t pos = sv.find(what.c_str(), off);
 	return pos == std::wstring::npos ? std::nullopt : std::make_optional(pos);
 }
 
-std::optional<size_t> wl::str::index_rev(WStrPtr s, WStrPtr what, size_t off) {
-	std::wstring_view sv{s};
-	size_t pos = sv.rfind(what, off);
+std::optional<size_t> wl::str::index_rev(WStrView s, WStrView what, size_t off) {
+	std::wstring_view sv{s.c_str()};
+	size_t pos = sv.rfind(what.c_str(), off);
 	return pos == std::wstring::npos ? std::nullopt : std::make_optional(pos);
 }
 
-std::wstring wl::str::join(std::span<std::wstring> all, WStrPtr separator) {
+std::wstring wl::str::join(std::span<std::wstring> all, WStrView separator) {
 	size_t count = 0;
 	size_t lenSep = separator.length();
 	bool first = true;
@@ -155,7 +155,7 @@ std::wstring wl::str::join(std::span<std::wstring> all, WStrPtr separator) {
 		if (first) {
 			first = false;
 		} else {
-			buf.append(separator);
+			buf.append(separator.c_str());
 		}
 		buf.append(s);
 	}
@@ -212,7 +212,7 @@ std::wstring wl::str::parse(std::span<BYTE> src) {
 	}
 }
 
-std::wstring wl::str::remove_accel_ampersands(WStrPtr s) {
+std::wstring wl::str::remove_accel_ampersands(WStrView s) {
 	size_t len = s.length();
 	if (!len)
 		return std::wstring{};
@@ -246,18 +246,18 @@ void wl::str::remove_diacritics(std::wstring &s) {
 	}
 }
 
-std::vector<std::wstring> wl::str::split(WStrPtr s, WStrPtr delimiter) {
+std::vector<std::wstring> wl::str::split(WStrView s, WStrView delimiter) {
 	if (s.empty()) return {};
 
 	size_t lenDelim = delimiter.length();
 	if (!lenDelim)
-		return {std::wstring{s}}; // one single element
+		return {std::wstring{s.c_str()}}; // one single element
 
-	std::wstring_view sv{s};
+	std::wstring_view sv{s.c_str()};
 
 	size_t count = 1, base = 0, head = 0;
 	for (;;) { // 1st pass counts the occurrences to prealloc; benchmarks proved that this is about 2.7x faster
-		head = sv.find(delimiter, head);
+		head = sv.find(delimiter.c_str(), head);
 		if (head == std::wstring::npos) break;
 		++count;
 		head += lenDelim;
@@ -269,7 +269,7 @@ std::vector<std::wstring> wl::str::split(WStrPtr s, WStrPtr delimiter) {
 
 	base = head = 0;
 	for (;;) { // 2nd pass will append the substrings
-		head = sv.find(delimiter, head);
+		head = sv.find(delimiter.c_str(), head);
 		if (head == std::wstring::npos) break;
 		ret.emplace_back(); // append empty string to vector
 		ret.back().insert(0, sv, base, head - base); // insert chars into last appended string
@@ -282,25 +282,25 @@ std::vector<std::wstring> wl::str::split(WStrPtr s, WStrPtr delimiter) {
 	return ret;
 }
 
-std::vector<std::wstring> wl::str::split_lines(WStrPtr s) {
+std::vector<std::wstring> wl::str::split_lines(WStrView s) {
 	return split(s, guess_line_break(s));
 }
 
-bool wl::str::starts_with(WStrPtr s, WStrPtr theStart) {
-	std::wstring_view sv{s};
-	return sv.starts_with(theStart);
+bool wl::str::starts_with(WStrView s, WStrView theStart) {
+	std::wstring_view sv{s.c_str()};
+	return sv.starts_with(theStart.c_str());
 }
 
-bool wl::str::starts_with_i(WStrPtr s, WStrPtr theStart) {
+bool wl::str::starts_with_i(WStrView s, WStrView theStart) {
 	size_t lenStart = theStart.length();
 	if (!lenStart) return true;
 	if (s.empty() || lenStart > s.length()) return false;
-	std::wstring s2{s};
+	std::wstring s2{s.c_str()};
 	s2.resize(lenStart);
-	return !lstrcmpiW(s2.data(), theStart);
+	return !lstrcmpiW(s2.c_str(), theStart.c_str());
 }
 
-std::string wl::str::to_ansi(WStrPtr s) {
+std::string wl::str::to_ansi(WStrView s) {
 	std::string ansi(s.length(), '\0'); // alloc with same length
 	for (size_t i = 0; i < s.length(); ++i) {
 		ansi[i] = static_cast<char>(s[i]); // brute-force conversion
@@ -308,26 +308,26 @@ std::string wl::str::to_ansi(WStrPtr s) {
 	return ansi;
 }
 
-std::wstring wl::str::to_lower(WStrPtr s) {
-	std::wstring ret{s};
+std::wstring wl::str::to_lower(WStrView s) {
+	std::wstring ret{s.c_str()};
 	CharLowerBuffW(ret.data(), static_cast<DWORD>(ret.length()));
 	return ret;
 }
 
-std::wstring wl::str::to_upper(WStrPtr s) {
-	std::wstring ret{s};
+std::wstring wl::str::to_upper(WStrView s) {
+	std::wstring ret{s.c_str()};
 	CharUpperBuffW(ret.data(), static_cast<DWORD>(ret.length()));
 	return ret;
 }
 
-std::vector<BYTE> wl::str::to_utf8_blob(WStrPtr s, bool writeBom) {
+std::vector<BYTE> wl::str::to_utf8_blob(WStrView s, bool writeBom) {
 	std::vector<BYTE> buf;
 	if (!s.empty()) {
 		constexpr BYTE utf8bom[] = {0xef, 0xbb, 0xbf};
 		size_t szBom = writeBom ? ARRAYSIZE(utf8bom) : 0; // zero if we won't write the BOM
 
 		size_t neededLen = WideCharToMultiByte(CP_UTF8, 0,
-			s, static_cast<int>(s.length()),
+			s.c_str(), static_cast<int>(s.length()),
 			nullptr, 0, nullptr, 0);
 		buf.resize(neededLen + szBom);
 
@@ -335,7 +335,7 @@ std::vector<BYTE> wl::str::to_utf8_blob(WStrPtr s, bool writeBom) {
 			CopyMemory(buf.data(), utf8bom, szBom);
 
 		WideCharToMultiByte(CP_UTF8, 0,
-			s, static_cast<int>(s.length()),
+			s.c_str(), static_cast<int>(s.length()),
 			reinterpret_cast<char*>(buf.data() + szBom),
 			static_cast<int>(neededLen), nullptr, nullptr);
 	}
@@ -343,7 +343,7 @@ std::vector<BYTE> wl::str::to_utf8_blob(WStrPtr s, bool writeBom) {
 	return buf;
 }
 
-std::wstring wl::str::to_wide(WStrPtr s) {
+std::wstring wl::str::to_wide(WStrView s) {
 	std::wstring wide(s.length(), L'\0');
 	for (size_t i = 0; i < s.length(); ++i) {
 		wide[i] = s[i]; // brute-force conversion

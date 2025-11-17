@@ -21,7 +21,7 @@ namespace wl {
 		/// These are the icons used by Windows Explorer to represent the given file extensions, like "mp3".
 		///
 		/// [`SHGetFileInfo`]: https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shgetfileinfow
-		virtual void add_shell_ext(WStrPtr fileExt) = 0;
+		virtual void add_shell_ext(WStrView fileExt) = 0;
 	};
 
 }
@@ -40,7 +40,7 @@ namespace _wl_internal {
 
 		void add_icon(HICON hIcon) override;
 		void add_resource(WORD iconId) override;
-		void add_shell_ext(wl::WStrPtr fileExt) override;
+		void add_shell_ext(wl::WStrView fileExt) override;
 
 	private:
 		HIMAGELIST _hImageList = nullptr;
@@ -58,7 +58,7 @@ namespace _wl_internal {
 
 		void add_icon(HICON hIcon) override;
 		void add_resource(WORD iconId) override;
-		void add_shell_ext(wl::WStrPtr fileExt) override;
+		void add_shell_ext(wl::WStrView fileExt) override;
 
 	private:
 		std::vector<HICON> _hIcons{};

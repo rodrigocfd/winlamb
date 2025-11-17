@@ -32,7 +32,7 @@ Button::Button(WindowParent &owner, WORD ctrlId, Lay layout)
 	});
 }
 
-const Button& Button::set_text(WStrPtr text) const {
+const Button& Button::set_text(WStrView text) const {
 	set_wnd_text(hwnd(), text);
 	return *this;
 }
@@ -78,12 +78,12 @@ const CheckBox& CheckBox::set_state(WORD bstFlag) const {
 	return *this;
 }
 
-const CheckBox& CheckBox::set_text(WStrPtr text) const {
+const CheckBox& CheckBox::set_text(WStrView text) const {
 	set_wnd_text(hwnd(), text);
 	return *this;
 }
 
-const CheckBox& CheckBox::set_text_resize(WStrPtr text) const {
+const CheckBox& CheckBox::set_text_resize(WStrView text) const {
 	set_text(text);
 	SIZE bounds = calc_text_bound_box_with_check(str::remove_accel_ampersands(text));
 	SetWindowPos(hwnd(), nullptr, 0, 0, bounds.cx, bounds.cy, SWP_NOZORDER | SWP_NOMOVE);
@@ -100,11 +100,11 @@ std::wstring ComboBox::ItemCollection::operator[](int index) const {
 	return s;
 }
 
-void ComboBox::ItemCollection::add(WStrPtr text) const {
-	SendMessageW(_pOwner->hwnd(), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(text.operator LPCWSTR()));
+void ComboBox::ItemCollection::add(WStrView text) const {
+	SendMessageW(_pOwner->hwnd(), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(text.c_str()));
 }
 
-void ComboBox::ItemCollection::add(std::initializer_list<WStrPtr> texts) const {
+void ComboBox::ItemCollection::add(std::initializer_list<WStrView> texts) const {
 	for (auto &&s : texts)
 		add(s);
 }
@@ -221,7 +221,7 @@ Edit::Edit(WindowParent &owner, WORD ctrlId, Lay layout)
 	});
 }
 
-const Edit& Edit::set_text(WStrPtr text) const {
+const Edit& Edit::set_text(WStrView text) const {
 	set_wnd_text(hwnd(), text);
 	return *this;
 }
@@ -313,10 +313,10 @@ std::wstring ListView::Column::text() const {
 	return buf;
 }
 
-const ListView::Column& ListView::Column::set_text(WStrPtr text) const {
+const ListView::Column& ListView::Column::set_text(WStrView text) const {
 	LVCOLUMNW lvc{
 		.mask = LVCF_TEXT,
-		.pszText = text.lpwstr(),
+		.pszText = const_cast<LPWSTR>(text.c_str()),
 	};
 	ListView_SetColumn(_pOwner->hwnd(), _index, &lvc);
 	return *this;
@@ -348,11 +348,11 @@ const ListView::Column& ListView::Column::set_width_to_fill() const {
 
 //------------------------------------------------------------------------------
 
-ListView::Column ListView::ColumnCollection::add(WStrPtr text, UINT width) const {
+ListView::Column ListView::ColumnCollection::add(WStrView text, UINT width) const {
 	LVCOLUMNW lvc{
 		.mask = LVCF_TEXT | LVCF_WIDTH,
 		.cx = static_cast<int>(width),
-		.pszText = text.lpwstr(),
+		.pszText = const_cast<LPWSTR>(text.c_str()),
 	};
 	int index = ListView_InsertColumn(_pOwner->hwnd(), 0xffff, &lvc); // insert as the last column
 	return {*_pOwner, index}; // return newly added column
@@ -449,8 +449,8 @@ std::wstring ListView::Item::text(UINT columnIndex) const {
 	}
 }
 
-const ListView::Item& ListView::Item::set_text(WStrPtr text, UINT columnIndex) const {
-	ListView_SetItemText(_pOwner->hwnd(), _index, columnIndex, text.lpwstr());
+const ListView::Item& ListView::Item::set_text(WStrView text, UINT columnIndex) const {
+	ListView_SetItemText(_pOwner->hwnd(), _index, columnIndex, const_cast<LPWSTR>(text.c_str()));
 	return *this;
 }
 
@@ -483,13 +483,13 @@ const ListView::Item& ListView::Item::set_raw_data(LPARAM data) const {
 
 //------------------------------------------------------------------------------
 
-ListView::Item ListView::ItemCollection::add(WStrPtr text,
-	std::initializer_list<WStrPtr> otherColumnsTexts, int iconIndex) const
+ListView::Item ListView::ItemCollection::add(WStrView text,
+	std::initializer_list<WStrView> otherColumnsTexts, int iconIndex) const
 {
 	LVITEMW lvi{
 		.mask = LVIF_TEXT | static_cast<UINT>(iconIndex != -1 ? LVIF_IMAGE : 0),
 		.iItem = 0x0fff'ffff, // insert as the last item
-		.pszText = text.lpwstr(),
+		.pszText = const_cast<LPWSTR>(text.c_str()),
 		.iImage = iconIndex,
 	};
 	int index = ListView_InsertItem(_pOwner->hwnd(), &lvi);
@@ -791,12 +791,12 @@ Static::Static(WindowParent &owner, WORD ctrlId, Lay layout)
 	});
 }
 
-const Static& Static::set_text(WStrPtr text) const {
+const Static& Static::set_text(WStrView text) const {
 	set_wnd_text(hwnd(), text);
 	return *this;
 }
 
-const Static& Static::set_text_resize(WStrPtr text) const {
+const Static& Static::set_text_resize(WStrView text) const {
 	set_text(text);
 	SIZE bounds = calc_text_bound_box(str::remove_accel_ampersands(text));
 	SetWindowPos(hwnd(), nullptr, 0, 0, bounds.cx, bounds.cy, SWP_NOZORDER | SWP_NOMOVE);
@@ -813,9 +813,9 @@ std::wstring StatusBar::Part::text() const {
 	return buf;
 }
 
-const StatusBar::Part& StatusBar::Part::set_text(WStrPtr text) const {
+const StatusBar::Part& StatusBar::Part::set_text(WStrView text) const {
 	SendMessageW(_pOwner->hwnd(), SB_SETTEXTW, MAKELONG(_index, 0),
-		reinterpret_cast<LPARAM>(text.operator LPCWSTR()));
+		reinterpret_cast<LPARAM>(text.c_str()));
 	return *this;
 }
 

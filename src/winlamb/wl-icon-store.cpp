@@ -17,7 +17,7 @@ using namespace _wl_internal;
 	return hIcon;
 }
 
-[[nodiscard]] static HICON load_icon_shell_ext(WStrPtr fileExt, SIZE szIcon) {
+[[nodiscard]] static HICON load_icon_shell_ext(WStrView fileExt, SIZE szIcon) {
 	bool isIco16 = szIcon.cx == 16 && szIcon.cy == 16;
 	bool isIco32 = szIcon.cx == 32 && szIcon.cy == 32;
 	#ifdef _DEBUG
@@ -31,7 +31,7 @@ using namespace _wl_internal;
 	std::wstring pathExt;
 	pathExt.reserve(10);
 	pathExt = L"*.";
-	pathExt.append(fileExt);
+	pathExt.append(fileExt.c_str());
 
 	SHFILEINFOW shfi{};
 	DWORD_PTR hr = SHGetFileInfoW(pathExt.c_str(), FILE_ATTRIBUTE_NORMAL, &shfi, sizeof(SHFILEINFOW),
@@ -75,7 +75,7 @@ void ImageList::add_resource(WORD iconId) {
 	add_icon(load_icon_res(iconId, _szIcon));
 }
 
-void ImageList::add_shell_ext(WStrPtr fileExt) {
+void ImageList::add_shell_ext(WStrView fileExt) {
 	add_icon(load_icon_shell_ext(fileExt, _szIcon));
 }
 
@@ -94,6 +94,6 @@ void HIconStore::add_resource(WORD iconId) {
 	_hIcons.push_back(load_icon_res(iconId, _szIcon));
 }
 
-void HIconStore::add_shell_ext(wl::WStrPtr fileExt) {
+void HIconStore::add_shell_ext(wl::WStrView fileExt) {
 	_hIcons.push_back(load_icon_shell_ext(fileExt, _szIcon));
 }

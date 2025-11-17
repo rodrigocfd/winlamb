@@ -115,7 +115,7 @@ namespace wl {
 		/// Calls [`SetWindowText`] to set the control text.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		const Button& set_text(WStrPtr text) const;
+		const Button& set_text(WStrView text) const;
 
 		/// Sends a [`BM_CLICK`] message to fire the button click.
 		///
@@ -243,12 +243,12 @@ namespace wl {
 		/// Calls [`SetWindowText`] to set the control text.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		const CheckBox& set_text(WStrPtr text) const;
+		const CheckBox& set_text(WStrView text) const;
 
 		/// Calls [`SetWindowText`] to set the button text, then resizes the check box to fit the text exactly.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		const CheckBox& set_text_resize(WStrPtr text) const;
+		const CheckBox& set_text_resize(WStrView text) const;
 
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
@@ -305,10 +305,10 @@ namespace wl {
 			[[nodiscard]] std::wstring operator[](int index) const;
 
 			/** Adds a new item. */
-			void add(WStrPtr text) const;
+			void add(WStrView text) const;
 
 			/** Adds multiple new items. */
-			void add(std::initializer_list<WStrPtr> texts) const;
+			void add(std::initializer_list<WStrView> texts) const;
 
 			/** Returns the item count. */
 			[[nodiscard]] size_t count() const;
@@ -578,7 +578,7 @@ namespace wl {
 		/// Calls [`SetWindowText`] to set the control text.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		const Edit& set_text(WStrPtr text) const;
+		const Edit& set_text(WStrView text) const;
 
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
@@ -678,7 +678,7 @@ namespace wl {
 			[[nodiscard]] std::wstring text() const;
 
 			/** Sets the text of the column. */
-			const Column& set_text(WStrPtr text) const;
+			const Column& set_text(WStrView text) const;
 
 			/** Returns the width of the column, in pixels. */
 			[[nodiscard]] UINT width() const;
@@ -718,7 +718,7 @@ namespace wl {
 			/// ```cpp
 			/// lv.cols.add(L"First column", wl::dpi::x(200));
 			/// ```
-			Column add(WStrPtr text, UINT width) const;
+			Column add(WStrView text, UINT width) const;
 
 			/** Returns the column count. */
 			[[nodiscard]] size_t count() const;
@@ -782,7 +782,7 @@ namespace wl {
 			[[nodiscard]] std::wstring text(UINT columnIndex = 0) const;
 
 			/** Sets the text under a column for the item. */
-			const Item& set_text(WStrPtr text, UINT columnIndex = 0) const;
+			const Item& set_text(WStrView text, UINT columnIndex = 0) const;
 
 			/// Calls [`ListView_MapIndexToID`] to retrieve the unique ID of the item.
 			///
@@ -822,7 +822,7 @@ namespace wl {
 			/// ```cpp
 			/// lv.items.add(L"My item", {L"Column 2", L"Column 3"});
 			/// ```
-			Item add(WStrPtr text, std::initializer_list<WStrPtr> otherColumnsTexts = {}, int iconIndex = -1) const;
+			Item add(WStrView text, std::initializer_list<WStrView> otherColumnsTexts = {}, int iconIndex = -1) const;
 
 			/** Returns the item count. */
 			[[nodiscard]] size_t count() const;
@@ -1104,12 +1104,12 @@ namespace wl {
 		/// Calls [`SetWindowText`] to set the control text.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		const Static& set_text(WStrPtr text) const;
+		const Static& set_text(WStrView text) const;
 
 		/// Calls [`SetWindowText`] to set the text, then resizes the control to fit the text exactly.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		const Static& set_text_resize(WStrPtr text) const;
+		const Static& set_text_resize(WStrView text) const;
 
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
@@ -1161,7 +1161,7 @@ namespace wl {
 			[[nodiscard]] std::wstring text() const;
 
 			/** Sets the text of the part. */
-			const Part& set_text(WStrPtr text) const;
+			const Part& set_text(WStrView text) const;
 
 			/** Returns true is the part has fixed width. */
 			[[nodiscard]] constexpr bool is_fixed_width() const { return _pOwner->_partsData[_index].is_fixed_width(); }

@@ -17,17 +17,17 @@ namespace id3v2 {
 namespace id3v2::str_engine {
 
 	[[nodiscard]] std::wstring parse_str_ascii(std::span<BYTE> src);
-	void serialize_str_ascii(std::vector<BYTE> &dest, wl::WStrPtr s);
+	void serialize_str_ascii(std::vector<BYTE> &dest, wl::WStrView s);
 
 	[[nodiscard]] Enc parse_enc(std::span<BYTE> &src);
-	[[nodiscard]] Enc serializable_enc(std::initializer_list<wl::WStrPtr> strs);
+	[[nodiscard]] Enc serializable_enc(std::initializer_list<wl::WStrView> strs);
 	void serialize_enc(std::vector<BYTE> &dest, Enc encByte);
 
 	[[nodiscard]] std::wstring parse_str(Enc encByte, std::span<BYTE> &src);
 	[[nodiscard]] std::wstring parse_str_iso88591(std::span<BYTE> src);
 	[[nodiscard]] std::wstring parse_str_unicode(std::span<WORD> src);
-	[[nodiscard]] size_t serializable_size(Enc encByte, wl::WStrPtr s);
-	void serialize_str(Enc encByte, std::vector<BYTE> &dest, wl::WStrPtr s);
+	[[nodiscard]] size_t serializable_size(Enc encByte, wl::WStrView s);
+	void serialize_str(Enc encByte, std::vector<BYTE> &dest, wl::WStrView s);
 
 }
 
