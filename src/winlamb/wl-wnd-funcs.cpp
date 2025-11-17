@@ -87,7 +87,7 @@ SIZE _wl_internal::calc_text_bound_box(WStrPtr text) {
 	BOOL ret = GetTextExtentPoint32W(desktop.hdcCloned, wtext.c_str(), static_cast<int>(wtext.length()), &bounds);
 	#ifdef _DEBUG
 	if (!ret)
-		throw std::runtime_error(str::to_ansi(str::fmt(L"Calc box failed to \"%s\".", wtext.c_str())));
+		throw std::runtime_error("Calc box failed to \"" + str::to_ansi(wtext) + "\".");
 	#endif
 
 	if (isEmpty)

@@ -10,42 +10,46 @@ std::wstring wl::path::dir_from(WStrPtr p) {
 	return ret;
 }
 
-std::vector<std::wstring> wl::path::dir_list(WStrPtr pathAndFilter) {
+void wl::path::dir_list(WStrPtr dirPath, std::function<void(const std::wstring &p)> &&cb) {
+	if (!is_dir(dirPath)) [[unlikely]] {
+		throw std::invalid_argument("Not a directory: " + str::to_ansi(dirPath) + ".");
+	}
+
+	std::wstring userPath{};
+	userPath.reserve(dirPath.length() + 2);
+	userPath = dirPath;
+	if (userPath.back() != L'\\') userPath.push_back(L'\\');
+	std::wstring basePath{userPath}; // to concat the found file names
+	userPath.push_back(L'*');
+
+	struct Finder final {
+		~Finder() { if (obj && obj != INVALID_HANDLE_VALUE) FindClose(obj); } // make sure the handle will be closed
+		HANDLE obj = nullptr;
+	} hFind{};
+
 	WIN32_FIND_DATAW wfd{};
-	HANDLE hFind = FindFirstFileW(pathAndFilter, &wfd);
-	if (hFind == INVALID_HANDLE_VALUE) {
+	hFind.obj = FindFirstFileW(userPath.c_str(), &wfd);
+	if (hFind.obj == INVALID_HANDLE_VALUE) {
 		DWORD err = GetLastError();
-		FindClose(hFind);
 		if (err == ERROR_FILE_NOT_FOUND) [[likely]] {
-			return {}; // no files found
+			return; // no files found
 		} else [[unlikely]] {
 			throw std::system_error(err, std::system_category(), "FindFirstFile failed");
 		}
 	}
 
-	std::vector<std::wstring> entries;
+	std::wstring retFileBuf{};
 	for (;;) {
 		if (!str::eq(wfd.cFileName, L".") && !str::eq(wfd.cFileName, L"..")) { // skip these
-			std::wstring strPathAndFilter{pathAndFilter};
-			size_t idxBackslash = strPathAndFilter.find_last_of(L"\\");
-			if (idxBackslash != std::wstring::npos) [[likely]] {
-				std::wstring fullPath{strPathAndFilter.substr(0, idxBackslash + 1)};
-				fullPath.append(wfd.cFileName);
-				entries.emplace_back(std::move(fullPath));
-			} else [[unlikely]] {
-				std::wstring faultyPath{wfd.cFileName};
-				throw std::logic_error("No backslash in found file " + str::to_ansi(faultyPath) + ".");
-			}
+			retFileBuf = basePath;
+			retFileBuf.append(wfd.cFileName);
+			cb(retFileBuf); // invoke user callback
 		}
 
-		if (!FindNextFileW(hFind, &wfd)) {
+		if (!FindNextFileW(hFind.obj, &wfd)) {
 			DWORD err = GetLastError();
-			FindClose(hFind);
 			if (err == ERROR_NO_MORE_FILES) [[likely]] {
-				std::sort(entries.begin(), entries.end(), [](const std::wstring &a, const std::wstring &b) -> bool {
-					return lstrcmpiW(a.c_str(), b.c_str()) < 1;
-				});
-				return entries; // no more files found
+				return; // no more files found
 			} else [[unlikely]] {
 				throw std::system_error(err, std::system_category(), "FindNextFile failed");
 			}
@@ -53,25 +57,32 @@ std::vector<std::wstring> wl::path::dir_list(WStrPtr pathAndFilter) {
 	}
 }
 
-void dir_walk_buf(wl::WStrPtr pathAndFilter, std::vector<std::wstring> &outBuf) {
-	std::vector<std::wstring> entries = wl::path::dir_list(pathAndFilter);
-	for (auto &&entry : entries) {
-		if (!wl::path::is_dir(entry))
-			outBuf.push_back(entry);
-	}
-	for (auto &&entry : entries) {
-		if (wl::path::is_dir(entry)) {
-			std::wstring subPath{entry};
-			subPath.append(L"\\*");
-			dir_walk_buf(subPath, outBuf); // recursively, deep last
-		}
-	}
+std::vector<std::wstring> wl::path::dir_list(WStrPtr dirPath) {
+	std::vector<std::wstring> ret{};
+	dir_list(dirPath, [&ret](const std::wstring &p) -> void {
+		ret.emplace_back(p);
+	});
+	return ret;
 }
 
-std::vector<std::wstring> wl::path::dir_walk(WStrPtr pathAndFilter) {
-	std::vector<std::wstring> entries;
-	dir_walk_buf(pathAndFilter, entries);
-	return entries;
+void wl::path::dir_walk(WStrPtr dirPath, std::function<void(const std::wstring &p)> &&cb) {
+	dir_list(dirPath, [&cb](const std::wstring &p) -> void {
+		if (is_dir(p)) {
+			dir_walk(p, [&cb](const std::wstring &p) -> void { // recursively
+				cb(p); // invoke user callback
+			});
+		} else {
+			cb(p); // invoke user callback
+		}
+	});
+}
+
+std::vector<std::wstring> wl::path::dir_walk(WStrPtr dirPath) {
+	std::vector<std::wstring> ret{};
+	dir_walk(dirPath, [&ret](const std::wstring &p) -> void {
+		ret.emplace_back(p);
+	});
+	return ret;
 }
 
 std::wstring wl::path::exe_dir() {

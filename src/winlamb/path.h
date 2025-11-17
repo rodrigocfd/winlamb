@@ -1,4 +1,6 @@
 #pragma once
+#include <functional>
+#include <vector>
 #include "lib-include-win.h"
 #include "str.h"
 
@@ -8,25 +10,37 @@ namespace wl::path {
 	/** Returns the full directory of `p`, without the trailing backslash. */
 	[[nodiscard]] std::wstring dir_from(WStrPtr p);
 
-	/// Returns all files and folders within `pathAndFilter`. Does not search within subfolders.
+	/// Invokes `cb` for each file and folder within `dirPath`.
+	///
+	/// Does not search the folders recursively.
 	///
 	/// Example:
 	///
 	/// ```cpp
-	/// std::vector<std::wstring> mp3Files = wl::path::dir_list(L"C:\\Temp\\*.mp3");
-	/// std::vector<std::wstring> allFiles = wl::path::dir_list(L"C:\\Temp\\*");
+	/// wl::path::dir_list(L"C:\\Temp", [](const std::wstring &p) -> void {
+	///     // ...
+	/// });
 	/// ```
-	[[nodiscard]] std::vector<std::wstring> dir_list(WStrPtr pathAndFilter);
+	void dir_list(WStrPtr dirPath, std::function<void(const std::wstring &p)> &&cb);
 
-	/// Returns, recursively on folders, all files within `pathAndFilter`.
+	/// Returns a newly allocated vector with each file and folder within `dirPath`.
+	///
+	/// Does not search the folders recursively.
+	[[nodiscard]] std::vector<std::wstring> dir_list(WStrPtr dirPath);
+
+	/// Invokes `cb` for each file within `dirPath`, searching the folders recursively.
 	///
 	/// Example:
 	///
 	/// ```cpp
-	/// std::vector<std::wstring> mp3Files = wl::path::dir_walk(L"C:\\Temp\\*.mp3");
-	/// std::vector<std::wstring> allFiles = wl::path::dir_walk(L"C:\\Temp\\*");
+	/// wl::path::dir_walk(L"C:\\Temp", [](const std::wstring &p) -> void {
+	///     // ...
+	/// });
 	/// ```
-	[[nodiscard]] std::vector<std::wstring> dir_walk(WStrPtr pathAndFilter);
+	void dir_walk(WStrPtr dirPath, std::function<void(const std::wstring &p)> &&cb);
+
+	/** Returns a newly allocated vector with each file within `dirPath`, searching folders recursively. */
+	[[nodiscard]] std::vector<std::wstring> dir_walk(WStrPtr dirPath);
 
 	/// Returns the path of the current executable.
 	///

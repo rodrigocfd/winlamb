@@ -33,10 +33,6 @@ namespace wl {
 			SYSTEMTIME creation{}, lastAccess{}, lastWrite{};
 		};
 
-	private:
-
-
-	public:
 		/// Destructor.
 		///
 		/// Calls [`CloseHandle`].
@@ -219,8 +215,8 @@ namespace wl {
 		const File& truncate() const;
 
 	private:
-		HANDLE _hFile = nullptr;
 		const File& write_from_ptr(const BYTE *p, size_t n) const;
+		HANDLE _hFile = nullptr;
 	};
 
 }
