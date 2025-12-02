@@ -12,7 +12,8 @@ namespace wl {
 	///
 	/// ```cpp
 	/// wl::File myFile{L"C:\\Temp\\foo.txt", wl::File::Access::existing_read_only};
-	/// std::vector<BYTE> contents = myFile.read();
+	/// std::vector<BYTE> contents = myFile.read_all();
+	/// std::wstring text = wl::str::parse(contents);
 	/// ```
 	class File final {
 	public:
@@ -55,7 +56,7 @@ namespace wl {
 		/// Ideally, you should never need this.
 		constexpr explicit File(HANDLE hFile) : _hFile{hFile} { }
 
-		/// Calls [`CreateFile`] immediately to open the file pointed by `path`, according to the given `access`.
+		/// Calls [`CreateFile`] immediately to open the file pointed by `filePath`, according to the given `access`.
 		///
 		/// Example:
 		///
@@ -64,7 +65,7 @@ namespace wl {
 		/// ```
 		///
 		/// [`CreateFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
-		File(WStrView path, Access access) { open(path, access); }
+		File(WStrView filePath, Access access) { open(filePath, access); }
 
 		/// Move-assignment operator.
 		///
@@ -92,12 +93,12 @@ namespace wl {
 
 		/// Calls [`CloseHandle`] immediately.
 		///
-		/// This method is automatically called by the destructor.
+		/// This method is automatically called by the `~File` destructor.
 		///
 		/// [`CloseHandle`]: https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
 		void close() noexcept;
 
-		/// Calls [`CreateFile`] to open the file pointed by `path`, according to the given `access`.
+		/// Calls [`CreateFile`] to open the file pointed by `filePath`, according to the given `access`.
 		///
 		/// Example:
 		///
@@ -107,7 +108,7 @@ namespace wl {
 		/// ```
 		///
 		/// [`CreateFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
-		File& open(WStrView path, Access access);
+		File& open(WStrView filePath, Access access);
 
 		/// Returns the current file size by calling [`GetFileSizeEx`].
 		///
@@ -124,7 +125,7 @@ namespace wl {
 		/// [`SetFilePointerEx`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-setfilepointerex
 		const File& set_ptr_offset(size_t offset) const;
 
-		/// Calls [`ReadFile`] and returns a vector with the file contents, up to `numBytes`.
+		/// Calls [`ReadFile`] and returns a [`std::vector`] with the file contents, up to `numBytes`.
 		///
 		/// Example:
 		///
@@ -134,9 +135,10 @@ namespace wl {
 		/// ```
 		///
 		/// [`ReadFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-readfile
+		/// [`std::vector`]: https://en.cppreference.com/w/cpp/container/vector.html
 		[[nodiscard]] std::vector<BYTE> read(size_t numBytes) const;
 
-		/// Calls [`SetFilePointerEx`] to rewind the current file pointer, then [`ReadFile`] to return a vector with the entire file.
+		/// Calls [`SetFilePointerEx`] to rewind the current file pointer, then [`ReadFile`] to return a [`std::vector`] with the entire file.
 		///
 		/// Example:
 		///
@@ -147,6 +149,7 @@ namespace wl {
 		///
 		/// [`SetFilePointerEx`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-setfilepointerex
 		/// [`ReadFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-readfile
+		/// [`std::vector`]: https://en.cppreference.com/w/cpp/container/vector.html
 		[[nodiscard]] std::vector<BYTE> read_all() const;
 
 		/// Calls [`ReadFile`] and copies the file contents into `buf`, up to `buf.size()`.
@@ -232,6 +235,7 @@ namespace wl {
 	/// ```cpp
 	/// wl::FileMapped myFile{L"C:\\Temp\\foo.txt", wl::FileMapped::Access::existing_read_only};
 	/// std::span<BYTE> myView = myFile.view();
+	/// std::wstring text = wl::str::parse(myView);
 	/// ```
 	class FileMapped final {
 	public:
@@ -273,7 +277,7 @@ namespace wl {
 		/// [`CreateFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
 		/// [`CreateFileMapping`]: https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-createfilemappingw
 		/// [`MapViewOfFile`]: https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-mapviewoffile
-		FileMapped(WStrView path, Access access) { open(path, access); }
+		FileMapped(WStrView filePath, Access access) { open(filePath, access); }
 
 		/// Move-assignment operator.
 		///
@@ -288,7 +292,7 @@ namespace wl {
 
 		/// Calls [`UnmapViewOfFile`] and [`CloseHandle`] immediately.
 		///
-		/// This method is automatically called by the destructor.
+		/// This method is automatically called by the `~FileMapped` destructor.
 		///
 		/// [`UnmapViewOfFile`]: https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-unmapviewoffile
 		/// [`CloseHandle`]: https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
@@ -306,12 +310,12 @@ namespace wl {
 		/// [`CreateFile`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-createfilew
 		/// [`CreateFileMapping`]: https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-createfilemappingw
 		/// [`MapViewOfFile`]: https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-mapviewoffile
-		FileMapped& open(WStrView path, Access access);
+		FileMapped& open(WStrView filePath, Access access);
 
 		/** Returns the file size. This value is cached. */
 		[[nodiscard]] constexpr size_t size() const { return _sz; }
 
-		/// Returns a view over the file contents.
+		/// Returns a [`std::span`] over the memory-mapped file contents.
 		///
 		/// Example:
 		///
@@ -319,10 +323,9 @@ namespace wl {
 		/// wl::FileMapped myFile{L"C:\\Temp\\foo.txt", wl::FileMapped::Access::existing_read_only};
 		/// std::span<BYTE> myView = myFile.view();
 		/// ```
+		///
+		/// [`std::span`]: https://en.cppreference.com/w/cpp/container/span.html
 		[[nodiscard]] constexpr std::span<BYTE> view() const { return {reinterpret_cast<BYTE*>(_pMem), size()}; }
-
-		/** Returns the underlying `File` object. */
-		[[nodiscard]] constexpr const File& file() const { return _file; }
 
 	private:
 		File _file{};

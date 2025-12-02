@@ -6,7 +6,6 @@
 #include "wnd-funcs.h"
 #include "wnd-opts.h"
 #include "events-ctl.h"
-#include "icon-store.h"
 
 namespace wl {
 
@@ -160,7 +159,7 @@ namespace wl {
 	/// [check box]: https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#check-boxes
 	class CheckBox final : public WindowChild {
 	public:
-		/// Constructs the button programmatically with [`CreateWindowEx`].
+		/// Constructs the check box programmatically with [`CreateWindowEx`].
 		///
 		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
 		///
@@ -169,7 +168,7 @@ namespace wl {
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		explicit CheckBox(WindowParent &owner, WORD ctrlId = 0);
 
-		/// Constructs the button from the dialog resource.
+		/// Constructs the check box from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
 		CheckBox(WindowParent &owner, WORD ctrlId, Lay layout);
@@ -330,7 +329,7 @@ namespace wl {
 			friend ComboBox;
 		};
 
-		/// Constructs the button programmatically with [`CreateWindowEx`].
+		/// Constructs the combo box programmatically with [`CreateWindowEx`].
 		///
 		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
 		///
@@ -339,7 +338,7 @@ namespace wl {
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		explicit ComboBox(WindowParent &owner, WORD ctrlId = 0);
 
-		/// Constructs the button from the dialog resource.
+		/// Constructs the combo box from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
 		ComboBox(WindowParent &owner, WORD ctrlId, Lay layout);
@@ -460,10 +459,14 @@ namespace wl {
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
-		/** Returns the current date and time value. */
+		/// Returns the current [`SYSTEMTIME`].
+		///
+		/// [`SYSTEMTIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
 		[[nodiscard]] SYSTEMTIME value() const;
 
-		/** Sets the current date and time value. */
+		/// Sets the current [`SYSTEMTIME`].
+		///
+		/// [`SYSTEMTIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
 		const DateTimePicker& set_value(const SYSTEMTIME &st) const;
 
 	private:
@@ -651,6 +654,7 @@ namespace wl {
 		/** @brief A single column of the `ListView`. */
 		class Column final {
 		public:
+			/** Constructs a column for the given `ListView` and zero-based index. */
 			constexpr Column(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
 
 			/** Returns the zero-based index of the column. */
@@ -731,6 +735,7 @@ namespace wl {
 		/** @brief A single item of the `ListView`. */
 		class Item final {
 		public:
+			/** Constructs an item for the given `ListView` and zero-based index. */
 			constexpr Item(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
 
 			/** Returns the zero-based index of the item. */
@@ -851,7 +856,9 @@ namespace wl {
 			/** Selects or deselects all items. */
 			void select_all(bool doSelect) const;
 
-			/** Returns the selected items. */
+			/// Returns a [`std::vector`] with the the selected items.
+			///
+			/// [`std::vector`]: https://en.cppreference.com/w/cpp/container/vector.html
 			[[nodiscard]] std::vector<Item> selected() const;
 
 			/** Returns the selected item count. */
@@ -942,10 +949,16 @@ namespace wl {
 		/// [extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/extended-list-view-styles
 		const ListView& set_extended_style(bool doSet, DWORD exStyle) const;
 
-		/** Retrieves the 16x16 `IconStore`. */
+		/// Retrieves the 16x16 `IconStore`.
+		///
+		/// Allows icons to be added to the control's image list.
+		/// An `Item` can display an icon referring to its zero-based index.
 		IconStore& icons_16();
 
-		/** Retrieves the 32x32 `IconStore`. */
+		/// Retrieves the 32x32 `IconStore`.
+		///
+		/// Allows icons to be added to the control's image list.
+		/// An `Item` can display an icon referring to its zero-based index.
 		IconStore& icons_32();
 
 	private:
@@ -1008,16 +1021,101 @@ namespace wl {
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
-		/** Returns the current date and time value. */
+		/// Returns the current [`SYSTEMTIME`].
+		///
+		/// [`SYSTEMTIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
 		[[nodiscard]] SYSTEMTIME value() const;
 
-		/** Sets the current date and time value. */
+		/// Sets the current [`SYSTEMTIME`].
+		///
+		/// [`SYSTEMTIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
 		const MonthCalendar& set_value(const SYSTEMTIME &st) const;
 
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::MonthCalendarEvents _events;
 		opts::MonthCalendarOpts _opts{};
+	};
+
+	/// @brief Native [radio button] control.
+	///
+	/// [radio button]: https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#radio-buttons
+	class RadioButton final : public WindowChild {
+	public:
+		/// Constructs the radio button programmatically with [`CreateWindowEx`].
+		///
+		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
+		///
+		/// Further options can be defined with the `setup` method.
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		explicit RadioButton(WindowParent &owner, WORD ctrlId = 0);
+
+		/// Constructs the radio button from the dialog resource.
+		///
+		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		RadioButton(WindowParent &owner, WORD ctrlId, Lay layout);
+
+		/** Returns the wrapped window handle. */
+		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
+
+		/** Returns the control ID. */
+		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
+
+		/** For controls created programmatically, defines additional creation options. */
+		[[nodiscard]] constexpr opts::RadioButtonOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
+
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// rad.on().bn_clicked([]() -> void {
+		///     // ...
+		/// });
+		/// ```
+		[[nodiscard]] constexpr events::ButtonEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+
+		/// [Subclasses] the control allowing message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		///
+		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
+		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+
+		/// Returns true if the radio button is currently selected.
+		///
+		/// Only one radio button can be selected at once in its group.
+		[[nodiscard]] bool is_selected() const;
+
+		/// Selects the radio button.
+		///
+		/// Only one radio button can be selected at once in its group.
+		const RadioButton& select() const;
+
+		/// Calls [`GetWindowText`] to return the control text.
+		///
+		/// [`GetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowtextw
+		[[nodiscard]] std::wstring text() const { return _wl_internal::wnd_text(hwnd()); }
+
+		/// Calls [`SetWindowText`] to set the control text.
+		///
+		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
+		const RadioButton& set_text(WStrView text) const;
+
+		/// Calls [`SetWindowText`] to set the button text, then resizes the check box to fit the text exactly.
+		///
+		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
+		const RadioButton& set_text_resize(WStrView text) const;
+
+	private:
+		_wl_internal::NativeCtrlBase _ctrl;
+		events::ButtonEvents _events;
+		opts::RadioButtonOpts _opts{};
 	};
 
 	/// @brief Native [static] control (label).
@@ -1139,7 +1237,7 @@ namespace wl {
 	///     sb.setup().part_resizable(1, L"First");
 	///     sb.setup().part_fixed(wl::dpi::x(200), L"Second");
 	///
-	///     sb.on().nm_click([this](NMMOUSE& p) -> bool {
+	///     sb.on().nm_click([this](NMMOUSE &p) -> bool {
 	///         MessageBoxW(wnd.hwnd(), L"Status bar clicked", L"Click", MB_ICONINFORMATION);
 	///         return true;
 	///     });
@@ -1152,6 +1250,7 @@ namespace wl {
 		/** @brief A single part of the `StatusBar`. */
 		class Part final {
 		public:
+			/** Constructs a part for the given `StatusBar` and zero-based index. */
 			constexpr Part(const StatusBar &owner, int index) : _pOwner{&owner}, _index{index} { }
 
 			/** Returns the index of the part. */
@@ -1174,7 +1273,7 @@ namespace wl {
 			int _index;
 		};
 
-		/** @brief Operations over the parts. */
+		/** @brief Operations over the parts of a `StatusBar`. */
 		class PartCollection final {
 		private:
 			PartCollection(PartCollection&&) = delete; // no-copyable, non-movable
@@ -1235,7 +1334,10 @@ namespace wl {
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
-		/** Retrieves the 16x16 `IconStore`. */
+		/// Retrieves the 16x16 `IconStore`.
+		///
+		/// Allows icons to be added to the control's image list.
+		/// A `Part` can display an icon referring to its zero-based index.
 		constexpr IconStore& icons() { return _iconStore16; }
 
 	private:
@@ -1254,4 +1356,5 @@ namespace wl {
 		std::vector<PartData> _partsData{};
 		std::vector<int> _rightEdges{}; // buffer to speed up resize calls
 	};
+
 }

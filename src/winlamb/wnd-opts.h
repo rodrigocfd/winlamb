@@ -18,7 +18,7 @@ namespace wl::opts {
 		/// Defaults to an auto-generated string.
 		///
 		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
-		LPCWSTR className = nullptr;
+		std::wstring className{};
 		/// Class style passed to [`WNDCLASSEX`].
 		///
 		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
@@ -37,7 +37,7 @@ namespace wl::opts {
 		/// The window title, passed to [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		LPCWSTR title = nullptr;
+		std::wstring title{};
 		/// The window size passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
@@ -64,9 +64,11 @@ namespace wl::opts {
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD exStyle = WS_EX_LEFT;
-		/** Optional window main menu. */
+		/// Optional window main menu, passed to [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		HMENU hMenu = nullptr;
-		/// Optional window [accelerator table].
+		/// Optional window [accelerator table], to define keyboard shortcuts.
 		///
 		/// [accelerator table]: https://learn.microsoft.com/en-us/windows/win32/learnwin32/accelerator-tables
 		HACCEL hAccelTable = nullptr;
@@ -88,7 +90,7 @@ namespace wl::opts {
 		/// Defaults to an auto-generated string.
 		///
 		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
-		LPCWSTR className = nullptr;
+		std::wstring className{};
 		/// Class style passed to [`WNDCLASSEX`].
 		///
 		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
@@ -107,7 +109,7 @@ namespace wl::opts {
 		/// The window title, passed to [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		LPCWSTR title = nullptr;
+		std::wstring title{};
 		/// The window size passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
@@ -152,7 +154,7 @@ namespace wl::opts {
 		/// Defaults to an auto-generated string.
 		///
 		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
-		LPCWSTR className = nullptr;
+		std::wstring className{};
 		/// Class style passed to [`WNDCLASSEX`].
 		///
 		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
@@ -215,7 +217,7 @@ namespace wl::opts {
 		/// Control text passed to [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		LPCWSTR text = nullptr;
+		std::wstring text{};
 		/// The [window style] passed to [`CreateWindowEx`].
 		///
 		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -264,7 +266,7 @@ namespace wl::opts {
 		/// Control text passed to [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		LPCWSTR text = nullptr;
+		std::wstring text{};
 		/// The [window style] passed to [`CreateWindowEx`].
 		///
 		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -298,7 +300,7 @@ namespace wl::opts {
 		/// chk.setup().size = wl::dpi::sz(88, 26);
 		/// ```
 		///
-		/// If not defined, the `CheckBox` will resize to automatically fit its initial text.
+		/// If not defined, the control will resize to automatically fit its initial text.
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		SIZE size{};
@@ -408,7 +410,17 @@ namespace wl::opts {
 		WORD ctrlId = 0;
 		/** Horizontal and vertical behavior of the control when the parent window is resized. */
 		Lay layout = Lay::hold_hold;
-		/** Initial date and time. */
+		/// Initial [`SYSTEMTIME`].
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// SYSTEMTIME st{};
+		/// GetLocalTime(&st);
+		/// dtp.setup().value = st;
+		/// ```
+		///
+		/// [`SYSTEMTIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
 		SYSTEMTIME value{};
 	};
 
@@ -417,7 +429,7 @@ namespace wl::opts {
 		/// Control text passed to [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		LPCWSTR text = nullptr;
+		std::wstring text{};
 		/// The [window style] passed to [`CreateWindowEx`].
 		///
 		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -513,18 +525,35 @@ namespace wl::opts {
 		/// Context menu resource to be loaded as the context menu with [`LoadMenu`].
 		/// If defined, overwrites `hMenuContext`.
 		///
-		/// This menu will be owned by the ListView, and destroyed automatically.
+		/// This menu will be owned by the list view, and destroyed automatically.
 		///
 		/// [`LoadMenu`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadmenuw
 		WORD contextMenuId = 0;
-		/// Optional ListView context menu, usually created programmatically with [`CreatePopupMenu`].
+		/// Optional list view context menu, usually created programmatically with [`CreatePopupMenu`].
 		///
-		/// This menu will be owned by the ListView, and destroyed automatically.
+		/// This menu will be owned by the list view, and destroyed automatically.
 		///
 		/// Ignored if you define `contextMenuId`.
 		///
 		/// [`CreatePopupMenu`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createpopupmenu
 		HMENU hMenuContext = nullptr;
+
+		/** A column to be added to the `ListView`. */
+		struct Col final {
+			std::wstring name{};
+			int width = 0;
+		};
+		/// Columns to be added, title and width.
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// lv.setup().columns = {
+		///     {L"First", wl::dpi::x(100)},
+		///     {L"Second", wl::dpi::x(120)},
+		/// };
+		/// ```
+		std::vector<Col> columns{};
 	};
 
 	/** Options to create a `MonthCalendar` programmatically. */
@@ -560,8 +589,73 @@ namespace wl::opts {
 		WORD ctrlId = 0;
 		/** Horizontal and vertical behavior of the control when the parent window is resized. */
 		Lay layout = Lay::hold_hold;
-		/** Initial date and time. */
+		/// Initial [`SYSTEMTIME`].
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// SYSTEMTIME st{};
+		/// GetLocalTime(&st);
+		/// mcal.setup().value = st;
+		/// ```
+		///
+		/// [`SYSTEMTIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
 		SYSTEMTIME value{};
+	};
+
+	/** Options to create a `RadioButton` programmatically. */
+	struct RadioButtonOpts final {
+		/// Control text passed to [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		std::wstring text{};
+		/// The [window style] passed to [`CreateWindowEx`].
+		///
+		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		/// The [window extended style] passed to [`CreateWindowEx`].
+		///
+		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD windowExStyle = WS_EX_LEFT;
+		/// The [RadioButton style] passed to [`CreateWindowEx`].
+		///
+		/// [RadioButton style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD ctrlStyle = BS_AUTORADIOBUTTON;
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// rad.setup().pos = wl::dpi::pt(10, 10);
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		POINT pos{};
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// rad.setup().size = wl::dpi::sz(88, 26);
+		/// ```
+		///
+		/// If not defined, the control will resize to automatically fit its initial text.
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SIZE size{};
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
+		/// Initial state.
+		///
+		/// Only one radio button can be selected at once in its group.
+		bool selected = false;
 	};
 
 	/** Options to create a `Static` programmatically. */
@@ -569,7 +663,7 @@ namespace wl::opts {
 		/// Control text passed to [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		LPCWSTR text = nullptr;
+		std::wstring text{};
 		/// The [window style] passed to [`CreateWindowEx`].
 		///
 		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -603,7 +697,7 @@ namespace wl::opts {
 		/// lbl.setup().size = wl::dpi::sz(88, 26);
 		/// ```
 		///
-		/// If not defined, the `Static` will resize to automatically fit its initial text.
+		/// If not defined, the control will resize to automatically fit its initial text.
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		SIZE size{};

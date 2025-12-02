@@ -1,0 +1,62 @@
+html {
+	--page-foreground-color: #1f2328;
+	--fragment-foreground-color: #1f2328;
+	--code-comment-color: #aaa;
+	--code-keyword-color: #008000;
+	--code-type-keyword-color: #008000;
+	--code-flow-keyword-color: #008000;
+	--font-family-normal: 'Segoe UI', Arial, sans-serif;
+	--font-family-nav: 'Segoe UI', Arial, sans-serif;
+	--font-family-monospace: Consolas, monospace;
+	--page-link-color: #3d578c;
+	--page-visited-link-color: #3d578c;
+	--page-external-link-color: #3d578c;
+}
+
+h1 {
+	color: #444;
+	font-size: 18pt;
+	padding-bottom: 4px;
+	margin-top: 28px;
+	border-bottom: 1px solid #e8e8e8;
+}
+
+a,
+a.el {
+	font-weight: normal;
+	text-decoration: underline;
+}
+
+a:hover,
+a:visited:hover {
+	color: #c00;
+}
+
+div,
+div.line,
+p,
+table,
+th.markdownTableHeadNone,
+.memname {
+	font-size: 16px;
+}
+
+.compoundTemplParams, .fieldname {
+	font-family: var(--font-family-monospace);
+}
+
+#nav-tree .label,
+.sm-dox a,
+.sm-dox a:hover,
+.sm-dox ul a,
+.sm-dox ul a:hover {
+	font-size: 14px;
+}
+
+div.line {
+	line-height: inherit;
+}
+
+span.comment {
+	font-style: italic;
+}

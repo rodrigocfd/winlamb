@@ -29,6 +29,7 @@ namespace wl {
 	class Edit;
 	class ListView;
 	class MonthCalendar;
+	class RadioButton;
 	class Static;
 	class StatusBar;
 }
@@ -55,6 +56,7 @@ namespace wl::events {
 		_wl_internal::NativeCtrlEvents _ctrlEvents;
 		friend wl::Button;
 		friend wl::CheckBox;
+		friend wl::RadioButton;
 	};
 
 	/** @brief Native `ComboBox` control events. */

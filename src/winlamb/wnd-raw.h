@@ -12,9 +12,9 @@ namespace _wl_internal {
 
 		constexpr RawBase() = default;
 
-		[[nodiscard]] ATOM register_class(HINSTANCE hInst, LPCWSTR className, DWORD classStyle,
+		[[nodiscard]] ATOM register_class(HINSTANCE hInst, std::wstring &&className, DWORD classStyle,
 			WORD iconId, HBRUSH hbrBackground, HCURSOR hCursor);
-		void create_window(DWORD exStyle, ATOM className, LPCWSTR title, DWORD style,
+		void create_window(DWORD exStyle, ATOM className, std::wstring &&title, DWORD style,
 			POINT pos, SIZE sz, HWND hParent, HMENU hMenu, HINSTANCE hInst);
 		void focus_first_child() const;
 

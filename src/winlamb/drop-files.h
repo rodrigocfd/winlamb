@@ -58,7 +58,9 @@ namespace wl {
 
 		/// Defines a callback to be called when files are dropped on the window.
 		///
-		/// Receives a vector with the full path of each file being dropped.
+		/// Receives a [`std::vector`] with the full path of each file being dropped.
+		///
+		/// [`std::vector`]: https://en.cppreference.com/w/cpp/container/vector.html
 		void on_drop(std::function<void(const std::vector<std::wstring>&)> cb) { _cb = std::make_optional(cb); }
 
 	private:

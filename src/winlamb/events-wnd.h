@@ -18,23 +18,6 @@ namespace wl::wm {
 		LPARAM lp;
 	};
 
-	struct Command : protected Msg {
-		constexpr Command(const Msg &p) : Msg{p} { }
-		[[nodiscard]] constexpr bool is_from_menu() const        { return HIWORD(wp) == 0; }
-		[[nodiscard]] constexpr bool is_from_accelerator() const { return HIWORD(wp) == 1; }
-		[[nodiscard]] constexpr bool is_from_control() const     { return !is_from_menu() && !is_from_accelerator(); }
-		[[nodiscard]] constexpr WORD menu_id() const             { return control_id(); }
-		[[nodiscard]] constexpr WORD accelerator_id() const      { return control_id(); }
-		[[nodiscard]] constexpr WORD control_id() const          { return LOWORD(wp); }
-		[[nodiscard]] constexpr WORD control_notif_code() const  { return HIWORD(wp); }
-		[[nodiscard]] HWND           control_hwnd() const        { return reinterpret_cast<HWND>(lp); }
-	};
-
-	struct Notify : protected Msg {
-		constexpr Notify(const Msg &p) : Msg{p} { }
-		template<typename T> [[nodiscard]] T& hdr() { return *reinterpret_cast<T*>(lp); }
-	};
-
 	struct Activate : protected Msg {
 		constexpr Activate(const Msg &p) : Msg{p} { }
 		[[nodiscard]] constexpr WORD active_state() const   { return LOWORD(wp); }
@@ -48,9 +31,27 @@ namespace wl::wm {
 		[[nodiscard]] constexpr DWORD thread_id() const          { return static_cast<DWORD>(lp); }
 	};
 
+	struct Command : protected Msg {
+		constexpr Command(const Msg &p) : Msg{p} { }
+		[[nodiscard]] constexpr bool is_from_menu() const        { return HIWORD(wp) == 0; }
+		[[nodiscard]] constexpr bool is_from_accelerator() const { return HIWORD(wp) == 1; }
+		[[nodiscard]] constexpr bool is_from_control() const     { return !is_from_menu() && !is_from_accelerator(); }
+		[[nodiscard]] constexpr WORD menu_id() const             { return control_id(); }
+		[[nodiscard]] constexpr WORD accelerator_id() const      { return control_id(); }
+		[[nodiscard]] constexpr WORD control_id() const          { return LOWORD(wp); }
+		[[nodiscard]] constexpr WORD control_notif_code() const  { return HIWORD(wp); }
+		[[nodiscard]] HWND           control_hwnd() const        { return reinterpret_cast<HWND>(lp); }
+	};
+
 	struct Create : protected Msg {
 		constexpr Create(const Msg &p) : Msg{p} { }
 		[[nodiscard]] const CREATESTRUCTW& crate_struct() const { return *reinterpret_cast<const CREATESTRUCTW*>(lp); }
+	};
+
+	struct DisplayChange : protected Msg {
+		constexpr DisplayChange(const Msg &p) : Msg{p} { }
+		[[nodiscard]] constexpr int bits_per_pixel() const { return static_cast<int>(wp); }
+		[[nodiscard]] constexpr SIZE sz() const            { return {.cx = LOWORD(lp), .cy = HIWORD(lp)}; }
 	};
 
 	struct Enable : protected Msg {
@@ -156,6 +157,11 @@ namespace wl::wm {
 		[[nodiscard]] constexpr WPARAM wparam() const { return wp; }
 		[[nodiscard]] constexpr LPARAM lparam() const { return lp; }
 		[[nodiscard]] HRGN      hrgn() const          { return reinterpret_cast<HRGN>(wp); }
+	};
+
+	struct Notify : protected Msg {
+		constexpr Notify(const Msg &p) : Msg{p} { }
+		template<typename T> [[nodiscard]] T& hdr() { return *reinterpret_cast<T*>(lp); }
 	};
 
 	struct PowerBroadcast : protected Msg {
@@ -372,6 +378,7 @@ namespace wl::events {
 		void wm_child_activate(std::function<void()> &&cb);
 		void wm_close(std::function<void()> &&cb);
 		void wm_destroy(std::function<void()> &&cb);
+		void wm_display_change(std::function<void(wl::wm::DisplayChange)> &&cb);
 		void wm_enable(std::function<void(wl::wm::Enable)> &&cb);
 		void wm_end_session(std::function<void(wl::wm::EndSession)> &&cb);
 		void wm_enter_size_move(std::function<void()> &&cb);

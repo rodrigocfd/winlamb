@@ -5,10 +5,14 @@
 #include <span>
 #include <vector>
 
-/** @brief Vector, span and array utilities. */
+/// @brief Utilities for [`vector`], [`span`] and [`array`].
+///
+/// [`vector`]: https://en.cppreference.com/w/cpp/container/vector.html
+/// [`span`]: https://en.cppreference.com/w/cpp/container/span.html
+/// [`array`]: https://en.cppreference.com/w/cpp/container/array.html
 namespace wl::vec {
 
-	/// Returns true if all elements are equal to the given one.
+	/// Returns true if all elements in `v` are equal to `elem`.
 	///
 	/// Example:
 	///
@@ -27,7 +31,7 @@ namespace wl::vec {
 		return true;
 	}
 
-	/// Returns true if `pred` returns true for all of the elements.
+	/// Returns true if `pred` returns true for all elements in `v`.
 	///
 	/// Example:
 	///
@@ -41,14 +45,14 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] bool all_if(R &&v, std::predicate<T> auto pred) {
+	[[nodiscard]] bool all_if(R &&v, std::predicate<T> auto &&pred) {
 		for (auto it = v.begin(); it != v.end(); ++it) {
 			if (!pred(*it)) return false;
 		}
 		return true;
 	}
 
-	/// Returns true if one of the elements is equal to the given one.
+	/// Returns true if one of the elements in `v` is equal to `elem`.
 	///
 	/// Example:
 	///
@@ -64,7 +68,7 @@ namespace wl::vec {
 		return std::find(v.begin(), v.end(), elem) != v.end();
 	}
 
-	/// Returns true if `pred` returns true for any of the elements.
+	/// Returns true if `pred` returns true for any of the elements in `v`.
 	///
 	/// Example:
 	///
@@ -78,7 +82,7 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] bool any_if(R &&v, std::predicate<T> auto pred) {
+	[[nodiscard]] bool any_if(R &&v, std::predicate<T> auto &&pred) {
 		return std::find_if(v.begin(), v.end(), pred) != v.end();
 	}
 
@@ -189,7 +193,7 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] T* find_if(R &&v, std::predicate<T> auto pred) {
+	[[nodiscard]] T* find_if(R &&v, std::predicate<T> auto &&pred) {
 		auto foundIt = std::find_if(v.begin(), v.end(), pred);
 		return (foundIt == v.end()) ? nullptr : &(*foundIt);
 	}
@@ -231,7 +235,7 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] T* find_rev_if(R &&v, std::predicate<T> auto pred) {
+	[[nodiscard]] T* find_rev_if(R &&v, std::predicate<T> auto &&pred) {
 		auto foundIt = std::find_if(v.rbegin(), v.rend(), pred);
 		return (foundIt == v.rend()) ? nullptr : &(*foundIt);
 	}
@@ -267,7 +271,7 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] std::optional<size_t> index_if(R &&v, std::predicate<T> auto pred) {
+	[[nodiscard]] std::optional<size_t> index_if(R &&v, std::predicate<T> auto &&pred) {
 		auto foundIt = std::find_if(v.begin(), v.end(), pred);
 		return (foundIt == v.end()) ? std::nullopt : std::make_optional(std::distance(v.begin(), foundIt));
 	}
@@ -303,7 +307,7 @@ namespace wl::vec {
 		std::ranges::contiguous_range R,
 		typename T = std::remove_reference_t<std::ranges::range_reference_t<R>>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] std::optional<size_t> index_rev_if(R &&v, std::predicate<T> auto pred) {
+	[[nodiscard]] std::optional<size_t> index_rev_if(R &&v, std::predicate<T> auto &&pred) {
 		auto foundIt = std::find_if(v.rbegin(), v.rend(), pred);
 		return (foundIt == v.rend()) ? std::nullopt : std::make_optional(std::distance(foundIt, std::prev(v.rend())));
 	}
@@ -373,7 +377,7 @@ namespace wl::vec {
 	/// });
 	/// ```
 	template<typename T>
-	void remove_if(std::vector<T> &v, std::predicate<T> auto pred) {
+	void remove_if(std::vector<T> &v, std::predicate<T> auto &&pred) {
 		v.erase(std::remove_if(v.begin(), v.end(), pred), v.end());
 	}
 
@@ -451,7 +455,7 @@ namespace wl::vec {
 		typename F = std::is_invocable<const std::type_identity_t<T>&>,
 		typename U = std::invoke_result_t<F, const std::type_identity_t<T>&>
 	> requires std::ranges::sized_range<R>
-	[[nodiscard]] std::vector<U> transform(R &&v, F cb) {
+	[[nodiscard]] std::vector<U> transform(R &&v, F &&cb) {
 		std::vector<U> ret;
 		ret.reserve(v.size());
 		for (auto &&elem : v)

@@ -27,7 +27,6 @@
 				"/Zc:wchar_t",
 				"/ZI"
 			],
-			"windowsSdkVersion": "10.0.20348.0",
 			"compilerPath": "cl.exe",
 			"cppStandard": "c++20",
 			"intelliSenseMode": "windows-msvc-x64"

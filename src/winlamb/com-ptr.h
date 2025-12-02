@@ -182,7 +182,7 @@ namespace wl {
 
 		/// Manually calls [`IUnknown::Release`], releasing the pointer immediately.
 		///
-		/// This method is automatically called by the destructor.
+		/// This method is automatically called by the `~ComPtr` destructor.
 		///
 		/// [`IUnknown::Release`]: https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release
 		void release() noexcept {

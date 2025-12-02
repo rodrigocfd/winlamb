@@ -116,8 +116,8 @@ NativeCtrlBase::NativeCtrlBase(WindowParent &owner)
 {
 }
 
-void NativeCtrlBase::create_wnd(WORD ctrlId, DWORD exStyle, LPCWSTR className,
-	LPCWSTR title, DWORD style, POINT pos, SIZE size)
+void NativeCtrlBase::create_wnd(WORD ctrlId, DWORD exStyle, const wchar_t *className,
+	std::wstring &&title, DWORD style, POINT pos, SIZE size)
 {
 	#ifdef _DEBUG
 	if (_hWnd)
@@ -126,7 +126,7 @@ void NativeCtrlBase::create_wnd(WORD ctrlId, DWORD exStyle, LPCWSTR className,
 		throw std::logic_error("Cannot create control before parent.");
 	#endif
 
-	_hWnd = CreateWindowExW(exStyle, className, title, style,
+	_hWnd = CreateWindowExW(exStyle, className, title.c_str(), style,
 		pos.x, pos.y, size.cx, size.cy, _parentWndBase._hWnd,
 		reinterpret_cast<HMENU>(valid_ctrl_id(ctrlId)), wnd_hinst(_parentWndBase._hWnd), nullptr);
 	#ifdef _DEBUG
@@ -176,7 +176,11 @@ LRESULT CALLBACK NativeCtrlBase::subclass_proc(HWND hWnd, UINT msg, WPARAM wp, L
 
 	if (msg == WM_NCDESTROY) { // always check
 		// https://devblogs.microsoft.com/oldnewthing/20031111-00/?p=41883
-		RemoveWindowSubclass(hWnd, subclass_proc, uIdSubclass);
+		BOOL ret = RemoveWindowSubclass(hWnd, subclass_proc, uIdSubclass);
+		#ifdef _DEBUG
+		if (!ret)
+			throw std::runtime_error("RemoveWindowSubclass failed.");
+		#endif
 		if (pSelf)
 			pSelf->_subclassEvents.clear();
 	}

@@ -86,7 +86,7 @@ std::vector<std::wstring> wl::path::dir_walk(WStrView dirPath) {
 }
 
 std::wstring wl::path::exe_dir() {
-	WCHAR buf[MAX_PATH] = {L'\0'};
+	wchar_t buf[MAX_PATH] = {L'\0'};
 	GetModuleFileNameW(nullptr, buf, ARRAYSIZE(buf));
 	std::wstring p = dir_from(buf);
 #ifdef _DEBUG

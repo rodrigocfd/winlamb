@@ -5,7 +5,7 @@
 using namespace wl;
 using namespace _wl_internal;
 
-ATOM RawBase::register_class(HINSTANCE hInst, LPCWSTR className, DWORD classStyle,
+ATOM RawBase::register_class(HINSTANCE hInst, std::wstring &&className, DWORD classStyle,
 	WORD iconId, HBRUSH hbrBackground, HCURSOR hCursor)
 {
 	WNDCLASSEXW wcx{
@@ -36,16 +36,13 @@ ATOM RawBase::register_class(HINSTANCE hInst, LPCWSTR className, DWORD classStyl
 		wcx.hCursor = hCur;
 	}
 
-	std::wstring clsNameBuf;
-	if (className) {
-		clsNameBuf = className;
-	} else {
-		clsNameBuf = str::fmt(L"WNDCLASS %x.%x.%x.%x.%x.%x.%x.%x.%x", // generate shared class name based on fields
+	if (className.empty()) {
+		className = str::fmt(L"WNDCLASS %x.%x.%x.%x.%x.%x.%x.%x.%x", // generate shared class name based on fields
 			wcx.style, wcx.lpfnWndProc, wcx.hInstance, wcx.hCursor, wcx.hbrBackground,
 			wcx.hIcon, wcx.hIconSm,
 			wcx.cbClsExtra, wcx.cbWndExtra);
 	}
-	wcx.lpszClassName = clsNameBuf.c_str();
+	wcx.lpszClassName = className.c_str();
 
 	ATOM atom = RegisterClassExW(&wcx);
 	if (!atom) {
@@ -67,7 +64,7 @@ ATOM RawBase::register_class(HINSTANCE hInst, LPCWSTR className, DWORD classStyl
 	return atom;
 }
 
-void RawBase::create_window(DWORD exStyle, ATOM className, LPCWSTR title, DWORD style,
+void RawBase::create_window(DWORD exStyle, ATOM className, std::wstring &&title, DWORD style,
 	POINT pos, SIZE sz, HWND hParent, HMENU hMenu, HINSTANCE hInst)
 {
 	#ifdef _DEBUG
@@ -75,7 +72,7 @@ void RawBase::create_window(DWORD exStyle, ATOM className, LPCWSTR title, DWORD 
 		throw std::logic_error("Cannot create window twice.");
 	#endif
 
-	HWND hWnd = CreateWindowExW(exStyle, MAKEINTATOM(className), title, style,
+	HWND hWnd = CreateWindowExW(exStyle, MAKEINTATOM(className), title.c_str(), style,
 		pos.x, pos.y, sz.cx, sz.cy, hParent, hMenu, hInst, reinterpret_cast<LPVOID>(this));
 	#ifdef _DEBUG
 	if (!hWnd)
@@ -148,7 +145,7 @@ RawMain::RawMain() {
 }
 
 int RawMain::run(HINSTANCE hInst, int cmdShow) {
-	ATOM atom = _rawBase.register_class(hInst, _opts.className, _opts.classStyle,
+	ATOM atom = _rawBase.register_class(hInst, std::move(_opts.className), _opts.classStyle,
 		_opts.iconId, _opts.hbrBackground, _opts.hCursor);
 
 	RECT rcWnd{
@@ -157,7 +154,11 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 		.right = _opts.size.cx,
 		.bottom = _opts.size.cy,
 	};
-	AdjustWindowRectEx(&rcWnd, _opts.style, _opts.hMenu != nullptr, _opts.exStyle);
+	BOOL ret = AdjustWindowRectEx(&rcWnd, _opts.style, _opts.hMenu != nullptr, _opts.exStyle);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::system_error(GetLastError(), std::system_category(), "AdjustWindowRectEx failed");
+	#endif
 	OffsetRect(&rcWnd, -rcWnd.left, -rcWnd.top);
 
 	POINT ptWndCenter{
@@ -165,12 +166,16 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 		.y = GetSystemMetrics(SM_CYSCREEN) / 2 - rcWnd.bottom / 2,
 	};
 
-	_rawBase.create_window(_opts.exStyle, atom, _opts.title, _opts.style,
+	_rawBase.create_window(_opts.exStyle, atom, std::move(_opts.title), _opts.style,
 		ptWndCenter, {.cx = rcWnd.right - rcWnd.left, .cy = rcWnd.bottom - rcWnd.top},
 		nullptr, _opts.hMenu, hInst);
 
 	ShowWindow(_rawBase._wndBase._hWnd, cmdShow);
-	UpdateWindow(_rawBase._wndBase._hWnd);
+	ret = UpdateWindow(_rawBase._wndBase._hWnd);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error("UpdateWindow failed.");
+	#endif
 
 	return _rawBase._wndBase.main_loop(_opts.hAccelTable, _opts.processDlgMsgs);
 }
@@ -194,7 +199,7 @@ RawModal::RawModal(const WindowParent &parent)
 
 void RawModal::show() {
 	HINSTANCE hInst = wnd_hinst(_parent.hwnd());
-	ATOM atom = _rawBase.register_class(hInst, _opts.className, _opts.classStyle,
+	ATOM atom = _rawBase.register_class(hInst, std::move(_opts.className), _opts.classStyle,
 		_opts.iconId, _opts.hbrBackground, _opts.hCursor);
 
 	_hWndChildPrevFocusParent = GetFocus();
@@ -206,7 +211,11 @@ void RawModal::show() {
 		.right = _opts.size.cx,
 		.bottom = _opts.size.cy,
 	};
-	AdjustWindowRectEx(&rcWnd, _opts.style, FALSE, _opts.exStyle);
+	BOOL ret = AdjustWindowRectEx(&rcWnd, _opts.style, FALSE, _opts.exStyle);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::system_error(GetLastError(), std::system_category(), "AdjustWindowRectEx failed");
+	#endif
 	OffsetRect(&rcWnd, -rcWnd.left, -rcWnd.top);
 
 	RECT rcParent{};
@@ -217,7 +226,7 @@ void RawModal::show() {
 		.y = rcParent.top + (rcParent.bottom - rcParent.top) / 2 - rcWnd.bottom / 2,
 	};
 
-	_rawBase.create_window(_opts.exStyle, atom, _opts.title, _opts.style,
+	_rawBase.create_window(_opts.exStyle, atom, std::move(_opts.title), _opts.style,
 		ptWndCenter, {.cx = rcWnd.right - rcWnd.left, .cy = rcWnd.bottom - rcWnd.top},
 		nullptr, nullptr, hInst);
 
@@ -229,9 +238,9 @@ void RawModal::show() {
 RawControl::RawControl(WindowParent &parent) {
 	parent.wnd_base()._preEvents.wm_create_or_init_dialog([this, pParent = &parent]() -> void {
 		HINSTANCE hInst = wnd_hinst(pParent->hwnd());
-		ATOM atom = _rawBase.register_class(hInst, _opts.className, _opts.classStyle,
+		ATOM atom = _rawBase.register_class(hInst, std::move(_opts.className), _opts.classStyle,
 			0, _opts.hbrBackground, _opts.hCursor);
-		_rawBase.create_window(_opts.windowExStyle, atom, nullptr, _opts.windowStyle,
+		_rawBase.create_window(_opts.windowExStyle, atom, {}, _opts.windowStyle,
 			_opts.pos, _opts.size, pParent->hwnd(), reinterpret_cast<HMENU>(valid_ctrl_id(_opts.ctrlId)), hInst);
 		pParent->wnd_base()._layout.add(_rawBase._wndBase._hWnd, _opts.layout);
 	});

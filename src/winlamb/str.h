@@ -1,5 +1,4 @@
 #pragma once
-#include <array>
 #include <optional>
 #include <span>
 #include <string>
@@ -13,20 +12,20 @@ namespace wl {
 	/// Analog to [`std::wstring_view`], but null-terminated.
 	///
 	/// Constructible from:
-	/// - `LPCWSTR`
+	/// - `const wchar_t*`
 	/// - `const std::wstring&`
 	///
 	/// [`std::wstring_view`]: https://en.cppreference.com/w/cpp/string/basic_string_view.html
 	class WStrView final {
 	public:
-		/** Constructs `WStrView` by wrapping the `LPCWSTR` pointer. */
-		constexpr WStrView(LPCWSTR p) : _p{p} { }
+		/** Constructs `WStrView` by wrapping the `const wchar_t` pointer. */
+		constexpr WStrView(const wchar_t *p) : _p{p} { }
 
-		/** Constructs `WStrView` by wrapping the `wchar_t` pointer. */
+		/** Constructs `WStrView` by wrapping the `const wchar_t` pointer from the `std::wstring`. */
 		constexpr WStrView(const std::wstring &s) : _p{s.c_str()} { }
 
 		/** Returns the wrapped null terminated wide string pointer. */
-		[[nodiscard]] constexpr LPCWSTR c_str() const { return _p; }
+		[[nodiscard]] constexpr const wchar_t* c_str() const { return _p; }
 
 		/** Returns the character at `index`. */
 		[[nodiscard]] constexpr wchar_t operator[](size_t index) const { return _p[index]; }
@@ -40,16 +39,18 @@ namespace wl {
 		[[nodiscard]] size_t length() const;
 
 	private:
-		LPCWSTR _p;
+		const wchar_t *_p;
 	};
 
 }
 
-/** @brief UTF-16 wide string utilities. */
+/// @brief [UTF-16] wide string utilities.
+///
+/// [UTF-16]: https://learn.microsoft.com/en-us/windows/win32/intl/unicode-in-the-windows-api
 namespace wl::str {
 
 	/** Default number of characters of a string allocated with Short String Optimization. */
-	constexpr size_t SSO_LEN = std::string{}.capacity();
+	constexpr size_t SSO_LEN = std::wstring{}.capacity();
 
 	/// Calls [`lstrcmp`] to compare the strings lexographically, case-sensitive.
 	///
@@ -117,7 +118,7 @@ namespace wl::str {
 	[[nodiscard]] std::wstring fmt_error(DWORD errorCode);
 
 	/** Guesses the linebreak characters: CR, CRLF, LF or LFCR. */
-	[[nodiscard]] LPCWSTR guess_line_break(WStrView s);
+	[[nodiscard]] const wchar_t* guess_line_break(WStrView s);
 
 	/// Returns the index of the first occurrence of `what` in `s`, if any.
 	///
@@ -132,7 +133,7 @@ namespace wl::str {
 	/** Returns a new string by joining the strings in `all` with `separator`. */
 	[[nodiscard]] std::wstring join(std::span<std::wstring> all, WStrView separator = L"");
 
-	/** Guesses the encoding and parses `src` into a `wstring`. */
+	/** Guesses the `Encoding` and parses `src` into a `wstring`. */
 	[[nodiscard]] std::wstring parse(std::span<BYTE> src);
 
 	/** Returns a new string removing extra ampersands of keyboard accelerators: `"&He && she"` becomes `"He & she"`. */
@@ -141,10 +142,14 @@ namespace wl::str {
 	/** Removes the diacritics from `s`, in-place. */
 	void remove_diacritics(std::wstring &s);
 
-	/** Returns a vector with substrings of `s`, delimited by `delimiter`. */
+	/// Returns a [`std::vector`] with substrings of `s`, delimited by `delimiter`.
+	///
+	/// [`std::vector`]: https://en.cppreference.com/w/cpp/container/vector.html
 	[[nodiscard]] std::vector<std::wstring> split(WStrView s, WStrView delimiter);
 
-	/** Returns a vector with each line of `s` as a string. */
+	/// Guesses the linebreak with `guess_line_break` and returns a [`std::vector`] with each line of `s` as a string.
+	///
+	/// [`std::vector`]: https://en.cppreference.com/w/cpp/container/vector.html
 	[[nodiscard]] std::vector<std::wstring> split_lines(WStrView s);
 
 	/** Returns true if `s` starts with `theStart`, case-sensitive. */
@@ -156,14 +161,15 @@ namespace wl::str {
 	/** Converts `wstring` to `string`. The inverse is done by `to_wide`. */
 	[[nodiscard]] std::string to_ansi(WStrView s);
 
-	/** Returns a new string, converted to lowercase. */
+	/** Returns a new `std::wstring` converted to lowercase. */
 	[[nodiscard]] std::wstring to_lower(WStrView s);
 
 	/** Returns a new string, converted to uppercase. */
 	[[nodiscard]] std::wstring to_upper(WStrView s);
 
-	/// Converts `s` into UTF-8 bytes by calling [`WideCharToMultiByte`].
+	/// Converts `s` into a [`std::vector`] of UTF-8 bytes by calling [`WideCharToMultiByte`].
 	///
+	/// [`std::vector`]: https://en.cppreference.com/w/cpp/container/vector.html
 	/// [`WideCharToMultiByte`]: https://learn.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-widechartomultibyte
 	[[nodiscard]] std::vector<BYTE> to_utf8_blob(WStrView s, bool writeBom = false);
 
@@ -187,18 +193,18 @@ namespace wl::str {
 
 namespace wl {
 
-	/** @brief Recognized character encodings. */
-	enum class Encoding { unknown, ansi, win_1252, utf8, utf16_be, utf16_le, utf32_be, utf32_le, scsu, bocu1 };
+	/** @brief Character encoding information. */
+	struct Encoding final {
+		/** @brief Recognized character encodings. */
+		enum class Type { unknown, ansi, win_1252, utf8, utf16_be, utf16_le, utf32_be, utf32_le, scsu, bocu1 };
 
-	/** @brief Caracter encoding information. */
-	struct EncodingInfo final {
-		Encoding encType = Encoding::unknown;
+		Type encType = Type::unknown;
 		BYTE bomSize = 0;
 
-		/// Static method.
+		/// Static method; guesses the encoding of the given binary blob.
 		///
-		/// Guesses the encoding of the given binary blob.
-		[[nodiscard]] static EncodingInfo guess(std::span<BYTE> src);
+		/// You usually don't need to call this method directly, since `wl::str::parse` already calls it.
+		[[nodiscard]] static Encoding guess(std::span<BYTE> src);
 	};
 
 }

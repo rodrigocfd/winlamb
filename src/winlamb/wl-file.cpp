@@ -21,7 +21,7 @@ void File::close() noexcept {
 	}
 }
 
-File& File::open(WStrView path, Access access) {
+File& File::open(WStrView filePath, Access access) {
 	close();
 	DWORD acc = 0, share = 0, disp = 0;
 
@@ -44,7 +44,7 @@ File& File::open(WStrView path, Access access) {
 		disp = CREATE_NEW;
 	}
 
-	_hFile = CreateFileW(path.c_str(), acc, share, nullptr, disp, FILE_ATTRIBUTE_NORMAL, nullptr);
+	_hFile = CreateFileW(filePath.c_str(), acc, share, nullptr, disp, FILE_ATTRIBUTE_NORMAL, nullptr);
 	if (!_hFile || _hFile == INVALID_HANDLE_VALUE) [[unlikely]] {
 		throw std::system_error(GetLastError(), std::system_category(), "CreateFile failed");
 	}
@@ -153,13 +153,13 @@ void FileMapped::close() noexcept {
 	_file.close();
 }
 
-FileMapped& FileMapped::open(WStrView path, Access access) {
+FileMapped& FileMapped::open(WStrView filePath, Access access) {
 	close();
 	File::Access facc = (access == Access::existing_read_only) ? // translate FileMap to File access
 		File::Access::existing_read_only : File::Access::existing_rw;
 	DWORD page = (access == Access::existing_read_only) ? PAGE_READONLY : PAGE_READWRITE;
 
-	_file.open(path, facc);
+	_file.open(filePath, facc);
 
 	_hMap = CreateFileMappingW(_file.hfile(), nullptr, page, 0, 0, nullptr);
 	if (!_hMap) [[unlikely]] {

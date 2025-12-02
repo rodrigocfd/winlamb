@@ -1,4 +1,5 @@
 #pragma once
+#include <array>
 #include <memory>
 #include "../winlamb/lib.h"
 

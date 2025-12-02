@@ -13,7 +13,7 @@ namespace _wl_internal {
 
 /// @brief Adjusts pixel values according to the current [system DPI].
 ///
-/// These functions should be used every time you position something on the screen.
+/// These functions should be used every time you use pixels on the screen.
 ///
 /// [system DPI]: https://learn.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows
 namespace wl::dpi {

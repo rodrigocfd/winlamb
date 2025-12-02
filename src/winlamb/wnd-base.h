@@ -1,6 +1,7 @@
 #pragma once
 #include <functional>
 #include <optional>
+#include <string>
 #include "lib-include-win.h"
 #include "wnd-interfaces.h"
 #include "events-wnd.h"
@@ -45,8 +46,8 @@ namespace _wl_internal {
 
 		explicit NativeCtrlBase(wl::WindowParent &owner);
 
-		void create_wnd(WORD ctrlId, DWORD exStyle, LPCWSTR className,
-			LPCWSTR title, DWORD style, POINT pos, SIZE size);
+		void create_wnd(WORD ctrlId, DWORD exStyle, const wchar_t *className,
+			std::wstring &&title, DWORD style, POINT pos, SIZE size);
 		void assign_dlg(WORD ctrlId);
 		void install_subclass();
 

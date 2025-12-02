@@ -14,7 +14,6 @@ namespace wl { }
 #include "events-ctl.h"
 #include "events-wnd.h"
 #include "file.h"
-#include "icon-store.h"
 #include "layout.h"
 #include "path.h"
 #include "runnable.h"

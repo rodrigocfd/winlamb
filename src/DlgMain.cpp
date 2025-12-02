@@ -123,8 +123,13 @@ RawMain::RawMain() {
 	lv.setup().size = wl::dpi::sz(400, 200);
 	lv.setup().layout = wl::Lay::resize_resize;
 	lv.setup().contextMenuId = MNU_FILES;
+	lv.setup().columns = {
+		{L"First", wl::dpi::x(200)},
+		{L"Second", 1},
+	};
 
 	mcal.setup().pos = wl::dpi::pt(420, 100);
+	mcal.setup().layout = wl::Lay::move_hold;
 
 	lbl.setup().pos = wl::dpi::pt(320, 10);
 	lbl.setup().text = L"Label";
@@ -135,8 +140,7 @@ RawMain::RawMain() {
 	sb.setup().part_fixed(wl::dpi::x(200), L"Second", 1);
 
 	wnd.on().wm_create([this](wl::wm::Create p) -> int {
-		lv.cols.add(L"First", wl::dpi::x(200));
-		lv.cols.add(L"Second", 1).set_justif(HDF_CENTER).set_width_to_fill();
+		lv.cols[1].set_justif(HDF_CENTER).set_width_to_fill();
 		lv.items.add(L"Bronco kid", {L"Surreal"});
 		lv.items.add(L"Ground control", {L"to major tom"});
 		return 0;
@@ -171,11 +175,16 @@ RawMain::RawMain() {
 		wnd.set_title(s);
 	});
 
+	mcal.on().mcn_sel_change([this](NMSELCHANGE &p) -> void {
+		auto s = wl::str::fmt(L"%d %d %d", p.stSelStart.wYear, p.stSelStart.wMonth, p.stSelStart.wDay);
+		wnd.set_title(s);
+	});
+
 	lbl.on().stn_clicked([this]() -> void {
 		wnd.set_title(L"Label clicked");
 	});
 
-	sb.on().nm_click([this](NMMOUSE& p) -> bool {
+	sb.on().nm_click([this](NMMOUSE &p) -> bool {
 		MessageBoxW(wnd.hwnd(), L"Status bar clicked", L"Click", MB_ICONINFORMATION);
 		return true;
 	});

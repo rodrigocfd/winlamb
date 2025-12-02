@@ -17,15 +17,65 @@ Just copy all the files under your compilation tree and `#include <winlamb/lib.h
 
 All WinLamb entities are enclosed in the `wl` namespace.
 
+## Classes
+
+Container classes represent windows which can host child controls:
+
+| Container class | Description |
+| -- | -- |
+| `wl::WindowMain` | Main window application. Usually, this is where your program starts. |
+| `wl::WindowModal` | A modal popup window. |
+| `wl::WindowControl` | A custom child control. |
+
+There are a few pure abstract classes (interfaces) which are implemented by windows and controls:
+
+| Interface | Description |
+| -- | -- |
+| `wl::Window` | Implemented by all windows. |
+| `wl::WindowParent` | Implemented by all windows which can host child controls. |
+| `wl::WindowChild` | Implemented by all child controls. |
+
+Native controls are the Win32 built-in widgets:
+
+| Native control | Description |
+| -- | -- |
+| `wl::Button` | [Button](https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#push-buttons) control. |
+| `wl::CheckBox` | [CheckBox](https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#check-boxes) control. |
+| `wl::ComboBox` | [ComboBox](https://learn.microsoft.com/en-us/windows/win32/controls/about-combo-boxes) control (dropdown). |
+| `wl::DateTimePicker` | [DateTimePicker](https://learn.microsoft.com/en-us/windows/win32/controls/date-and-time-picker-controls) control. |
+| `wl::Edit` | [Edit](https://learn.microsoft.com/en-us/windows/win32/controls/about-edit-controls) control (textbox). |
+| `wl::ListView` | [ListView](https://learn.microsoft.com/en-us/windows/win32/controls/list-view-controls-overview) control. |
+| `wl::MonthCalendar` | [MonthCalendar](https://learn.microsoft.com/en-us/windows/win32/controls/month-calendar-controls) control. |
+| `wl::RadioButton` | [RadioButton](https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#radio-buttons) control. |
+| `wl::Static` | [Static](https://learn.microsoft.com/en-us/windows/win32/controls/about-static-controls) control (label). |
+| `wl::StatusBar` | [StatusBar](https://learn.microsoft.com/en-us/windows/win32/controls/status-bars) control. |
+
+A few utility entities are included for convenience:
+
+| Utility | Description |
+| -- | -- |
+| `wl::ComPtr` | Templated [COM](https://learn.microsoft.com/en-us/windows/win32/com/component-object-model--com--portal) smart pointer. |
+| `wl::DropFiles` | Implements [`IDropTarget`](https://learn.microsoft.com/en-us/windows/win32/api/oleidl/nn-oleidl-idroptarget) COM interface, allowing file drag & drop on the window. |
+| `wl::Encoding` | Character encoding information. |
+| `wl::File` | Manages a file `HANDLE`. |
+| `wl::FileMapped` | Manages a memory-mapped file. |
+| `wl::WStrView` | Wraps a pointer to a null-terminated string. |
+| `wl::dpi` | Adjusts pixel values according to the current system [DPI](https://learn.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows). |
+| `wl::path` | Filepath utilities. |
+| `wl::str` | [UTF-16](https://learn.microsoft.com/en-us/windows/win32/intl/unicode-in-the-windows-api) wide string utilities. |
+| `wl::vec` | Utilities for [`vector`](https://en.cppreference.com/w/cpp/container/vector.html), [`span`](https://en.cppreference.com/w/cpp/container/span.html) and [`array`](https://en.cppreference.com/w/cpp/container/array.html). |
+
 ## Example
 
 The example below is a full native Win32 program consisting of a single window, managed by `wl::WindowMain`. Note there's no need to write a [message loop](https://learn.microsoft.com/en-us/windows/win32/winmsg/using-messages-and-message-queues) or [register a window](https://learn.microsoft.com/en-us/windows/win32/winmsg/about-window-classes).
 
 This is what's happening:
 
-* under the hood, the `wnd.on().wm_create()` call will handle the [`WM_CREATE`](https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-create) message with a lambda;
-* the `btn.on().bn_clicked()` call will handle a [`WM_COMMAND`](https://learn.microsoft.com/en-us/windows/win32/menurc/wm-command) message for a [`BN_CLICKED`](https://learn.microsoft.com/en-us/windows/win32/controls/bn-clicked) notification, for the given button;
-* and finally, the `RUN_MAIN` macro takes care of writing the [`WinMain`](https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point) entry point for you.
+* the header declares our main class, which has two members: the `wl::WindowMain` and the `wl::Button`;
+* the `RUN_MAIN` macro takes care of writing the [`WinMain`](https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point) entry point for you;
+* in the constructor, the `setup()` calls define the creation options for the window and the button;
+* under the hood, `wnd.on().wm_create()` call will handle the [`WM_CREATE`](https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-create) message with a lambda;
+* the `btn.on().bn_clicked()` call will handle a [`WM_COMMAND`](https://learn.microsoft.com/en-us/windows/win32/menurc/wm-command) message for a [`BN_CLICKED`](https://learn.microsoft.com/en-us/windows/win32/controls/bn-clicked) notification, for the given button.
 
 The whole code, .h and .cpp files:
 
@@ -65,51 +115,6 @@ MyMain::MyMain() {
     });
 }
 ```
-
-## Classes
-
-Container classes represent windows which can host child controls.
-
-| Container class | Description |
-| -- | -- |
-| `wl::WindowMain` | Main window application. Usually, this is where your program starts. |
-| `wl::WindowModal` | A modal popup window. |
-| `wl::WindowControl` | A custom child control. |
-
-There are a few pure abstract classes (interfaces) which are implemented by windows and controls.
-
-| Interface | Description |
-| -- | -- |
-| `wl::Window` | Implemented by all windows. |
-| `wl::WindowParent` | Implemented by all windows which can host child controls. |
-| `wl::WindowChild` | Implemented by all child controls. |
-
-Native controls are the Win32 built-in widgets.
-
-| Native control | Description |
-| -- | -- |
-| `wl::Button` | [Button](https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#push-buttons) control. |
-| `wl::CheckBox` | [CheckBox](https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#check-boxes) control. |
-| `wl::ComboBox` | [ComboBox](https://learn.microsoft.com/en-us/windows/win32/controls/about-combo-boxes) control (dropdown). |
-| `wl::DateTimePicker` | [DateTimePicker](https://learn.microsoft.com/en-us/windows/win32/controls/date-and-time-picker-controls) control. |
-| `wl::Edit` | [Edit](https://learn.microsoft.com/en-us/windows/win32/controls/about-edit-controls) control (textbox). |
-| `wl::ListView` | [ListView](https://learn.microsoft.com/en-us/windows/win32/controls/list-view-controls-overview) control. |
-| `wl::MonthCalendar` | [MonthCalendar](https://learn.microsoft.com/en-us/windows/win32/controls/month-calendar-controls) control. |
-| `wl::Static` | [Static](https://learn.microsoft.com/en-us/windows/win32/controls/about-static-controls) control (label). |
-| `wl::StatusBar` | [StatusBar](https://learn.microsoft.com/en-us/windows/win32/controls/status-bars) control. |
-
-A few utility entities are included for convenience:
-
-| Utility | Description |
-| -- | -- |
-| `wl::ComPtr` | Templated COM smart pointer. |
-| `wl::DropFiles` | Implements [`IDropTarget`](https://learn.microsoft.com/en-us/windows/win32/api/oleidl/nn-oleidl-idroptarget) COM interface, allowing file drag & drop on the window. |
-| `wl::File` | Manages a file `HANDLE`. |
-| `wl::FileMapped` | Manages memory-mapped. |
-| `wl::dpi` | Adjusts pixel values according to the current system [DPI](https://learn.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows). |
-| `wl::path` | Filepath utilities. |
-| `wl::str` | UTF-16 wide string utilities. |
-| `wl::vec` | Vector, span and array utilities. |
 
 ## License
 

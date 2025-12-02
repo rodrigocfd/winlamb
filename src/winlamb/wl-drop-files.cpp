@@ -86,7 +86,7 @@ std::vector<std::wstring> DropFiles::get_dropped(HDROP hDrop) const {
 	paths.reserve(count);
 
 	for (UINT i = 0; i < count; ++i) {
-		WCHAR buf[MAX_PATH + 1] = {L'\0'};
+		wchar_t buf[MAX_PATH + 1] = {L'\0'};
 		DragQueryFileW(hDrop, i, buf, MAX_PATH + 1);
 		paths.emplace_back(buf);
 	}

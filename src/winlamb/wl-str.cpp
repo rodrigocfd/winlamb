@@ -110,7 +110,7 @@ std::wstring wl::str::fmt_error(DWORD errorCode) {
 	return finalBuf;
 }
 
-LPCWSTR wl::str::guess_line_break(WStrView s) {
+const wchar_t* wl::str::guess_line_break(WStrView s) {
 	for (size_t i = 0; i < s.length() - 1; ++i) {
 		if (s[i] == L'\r') {
 			return s[i + 1] == L'\n' ? L"\r\n" : L"\r"; // report the first one
@@ -190,20 +190,29 @@ static std::wstring parse_encoded(std::span<BYTE> src, UINT codePage) {
 	return ret;
 }
 
+static std::wstring parse_utf16(std::span<BYTE> src, bool isLE) {
+	std::span<WORD> wsrc{reinterpret_cast<WORD*>(src.data()), src.size() / 2}; // will discard an odd byte
+	std::wstring ret;
+	ret.reserve(wsrc.size());
+	for (WCHAR ch : wsrc)
+		ret.push_back(isLE ? ch : MAKEWORD(HIBYTE(ch), LOBYTE(ch)));
+	return ret;
+}
+
 std::wstring wl::str::parse(std::span<BYTE> src) {
 	if (src.empty()) return {};
 
-	EncodingInfo encInfo = EncodingInfo::guess(src);
+	Encoding encInfo = Encoding::guess(src);
 	src = src.subspan(encInfo.bomSize); // skip BOM, if any
 
 	switch (encInfo.encType) {
-	using enum Encoding;
+	using enum Encoding::Type;
 		case unknown:
 		case ansi:     return parse_ansi(src);
 		case win_1252: return parse_encoded(src, 1252);
 		case utf8:     return parse_encoded(src, CP_UTF8);
-		case utf16_be: throw std::invalid_argument("UTF-16 big endian: encoding not implemented.");
-		case utf16_le: throw std::invalid_argument("UTF-16 little endian: encoding not implemented.");
+		case utf16_be: return parse_utf16(src, false);
+		case utf16_le: return parse_utf16(src, true);
 		case utf32_be: throw std::invalid_argument("UTF-32 big endian: encoding not implemented.");
 		case utf32_le: throw std::invalid_argument("UTF-32 little endian: encoding not implemented.");
 		case scsu:     throw std::invalid_argument("Standard compression scheme for Unicode: encoding not implemented.");
@@ -232,12 +241,12 @@ std::wstring wl::str::remove_accel_ampersands(WStrView s) {
 }
 
 void wl::str::remove_diacritics(std::wstring &s) {
-	LPCWSTR diacritics   = L"ÁáÀàÃãÂâÄäÉéÈèÊêËëÍíÌìÎîÏïÓóÒòÕõÔôÖöÚúÙùÛûÜüÇçÅåÐðÑñØøÝýÿ";
-	LPCWSTR replacements = L"AaAaAaAaAaEeEeEeEeIiIiIiIiOoOoOoOoOoUuUuUuUuCcAaDdNnOoYyy";
+	const wchar_t *diacritics   = L"ÁáÀàÃãÂâÄäÉéÈèÊêËëÍíÌìÎîÏïÓóÒòÕõÔôÖöÚúÙùÛûÜüÇçÅåÐðÑñØøÝýÿ";
+	const wchar_t *replacements = L"AaAaAaAaAaEeEeEeEeIiIiIiIiOoOoOoOoOoUuUuUuUuCcAaDdNnOoYyy";
 
 	for (wchar_t &ch : s) {
-		LPCWSTR pDiac = diacritics;
-		LPCWSTR pRepl = replacements;
+		const wchar_t *pDiac = diacritics;
+		const wchar_t *pRepl = replacements;
 		while (*pDiac) {
 			if (ch == *pDiac) ch = *pRepl; // in-place replacement
 			++pDiac;
@@ -459,37 +468,37 @@ static constexpr bool guess_utf8(std::span<BYTE> src) {
 	return true; // all the conditions accepted through the whole byte source
 }
 
-EncodingInfo EncodingInfo::guess(std::span<BYTE> src) {
+Encoding Encoding::guess(std::span<BYTE> src) {
 	auto match = [&](std::span<BYTE> bom) constexpr -> bool {
 		return (src.size() >= bom.size())
 			&& std::equal(src.begin(), src.begin() + bom.size(), bom.begin(), bom.end());
 	};
 
 	BYTE utf8[] = {0xef, 0xbb, 0xbf}; // UTF-8 BOM
-	if (match(utf8)) return {Encoding::utf8, ARRAYSIZE(utf8)}; // BOM size in bytes
+	if (match(utf8)) return {Type::utf8, ARRAYSIZE(utf8)}; // BOM size in bytes
 
 	BYTE utf16be[] = {0xfe, 0xff};
-	if (match(utf16be)) return {Encoding::utf16_be, ARRAYSIZE(utf16be)};
+	if (match(utf16be)) return {Type::utf16_be, ARRAYSIZE(utf16be)};
 
 	BYTE utf16le[] = {0xff, 0xfe};
-	if (match(utf16le)) return {Encoding::utf16_le, ARRAYSIZE(utf16le)};
+	if (match(utf16le)) return {Type::utf16_le, ARRAYSIZE(utf16le)};
 
 	BYTE utf32be[] = {0x00, 0x00, 0xfe, 0xff};
-	if (match(utf32be)) return {Encoding::utf32_be, ARRAYSIZE(utf32be)};
+	if (match(utf32be)) return {Type::utf32_be, ARRAYSIZE(utf32be)};
 
 	BYTE utf32le[] = {0xff, 0xfe, 0x00, 0x00};
-	if (match(utf32le)) return {Encoding::utf32_le, ARRAYSIZE(utf32le)};
+	if (match(utf32le)) return {Type::utf32_le, ARRAYSIZE(utf32le)};
 
 	BYTE scsu[] = {0x0e, 0xfe, 0xff};
-	if (match(scsu)) return {Encoding::scsu, ARRAYSIZE(scsu)};
+	if (match(scsu)) return {Type::scsu, ARRAYSIZE(scsu)};
 
 	BYTE bocu1[] = {0xfb, 0xee, 0x28};
-	if (match(bocu1)) return {Encoding::bocu1, ARRAYSIZE(bocu1)};
+	if (match(bocu1)) return {Type::bocu1, ARRAYSIZE(bocu1)};
 
-	if (guess_utf8(src)) return {Encoding::utf8, 0}; // UTF-8 without BOM
+	if (guess_utf8(src)) return {Type::utf8, 0}; // UTF-8 without BOM
 
 	bool hasNonAnsiChar = std::any_of(src.begin(), src.end(), [](BYTE ch) -> bool { return ch > 0x7f; });
 	return hasNonAnsiChar
-		? EncodingInfo{Encoding::win_1252, 0} // by exclusion, not assertive
-		: EncodingInfo{Encoding::ansi, 0};
+		? Encoding{Type::win_1252, 0} // by exclusion, not assertive
+		: Encoding{Type::ansi, 0};
 }
