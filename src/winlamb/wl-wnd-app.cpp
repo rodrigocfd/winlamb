@@ -1,5 +1,5 @@
 #include <system_error>
-#include "wnd-funcs.h"
+#include "wnd-app.h"
 #include <VersionHelpers.h>
 #include <ole2.h>
 #include <shellapi.h>

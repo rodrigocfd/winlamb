@@ -1,7 +1,7 @@
 #include <system_error>
 #include "wnd-raw.h"
 #include "str.h"
-#include "wnd-funcs.h"
+#include "wnd-app.h"
 using namespace wl;
 using namespace _wl_internal;
 

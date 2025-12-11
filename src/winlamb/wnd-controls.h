@@ -3,7 +3,7 @@
 #include "lib-include-win.h"
 #include "str.h"
 #include "wnd-interfaces.h"
-#include "wnd-funcs.h"
+#include "wnd-app.h"
 #include "wnd-opts.h"
 #include "events-ctl.h"
 

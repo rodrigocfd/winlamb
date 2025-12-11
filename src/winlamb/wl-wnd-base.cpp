@@ -2,7 +2,7 @@
 #include <system_error>
 #include "wnd-base.h"
 #include "wnd-interfaces.h"
-#include "wnd-funcs.h"
+#include "wnd-app.h"
 #include <CommCtrl.h>
 using namespace wl;
 using namespace _wl_internal;

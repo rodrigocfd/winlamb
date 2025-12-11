@@ -5,7 +5,7 @@
 #include "wnd-interfaces.h"
 #include "wnd-raw.h"
 #include "wnd-dlg.h"
-#include "wnd-funcs.h"
+#include "wnd-app.h"
 
 namespace _wl_internal {
 
