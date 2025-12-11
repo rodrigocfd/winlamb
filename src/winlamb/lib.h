@@ -16,7 +16,6 @@ namespace wl { }
 #include "file.h"
 #include "layout.h"
 #include "path.h"
-#include "runnable.h"
 #include "str.h"
 #include "vec.h"
 #include "wnd-base.h"

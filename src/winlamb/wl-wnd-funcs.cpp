@@ -1,38 +1,58 @@
 #include <system_error>
 #include "wnd-funcs.h"
+#include <VersionHelpers.h>
+#include <ole2.h>
 #include <shellapi.h>
 using namespace wl;
 using namespace _wl_internal;
 
-static HFONT hUiFont = nullptr;
+int GuiApp::logPixelsX = 0, GuiApp::logPixelsY = 0;
+HFONT GuiApp::hUiFont = nullptr;
 
-HFONT _wl_internal::ui_font() {
-	if (!hUiFont) { // not cached yet?
-		NONCLIENTMETRICSW ncm{.cbSize = sizeof(NONCLIENTMETRICSW)};
-		SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, 0, &ncm, 0);
-		hUiFont = CreateFontIndirectW(&ncm.lfMenuFont);
+GuiApp::~GuiApp() {
+	DeleteObject(hUiFont);
+	OleUninitialize();
+}
+
+GuiApp::GuiApp() {
+	InitCommonControls();
+	OleInitialize(nullptr);
+
+	if (IsWindows8OrGreater()) [[likely]] {
+		HANDLE hProcess = GetCurrentProcess();
+		BOOL bVal = FALSE;
+		if (!SetUserObjectInformationW(hProcess, UOI_TIMERPROC_EXCEPTION_SUPPRESSION, &bVal, sizeof(BOOL))) [[unlikely]] {
+			DWORD err = GetLastError();
+			if (err == ERROR_INVALID_PARAMETER) {
+				// Do nothing: Wine doesn't support SetUserObjectInformation for now.
+				// https://bugs.winehq.org/show_bug.cgi?id=54951
+			} else {
+				throw std::system_error(err, std::system_category(), "SetUserObjectInformation failed");
+			}
+		}
 	}
-	return hUiFont;
+
+	HDC hdcScreen = GetDC(nullptr);
+	logPixelsX = GetDeviceCaps(hdcScreen, LOGPIXELSX);
+	logPixelsY = GetDeviceCaps(hdcScreen, LOGPIXELSY);
+	ReleaseDC(nullptr, hdcScreen);
+
+	NONCLIENTMETRICSW ncm{.cbSize = sizeof(NONCLIENTMETRICSW)};
+	SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, 0, &ncm, 0);
+	hUiFont = CreateFontIndirectW(&ncm.lfMenuFont);
 }
 
 void _wl_internal::apply_ui_font(HWND hWnd) {
-	SendMessageW(hWnd, WM_SETFONT, reinterpret_cast<WPARAM>(ui_font()), TRUE);
-}
-
-void _wl_internal::delete_ui_font() {
-	if (hUiFont) {
-		DeleteObject(hUiFont);
-		hUiFont = nullptr;
-	}
-}
-
-HINSTANCE _wl_internal::wnd_hinst(HWND hWnd) {
-	return reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hWnd, GWLP_HINSTANCE));
+	SendMessageW(hWnd, WM_SETFONT, reinterpret_cast<WPARAM>(GuiApp::hUiFont), TRUE);
 }
 
 WORD _wl_internal::valid_ctrl_id(WORD ctrlId) {
 	static WORD globalCtrId = 0xdfff; // https://stackoverflow.com/a/18192766/6923555
 	return ctrlId ? ctrlId : globalCtrId--;
+}
+
+HINSTANCE _wl_internal::wnd_hinst(HWND hWnd) {
+	return reinterpret_cast<HINSTANCE>(GetWindowLongPtrW(hWnd, GWLP_HINSTANCE));
 }
 
 std::wstring _wl_internal::wnd_text(HWND hWnd) {
@@ -83,7 +103,7 @@ SIZE _wl_internal::calc_text_bound_box(WStrView text) {
 	if (!desktop.hdcCloned)
 		throw std::runtime_error("Failed to clone desktop HDC.");
 	#endif
-	desktop.hFontPrev = reinterpret_cast<HFONT>(SelectObject(desktop.hdcCloned, ui_font()));
+	desktop.hFontPrev = reinterpret_cast<HFONT>(SelectObject(desktop.hdcCloned, GuiApp::hUiFont));
 
 	SIZE bounds{};
 	BOOL ret = GetTextExtentPoint32W(desktop.hdcCloned, wtext.c_str(), static_cast<int>(wtext.length()), &bounds);
@@ -107,6 +127,32 @@ SIZE _wl_internal::calc_text_bound_box_with_check(wl::WStrView text) {
 		bounds.cy = cyCheck;
 
 	return bounds;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+int wl::dpi::x(int xVal) {
+	return MulDiv(xVal, GuiApp::logPixelsX, 96);
+}
+
+int wl::dpi::y(int yVal) {
+	return MulDiv(yVal, GuiApp::logPixelsY, 96);
+}
+
+POINT wl::dpi::pt(int xVal, int yVal) {
+	return {.x = x(xVal), .y = y(yVal)};
+}
+
+POINT wl::dpi::pt(POINT value) {
+	return pt(value.x, value.y);
+}
+
+SIZE wl::dpi::sz(int xVal, int yVal) {
+	return {.cx = x(xVal), .cy = y(yVal)};
+}
+
+SIZE wl::dpi::sz(SIZE value) {
+	return sz(value.cx, value.cy);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

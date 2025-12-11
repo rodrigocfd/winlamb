@@ -1,6 +1,6 @@
 #include <system_error>
 #include "wnd-controls.h"
-#include "runnable.h"
+#include "wnd-funcs.h"
 using namespace wl;
 using namespace _wl_internal;
 
