@@ -21,8 +21,6 @@ namespace wl { }
 #include "wnd-app.h"
 #include "wnd-base.h"
 #include "wnd-controls.h"
-#include "wnd-dlg.h"
 #include "wnd-interfaces.h"
 #include "wnd-opts.h"
-#include "wnd-raw.h"
 #include "wnd-user.h"

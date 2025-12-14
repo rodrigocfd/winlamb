@@ -1,5 +1,6 @@
 #include <system_error>
 #include "layout.h"
+#include "events-wnd.h"
 using namespace wl;
 using namespace _wl_internal;
 
@@ -31,7 +32,8 @@ void Layout::add(HWND hCtrl, wl::Lay layout) {
 	_ctrls.emplace_back(hCtrl, layout, rcCtrl);
 }
 
-void Layout::rearrange(wm::Size p) {
+void Layout::rearrange(WPARAM wp, LPARAM lp) {
+	wm::Size p{wm::Msg{WM_SIZE, wp, lp}};
 	if (_ctrls.empty() || p.is_minimized())
 		return; // no need to resize if window is minimized
 

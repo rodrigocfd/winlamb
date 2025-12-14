@@ -3,8 +3,7 @@
 #include "lib-include-win.h"
 #include "str.h"
 #include "wnd-interfaces.h"
-#include "wnd-raw.h"
-#include "wnd-dlg.h"
+#include "wnd-base.h"
 #include "wnd-app.h"
 
 namespace _wl_internal {

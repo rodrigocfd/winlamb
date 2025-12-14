@@ -1,7 +1,6 @@
 #pragma once
 #include <vector>
 #include "lib-include-win.h"
-#include "events-wnd.h"
 
 namespace _wl_internal {
 
@@ -66,7 +65,7 @@ namespace _wl_internal {
 		};
 
 		void add(HWND hCtrl, wl::Lay layout);
-		void rearrange(wl::wm::Size p);
+		void rearrange(WPARAM wp, LPARAM lp);
 
 		std::vector<Ctrl> _ctrls{};
 		SIZE _szOrig{}; // original parent client area
