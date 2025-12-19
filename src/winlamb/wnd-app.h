@@ -24,7 +24,7 @@ namespace _wl_internal {
 
 	/** Validates opts access. */
 	template<typename O>
-	constexpr O& valid_opts(HWND hWnd, O &opts) {
+	constexpr O& valid_setup(HWND hWnd, O &opts) {
 		#ifdef _DEBUG
 		if (hWnd)
 			throw "Cannot change setup options after the window or control is created.";
@@ -41,6 +41,28 @@ namespace _wl_internal {
 		#endif
 		return events;
 	}
+
+	/** An array of non-movable objects. */
+	template<typename T>
+	class NonMovableArray final {
+	public:
+		~NonMovableArray() {
+			for (size_t i = 0; i < _sz; ++i) _ptr[i].~T();
+			StorageT *pMem = reinterpret_cast<StorageT*>(_ptr);
+			delete[] pMem;
+		}
+		explicit NonMovableArray(size_t numElems) : _sz{numElems} {
+			StorageT *pMem = new StorageT[numElems]; // don't forget to call placement new on each element!
+			_ptr = reinterpret_cast<T*>(pMem);
+		}
+		[[nodiscard]] constexpr size_t size() const { return _sz; }
+		[[nodiscard]] constexpr const T& operator[](size_t index) const { return _ptr[index]; }
+		[[nodiscard]] constexpr T& operator[](size_t index) { return _ptr[index]; }
+	private:
+		using StorageT = std::aligned_storage_t<sizeof(T), alignof(T)>;
+		size_t _sz = 0;
+		T *_ptr = nullptr;
+	};
 
 }
 

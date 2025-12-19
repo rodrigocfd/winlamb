@@ -1,4 +1,6 @@
+#include <memory>
 #include "events-ctl.h"
+#include "wnd-controls.h"
 using namespace wl;
 using namespace wl::events;
 using namespace _wl_internal;
@@ -133,6 +135,22 @@ EVENT_NFY_ARG(mcn_sel_change, MCN_SELCHANGE, NMSELCHANGE)
 EVENT_NFY_ARG(mcn_select, MCN_SELECT, NMSELCHANGE)
 EVENT_NFY_ARG(mcn_view_change, MCN_VIEWCHANGE, NMVIEWCHANGE)
 EVENT_NFY(nm_released_capture, NM_RELEASEDCAPTURE)
+
+////////////////////////////////////////////////////////////////////////////////
+
+#define RADIO_GROUP_CMD(method) \
+	void RadioGroupEvents::method(std::function<void(int)> &&cb) { \
+		auto callback = std::make_shared<std::function<void(int)>>(std::move(cb)); \
+		for (int i = 0; i < _owner.radios.count(); ++i) { \
+			_owner.radios[i].on().method([i, callback]() -> void { \
+				(*callback)(i); \
+			}); \
+		} \
+	}
+RADIO_GROUP_CMD(bn_clicked)
+RADIO_GROUP_CMD(bn_dbl_clk)
+RADIO_GROUP_CMD(bn_kill_focus)
+RADIO_GROUP_CMD(bn_set_focus)
 
 ////////////////////////////////////////////////////////////////////////////////
 

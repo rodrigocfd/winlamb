@@ -2,6 +2,7 @@
 #include <functional>
 #include "lib-include-win.h"
 #include <CommCtrl.h>
+#include "wnd-app.h"
 #include "wnd-base.h"
 #include "wnd-interfaces.h"
 
@@ -30,6 +31,7 @@ namespace wl {
 	class ListView;
 	class MonthCalendar;
 	class RadioButton;
+	class RadioGroup;
 	class Static;
 	class StatusBar;
 }
@@ -182,6 +184,24 @@ namespace wl::events {
 	private:
 		_wl_internal::NativeCtrlEvents _ctrlEvents;
 		friend wl::MonthCalendar;
+	};
+
+	/** @brief Native `RadioGroup` events. */
+	class RadioGroupEvents final {
+	private:
+		RadioGroupEvents(RadioGroupEvents&&) = delete; // non-copyable, non-movable
+
+		RadioGroupEvents(wl::RadioGroup &owner) : _owner{owner} { }
+
+	public:
+		void bn_clicked(std::function<void(int)> &&cb);
+		void bn_dbl_clk(std::function<void(int)> &&cb);
+		void bn_kill_focus(std::function<void(int)> &&cb);
+		void bn_set_focus(std::function<void(int)> &&cb);
+
+	private:
+		wl::RadioGroup &_owner;
+		friend wl::RadioGroup;
 	};
 
 	/** @brief Native `Static` events. */

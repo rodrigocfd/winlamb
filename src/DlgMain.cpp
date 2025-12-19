@@ -81,8 +81,8 @@ void DlgMain::on_about() {
 Contro::Contro(wl::WindowParent &parent)
 	: wnd{parent}
 {
-	wnd.setup().windowExStyle |= WS_EX_CLIENTEDGE;
-	wnd.setup().pos = wl::dpi::pt(420, 10);
+	wnd.setup().styleEx |= WS_EX_CLIENTEDGE;
+	wnd.setup().pos = wl::dpi::pt(550, 10);
 	wnd.setup().size = wl::dpi::sz(80, 80);
 	wnd.setup().layout = wl::Lay::move_hold;
 
@@ -139,6 +139,14 @@ RawMain::RawMain() {
 	sb.setup().part_resizable(1, L"Rezee", 0);
 	sb.setup().part_fixed(wl::dpi::x(200), L"Second", 1);
 
+	rads.setup(0).pos = wl::dpi::pt(420, 10);
+	rads.setup(1).pos = wl::dpi::pt(420, 25);
+	rads.setup(2).pos = wl::dpi::pt(420, 40);
+	rads.setup(0).text = L"First";
+	rads.setup(1).text = L"Second";
+	rads.setup(2).text = L"Turd";
+	rads.setup(2).selected = true;
+
 	wnd.on().wm_create([this](wl::wm::Create p) -> int {
 		lv.cols[1].set_justif(HDF_CENTER).set_width_to_fill();
 		lv.items.add(L"Bronco kid", {L"Surreal"});
@@ -187,6 +195,11 @@ RawMain::RawMain() {
 	sb.on().nm_click([this](NMMOUSE &p) -> bool {
 		MessageBoxW(wnd.hwnd(), L"Status bar clicked", L"Click", MB_ICONINFORMATION);
 		return true;
+	});
+
+	rads.on().bn_clicked([this](int i) -> void {
+		auto s = wl::str::fmt(L"Radio: %s", rads.radios[i].text().c_str());
+		wnd.set_title(s);
 	});
 
 }

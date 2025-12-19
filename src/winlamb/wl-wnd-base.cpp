@@ -339,7 +339,7 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 		.right = _opts.size.cx,
 		.bottom = _opts.size.cy,
 	};
-	BOOL ret = AdjustWindowRectEx(&rcWnd, _opts.style, _opts.hMenu != nullptr, _opts.exStyle);
+	BOOL ret = AdjustWindowRectEx(&rcWnd, _opts.style, _opts.hMenu != nullptr, _opts.styleEx);
 	#ifdef _DEBUG
 	if (!ret)
 		throw std::system_error(GetLastError(), std::system_category(), "AdjustWindowRectEx failed");
@@ -351,7 +351,7 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 		.y = GetSystemMetrics(SM_CYSCREEN) / 2 - rcWnd.bottom / 2,
 	};
 
-	_rawBase.create_window(_opts.exStyle, atom, std::move(_opts.title), _opts.style,
+	_rawBase.create_window(_opts.styleEx, atom, std::move(_opts.title), _opts.style,
 		ptWndCenter, {.cx = rcWnd.right - rcWnd.left, .cy = rcWnd.bottom - rcWnd.top},
 		nullptr, _opts.hMenu, hInst);
 
@@ -396,7 +396,7 @@ void RawModal::show() {
 		.right = _opts.size.cx,
 		.bottom = _opts.size.cy,
 	};
-	BOOL ret = AdjustWindowRectEx(&rcWnd, _opts.style, FALSE, _opts.exStyle);
+	BOOL ret = AdjustWindowRectEx(&rcWnd, _opts.style, FALSE, _opts.styleEx);
 	#ifdef _DEBUG
 	if (!ret)
 		throw std::system_error(GetLastError(), std::system_category(), "AdjustWindowRectEx failed");
@@ -411,7 +411,7 @@ void RawModal::show() {
 		.y = rcParent.top + (rcParent.bottom - rcParent.top) / 2 - rcWnd.bottom / 2,
 	};
 
-	_rawBase.create_window(_opts.exStyle, atom, std::move(_opts.title), _opts.style,
+	_rawBase.create_window(_opts.styleEx, atom, std::move(_opts.title), _opts.style,
 		ptWndCenter, {.cx = rcWnd.right - rcWnd.left, .cy = rcWnd.bottom - rcWnd.top},
 		nullptr, nullptr, hInst);
 
@@ -425,7 +425,7 @@ RawControl::RawControl(WindowParent &parent) {
 		HINSTANCE hInst = wnd_hinst(pParent->hwnd());
 		ATOM atom = _rawBase.register_class(hInst, std::move(_opts.className), _opts.classStyle,
 			0, _opts.hbrBackground, _opts.hCursor);
-		_rawBase.create_window(_opts.windowExStyle, atom, {}, _opts.windowStyle,
+		_rawBase.create_window(_opts.styleEx, atom, {}, _opts.style,
 			_opts.pos, _opts.size, pParent->hwnd(), reinterpret_cast<HMENU>(valid_ctrl_id(_opts.ctrlId)), hInst);
 		pParent->wnd_base()._layout.add(_rawBase._wndBase._hWnd, _opts.layout);
 	});

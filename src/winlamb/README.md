@@ -7,7 +7,9 @@ Goals:
 * simplify the process of writing native GUI Win32 applications;
 * lay a scalable foundation for large, complex programs;
 * support high-performance applications;
-* build windows programmatically or from dialog resources.
+* build windows in two possible ways:
+    * programmatically; or
+    * loading dialog resources.
 
 ## Installation
 
@@ -46,7 +48,7 @@ Native controls are the Win32 built-in widgets:
 | `wl::Edit` | [Edit](https://learn.microsoft.com/en-us/windows/win32/controls/about-edit-controls) control (textbox). |
 | `wl::ListView` | [ListView](https://learn.microsoft.com/en-us/windows/win32/controls/list-view-controls-overview) control. |
 | `wl::MonthCalendar` | [MonthCalendar](https://learn.microsoft.com/en-us/windows/win32/controls/month-calendar-controls) control. |
-| `wl::RadioButton` | [RadioButton](https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#radio-buttons) control. |
+| `wl::RadioGroup` | Manages a group of `wl::RadioButton`, the [RadioButton](https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#radio-buttons) control. |
 | `wl::Static` | [Static](https://learn.microsoft.com/en-us/windows/win32/controls/about-static-controls) control (label). |
 | `wl::StatusBar` | [StatusBar](https://learn.microsoft.com/en-us/windows/win32/controls/status-bars) control. |
 

@@ -61,7 +61,7 @@ namespace wl {
 	/// [button]: https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#push-buttons
 	class Button final : public WindowChild {
 	public:
-		/// Constructs the button programmatically with [`CreateWindowEx`].
+		/// Constructs the button, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
 		///
@@ -70,7 +70,7 @@ namespace wl {
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		explicit Button(WindowParent &owner, WORD ctrlId = 0);
 
-		/// Constructs the button from the dialog resource.
+		/// Constructs the button, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
 		Button(WindowParent &owner, WORD ctrlId, Lay layout);
@@ -82,7 +82,7 @@ namespace wl {
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
 
 		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::ButtonOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
+		[[nodiscard]] constexpr opts::ButtonOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -159,7 +159,7 @@ namespace wl {
 	/// [check box]: https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#check-boxes
 	class CheckBox final : public WindowChild {
 	public:
-		/// Constructs the check box programmatically with [`CreateWindowEx`].
+		/// Constructs the check box, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
 		///
@@ -168,7 +168,7 @@ namespace wl {
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		explicit CheckBox(WindowParent &owner, WORD ctrlId = 0);
 
-		/// Constructs the check box from the dialog resource.
+		/// Constructs the check box, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
 		CheckBox(WindowParent &owner, WORD ctrlId, Lay layout);
@@ -180,7 +180,7 @@ namespace wl {
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
 
 		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::CheckBoxOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
+		[[nodiscard]] constexpr opts::CheckBoxOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -329,7 +329,7 @@ namespace wl {
 			friend ComboBox;
 		};
 
-		/// Constructs the combo box programmatically with [`CreateWindowEx`].
+		/// Constructs the combo box, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
 		///
@@ -338,7 +338,7 @@ namespace wl {
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		explicit ComboBox(WindowParent &owner, WORD ctrlId = 0);
 
-		/// Constructs the combo box from the dialog resource.
+		/// Constructs the combo box, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
 		ComboBox(WindowParent &owner, WORD ctrlId, Lay layout);
@@ -353,7 +353,7 @@ namespace wl {
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
 
 		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::ComboBoxOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
+		[[nodiscard]] constexpr opts::ComboBoxOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -414,7 +414,7 @@ namespace wl {
 	/// [date and time picker]: https://learn.microsoft.com/en-us/windows/win32/controls/date-and-time-picker-controls
 	class DateTimePicker final : public WindowChild {
 	public:
-		/// Constructs the date and time picker programmatically with [`CreateWindowEx`].
+		/// Constructs the date and time picker, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
 		///
@@ -423,7 +423,7 @@ namespace wl {
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		explicit DateTimePicker(WindowParent &owner, WORD ctrlId = 0);
 
-		/// Constructs the date and time picker from the dialog resource.
+		/// Constructs the date and time picker, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
 		DateTimePicker(WindowParent &owner, WORD ctrlId, Lay layout);
@@ -435,7 +435,7 @@ namespace wl {
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
 
 		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::DateTimePickerOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
+		[[nodiscard]] constexpr opts::DateTimePickerOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -528,7 +528,7 @@ namespace wl {
 	/// [edit]: https://learn.microsoft.com/en-us/windows/win32/controls/about-edit-controls
 	class Edit final : public WindowChild {
 	public:
-		/// Constructs the edit programmatically with [`CreateWindowEx`].
+		/// Constructs the edit, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
 		///
@@ -537,7 +537,7 @@ namespace wl {
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		explicit Edit(WindowParent &owner, WORD ctrlId = 0);
 
-		/// Constructs the edit from the dialog resource.
+		/// Constructs the edit, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
 		Edit(WindowParent &owner, WORD ctrlId, Lay layout);
@@ -549,7 +549,7 @@ namespace wl {
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
 
 		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::EditOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
+		[[nodiscard]] constexpr opts::EditOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -887,7 +887,7 @@ namespace wl {
 			friend ListView;
 		};
 
-		/// Constructs the list view programmatically with [`CreateWindowEx`].
+		/// Constructs the list view, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
 		///
@@ -896,7 +896,7 @@ namespace wl {
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		explicit ListView(WindowParent &owner, WORD ctrlId = 0);
 
-		/// Constructs the list view from the dialog resource.
+		/// Constructs the list view, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
 		ListView(WindowParent &owner, WORD ctrlId, Lay layout, WORD contextMenuId = 0);
@@ -914,7 +914,7 @@ namespace wl {
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
 
 		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::ListViewOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
+		[[nodiscard]] constexpr opts::ListViewOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -976,7 +976,7 @@ namespace wl {
 	/// [month calendar]: https://learn.microsoft.com/en-us/windows/win32/controls/month-calendar-controls
 	class MonthCalendar final : public WindowChild {
 	public:
-		/// Constructs the month calendar programmatically with [`CreateWindowEx`].
+		/// Constructs the month calendar, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
 		///
@@ -985,7 +985,7 @@ namespace wl {
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		explicit MonthCalendar(WindowParent &owner, WORD ctrlId = 0);
 
-		/// Constructs the month calendar from the dialog resource.
+		/// Constructs the month calendar, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
 		MonthCalendar(WindowParent &owner, WORD ctrlId, Lay layout);
@@ -997,7 +997,7 @@ namespace wl {
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
 
 		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::MonthCalendarOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
+		[[nodiscard]] constexpr opts::MonthCalendarOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -1039,10 +1039,12 @@ namespace wl {
 
 	/// @brief Native [radio button] control.
 	///
+	/// Instead of creating the radio buttons directly, prefer using a `RadioGroup`.
+	///
 	/// [radio button]: https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#radio-buttons
 	class RadioButton final : public WindowChild {
 	public:
-		/// Constructs the radio button programmatically with [`CreateWindowEx`].
+		/// Constructs the radio button, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
 		///
@@ -1051,7 +1053,7 @@ namespace wl {
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		explicit RadioButton(WindowParent &owner, WORD ctrlId = 0);
 
-		/// Constructs the radio button from the dialog resource.
+		/// Constructs the radio button, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
 		RadioButton(WindowParent &owner, WORD ctrlId, Lay layout);
@@ -1063,7 +1065,7 @@ namespace wl {
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
 
 		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::RadioButtonOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
+		[[nodiscard]] constexpr opts::RadioButtonOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -1118,6 +1120,107 @@ namespace wl {
 		opts::RadioButtonOpts _opts{};
 	};
 
+	/// @brief Manages a group of `RadioButton` controls.
+	///
+	/// Example of creating a window with 3 radio buttons programmatically, .h and .cpp files:
+	///
+	/// ```cpp
+	/// class MyMain final {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{};
+	///     wl::RadioGroup rads{wnd, 3};
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
+	///
+	/// MyMain::MyMain() {
+	///     wnd.setup().title = L"My main window";
+	///
+	///     rads.setup(0).pos = wl::dpi::pt(10, 10);
+	///     rads.setup(0).text = L"First";
+	///     rads.setup(0).selected = true;
+	///
+	///     rads.setup(1).pos = wl::dpi::pt(10, 30);
+	///     rads.setup(1).text = L"Second";
+	///
+	///     rads.setup(2).pos = wl::dpi::pt(10, 50);
+	///     rads.setup(2).text = L"Third";
+	///
+	///     rads.on().bn_clicked([this](int i) -> void {
+	///         MessageBoxW(wnd.hwnd(), L"Radio selected", rads.radios[i].text().c_str(), MB_ICONINFORMATION);
+	///     });
+	/// }
+	/// ```
+	class RadioGroup final {
+	public:
+		/** Accesses the managed `RadioButton` controls. */
+		class RadioButtonCollection final {
+		private:
+			RadioButtonCollection(RadioButtonCollection&&) = delete; // non-copyable, non-movable
+
+			constexpr explicit RadioButtonCollection(RadioGroup *pOwner) : _pOwner{pOwner} { }
+
+		public:
+			/** Returns a const reference to the `RadioButton` at the given index. */
+			[[nodiscard]] constexpr const RadioButton& operator[](int index) const { return _pOwner->_radios[index]; }
+
+			/** Returns a reference to the `RadioButton` at the given index. */
+			[[nodiscard]] constexpr RadioButton& operator[](int index) { return _pOwner->_radios[index]; }
+
+			/** Returns the number of `RadioButton` controls in the group. */
+			[[nodiscard]] constexpr size_t count() const { return _pOwner->_radios.size(); }
+
+		private:
+			RadioGroup *_pOwner;
+			friend RadioGroup;
+		};
+
+		/// Constructs the radio group with the given number of radio buttons, each one created
+		/// programmatically with [`CreateWindowEx`], and an auto-generated ID.
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		RadioGroup(WindowParent &owner, size_t numRadios);
+
+		/// Constructs the radio group using each provided ID to programmatically create
+		/// a radio button with [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		RadioGroup(WindowParent &owner, std::initializer_list<WORD> ctrlIds);
+
+		/// Constructs the radio group using each provided ID to programmatically create
+		/// a radio button which will be loaded from the dialog resource.
+		///
+		/// The layout will be applied to all radio buttons.
+		RadioGroup(WindowParent &owner, Lay layout, std::initializer_list<WORD> ctrlIds);
+
+		/** Radio button methods. */
+		RadioButtonCollection radios{this};
+
+		/** For controls created programmatically, defines additional creation options. */
+		[[nodiscard]] constexpr opts::RadioButtonOpts& setup(size_t radioIndex) { return _radios[radioIndex].setup(); }
+
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// rads.on().bn_clicked([this](int radioIndex) -> void {
+		///     // ...
+		/// });
+		/// ```
+		[[nodiscard]] constexpr events::RadioGroupEvents& on() { return _wl_internal::valid_event(_radios[0].hwnd(), _events); }
+
+	private:
+		WindowParent &_owner;
+		_wl_internal::NonMovableArray<RadioButton> _radios;
+		events::RadioGroupEvents _events;
+	};
+
 	/// @brief Native [static] control (label).
 	///
 	/// Example of creating a window with a static programmatically, .h and .cpp files:
@@ -1149,7 +1252,7 @@ namespace wl {
 	/// [static]: https://learn.microsoft.com/en-us/windows/win32/controls/about-static-controls
 	class Static final : public WindowChild {
 	public:
-		/// Constructs the static programmatically with [`CreateWindowEx`].
+		/// Constructs the static, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
 		///
@@ -1158,7 +1261,7 @@ namespace wl {
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		explicit Static(WindowParent &owner, WORD ctrlId = 0);
 
-		/// Constructs the static from the dialog resource.
+		/// Constructs the static, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
 		Static(WindowParent &owner, WORD ctrlId, Lay layout);
@@ -1170,7 +1273,7 @@ namespace wl {
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
 
 		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::StaticOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
+		[[nodiscard]] constexpr opts::StaticOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -1292,7 +1395,7 @@ namespace wl {
 			friend StatusBar;
 		};
 
-		/// Constructs the status bar programmatically with [`CreateWindowEx`].
+		/// Constructs the status bar, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
 		///
@@ -1309,7 +1412,7 @@ namespace wl {
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
 
 		/** Defines additional creation options. */
-		[[nodiscard]] constexpr opts::StatusBarOpts& setup() { return _wl_internal::valid_opts(hwnd(), _opts); }
+		[[nodiscard]] constexpr opts::StatusBarOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///

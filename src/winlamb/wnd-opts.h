@@ -63,7 +63,7 @@ namespace wl::opts {
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD exStyle = WS_EX_LEFT;
+		DWORD styleEx = WS_EX_LEFT;
 		/// Optional window main menu, passed to [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -135,7 +135,7 @@ namespace wl::opts {
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD exStyle = WS_EX_LEFT;
+		DWORD styleEx = WS_EX_LEFT;
 
 		/// In most applications, the window loop calls [`IsDialogMessage`] so child control messages will properly work.
 		/// However, this has the side-effect of inhibiting [`WM_CHAR`] messages from being sent, which is bad for applications like text editors.
@@ -172,18 +172,18 @@ namespace wl::opts {
 		///
 		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowStyle = WS_CHILD | WS_TABSTOP | WS_GROUP | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
+		DWORD style = WS_CHILD | WS_TABSTOP | WS_GROUP | WS_VISIBLE | WS_CLIPCHILDREN | WS_CLIPSIBLINGS;
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// Example adding a border:
 		///
 		/// ```cpp
-		/// wnd.setup().windowExStyle |= WS_EX_CLIENTEDGE;
+		/// wnd.setup().styleEx |= WS_EX_CLIENTEDGE;
 		/// ```
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowExStyle = WS_EX_LEFT;
+		DWORD styleEx = WS_EX_LEFT;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
@@ -218,21 +218,17 @@ namespace wl::opts {
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		std::wstring text{};
-		/// The [window style] passed to [`CreateWindowEx`].
+		/// The [window] and [Button style] passed to [`CreateWindowEx`].
 		///
-		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [Button style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | BS_PUSHBUTTON;
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowExStyle = WS_EX_LEFT;
-		/// The [Button style] passed to [`CreateWindowEx`].
-		///
-		/// [Button style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD ctrlStyle = BS_PUSHBUTTON;
+		DWORD styleEx = WS_EX_LEFT;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
@@ -267,21 +263,17 @@ namespace wl::opts {
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		std::wstring text{};
-		/// The [window style] passed to [`CreateWindowEx`].
+		/// The [window] and [CheckBox style] passed to [`CreateWindowEx`].
 		///
-		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [CheckBox style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | BS_AUTOCHECKBOX;
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowExStyle = WS_EX_LEFT;
-		/// The [CheckBox style] passed to [`CreateWindowEx`].
-		///
-		/// [CheckBox style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD ctrlStyle = BS_AUTOCHECKBOX;
+		DWORD styleEx = WS_EX_LEFT;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
@@ -316,21 +308,17 @@ namespace wl::opts {
 
 	/** Options to create a `ComboBox` programmatically. */
 	struct ComboBoxOpts final {
-		/// The [window style] passed to [`CreateWindowEx`].
+		/// The [window] and [ComboBox style] passed to [`CreateWindowEx`].
 		///
-		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [ComboBox style]: https://learn.microsoft.com/en-us/windows/win32/controls/combo-box-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | CBS_DROPDOWNLIST;
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowExStyle = WS_EX_LEFT;
-		/// The [ComboBox style] passed to [`CreateWindowEx`].
-		///
-		/// [ComboBox style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD ctrlStyle = CBS_DROPDOWNLIST;
+		DWORD styleEx = WS_EX_LEFT;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
@@ -369,21 +357,17 @@ namespace wl::opts {
 
 	/** Options to create a `DateTimePicker` programmatically. */
 	struct DateTimePickerOpts final {
-		/// The [window style] passed to [`CreateWindowEx`].
+		/// The [window] and [DateTimePicker style] passed to [`CreateWindowEx`].
 		///
-		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [DateTimePicker style]: https://learn.microsoft.com/en-us/windows/win32/controls/date-and-time-picker-control-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | DTS_LONGDATEFORMAT;
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowExStyle = WS_EX_LEFT | WS_EX_CLIENTEDGE;
-		/// The [ComboBox style] passed to [`CreateWindowEx`].
-		///
-		/// [ComboBox style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD ctrlStyle = DTS_LONGDATEFORMAT;
+		DWORD styleEx = WS_EX_LEFT | WS_EX_CLIENTEDGE;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
@@ -430,21 +414,17 @@ namespace wl::opts {
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		std::wstring text{};
-		/// The [window style] passed to [`CreateWindowEx`].
+		/// The [window] and [Edit style] passed to [`CreateWindowEx`].
 		///
-		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [Edit style]: https://learn.microsoft.com/en-us/windows/win32/controls/edit-control-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | ES_AUTOHSCROLL | ES_NOHIDESEL;
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowExStyle = WS_EX_LEFT | WS_EX_CLIENTEDGE;
-		/// The [Edit style] passed to [`CreateWindowEx`].
-		///
-		/// [Edit style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD ctrlStyle = ES_AUTOHSCROLL | ES_NOHIDESEL;
+		DWORD styleEx = WS_EX_LEFT | WS_EX_CLIENTEDGE;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
@@ -475,27 +455,23 @@ namespace wl::opts {
 
 	/** Options to create a `ListView` programmatically. */
 	struct ListViewOpts final {
-		/// The [window style] passed to [`CreateWindowEx`].
+		/// The [window] and [ListView style] passed to [`CreateWindowEx`].
 		///
-		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be set.
+		///
+		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [ListView style]: https://learn.microsoft.com/en-us/windows/win32/controls/list-view-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS;
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowExStyle = WS_EX_LEFT | WS_EX_CLIENTEDGE;
-		/// The [ListView style] passed to [`CreateWindowEx`].
-		///
-		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be set.
-		///
-		/// [ListView style]: https://learn.microsoft.com/en-us/windows/win32/controls/list-view-window-styles
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD ctrlStyle = LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS;
+		DWORD styleEx = WS_EX_LEFT | WS_EX_CLIENTEDGE;
 		/// The [ListView extended styles] applied right after the control is created.
 		///
 		/// [ListView extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/extended-list-view-styles
-		DWORD ctrlExStyle = LVS_EX_FULLROWSELECT;
+		DWORD styleExListView = LVS_EX_FULLROWSELECT;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
@@ -558,21 +534,17 @@ namespace wl::opts {
 
 	/** Options to create a `MonthCalendar` programmatically. */
 	struct MonthCalendarOpts final {
-		/// The [window style] passed to [`CreateWindowEx`].
+		/// The [window] and [MonthCalendar style] passed to [`CreateWindowEx`].
 		///
-		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [MonthCalendar style]: https://learn.microsoft.com/en-us/windows/win32/controls/month-calendar-control-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowExStyle = WS_EX_LEFT;
-		/// The [Static style] passed to [`CreateWindowEx`].
-		///
-		/// [Static style]: https://learn.microsoft.com/en-us/windows/win32/controls/static-control-styles
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD ctrlStyle = 0;
+		DWORD styleEx = WS_EX_LEFT;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
@@ -609,21 +581,17 @@ namespace wl::opts {
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		std::wstring text{};
-		/// The [window style] passed to [`CreateWindowEx`].
+		/// The [window] and [RadioButton style] passed to [`CreateWindowEx`].
 		///
-		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [RadioButton style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowStyle = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | BS_AUTORADIOBUTTON;
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowExStyle = WS_EX_LEFT;
-		/// The [RadioButton style] passed to [`CreateWindowEx`].
-		///
-		/// [RadioButton style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD ctrlStyle = BS_AUTORADIOBUTTON;
+		DWORD styleEx = WS_EX_LEFT;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
@@ -664,21 +632,17 @@ namespace wl::opts {
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		std::wstring text{};
-		/// The [window style] passed to [`CreateWindowEx`].
+		/// The [window] and [Static style] passed to [`CreateWindowEx`].
 		///
-		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [Static style]: https://learn.microsoft.com/en-us/windows/win32/controls/static-control-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowStyle = WS_CHILD | WS_VISIBLE;
+		DWORD style = WS_CHILD | WS_VISIBLE | SS_LEFT | SS_NOTIFY;
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD windowExStyle = WS_EX_LEFT;
-		/// The [Static style] passed to [`CreateWindowEx`].
-		///
-		/// [Static style]: https://learn.microsoft.com/en-us/windows/win32/controls/static-control-styles
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD ctrlStyle = SS_LEFT | SS_NOTIFY;
+		DWORD styleEx = WS_EX_LEFT;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:

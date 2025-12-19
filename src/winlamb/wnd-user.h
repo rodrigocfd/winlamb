@@ -97,13 +97,13 @@ namespace wl {
 	/// [`std::bind`]: https://en.cppreference.com/w/cpp/utility/functional/bind.html
 	class WindowMain final : public WindowParent {
 	public:
-		/// Constructs the main window programmatically with [`CreateWindowEx`].
+		/// Constructs the main window, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		WindowMain()
 			: _rawMain{std::make_optional<_wl_internal::RawMain>()} { }
 
-		/// Constructs the main window from a dialog resource with [`CreateDialogParam`].
+		/// Constructs the main window, which will be loaded from a dialog resource with [`CreateDialogParam`].
 		///
 		/// Example:
 		///
@@ -121,7 +121,7 @@ namespace wl {
 		/// For a window created programmatically, defines additional creation options.
 		///
 		/// If a dialog window, throws an exception.
-		[[nodiscard]] constexpr opts::MainOpts& setup() { return _wl_internal::valid_opts(hwnd(), _rawMain.value()._opts); }
+		[[nodiscard]] constexpr opts::MainOpts& setup() { return _wl_internal::valid_setup(hwnd(), _rawMain.value()._opts); }
 
 		/// Allows message events to be added.
 		///
@@ -182,7 +182,7 @@ namespace wl {
 	/** @brief Modal window. */
 	class WindowModal final : public WindowParent {
 	public:
-		/// Constructs the modal window programmatically with [`CreateWindowEx`].
+		/// Constructs the modal window, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// Example:
 		///
@@ -199,7 +199,7 @@ namespace wl {
 		explicit WindowModal(const WindowParent &parent)
 			: _rawModal{std::make_optional<_wl_internal::RawModal>(parent)} { }
 
-		/// Constructs the modal window from a dialog resource with [`DialogBoxParam`].
+		/// Constructs the modal window, which will be loaded from a dialog resource with [`DialogBoxParam`].
 		///
 		/// The `dlgId` parameter must identify a dialog resource.
 		///
@@ -222,7 +222,7 @@ namespace wl {
 		/// For a window created programmatically, defines additional creation options.
 		///
 		/// If a dialog window, throws an exception.
-		[[nodiscard]] constexpr opts::ModalOpts& setup() { return _wl_internal::valid_opts(hwnd(), _rawModal.value()._opts); }
+		[[nodiscard]] constexpr opts::ModalOpts& setup() { return _wl_internal::valid_setup(hwnd(), _rawModal.value()._opts); }
 
 		/// Allows message events to be added.
 		///
@@ -308,12 +308,12 @@ namespace wl {
 	/// ```
 	class WindowControl final : public WindowParent, public WindowChild {
 	public:
-		/// Constructs the custom control window programmatically with [`CreateWindowEx`].
+		/// Constructs the custom control window, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		explicit WindowControl(WindowParent &parent);
 
-		/// Constructs the custom control window from a dialog resource with [`CreateDialogParam`].
+		/// Constructs the custom control window, which will be loaded from a dialog resource with [`CreateDialogParam`].
 		///
 		/// The `dlgId` parameter must identify a dialog resource.
 		///
@@ -329,7 +329,7 @@ namespace wl {
 		/// For a control created programmatically, defines additional creation options.
 		///
 		/// If a dialog control, throws an exception.
-		[[nodiscard]] constexpr opts::ControlOpts& setup() { return _wl_internal::valid_opts(hwnd(), _rawControl.value()._opts); }
+		[[nodiscard]] constexpr opts::ControlOpts& setup() { return _wl_internal::valid_setup(hwnd(), _rawControl.value()._opts); }
 
 		/// Allows message events to be added.
 		///

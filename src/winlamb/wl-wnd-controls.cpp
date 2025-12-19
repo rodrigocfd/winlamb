@@ -16,8 +16,8 @@ Button::Button(WindowParent &owner, WORD ctrlId)
 		if (_opts.size == opts::ButtonOpts{}.size)
 			_opts.size = dpi::sz(_opts.size); // special case: default size
 
-		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, L"BUTTON", std::move(_opts.text),
-			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, _opts.size);
+		_ctrl.create_wnd(ctrl_id(), _opts.styleEx, L"BUTTON", std::move(_opts.text),
+			_opts.style, _opts.pos, _opts.size);
 		apply_ui_font(hwnd());
 		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
 	});
@@ -51,8 +51,8 @@ CheckBox::CheckBox(WindowParent &owner, WORD ctrlId)
 		if (!_opts.size.cx && !_opts.size.cy)
 			_opts.size = calc_text_bound_box_with_check(str::remove_accel_ampersands(_opts.text));
 
-		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, L"BUTTON", std::move(_opts.text),
-			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, _opts.size);
+		_ctrl.create_wnd(ctrl_id(), _opts.styleEx, L"BUTTON", std::move(_opts.text),
+			_opts.style, _opts.pos, _opts.size);
 		apply_ui_font(hwnd());
 		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
 		set_state(_opts.state);
@@ -139,8 +139,8 @@ ComboBox::ComboBox(WindowParent &owner, WORD ctrlId)
 		if (_opts.width == opts::ComboBoxOpts{}.width)
 			_opts.width = dpi::x(_opts.width); // special case: default width
 
-		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, L"COMBOBOX", {},
-			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, {.cx = _opts.width});
+		_ctrl.create_wnd(ctrl_id(), _opts.styleEx, L"COMBOBOX", {},
+			_opts.style, _opts.pos, {.cx = _opts.width});
 		apply_ui_font(hwnd());
 		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
 		for (auto &&s : _opts.texts)
@@ -167,8 +167,8 @@ DateTimePicker::DateTimePicker(WindowParent &owner, WORD ctrlId)
 		if (_opts.size == opts::DateTimePickerOpts{}.size)
 			_opts.size = dpi::sz(_opts.size); // special case: default size
 
-		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, DATETIMEPICK_CLASSW, {},
-			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, _opts.size);
+		_ctrl.create_wnd(ctrl_id(), _opts.styleEx, DATETIMEPICK_CLASSW, {},
+			_opts.style, _opts.pos, _opts.size);
 		apply_ui_font(hwnd());
 		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
 		if (_opts.value.wYear)
@@ -205,8 +205,8 @@ Edit::Edit(WindowParent &owner, WORD ctrlId)
 		if (_opts.size == opts::EditOpts{}.size)
 			_opts.size = dpi::sz(_opts.size); // special case: default size
 
-		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, L"EDIT", std::move(_opts.text),
-			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, _opts.size);
+		_ctrl.create_wnd(ctrl_id(), _opts.styleEx, L"EDIT", std::move(_opts.text),
+			_opts.style, _opts.pos, _opts.size);
 		apply_ui_font(hwnd());
 		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
 	});
@@ -588,9 +588,9 @@ ListView::ListView(WindowParent &owner, WORD ctrlId)
 	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
 {
 	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
-		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, WC_LISTVIEWW, {},
-			_opts.windowStyle | _opts.ctrlStyle | LVS_SHAREIMAGELISTS, _opts.pos, _opts.size);
-		set_extended_style(true, _opts.ctrlExStyle);
+		_ctrl.create_wnd(ctrl_id(), _opts.styleEx, WC_LISTVIEWW, {},
+			_opts.style | LVS_SHAREIMAGELISTS, _opts.pos, _opts.size);
+		set_extended_style(true, _opts.styleExListView);
 		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
 		for (auto &&c : _opts.columns)
 			cols.add(c.name, c.width);
@@ -734,8 +734,8 @@ MonthCalendar::MonthCalendar(WindowParent &owner, WORD ctrlId)
 	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
 {
 	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
-		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, MONTHCAL_CLASSW, {},
-			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, {});
+		_ctrl.create_wnd(ctrl_id(), _opts.styleEx, MONTHCAL_CLASSW, {},
+			_opts.style, _opts.pos, {});
 
 		RECT rcBounds{};
 		SendMessageW(hwnd(), MCM_GETMINREQRECT, 0, reinterpret_cast<LPARAM>(&rcBounds)); // request ideal size
@@ -777,8 +777,8 @@ RadioButton::RadioButton(WindowParent &owner, WORD ctrlId)
 		if (!_opts.size.cx && !_opts.size.cy)
 			_opts.size = calc_text_bound_box_with_check(str::remove_accel_ampersands(_opts.text));
 
-		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, L"BUTTON", std::move(_opts.text),
-			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, _opts.size);
+		_ctrl.create_wnd(ctrl_id(), _opts.styleEx, L"BUTTON", std::move(_opts.text),
+			_opts.style, _opts.pos, _opts.size);
 		apply_ui_font(hwnd());
 		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
 		if (_opts.selected) select();
@@ -817,6 +817,52 @@ const RadioButton& RadioButton::set_text_resize(WStrView text) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+RadioGroup::RadioGroup(WindowParent &owner, size_t numRadios)
+	: _owner{owner}, _radios{numRadios}, _events{*this}
+{
+	#ifdef _DEBUG
+	if (!numRadios)
+		throw std::logic_error("Cannot create a RadioGroup with zero radio controls.");
+	#endif
+
+	for (size_t i = 0; i < numRadios; ++i) {
+		new (&_radios[i]) RadioButton{owner};
+		if (i) _radios[i].setup().style &= ~WS_GROUP;
+	}
+}
+
+RadioGroup::RadioGroup(WindowParent &owner, std::initializer_list<WORD> ctrlIds)
+	: _owner{owner}, _radios{ctrlIds.size()}, _events{*this}
+{
+	#ifdef _DEBUG
+	if (!ctrlIds.size())
+		throw std::logic_error("Cannot create a RadioGroup with zero radio controls.");
+	#endif
+
+	size_t i = 0;
+	for (WORD ctrlId : ctrlIds) {
+		new (&_radios[i]) RadioButton{owner, ctrlId};
+		if (i) _radios[i++].setup().style &= ~WS_GROUP;
+	}
+}
+
+RadioGroup::RadioGroup(WindowParent &owner, Lay layout, std::initializer_list<WORD> ctrlIds)
+	: _owner{owner}, _radios{ctrlIds.size()}, _events{*this}
+{
+	#ifdef _DEBUG
+	if (!ctrlIds.size())
+		throw std::logic_error("Cannot create a RadioGroup with zero radio controls.");
+	#endif
+
+	size_t i = 0;
+	for (WORD ctrlId : ctrlIds) {
+		new (&_radios[i]) RadioButton{owner, ctrlId, layout};
+		if (i) _radios[i++].setup().style &= ~WS_GROUP;
+	}
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 Static::Static(WindowParent &owner, WORD ctrlId)
 	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
 {
@@ -824,8 +870,8 @@ Static::Static(WindowParent &owner, WORD ctrlId)
 		if (!_opts.size.cx && !_opts.size.cy)
 			_opts.size = calc_text_bound_box(str::remove_accel_ampersands(_opts.text));
 
-		_ctrl.create_wnd(ctrl_id(), _opts.windowExStyle, L"STATIC", std::move(_opts.text),
-			_opts.windowStyle | _opts.ctrlStyle, _opts.pos, _opts.size);
+		_ctrl.create_wnd(ctrl_id(), _opts.styleEx, L"STATIC", std::move(_opts.text),
+			_opts.style, _opts.pos, _opts.size);
 		apply_ui_font(hwnd());
 		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
 	});
