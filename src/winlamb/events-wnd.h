@@ -403,6 +403,7 @@ namespace wl::events {
 		void wm_nc_paint(std::function<void(wl::wm::NcPaint)> &&cb);
 		void wm_paint(std::function<void()> &&cb);
 		void wm_power_broadcast(std::function<void(wl::wm::PowerBroadcast)> &&cb);
+		void wm_query_open(std::function<bool()> &&cb);
 		void wm_r_button_dbl_clk(std::function<void(wl::wm::RButtonDblClk)> &&cb);
 		void wm_r_button_down(std::function<void(wl::wm::RButtonDown)> &&cb);
 		void wm_r_button_up(std::function<void(wl::wm::RButtonUp)> &&cb);
@@ -411,6 +412,7 @@ namespace wl::events {
 		void wm_show_window(std::function<void(wl::wm::ShowWindow)> &&cb);
 		void wm_size(std::function<void(wl::wm::Size)> &&cb);
 		void wm_sizing(std::function<void(wl::wm::Sizing)> &&cb);
+		void wm_theme_changed(std::function<void()> &&cb);
 		void wm_time_change(std::function<void()> &&cb);
 		void wm_v_scroll(std::function<void(wl::wm::VScroll)> &&cb);
 		void wm_window_pos_changed(std::function<void(wl::wm::WindowPosChanged)> &&cb);

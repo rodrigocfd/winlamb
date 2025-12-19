@@ -102,6 +102,10 @@ void WindowEvents::wm_notify(WORD idFrom, int code, std::function<LRESULT(wm::No
 	void WindowEvents::name(std::function<void()> &&cb) { \
 		wm(msg, [cb = std::move(cb), isDlg = _isDlg](wm::Msg) -> LRESULT { cb(); return isDlg ? TRUE : 0; }); \
 	}
+#define EVENT_NO_ARGS_RET(name, msg, tyret) \
+	void WindowEvents::name(std::function<tyret()> &&cb) { \
+		wm(msg, [cb = std::move(cb), isDlg = _isDlg](wm::Msg) -> LRESULT { return cb(); }); \
+	}
 #define EVENT_ARGS(name, msg, ty) \
 	void WindowEvents::name(std::function<void(ty)> &&cb) { \
 		wm(msg, [cb = std::move(cb), isDlg = _isDlg](wm::Msg p) -> LRESULT { cb(p); return isDlg ? TRUE : 0; }); \
@@ -141,6 +145,7 @@ EVENT_NO_ARGS(wm_nc_destroy, WM_NCDESTROY)
 EVENT_ARGS(wm_nc_paint, WM_NCPAINT, wm::NcPaint)
 EVENT_NO_ARGS(wm_paint, WM_PAINT)
 EVENT_ARGS(wm_power_broadcast, WM_POWERBROADCAST, wm::PowerBroadcast)
+EVENT_NO_ARGS_RET(wm_query_open, WM_QUERYOPEN, bool)
 EVENT_ARGS(wm_r_button_dbl_clk, WM_RBUTTONDBLCLK, wm::RButtonDblClk)
 EVENT_ARGS(wm_r_button_down, WM_RBUTTONDOWN, wm::RButtonDown)
 EVENT_ARGS(wm_r_button_up, WM_RBUTTONUP, wm::RButtonUp)
@@ -149,6 +154,7 @@ EVENT_ARGS(wm_set_focus, WM_SETFOCUS, wm::SetFocus)
 EVENT_ARGS(wm_show_window, WM_SHOWWINDOW, wm::ShowWindow)
 EVENT_ARGS(wm_size, WM_SIZE, wm::Size)
 EVENT_ARGS(wm_sizing, WM_SIZING, wm::Sizing)
+EVENT_NO_ARGS(wm_theme_changed, WM_THEMECHANGED)
 EVENT_NO_ARGS(wm_time_change, WM_TIMECHANGE)
 EVENT_ARGS(wm_v_scroll, WM_VSCROLL, wm::VScroll)
 EVENT_ARGS(wm_window_pos_changed, WM_WINDOWPOSCHANGED, wm::WindowPosChanged)
