@@ -191,7 +191,7 @@ namespace wl::events {
 	private:
 		RadioGroupEvents(RadioGroupEvents&&) = delete; // non-copyable, non-movable
 
-		RadioGroupEvents(wl::RadioGroup &owner) : _owner{owner} { }
+		RadioGroupEvents(wl::RadioGroup &owner) : _ownerGroup{owner} { }
 
 	public:
 		void bn_clicked(std::function<void(int)> &&cb);
@@ -200,7 +200,7 @@ namespace wl::events {
 		void bn_set_focus(std::function<void(int)> &&cb);
 
 	private:
-		wl::RadioGroup &_owner;
+		wl::RadioGroup &_ownerGroup;
 		friend wl::RadioGroup;
 	};
 

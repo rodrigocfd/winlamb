@@ -18,7 +18,7 @@ namespace _wl_internal {
 		WndBase(WndBase&&) = delete; // non-copyable, non-movable
 
 		constexpr explicit WndBase(bool isDlg)
-			: _isDlg{isDlg}, _preEvents{isDlg}, _userEvents{isDlg}, _postEvents{isDlg} { }
+			: _preEvents{isDlg}, _userEvents{isDlg}, _postEvents{isDlg} { }
 
 		void ui_thread(std::function<void()> &&cb) const;
 
@@ -31,7 +31,6 @@ namespace _wl_internal {
 		int main_loop(HACCEL hAccel, bool processDlgMsgs);
 		void modal_loop(bool processDlgMsgs);
 
-		bool _isDlg;
 		HWND _hWnd = nullptr; // _hWnd member is set in wndproc
 		Layout _layout{};
 		InternalEvents _preEvents;

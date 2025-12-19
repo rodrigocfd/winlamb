@@ -15,7 +15,7 @@ using namespace _wl_internal;
 		_ctrlEvents._parentWndBase._userEvents.wm_notify(_ctrlEvents._ctrlId, nm, \
 			[this, cb = std::move(cb)](wm::Notify) -> LRESULT { \
 				cb(); \
-				return _ctrlEvents._parentWndBase._isDlg ? TRUE : 0; \
+				return _ctrlEvents._parentWndBase._preEvents._isDlg ? TRUE : 0; \
 			}); \
 	}
 #define EVENT_NFY_ARG(method, nm, argty) \
@@ -23,7 +23,7 @@ using namespace _wl_internal;
 		_ctrlEvents._parentWndBase._userEvents.wm_notify(_ctrlEvents._ctrlId, nm, \
 			[this, cb = std::move(cb)](wm::Notify p) -> LRESULT { \
 				cb(p.hdr<argty>()); \
-				return _ctrlEvents._parentWndBase._isDlg ? TRUE : 0; \
+				return _ctrlEvents._parentWndBase._preEvents._isDlg ? TRUE : 0; \
 			}); \
 	}
 #define EVENT_NFY_ARG_RET_BOOL(method, nm, argty) \
@@ -141,8 +141,8 @@ EVENT_NFY(nm_released_capture, NM_RELEASEDCAPTURE)
 #define RADIO_GROUP_CMD(method) \
 	void RadioGroupEvents::method(std::function<void(int)> &&cb) { \
 		auto callback = std::make_shared<std::function<void(int)>>(std::move(cb)); \
-		for (int i = 0; i < _owner.radios.count(); ++i) { \
-			_owner.radios[i].on().method([i, callback]() -> void { \
+		for (int i = 0; i < _ownerGroup.radios.count(); ++i) { \
+			_ownerGroup.radios[i].on().method([i, callback]() -> void { \
 				(*callback)(i); \
 			}); \
 		} \
