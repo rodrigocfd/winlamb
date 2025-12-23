@@ -296,12 +296,12 @@ namespace wl::opts {
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		SIZE size{};
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
 		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
 		/** Initial state. */
 		WORD state = BST_UNCHECKED;
 	};
@@ -339,12 +339,12 @@ namespace wl::opts {
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		int width = 100;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
 		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
 		/// Texts to be added.
 		///
 		/// Example:
@@ -388,12 +388,12 @@ namespace wl::opts {
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		SIZE size = {.cx = 230, .cy = 23};
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
 		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
 		/// Initial [`SYSTEMTIME`].
 		///
 		/// Example:
@@ -555,12 +555,12 @@ namespace wl::opts {
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		POINT pos{};
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
 		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
 		/// Initial [`SYSTEMTIME`].
 		///
 		/// Example:
@@ -614,12 +614,12 @@ namespace wl::opts {
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		SIZE size{};
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
 		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
 		/// Initial state.
 		///
 		/// Only one radio button can be selected at once in its group.
@@ -665,12 +665,12 @@ namespace wl::opts {
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		SIZE size{};
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
 		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
 	};
 
 	/** Options to create a `StatusBar` programmatically. */
@@ -726,4 +726,50 @@ namespace wl::opts {
 		friend wl::StatusBar;
 	};
 
+	/** Options to create a `TreeView` programmatically. */
+	struct TreeViewOpts final {
+		/// The [window] and [TreeView style] passed to [`CreateWindowEx`].
+		///
+		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be set.
+		///
+		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [TreeView style]: https://learn.microsoft.com/en-us/windows/win32/controls/tree-view-control-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_HASBUTTONS;
+		/// The [window extended style] passed to [`CreateWindowEx`].
+		///
+		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD styleEx = WS_EX_LEFT | WS_EX_CLIENTEDGE;
+		/// The [TreeView extended styles] applied right after the control is created.
+		///
+		/// [TreeView extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/tree-view-control-window-extended-styles
+		DWORD styleExTreeView = 0;
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// tv.setup().pos = wl::dpi::pt(10, 10);
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		POINT pos{};
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// tv.setup().size = wl::dpi::sz(120, 120);
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SIZE size = {.cx = 120, .cy = 120};
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+	};
 }

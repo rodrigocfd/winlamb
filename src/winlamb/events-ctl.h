@@ -34,6 +34,7 @@ namespace wl {
 	class RadioGroup;
 	class Static;
 	class StatusBar;
+	class TreeView;
 }
 
 namespace wl::events {
@@ -239,6 +240,46 @@ namespace wl::events {
 	private:
 		_wl_internal::NativeCtrlEvents _ctrlEvents;
 		friend wl::StatusBar;
+	};
+
+	/** @brief Native `TreeView` events. */
+	class TreeViewEvents final {
+	private:
+		TreeViewEvents(TreeViewEvents&&) = delete; // non-copyable, non-movable
+
+		TreeViewEvents(wl::WindowParent &owner, WORD ctrlId) : _ctrlEvents{owner, ctrlId} { }
+
+	public:
+		void tvn_async_draw(std::function<void(NMTVASYNCDRAW&)> &&cb);
+		void tvn_begin_drag(std::function<void(NMTREEVIEWW&)> &&cb);
+		void tvn_begin_label_edit(std::function<bool(NMTVDISPINFOW&)> &&cb);
+		void tvn_begin_r_drag(std::function<void(NMTREEVIEWW&)> &&cb);
+		void tvn_delete_item(std::function<void(NMTREEVIEWW&)> &&cb);
+		void tvn_end_label_edit(std::function<bool(NMTVDISPINFOW&)> &&cb);
+		void tvn_get_disp_info(std::function<void(NMTVDISPINFOW&)> &&cb);
+		void tvn_get_info_tip(std::function<void(NMTVGETINFOTIPW&)> &&cb);
+		void tvn_item_changed(std::function<void(NMTVITEMCHANGE&)> &&cb);
+		void tvn_item_changing(std::function<bool(NMTVITEMCHANGE&)> &&cb);
+		void tvn_item_expanded(std::function<void(NMTREEVIEWW&)> &&cb);
+		void tvn_item_expanding(std::function<bool(NMTREEVIEWW&)> &&cb);
+		void tvn_key_down(std::function<int(NMTVKEYDOWN&)> &&cb);
+		void tvn_sel_changed(std::function<void(NMTREEVIEWW&)> &&cb);
+		void tvn_sel_changing(std::function<bool(NMTREEVIEWW&)> &&cb);
+		void tvn_set_disp_info(std::function<void(NMTVDISPINFOW&)> &&cb);
+		void tvn_single_expand(std::function<WORD(NMTREEVIEWW&)> &&cb);
+		void nm_click(std::function<int()> &&cb);
+		void nm_custom_draw(std::function<DWORD(NMTVCUSTOMDRAW&)> &&cb);
+		void nm_dbl_clk(std::function<int()> &&cb);
+		void nm_kill_focus(std::function<void()> &&cb);
+		void nm_r_click(std::function<int()> &&cb);
+		void nm_r_dbl_clk(std::function<int()> &&cb);
+		void nm_return(std::function<int()> &&cb);
+		void nm_set_cursor(std::function<int(NMMOUSE&)> &&cb);
+		void nm_set_focus(std::function<void()> &&cb);
+
+	private:
+		_wl_internal::NativeCtrlEvents _ctrlEvents;
+		friend wl::TreeView;
 	};
 
 }

@@ -164,7 +164,7 @@ namespace wl {
 		/// Calls [`SetWindowText`] to set the window title.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		const WindowMain& set_title(WStrView title) const;
+		const WindowMain& set_title(WStrView newTitle) const;
 
 		/// Runs the main window, blocking the UI thread until the window is closed.
 		///
@@ -265,7 +265,7 @@ namespace wl {
 		/// Calls [`SetWindowText`] to set the window title.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		const WindowModal& set_title(WStrView title) const;
+		const WindowModal& set_title(WStrView newTitle) const;
 
 		/** Displays the modal window, blocking the UI thread until the window is closed. */
 		void show();

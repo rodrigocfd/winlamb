@@ -32,8 +32,8 @@ Button::Button(WindowParent &owner, WORD ctrlId, Lay layout)
 	});
 }
 
-const Button& Button::set_text(WStrView text) const {
-	set_wnd_text(hwnd(), text);
+const Button& Button::set_text(WStrView newText) const {
+	set_wnd_text(hwnd(), newText);
 	return *this;
 }
 
@@ -78,14 +78,14 @@ const CheckBox& CheckBox::set_state(WORD bstFlag) const {
 	return *this;
 }
 
-const CheckBox& CheckBox::set_text(WStrView text) const {
-	set_wnd_text(hwnd(), text);
+const CheckBox& CheckBox::set_text(WStrView newText) const {
+	set_wnd_text(hwnd(), newText);
 	return *this;
 }
 
-const CheckBox& CheckBox::set_text_resize(WStrView text) const {
-	set_text(text);
-	SIZE bounds = calc_text_bound_box_with_check(str::remove_accel_ampersands(text));
+const CheckBox& CheckBox::set_text_resize(WStrView newText) const {
+	set_text(newText);
+	SIZE bounds = calc_text_bound_box_with_check(str::remove_accel_ampersands(newText));
 	SetWindowPos(hwnd(), nullptr, 0, 0, bounds.cx, bounds.cy, SWP_NOZORDER | SWP_NOMOVE);
 	return *this;
 }
@@ -221,8 +221,8 @@ Edit::Edit(WindowParent &owner, WORD ctrlId, Lay layout)
 	});
 }
 
-const Edit& Edit::set_text(WStrView text) const {
-	set_wnd_text(hwnd(), text);
+const Edit& Edit::set_text(WStrView newText) const {
+	set_wnd_text(hwnd(), newText);
 	return *this;
 }
 
@@ -313,10 +313,10 @@ std::wstring ListView::Column::text() const {
 	return buf;
 }
 
-const ListView::Column& ListView::Column::set_text(WStrView text) const {
+const ListView::Column& ListView::Column::set_text(WStrView newText) const {
 	LVCOLUMNW lvc{
 		.mask = LVCF_TEXT,
-		.pszText = const_cast<LPWSTR>(text.c_str()),
+		.pszText = const_cast<LPWSTR>(newText.c_str()),
 	};
 	ListView_SetColumn(_pOwner->hwnd(), _index, &lvc);
 	return *this;
@@ -449,8 +449,8 @@ std::wstring ListView::Item::text(UINT columnIndex) const {
 	}
 }
 
-const ListView::Item& ListView::Item::set_text(WStrView text, UINT columnIndex) const {
-	ListView_SetItemText(_pOwner->hwnd(), _index, columnIndex, const_cast<LPWSTR>(text.c_str()));
+const ListView::Item& ListView::Item::set_text(WStrView newText, UINT columnIndex) const {
+	ListView_SetItemText(_pOwner->hwnd(), _index, columnIndex, const_cast<LPWSTR>(newText.c_str()));
 	return *this;
 }
 
@@ -590,7 +590,8 @@ ListView::ListView(WindowParent &owner, WORD ctrlId)
 	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
 		_ctrl.create_wnd(ctrl_id(), _opts.styleEx, WC_LISTVIEWW, {},
 			_opts.style | LVS_SHAREIMAGELISTS, _opts.pos, _opts.size);
-		set_extended_style(true, _opts.styleExListView);
+		if (_opts.styleExListView)
+			set_extended_style(true, _opts.styleExListView);
 		_ctrl._parentWndBase._layout.add(hwnd(), _opts.layout);
 		for (auto &&c : _opts.columns)
 			cols.add(c.name, c.width);
@@ -734,8 +735,7 @@ MonthCalendar::MonthCalendar(WindowParent &owner, WORD ctrlId)
 	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
 {
 	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
-		_ctrl.create_wnd(ctrl_id(), _opts.styleEx, MONTHCAL_CLASSW, {},
-			_opts.style, _opts.pos, {});
+		_ctrl.create_wnd(ctrl_id(), _opts.styleEx, MONTHCAL_CLASSW, {}, _opts.style, _opts.pos, {});
 
 		RECT rcBounds{};
 		SendMessageW(hwnd(), MCM_GETMINREQRECT, 0, reinterpret_cast<LPARAM>(&rcBounds)); // request ideal size
@@ -803,14 +803,14 @@ const RadioButton& RadioButton::select() const {
 	return *this;
 }
 
-const RadioButton& RadioButton::set_text(WStrView text) const {
-	set_wnd_text(hwnd(), text);
+const RadioButton& RadioButton::set_text(WStrView newText) const {
+	set_wnd_text(hwnd(), newText);
 	return *this;
 }
 
-const RadioButton& RadioButton::set_text_resize(WStrView text) const {
-	set_text(text);
-	SIZE bounds = calc_text_bound_box_with_check(str::remove_accel_ampersands(text));
+const RadioButton& RadioButton::set_text_resize(WStrView newText) const {
+	set_text(newText);
+	SIZE bounds = calc_text_bound_box_with_check(str::remove_accel_ampersands(newText));
 	SetWindowPos(hwnd(), nullptr, 0, 0, bounds.cx, bounds.cy, SWP_NOZORDER | SWP_NOMOVE);
 	return *this;
 }
@@ -886,14 +886,14 @@ Static::Static(WindowParent &owner, WORD ctrlId, Lay layout)
 	});
 }
 
-const Static& Static::set_text(WStrView text) const {
-	set_wnd_text(hwnd(), text);
+const Static& Static::set_text(WStrView newText) const {
+	set_wnd_text(hwnd(), newText);
 	return *this;
 }
 
-const Static& Static::set_text_resize(WStrView text) const {
-	set_text(text);
-	SIZE bounds = calc_text_bound_box(str::remove_accel_ampersands(text));
+const Static& Static::set_text_resize(WStrView newText) const {
+	set_text(newText);
+	SIZE bounds = calc_text_bound_box(str::remove_accel_ampersands(newText));
 	SetWindowPos(hwnd(), nullptr, 0, 0, bounds.cx, bounds.cy, SWP_NOZORDER | SWP_NOMOVE);
 	return *this;
 }
@@ -908,9 +908,9 @@ std::wstring StatusBar::Part::text() const {
 	return buf;
 }
 
-const StatusBar::Part& StatusBar::Part::set_text(WStrView text) const {
+const StatusBar::Part& StatusBar::Part::set_text(WStrView newText) const {
 	SendMessageW(_pOwner->hwnd(), SB_SETTEXTW, MAKELONG(_index, 0),
-		reinterpret_cast<LPARAM>(text.c_str()));
+		reinterpret_cast<LPARAM>(newText.c_str()));
 	return *this;
 }
 
@@ -987,4 +987,200 @@ void StatusBar::resize_to_fit_parent(wm::Size p) {
 		}
 	}
 	SendMessageW(hwnd(), SB_SETPARTS, _rightEdges.size(), reinterpret_cast<LPARAM>(_rightEdges.data()));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+TreeView::Item TreeView::Item::add_child(WStrView itemText, int iconIndex) const {
+	TVINSERTSTRUCTW tvi{
+		.hParent = _hItem,
+		.hInsertAfter = TVI_LAST,
+		.itemex = {
+			.mask = TVIF_TEXT | static_cast<UINT>(iconIndex != -1 ? TVIF_IMAGE : 0),
+			.pszText = const_cast<LPWSTR>(itemText.c_str()),
+			.iImage = iconIndex,
+		},
+	};
+	HTREEITEM hItemNew = TreeView_InsertItem(_pOwner->hwnd(), &tvi);
+	return Item{*_pOwner, hItemNew};
+}
+
+std::vector<TreeView::Item> TreeView::Item::children() const {
+	std::vector<Item> items;
+	HTREEITEM hItem = nullptr;
+	for (;;) {
+		hItem = TreeView_GetNextItem(_pOwner->hwnd(), hItem, TVGN_NEXT);
+		if (!hItem) break;
+		items.emplace_back(*_pOwner, hItem);
+	}
+	return items;
+}
+
+const TreeView::Item& TreeView::Item::remove() const {
+	TreeView_DeleteItem(_pOwner->hwnd(), _hItem);
+	return *this;
+}
+
+const TreeView::Item& TreeView::Item::ensure_visible() const {
+	TreeView_EnsureVisible(_pOwner->hwnd(), _hItem);
+	return *this;
+}
+
+bool TreeView::Item::is_expanded() const {
+	return TreeView_GetItemState(_pOwner->hwnd(), _hItem, TVIS_EXPANDED) & TVIS_EXPANDED;
+}
+
+const TreeView::Item& TreeView::Item::expand(bool doExpand) const {
+	TreeView_Expand(_pOwner->hwnd(), _hItem, doExpand ? TVE_EXPAND : TVE_COLLAPSE);
+	return *this;
+}
+
+int TreeView::Item::icon_index() const {
+	#ifdef _DEBUG
+	if (!_pOwner->_imgList16.himagelist() || !_pOwner->_imgList16.count())
+		throw std::logic_error("No icons have been added to any image list.");
+	#endif
+
+	TVITEMEXW tvi{
+		.mask = TVIF_IMAGE,
+		.hItem = _hItem,
+	};
+	TreeView_GetItem(_pOwner->hwnd(), &tvi);
+	return tvi.iImage;
+}
+
+const TreeView::Item& TreeView::Item::set_icon_index(int iconIndex) const {
+	#ifdef _DEBUG
+	if (!_pOwner->_imgList16.himagelist() || !_pOwner->_imgList16.count())
+		throw std::logic_error("No icons have been added to any image list.");
+	#endif
+
+	TVITEMEXW tvi{
+		.mask = LVIF_IMAGE,
+		.hItem = _hItem,
+		.iImage = iconIndex,
+	};
+	TreeView_SetItem(_pOwner->hwnd(), &tvi);
+	return *this;
+}
+
+TreeView::Item TreeView::Item::next_sibling() const {
+	HTREEITEM hItem = TreeView_GetNextItem(_pOwner->hwnd(), _hItem, TVGN_NEXT);
+	return Item{*_pOwner, hItem};
+}
+
+TreeView::Item TreeView::Item::parent() const {
+	HTREEITEM hItem = TreeView_GetNextItem(_pOwner->hwnd(), _hItem, TVGN_PARENT);
+	return Item{*_pOwner, hItem};
+}
+
+TreeView::Item TreeView::Item::prev_sibling() const {
+	HTREEITEM hItem = TreeView_GetNextItem(_pOwner->hwnd(), _hItem, TVGN_PREVIOUS);
+	return Item{*_pOwner, hItem};
+}
+
+std::wstring TreeView::Item::text() const {
+	std::wstring buf(128, L'\0'); // arbitrary
+
+	TVITEMEXW tvi{
+		.mask = TVIF_TEXT,
+		.hItem = _hItem,
+		.pszText = buf.data(),
+		.cchTextMax = static_cast<int>(buf.size()),
+	};
+
+	TreeView_GetItem(_pOwner->hwnd(), &tvi);
+	str::trim_nulls(buf);
+	return buf;
+}
+
+const TreeView::Item& TreeView::Item::set_text(WStrView newText) const {
+	TVITEMEXW tvi{
+		.mask = TVIF_TEXT,
+		.hItem = _hItem,
+		.pszText = const_cast<LPWSTR>(newText.c_str()),
+	};
+	TreeView_SetItem(_pOwner->hwnd(), &tvi);
+	return *this;
+}
+
+LPARAM TreeView::Item::raw_data() const {
+	TVITEMEXW tvi{
+		.mask = TVIF_PARAM,
+		.hItem = _hItem,
+	};
+	TreeView_GetItem(_pOwner->hwnd(), &tvi);
+	return tvi.lParam;
+}
+
+const TreeView::Item& TreeView::Item::set_raw_data(LPARAM data) const {
+	TVITEMEXW tvi{
+		.mask = TVIF_PARAM,
+		.hItem = _hItem,
+		.lParam = data,
+	};
+	TreeView_SetItem(_pOwner->hwnd(), &tvi);
+	return *this;
+}
+
+//------------------------------------------------------------------------------
+
+TreeView::Item TreeView::ItemCollection::add_root(WStrView text, int iconIndex) const {
+	return Item{*_pOwner, nullptr}.add_child(text, iconIndex);
+}
+
+size_t TreeView::ItemCollection::count() const {
+	return TreeView_GetCount(_pOwner->hwnd());
+}
+
+void TreeView::ItemCollection::delete_all() const {
+	TreeView_DeleteAllItems(_pOwner->hwnd());
+}
+
+TreeView::Item TreeView::ItemCollection::first_visible() const {
+	HTREEITEM hItem = TreeView_GetFirstVisible(_pOwner->hwnd());
+	return Item{*_pOwner, hItem};
+}
+
+std::vector<TreeView::Item> TreeView::ItemCollection::roots() const {
+	return Item{*_pOwner, nullptr}.children();
+}
+
+TreeView::Item TreeView::ItemCollection::selected() const {
+	HTREEITEM hItem = TreeView_GetSelection(_pOwner->hwnd());
+	return Item{*_pOwner, hItem};
+}
+
+//------------------------------------------------------------------------------
+
+TreeView::TreeView(WindowParent &owner, WORD ctrlId)
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
+		_ctrl.create_wnd(ctrl_id(), _opts.styleEx, WC_TREEVIEWW, {}, _opts.style, _opts.pos, _opts.size);
+		if (_opts.styleExTreeView)
+			set_extended_style(true, _opts.styleExTreeView);
+	});
+}
+
+TreeView::TreeView(WindowParent &owner, WORD ctrlId, Lay layout)
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
+		_ctrl.assign_dlg(ctrl_id());
+		_ctrl._parentWndBase._layout.add(hwnd(), layout);
+	});
+}
+
+const TreeView& TreeView::set_extended_style(bool doSet, DWORD exStyle) const {
+	TreeView_SetExtendedStyle(hwnd(), doSet ? exStyle : 0, exStyle);
+	return *this;
+}
+
+IconStore& TreeView::icons_16() {
+	if (!_imgList16.himagelist()) { // not created yet?
+		_imgList16.create();
+		TreeView_SetImageList(hwnd(), _imgList16.himagelist(), LVSIL_SMALL);
+	}
+	return _imgList16;
 }

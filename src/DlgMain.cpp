@@ -120,7 +120,7 @@ RawMain::RawMain() {
 	txt.setup().pos = wl::dpi::pt(250, 48);
 
 	lv.setup().pos = wl::dpi::pt(10, 80);
-	lv.setup().size = wl::dpi::sz(400, 200);
+	lv.setup().size = wl::dpi::sz(400, 100);
 	lv.setup().layout = wl::Lay::resize_resize;
 	lv.setup().contextMenuId = MNU_FILES;
 	lv.setup().columns = {
@@ -147,10 +147,16 @@ RawMain::RawMain() {
 	rads.setup(2).text = L"Turd";
 	rads.setup(2).selected = true;
 
+	tv.setup().pos = wl::dpi::pt(10, 190);
+	tv.setup().size = wl::dpi::sz(250, 90);
+
 	wnd.on().wm_create([this](wl::wm::Create p) -> int {
 		lv.cols[1].set_justif(HDF_CENTER).set_width_to_fill();
 		lv.items.add(L"Bronco kid", {L"Surreal"});
 		lv.items.add(L"Ground control", {L"to major tom"});
+
+		tv.items.add_root(L"Xabregas").add_child(L"Donegas");
+		tv.items.add_root(L"Dumpster fire");
 		return 0;
 	});
 
@@ -200,6 +206,11 @@ RawMain::RawMain() {
 	rads.on().bn_clicked([this](int i) -> void {
 		auto s = wl::str::fmt(L"Radio: %s", rads.radios[i].text().c_str());
 		wnd.set_title(s);
+	});
+
+	tv.on().tvn_sel_changed([this](NMTREEVIEW&) -> void {
+		wl::TreeView::Item sel = tv.items.selected();
+		wnd.set_title(sel.hitem() ? sel.text() : L"No tree sel");
 	});
 
 }

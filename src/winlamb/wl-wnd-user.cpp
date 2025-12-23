@@ -10,8 +10,8 @@ int WindowMain::run(HINSTANCE hInst, int cmdShow) {
 		: _dlgMain.value().run(hInst, cmdShow);
 }
 
-const WindowMain& WindowMain::set_title(WStrView title) const {
-	set_wnd_text(hwnd(), title);
+const WindowMain& WindowMain::set_title(WStrView newTitle) const {
+	set_wnd_text(hwnd(), newTitle);
 	return *this;
 }
 
@@ -23,8 +23,8 @@ void WindowModal::show() {
 		: _dlgModal.value().show();
 }
 
-const WindowModal& WindowModal::set_title(WStrView title) const {
-	_wl_internal::set_wnd_text(hwnd(), title);
+const WindowModal& WindowModal::set_title(WStrView newTitle) const {
+	_wl_internal::set_wnd_text(hwnd(), newTitle);
 	return *this;
 }
 

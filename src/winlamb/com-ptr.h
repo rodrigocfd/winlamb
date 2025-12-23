@@ -47,7 +47,7 @@ namespace wl {
 
 		/// Move-constructor.
 		///
-		/// Takes ownership of `other`, so no resource leaks happen.
+		/// Takes ownership of `other`, so no resource leaks happen – after the move, `other` will hold a `nullptr`.
 		ComPtr(ComPtr &&other) noexcept { operator=(std::forward<ComPtr<T>>(other)); }
 
 		/// Constructs `ComPtr` by wrapping `p`.
@@ -82,7 +82,8 @@ namespace wl {
 
 		/// Move-assignment operator.
 		///
-		/// Calls [`IUnknown::Release`] on the current pointer and takes ownership of `other`, so no resource leaks happen.
+		/// Calls [`IUnknown::Release`] on the current pointer and takes ownership of `other`,
+		/// so no resource leaks happen – after the move, `other` will hold a `nullptr`.
 		///
 		/// [`IUnknown::Release`]: https://learn.microsoft.com/en-us/windows/win32/api/unknwn/nf-unknwn-iunknown-release
 		ComPtr& operator=(ComPtr &&other) noexcept {

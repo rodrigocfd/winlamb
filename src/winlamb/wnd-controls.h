@@ -114,7 +114,7 @@ namespace wl {
 		/// Calls [`SetWindowText`] to set the control text.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		const Button& set_text(WStrView text) const;
+		const Button& set_text(WStrView newText) const;
 
 		/// Sends a [`BM_CLICK`] message to fire the button click.
 		///
@@ -242,12 +242,12 @@ namespace wl {
 		/// Calls [`SetWindowText`] to set the control text.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		const CheckBox& set_text(WStrView text) const;
+		const CheckBox& set_text(WStrView newText) const;
 
 		/// Calls [`SetWindowText`] to set the button text, then resizes the check box to fit the text exactly.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		const CheckBox& set_text_resize(WStrView text) const;
+		const CheckBox& set_text_resize(WStrView newText) const;
 
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
@@ -581,7 +581,7 @@ namespace wl {
 		/// Calls [`SetWindowText`] to set the control text.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		const Edit& set_text(WStrView text) const;
+		const Edit& set_text(WStrView newText) const;
 
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
@@ -655,7 +655,7 @@ namespace wl {
 		class Column final {
 		public:
 			/** Constructs a column for the given `ListView` and zero-based index. */
-			constexpr Column(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
+			constexpr Column(const ListView &owner, int columnIndex) : _pOwner{&owner}, _index{columnIndex} { }
 
 			/** Returns the zero-based index of the column. */
 			[[nodiscard]] constexpr int index() const { return _index; }
@@ -682,7 +682,7 @@ namespace wl {
 			[[nodiscard]] std::wstring text() const;
 
 			/** Sets the text of the column. */
-			const Column& set_text(WStrView text) const;
+			const Column& set_text(WStrView newText) const;
 
 			/** Returns the width of the column, in pixels. */
 			[[nodiscard]] UINT width() const;
@@ -736,7 +736,7 @@ namespace wl {
 		class Item final {
 		public:
 			/** Constructs an item for the given `ListView` and zero-based index. */
-			constexpr Item(const ListView &owner, int index) : _pOwner{&owner}, _index{index} { }
+			constexpr Item(const ListView &owner, int itemIndex) : _pOwner{&owner}, _index{itemIndex} { }
 
 			/** Returns the zero-based index of the item. */
 			[[nodiscard]] constexpr int index() const { return _index; }
@@ -787,7 +787,7 @@ namespace wl {
 			[[nodiscard]] std::wstring text(UINT columnIndex = 0) const;
 
 			/** Sets the text under a column for the item. */
-			const Item& set_text(WStrView text, UINT columnIndex = 0) const;
+			const Item& set_text(WStrView newText, UINT columnIndex = 0) const;
 
 			/// Calls [`ListView_MapIndexToID`] to retrieve the unique ID of the item.
 			///
@@ -1107,12 +1107,12 @@ namespace wl {
 		/// Calls [`SetWindowText`] to set the control text.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		const RadioButton& set_text(WStrView text) const;
+		const RadioButton& set_text(WStrView newText) const;
 
 		/// Calls [`SetWindowText`] to set the button text, then resizes the check box to fit the text exactly.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		const RadioButton& set_text_resize(WStrView text) const;
+		const RadioButton& set_text_resize(WStrView newText) const;
 
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
@@ -1305,12 +1305,12 @@ namespace wl {
 		/// Calls [`SetWindowText`] to set the control text.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		const Static& set_text(WStrView text) const;
+		const Static& set_text(WStrView newText) const;
 
 		/// Calls [`SetWindowText`] to set the text, then resizes the control to fit the text exactly.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
-		const Static& set_text_resize(WStrView text) const;
+		const Static& set_text_resize(WStrView newText) const;
 
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
@@ -1354,7 +1354,7 @@ namespace wl {
 		class Part final {
 		public:
 			/** Constructs a part for the given `StatusBar` and zero-based index. */
-			constexpr Part(const StatusBar &owner, int index) : _pOwner{&owner}, _index{index} { }
+			constexpr Part(const StatusBar &owner, int partIndex) : _pOwner{&owner}, _index{partIndex} { }
 
 			/** Returns the index of the part. */
 			[[nodiscard]] constexpr int index() const { return _index; }
@@ -1363,7 +1363,7 @@ namespace wl {
 			[[nodiscard]] std::wstring text() const;
 
 			/** Sets the text of the part. */
-			const Part& set_text(WStrView text) const;
+			const Part& set_text(WStrView newText) const;
 
 			/** Returns true is the part has fixed width. */
 			[[nodiscard]] constexpr bool is_fixed_width() const { return _pOwner->_partsData[_index].is_fixed_width(); }
@@ -1460,4 +1460,194 @@ namespace wl {
 		std::vector<int> _rightEdges{}; // buffer to speed up resize calls
 	};
 
+	/// @brief Native [tree view] control.
+	///
+	/// [tree view]: https://learn.microsoft.com/en-us/windows/win32/controls/tree-view-controls
+	class TreeView final : public WindowChild {
+	public:
+		/** @brief A single item of the `TreeView`. */
+		class Item final {
+		public:
+			/** Constructs an item for the given `TreeView` and hItem. */
+			constexpr Item(const TreeView &owner, HTREEITEM hItem) : _pOwner{&owner}, _hItem{hItem} { }
+
+			/** Returns the item handle. */
+			[[nodiscard]] constexpr HTREEITEM hitem() const { return _hItem; }
+
+			/// Adds a new child item, defining its text.
+			///
+			/// The optional `iconIndex` refers to the zero-based index of an icon previusly added to one of the image lists.
+			Item add_child(WStrView itemText, int iconIndex = -1) const;
+
+			/** Returns the child items. */
+			[[nodiscard]] std::vector<Item> children() const;
+
+			/** Returns the data associated with the item. */
+			template<typename T>
+			[[nodiscard]] T data() const {
+				if constexpr (std::is_pointer_v<T>) {
+					return reinterpret_cast<T>(raw_data());
+				} else {
+					return static_cast<T>(raw_data());
+				}
+			}
+
+			/** Sets the data associated with the item. */
+			template<typename T>
+			const Item& set_data(T value) const {
+				if constexpr (std::is_pointer_v<T>) {
+					return set_raw_data(reinterpret_cast<LPARAM>(value));
+				} else {
+					return set_raw_data(static_cast<LPARAM>(value));
+				}
+				return *this;
+			}
+
+			/** Makes sure the item is visible. */
+			const Item& ensure_visible() const;
+
+			/** Returns true if the item is currently expanded. */
+			[[nodiscard]] bool is_expanded() const;
+
+			/** Expands or collapses the item. */
+			const Item& expand(bool doExpand) const;
+
+			/** Returns the zero-based index of the `ImageList` icon associated to the item. */
+			[[nodiscard]] int icon_index() const;
+
+			/** Sets the zero-based index of the `ImageList` icon associated to the item. */
+			const Item& set_icon_index(int iconIndex) const;
+
+			/** Retrieves the next sibling, if any. */
+			[[nodiscard]] Item next_sibling() const;
+
+			/** Retrieves the parent item, if any. */
+			[[nodiscard]] Item parent() const;
+
+			/** Retrieves the previous sibling, if any. */
+			[[nodiscard]] Item prev_sibling() const;
+
+			/** Deletes the item from the tree view. */
+			const Item& remove() const;
+
+			/** Returns the text of the column. */
+			[[nodiscard]] std::wstring text() const;
+
+			/** Sets the text of the column. */
+			const Item& set_text(WStrView newText) const;
+
+		private:
+			[[nodiscard]] LPARAM raw_data() const;
+			const Item& set_raw_data(LPARAM data) const;
+			const TreeView *_pOwner;
+			HTREEITEM _hItem;
+		};
+
+		/** @brief Operations over the items. */
+		class ItemCollection final {
+		private:
+			ItemCollection(ItemCollection&&) = delete; // non-copyable, non-movable
+
+			constexpr explicit ItemCollection(const TreeView *pOwner) : _pOwner{pOwner} { }
+
+		public:
+			/** Returns the item with the given handle. */
+			[[nodiscard]] constexpr Item operator[](HTREEITEM hItem) const { return Item{*_pOwner, hItem}; }
+
+			/// Adds a new root item, defining its text.
+			///
+			/// The optional `iconIndex` refers to the zero-based index of an icon previusly added to one of the image lists.
+			Item add_root(WStrView text, int iconIndex = -1) const;
+
+			/** Returns the item count. */
+			[[nodiscard]] size_t count() const;
+
+			/** Deletes all items. */
+			void delete_all() const;
+
+			/** Retrieves the first visible item, if any. */
+			[[nodiscard]] Item first_visible() const;
+
+			/** Returns the root items. */
+			[[nodiscard]] std::vector<Item> roots() const;
+
+			/** Retrieves the selected item, if any. */
+			[[nodiscard]] Item selected() const;
+
+		private:
+			const TreeView *_pOwner;
+			friend TreeView;
+		};
+
+		/// Constructs the tree view, which will be created programmatically with [`CreateWindowEx`].
+		///
+		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
+		///
+		/// Further options can be defined with the `setup` method.
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		explicit TreeView(WindowParent &owner, WORD ctrlId = 0);
+
+		/// Constructs the tree view, which will be loaded from the dialog resource.
+		///
+		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		TreeView(WindowParent &owner, WORD ctrlId, Lay layout);
+
+		/** Item methods. */
+		ItemCollection items{this};
+
+		/** Returns the wrapped window handle. */
+		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
+
+		/** Returns the control ID. */
+		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
+
+		/** For controls created programmatically, defines additional creation options. */
+		[[nodiscard]] constexpr opts::TreeViewOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
+
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// tv.on().tvn_sel_changed([](NMTREEVIEWW &p) -> void {
+		///     // ...
+		/// });
+		/// ```
+		[[nodiscard]] constexpr events::TreeViewEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+
+		/// [Subclasses] the control allowing message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		///
+		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
+		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+
+		/// Sets one or more [extended styles].
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// tv.set_extended_style(true, TVS_EX_AUTOHSCROLL);
+		/// ```
+		///
+		/// [extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/tree-view-control-window-extended-styles
+		const TreeView& set_extended_style(bool doSet, DWORD exStyle) const;
+
+		/// Retrieves the 16x16 `IconStore`.
+		///
+		/// Allows icons to be added to the control's image list.
+		/// An `Item` can display an icon referring to its zero-based index.
+		IconStore& icons_16();
+
+	private:
+		_wl_internal::NativeCtrlBase _ctrl;
+		events::TreeViewEvents _events;
+		opts::TreeViewOpts _opts{};
+		_wl_internal::ImageList _imgList16{{16, 16}};
+	};
 }

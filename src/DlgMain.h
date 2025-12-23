@@ -47,5 +47,6 @@ public:
 	wl::Static lbl{wnd};
 	wl::StatusBar sb{wnd};
 	wl::RadioGroup rads{wnd, 3};
+	wl::TreeView tv{wnd};
 	Contro ctl{wnd};
 };

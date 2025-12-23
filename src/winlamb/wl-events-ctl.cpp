@@ -10,6 +10,7 @@ using namespace _wl_internal;
 	void EVENT_CLS::method(std::function<void()> &&cb) { \
 		_ctrlEvents._parentWndBase._userEvents.wm_command(_ctrlEvents._ctrlId, cmd, std::move(cb)); \
 	}
+
 #define EVENT_NFY(method, nm) \
 	void EVENT_CLS::method(std::function<void()> &&cb) { \
 		_ctrlEvents._parentWndBase._userEvents.wm_notify(_ctrlEvents._ctrlId, nm, \
@@ -18,6 +19,14 @@ using namespace _wl_internal;
 				return _ctrlEvents._parentWndBase._preEvents._isDlg ? TRUE : 0; \
 			}); \
 	}
+#define EVENT_NFY_RET(method, nm, intret) \
+	void EVENT_CLS::method(std::function<intret()> &&cb) { \
+		_ctrlEvents._parentWndBase._userEvents.wm_notify(_ctrlEvents._ctrlId, nm, \
+			[this, cb = std::move(cb)](wm::Notify) -> LRESULT { \
+				return cb(); \
+			}); \
+	}
+
 #define EVENT_NFY_ARG(method, nm, argty) \
 	void EVENT_CLS::method(std::function<void(argty&)> &&cb) { \
 		_ctrlEvents._parentWndBase._userEvents.wm_notify(_ctrlEvents._ctrlId, nm, \
@@ -26,13 +35,13 @@ using namespace _wl_internal;
 				return _ctrlEvents._parentWndBase._preEvents._isDlg ? TRUE : 0; \
 			}); \
 	}
-#define EVENT_NFY_ARG_RET_BOOL(method, nm, argty) \
-	void EVENT_CLS::method(std::function<bool(argty&)> &&cb) { \
+#define EVENT_NFY_ARG_RET(method, nm, argty, intret) \
+	void EVENT_CLS::method(std::function<intret(argty&)> &&cb) { \
 		_ctrlEvents._parentWndBase._userEvents.wm_notify(_ctrlEvents._ctrlId, nm, \
 			[cb = std::move(cb)](wm::Notify p) -> LRESULT { \
 				return cb(p.hdr<argty>()); \
 			}); \
-	}
+		}
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -44,12 +53,7 @@ EVENT_CMD(bn_clicked, BN_CLICKED)
 EVENT_CMD(bn_dbl_clk, BN_DBLCLK)
 EVENT_CMD(bn_kill_focus, BN_KILLFOCUS)
 EVENT_CMD(bn_set_focus, BN_SETFOCUS)
-void ButtonEvents::nm_custom_draw(std::function<DWORD(NMCUSTOMDRAW&)> &&cb) {
-	_ctrlEvents._parentWndBase._userEvents.wm_notify(_ctrlEvents._ctrlId, NM_CUSTOMDRAW,
-		[cb = std::move(cb)](wm::Notify p) -> LRESULT {
-			return cb(p.hdr<NMCUSTOMDRAW>());
-		});
-}
+EVENT_NFY_ARG_RET(nm_custom_draw, NM_CUSTOMDRAW, NMCUSTOMDRAW, DWORD)
 
 ////////////////////////////////////////////////////////////////////////////////
 
@@ -97,28 +101,23 @@ EVENT_CMD(en_v_scroll, EN_VSCROLL)
 #undef EVENT_CLS
 #define EVENT_CLS ListViewEvents
 EVENT_NFY_ARG(lvn_begin_drag, LVN_BEGINDRAG, NMLISTVIEW)
-EVENT_NFY_ARG_RET_BOOL(lvn_begin_label_edit, LVN_BEGINLABELEDITW, NMLVDISPINFOW)
+EVENT_NFY_ARG_RET(lvn_begin_label_edit, LVN_BEGINLABELEDITW, NMLVDISPINFOW, bool)
 EVENT_NFY_ARG(lvn_begin_r_drag, LVN_BEGINRDRAG, NMLISTVIEW)
 EVENT_NFY_ARG(lvn_begin_scroll, LVN_BEGINSCROLL, NMLVSCROLL)
 EVENT_NFY_ARG(lvn_column_click, LVN_COLUMNCLICK, NMLISTVIEW)
 EVENT_NFY_ARG(lvn_column_drop_down, LVN_COLUMNDROPDOWN, NMLISTVIEW)
 EVENT_NFY_ARG(lvn_column_overflow_click, LVN_COLUMNOVERFLOWCLICK, NMLISTVIEW)
-EVENT_NFY_ARG_RET_BOOL(lvn_delete_all_items, LVN_DELETEALLITEMS, NMLISTVIEW)
+EVENT_NFY_ARG_RET(lvn_delete_all_items, LVN_DELETEALLITEMS, NMLISTVIEW, bool)
 EVENT_NFY_ARG(lvn_delete_item, LVN_DELETEITEM, NMLISTVIEW)
-EVENT_NFY_ARG_RET_BOOL(lvn_end_label_edit, LVN_ENDLABELEDITW, NMLVDISPINFOW)
+EVENT_NFY_ARG_RET(lvn_end_label_edit, LVN_ENDLABELEDITW, NMLVDISPINFOW, bool)
 EVENT_NFY_ARG(lvn_end_scroll, LVN_ENDSCROLL, NMLVSCROLL)
 EVENT_NFY_ARG(lvn_insert_item, LVN_INSERTITEM, NMLISTVIEW)
 EVENT_NFY_ARG(lvn_item_activate, LVN_ITEMACTIVATE, NMITEMACTIVATE)
 EVENT_NFY_ARG(lvn_item_changed, LVN_ITEMCHANGED, NMLISTVIEW)
-EVENT_NFY_ARG_RET_BOOL(lvn_item_changing, LVN_ITEMCHANGING, NMLISTVIEW)
+EVENT_NFY_ARG_RET(lvn_item_changing, LVN_ITEMCHANGING, NMLISTVIEW, bool)
 EVENT_NFY_ARG(lvn_key_down, LVN_KEYDOWN, NMLVKEYDOWN)
 EVENT_NFY_ARG(nm_click, NM_CLICK, NMITEMACTIVATE)
-void ListViewEvents::nm_custom_draw(std::function<DWORD(NMLVCUSTOMDRAW&)> &&cb) {
-	_ctrlEvents._parentWndBase._userEvents.wm_notify(_ctrlEvents._ctrlId, NM_CUSTOMDRAW,
-		[cb = std::move(cb)](wm::Notify p) -> LRESULT {
-			return cb(p.hdr<NMLVCUSTOMDRAW>());
-		});
-}
+EVENT_NFY_ARG_RET(nm_custom_draw, NM_CUSTOMDRAW, NMLVCUSTOMDRAW, DWORD)
 EVENT_NFY_ARG(nm_dbl_clk, NM_DBLCLK, NMITEMACTIVATE)
 EVENT_NFY_ARG(nm_kill_focus, NM_KILLFOCUS, NMHDR)
 EVENT_NFY_ARG(nm_r_click, NM_RCLICK, NMITEMACTIVATE)
@@ -165,8 +164,39 @@ EVENT_CMD(stn_enable, STN_ENABLE)
 
 #undef EVENT_CLS
 #define EVENT_CLS StatusBarEvents
-EVENT_NFY_ARG_RET_BOOL(nm_click, NM_CLICK, NMMOUSE)
-EVENT_NFY_ARG_RET_BOOL(nm_dbl_clk, NM_DBLCLK, NMMOUSE)
-EVENT_NFY_ARG_RET_BOOL(nm_r_click, NM_RCLICK, NMMOUSE)
-EVENT_NFY_ARG_RET_BOOL(nm_r_dbl_clk, NM_RDBLCLK, NMMOUSE)
+EVENT_NFY_ARG_RET(nm_click, NM_CLICK, NMMOUSE, bool)
+EVENT_NFY_ARG_RET(nm_dbl_clk, NM_DBLCLK, NMMOUSE, bool)
+EVENT_NFY_ARG_RET(nm_r_click, NM_RCLICK, NMMOUSE, bool)
+EVENT_NFY_ARG_RET(nm_r_dbl_clk, NM_RDBLCLK, NMMOUSE, bool)
 EVENT_NFY_ARG(sbn_simple_mode_change, SBN_SIMPLEMODECHANGE, NMMOUSE)
+
+////////////////////////////////////////////////////////////////////////////////
+
+#undef EVENT_CLS
+#define EVENT_CLS TreeViewEvents
+EVENT_NFY_ARG(tvn_async_draw, TVN_ASYNCDRAW, NMTVASYNCDRAW)
+EVENT_NFY_ARG(tvn_begin_drag, TVN_BEGINDRAGW, NMTREEVIEWW)
+EVENT_NFY_ARG_RET(tvn_begin_label_edit, TVN_BEGINLABELEDITW, NMTVDISPINFOW, bool)
+EVENT_NFY_ARG(tvn_begin_r_drag, TVN_BEGINRDRAGW, NMTREEVIEWW)
+EVENT_NFY_ARG(tvn_delete_item, TVN_DELETEITEMW, NMTREEVIEWW)
+EVENT_NFY_ARG_RET(tvn_end_label_edit, TVN_ENDLABELEDITW, NMTVDISPINFOW, bool)
+EVENT_NFY_ARG(tvn_get_disp_info, TVN_GETDISPINFOW, NMTVDISPINFOW)
+EVENT_NFY_ARG(tvn_get_info_tip, TVN_GETINFOTIPW, NMTVGETINFOTIPW)
+EVENT_NFY_ARG(tvn_item_changed, TVN_ITEMCHANGEDW, NMTVITEMCHANGE)
+EVENT_NFY_ARG_RET(tvn_item_changing, TVN_ITEMCHANGINGW, NMTVITEMCHANGE, bool)
+EVENT_NFY_ARG(tvn_item_expanded, TVN_ITEMEXPANDEDW, NMTREEVIEWW)
+EVENT_NFY_ARG_RET(tvn_item_expanding, TVN_ITEMEXPANDINGW, NMTREEVIEWW, bool)
+EVENT_NFY_ARG_RET(tvn_key_down, TVN_KEYDOWN, NMTVKEYDOWN, int)
+EVENT_NFY_ARG(tvn_sel_changed, TVN_SELCHANGEDW, NMTREEVIEWW)
+EVENT_NFY_ARG_RET(tvn_sel_changing, TVN_SELCHANGINGW, NMTREEVIEWW, bool)
+EVENT_NFY_ARG(tvn_set_disp_info, TVN_SETDISPINFOW, NMTVDISPINFOW)
+EVENT_NFY_ARG_RET(tvn_single_expand, TVN_SINGLEEXPAND, NMTREEVIEWW, WORD)
+EVENT_NFY_RET(nm_click, NM_CLICK, int)
+EVENT_NFY_ARG_RET(nm_custom_draw, NM_CUSTOMDRAW, NMTVCUSTOMDRAW, DWORD)
+EVENT_NFY_RET(nm_dbl_clk, NM_DBLCLK, int)
+EVENT_NFY(nm_kill_focus, NM_KILLFOCUS)
+EVENT_NFY_RET(nm_r_click, NM_RCLICK, int)
+EVENT_NFY_RET(nm_r_dbl_clk, NM_RDBLCLK, int)
+EVENT_NFY_RET(nm_return, NM_RETURN, int)
+EVENT_NFY_ARG_RET(nm_set_cursor, NM_SETCURSOR, NMMOUSE, int)
+EVENT_NFY(nm_set_focus, NM_SETFOCUS)

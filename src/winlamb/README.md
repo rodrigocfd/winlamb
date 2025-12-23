@@ -51,6 +51,7 @@ Native controls are the Win32 built-in widgets:
 | `wl::RadioGroup` | Manages a group of `wl::RadioButton`, the [RadioButton](https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#radio-buttons) control. |
 | `wl::Static` | [Static](https://learn.microsoft.com/en-us/windows/win32/controls/about-static-controls) control (label). |
 | `wl::StatusBar` | [StatusBar](https://learn.microsoft.com/en-us/windows/win32/controls/status-bars) control. |
+| `wl::TreeView` | [TreeView](https://learn.microsoft.com/en-us/windows/win32/controls/tree-view-controls) control. |
 
 A few utility entities are included for convenience:
 
