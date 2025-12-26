@@ -260,7 +260,7 @@ namespace _wl_internal {
 /** @brief Events for windows and controls. */
 namespace wl::events {
 
-	/** @brief Native `WindowParent` events. */
+	/** Native `WindowParent` events. */
 	class WindowEvents final {
 	private:
 		struct Msg final { // ordinary WM messages

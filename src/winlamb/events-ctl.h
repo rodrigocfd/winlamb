@@ -39,7 +39,7 @@ namespace wl {
 
 namespace wl::events {
 
-	/** @brief Native `Button` control events. */
+	/** Native `Button` control events. */
 	class ButtonEvents final {
 	private:
 		ButtonEvents(ButtonEvents&&) = delete; // non-copyable, non-movable
@@ -62,7 +62,7 @@ namespace wl::events {
 		friend wl::RadioButton;
 	};
 
-	/** @brief Native `ComboBox` control events. */
+	/** Native `ComboBox` control events. */
 	class ComboBoxEvents final {
 	private:
 		ComboBoxEvents(ComboBoxEvents&&) = delete; // non-copyable, non-movable
@@ -86,7 +86,7 @@ namespace wl::events {
 		friend wl::ComboBox;
 	};
 
-	/** @brief Native `DateTimePicker` control events. */
+	/** Native `DateTimePicker` control events. */
 	class DateTimePickerEvents final {
 	private:
 		DateTimePickerEvents(DateTimePickerEvents&&) = delete; // non-copyable, non-movable
@@ -109,7 +109,7 @@ namespace wl::events {
 		friend wl::DateTimePicker;
 	};
 
-	/** @brief Native `Edit` control events. */
+	/** Native `Edit` control events. */
 	class EditEvents final {
 	private:
 		EditEvents(EditEvents&&) = delete; // non-copyable, non-movable
@@ -130,7 +130,7 @@ namespace wl::events {
 		friend wl::Edit;
 	};
 
-	/** @brief Native `ListView` events. */
+	/** Native `ListView` events. */
 	class ListViewEvents final {
 	private:
 		ListViewEvents(ListViewEvents&&) = delete; // non-copyable, non-movable
@@ -168,7 +168,7 @@ namespace wl::events {
 		friend wl::ListView;
 	};
 
-	/** @brief Native `MonthCalendar` events. */
+	/** Native `MonthCalendar` events. */
 	class MonthCalendarEvents final {
 	private:
 		MonthCalendarEvents(MonthCalendarEvents&&) = delete; // non-copyable, non-movable
@@ -187,7 +187,7 @@ namespace wl::events {
 		friend wl::MonthCalendar;
 	};
 
-	/** @brief Native `RadioGroup` events. */
+	/** Native `RadioGroup` events. */
 	class RadioGroupEvents final {
 	private:
 		RadioGroupEvents(RadioGroupEvents&&) = delete; // non-copyable, non-movable
@@ -205,7 +205,7 @@ namespace wl::events {
 		friend wl::RadioGroup;
 	};
 
-	/** @brief Native `Static` events. */
+	/** Native `Static` events. */
 	class StaticEvents final {
 	private:
 		StaticEvents(StaticEvents&&) = delete; // non-copyable, non-movable
@@ -223,7 +223,7 @@ namespace wl::events {
 		friend wl::Static;
 	};
 
-	/** @brief Native `StatusBar` events. */
+	/** Native `StatusBar` events. */
 	class StatusBarEvents final {
 	private:
 		StatusBarEvents(StatusBarEvents&&) = delete; // non-copyable, non-movable
@@ -242,7 +242,7 @@ namespace wl::events {
 		friend wl::StatusBar;
 	};
 
-	/** @brief Native `TreeView` events. */
+	/** Native `TreeView` events. */
 	class TreeViewEvents final {
 	private:
 		TreeViewEvents(TreeViewEvents&&) = delete; // non-copyable, non-movable

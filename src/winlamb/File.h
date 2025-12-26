@@ -222,10 +222,6 @@ namespace wl {
 		HANDLE _hFile = nullptr;
 	};
 
-}
-
-namespace wl {
-
 	/// @brief Manages a memory-mapped file.
 	///
 	/// If you need to modify the file size, use `File` instead.

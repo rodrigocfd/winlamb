@@ -1,7 +1,8 @@
 #include "DlgMain.h"
+#include "id3v2/tag.h"
 
-// RUN_MAIN(DlgMain, wnd)
-RUN_MAIN(RawMain, wnd)
+RUN_MAIN(DlgMain, wnd)
+// RUN_MAIN(RawMain, wnd)
 
 DlgMain::DlgMain() {
 	wnd.on().wm_init_dialog(std::bind(&DlgMain::on_init_dialog, this, std::placeholders::_1));
@@ -19,12 +20,8 @@ DlgMain::DlgMain() {
 bool DlgMain::on_init_dialog(wl::wm::InitDialog) {
 	lstFiles.set_extended_style(true, LVS_EX_FULLROWSELECT);
 	lstFiles.icons_16().add_shell_ext(L"doc");
-
-	lstFiles.cols.add(L"Faster", 300);
-	lstFiles.cols.add(L"Rapids", 300);
-
-	lstFiles.items.add(L"Line", {L"Killings"}, 0);
-	lstFiles.items.add(L"Neither heaven", {L"nor space"}, 0);
+	lstFiles.cols.add(L"Path", 400);
+	lstFiles.cols.add(L"Padding", 80);
 	return true;
 }
 
@@ -56,8 +53,10 @@ void DlgMain::on_cancel() {
 
 void DlgMain::on_drop_files(const std::vector<std::wstring> files) {
 	lstFiles.items.delete_all();
-	for (auto &&f : files)
-		lstFiles.items.add(f);
+	for (auto &&f : files) {
+		auto tag = id3v2::Tag{f};
+		lstFiles.items.add(f, {wl::str::fmt(L"%d", tag.padding())});
+	}
 }
 
 void DlgMain::on_lst_files_item_changed(NMLISTVIEW &p) {

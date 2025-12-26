@@ -360,10 +360,10 @@ namespace wl::vec {
 		return index_seq(std::forward<R>(v), std::span(sequence));
 	}
 
-	/** Removes the element at the given index. */
+	/** Removes the element at the given zero-based index. */
 	template<typename T>
-	void remove(std::vector<T> &v, size_t index) {
-		v.erase(v.begin() + index);
+	void remove(std::vector<T> &v, size_t itemIndex) {
+		v.erase(v.begin() + itemIndex);
 	}
 
 	/// Removes all the elements to which `pred` returns true.

@@ -18,8 +18,7 @@ wstring id3v2::str_engine::parse_str_ascii(span<BYTE> src) {
 }
 
 void id3v2::str_engine::serialize_str_ascii(vector<BYTE> &dest, wl::WStrView s) {
-	size_t len = s.length();
-	for (size_t i = 0; i < len; ++i) // won't serialize terminating null
+	for (size_t i = 0; i < s.length(); ++i) // won't serialize terminating null
 		dest.emplace_back(static_cast<BYTE>(s[i]));
 }
 
