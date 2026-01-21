@@ -680,16 +680,16 @@ namespace wl::opts {
 		/// Prefer using a DPI-aware width:
 		///
 		/// ```cpp
-		/// sb.setup().part_fixed(wl::dpi::x(200), L"Foo");
+		/// sb.setup().add_fixed_part(wl::dpi::x(200), L"Foo");
 		/// ```
 		///
 		/// If you want to pass a zero-based `iconIndex`, you must feed the icon first:
 		///
 		/// ```cpp
 		/// sb.icons().add_resource(ICO_FOO);
-		/// sb.setup().part_fixed(wl::dpi::x(200), L"Foo", 0);
+		/// sb.setup().add_fixed_part(wl::dpi::x(200), L"Foo", 0);
 		/// ```
-		void part_fixed(UINT width, WStrView text = L"", int iconIndex = -1) {
+		void add_fixed_part(UINT width, WStrView text = L"", int iconIndex = -1) {
 			_parts.emplace_back(width, 0, text.c_str(), iconIndex);
 		}
 
@@ -702,16 +702,16 @@ namespace wl::opts {
 		/// Example:
 		///
 		/// ```cpp
-		/// sb.setup().part_fixed(1, L"Foo");
+		/// sb.setup().add_fixed_part(1, L"Foo");
 		/// ```
 		///
 		/// If you want to pass a zero-based `iconIndex`, you must feed the icon first:
 		///
 		/// ```cpp
 		/// sb.icons().add_resource(ICO_FOO);
-		/// sb.setup().part_fixed(1, L"Foo", 0);
+		/// sb.setup().add_fixed_part(1, L"Foo", 0);
 		/// ```
-		void part_resizable(UINT resizeWeight, WStrView text = L"", int iconIndex = -1) {
+		void add_resizable_part(UINT resizeWeight, WStrView text = L"", int iconIndex = -1) {
 			_parts.emplace_back(0, resizeWeight, text.c_str(), iconIndex);
 		}
 
@@ -761,6 +761,53 @@ namespace wl::opts {
 		///
 		/// ```cpp
 		/// tv.setup().size = wl::dpi::sz(120, 120);
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SIZE size = {.cx = 120, .cy = 120};
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+	};
+
+	/** Options to create a `Tab` programmatically. */
+	struct TabOpts final {
+		/// The [window] and [Tab style] passed to [`CreateWindowEx`].
+		///
+		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be set.
+		///
+		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [Tab style]: https://learn.microsoft.com/en-us/windows/win32/controls/tree-view-control-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		/// The [window extended style] passed to [`CreateWindowEx`].
+		///
+		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD styleEx = WS_EX_LEFT;
+		/// The [Tab extended styles] applied right after the control is created.
+		///
+		/// [Tab extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/tab-control-extended-styles
+		DWORD styleExTab = 0;
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// tab.setup().pos = wl::dpi::pt(10, 10);
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		POINT pos{};
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// tab.setup().size = wl::dpi::sz(120, 120);
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw

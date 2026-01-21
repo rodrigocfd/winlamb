@@ -6,7 +6,7 @@
 	"tasks": [
 		{
 			"type": "cppbuild",
-			"label": "MSBuild debug",
+			"label": "MSBuild debug", // preferred shortcut: F7
 			"command": "msbuild.exe",
 			"args": [
 				"${workspaceFolder}\\${workspaceFolderBasename}.vcxproj",
@@ -34,7 +34,7 @@
 		},
 		{
 			"type": "cppbuild",
-			"label": "MSBuild clean",
+			"label": "MSBuild clean", // preferred shortcut: F8
 			"command": "msbuild.exe",
 			"args": [
 				"${workspaceFolder}\\${workspaceFolderBasename}.vcxproj",

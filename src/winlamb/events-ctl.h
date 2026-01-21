@@ -35,6 +35,7 @@ namespace wl {
 	class Static;
 	class StatusBar;
 	class TreeView;
+	class Tab;
 }
 
 namespace wl::events {
@@ -280,6 +281,30 @@ namespace wl::events {
 	private:
 		_wl_internal::NativeCtrlEvents _ctrlEvents;
 		friend wl::TreeView;
+	};
+
+	/** Native `Tab` events. */
+	class TabEvents final {
+	private:
+		TabEvents(TabEvents&&) = delete; // non-copyable, non-movable
+
+		TabEvents(wl::WindowParent &owner, WORD ctrlId) : _ctrlEvents{owner, ctrlId} { }
+
+	public:
+		void tcn_focus_change(std::function<void()> &&cb);
+		void tcn_get_object(std::function<void(NMOBJECTNOTIFY&)> &&cb);
+		void tcn_key_down(std::function<void(NMTCKEYDOWN&)> &&cb);
+		void tcn_sel_change(std::function<void()> &&cb);
+		void tcn_sel_changing(std::function<bool()> &&cb);
+		void nm_click(std::function<void()> &&cb);
+		void nm_dbl_clk(std::function<void()> &&cb);
+		void nm_r_click(std::function<void()> &&cb);
+		void nm_r_dbl_clk(std::function<void()> &&cb);
+		void nm_released_capture(std::function<void()> &&cb);
+
+	private:
+		_wl_internal::NativeCtrlEvents _ctrlEvents;
+		friend wl::Tab;
 	};
 
 }

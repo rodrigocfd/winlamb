@@ -200,3 +200,18 @@ EVENT_NFY_RET(nm_r_dbl_clk, NM_RDBLCLK, int)
 EVENT_NFY_RET(nm_return, NM_RETURN, int)
 EVENT_NFY_ARG_RET(nm_set_cursor, NM_SETCURSOR, NMMOUSE, int)
 EVENT_NFY(nm_set_focus, NM_SETFOCUS)
+
+////////////////////////////////////////////////////////////////////////////////
+
+#undef EVENT_CLS
+#define EVENT_CLS TabEvents
+EVENT_NFY(tcn_focus_change, TCN_FOCUSCHANGE)
+EVENT_NFY_ARG(tcn_get_object, TCN_GETOBJECT, NMOBJECTNOTIFY)
+EVENT_NFY_ARG(tcn_key_down, TCN_KEYDOWN, NMTCKEYDOWN)
+EVENT_NFY(tcn_sel_change, TCN_SELCHANGE)
+EVENT_NFY_RET(tcn_sel_changing, TCN_SELCHANGING, bool)
+EVENT_NFY(nm_click, NM_CLICK)
+EVENT_NFY(nm_dbl_clk, NM_DBLCLK)
+EVENT_NFY(nm_r_click, NM_RCLICK)
+EVENT_NFY(nm_r_dbl_clk, NM_RDBLCLK)
+EVENT_NFY(nm_released_capture, NM_RELEASEDCAPTURE)

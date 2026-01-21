@@ -1200,7 +1200,7 @@ namespace wl {
 		RadioButtonCollection radios{this};
 
 		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::RadioButtonOpts& setup(size_t radioIndex) { return _radios[radioIndex].setup(); }
+		[[nodiscard]] opts::RadioButtonOpts& setup(size_t radioIndex);
 
 		/// Allows message events to be added.
 		///
@@ -1337,8 +1337,8 @@ namespace wl {
 	/// MyMain::MyMain() {
 	///     wnd.setup().title = L"My main window";
 	///
-	///     sb.setup().part_resizable(1, L"First");
-	///     sb.setup().part_fixed(wl::dpi::x(200), L"Second");
+	///     sb.setup().add_resizable_part(1, L"First");
+	///     sb.setup().add_fixed_part(wl::dpi::x(200), L"Second");
 	///
 	///     sb.on().nm_click([this](NMMOUSE &p) -> bool {
 	///         MessageBoxW(wnd.hwnd(), L"Status bar clicked", L"Click", MB_ICONINFORMATION);
@@ -1650,4 +1650,58 @@ namespace wl {
 		opts::TreeViewOpts _opts{};
 		_wl_internal::ImageList _imgList16{{16, 16}};
 	};
+
+	/// @brief Native [tab] control.
+	///
+	/// [tab]: https://learn.microsoft.com/en-us/windows/win32/controls/tab-controls
+	class Tab final : public WindowChild {
+	public:
+		/// Constructs the tab, which will be created programmatically with [`CreateWindowEx`].
+		///
+		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
+		///
+		/// Further options can be defined with the `setup` method.
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		explicit Tab(WindowParent &owner, WORD ctrlId = 0);
+
+		/// Constructs the tab, which will be loaded from the dialog resource.
+		///
+		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		Tab(WindowParent &owner, WORD ctrlId, Lay layout);
+
+		/** Returns the wrapped window handle. */
+		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
+
+		/** Returns the control ID. */
+		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
+
+		/** For controls created programmatically, defines additional creation options. */
+		[[nodiscard]] constexpr opts::TabOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
+
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		[[nodiscard]] constexpr events::TabEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+
+		/// [Subclasses] the control allowing message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		///
+		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
+		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+
+		/// Sets one or more [extended styles].
+		///
+		/// [extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/tree-view-control-window-extended-styles
+		const Tab& set_extended_style(bool doSet, DWORD exStyle) const;
+
+	private:
+		_wl_internal::NativeCtrlBase _ctrl;
+		events::TabEvents _events;
+		opts::TabOpts _opts{};
+	};
+
 }

@@ -48,5 +48,6 @@ public:
 	wl::StatusBar sb{wnd};
 	wl::RadioGroup rads{wnd, 3};
 	wl::TreeView tv{wnd};
+	wl::Tab tab{wnd};
 	Contro ctl{wnd};
 };

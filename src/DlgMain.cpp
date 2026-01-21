@@ -1,8 +1,8 @@
 #include "DlgMain.h"
 #include "id3v2/tag.h"
 
-RUN_MAIN(DlgMain, wnd)
-// RUN_MAIN(RawMain, wnd)
+// RUN_MAIN(DlgMain, wnd)
+RUN_MAIN(RawMain, wnd)
 
 DlgMain::DlgMain() {
 	wnd.on().wm_init_dialog(std::bind(&DlgMain::on_init_dialog, this, std::placeholders::_1));
@@ -26,7 +26,8 @@ bool DlgMain::on_init_dialog(wl::wm::InitDialog) {
 }
 
 void DlgMain::on_cancel() {
-	// wl::ComPtr<IFileOpenDialog> ifod{CLSID_FileOpenDialog};
+	// wl::ComPtr<IFileOpenDialog> ifod{};
+	// ifod.co_create_instance(CLSID_FileOpenDialog);
 
 	// FILEOPENDIALOGOPTIONS defOpts;
 	// ifod->GetOptions(&defOpts);
@@ -102,7 +103,7 @@ void Contro::on_paint() {
 RawMain::RawMain() {
 	wnd.setup().iconId = ICO_MAIN;
 	wnd.setup().title = L"My main window";
-	wnd.setup().size = wl::dpi::sz(660, 320);
+	wnd.setup().size = wl::dpi::sz(900, 320);
 	wnd.setup().style |= WS_SIZEBOX | WS_MAXIMIZEBOX;
 
 	btn.setup().pos = wl::dpi::pt(10, 10);
@@ -135,8 +136,8 @@ RawMain::RawMain() {
 
 	sb.icons().add_resource(ICO_MAIN);
 	sb.icons().add_shell_ext(L"xlsx");
-	sb.setup().part_resizable(1, L"Rezee", 0);
-	sb.setup().part_fixed(wl::dpi::x(200), L"Second", 1);
+	sb.setup().add_resizable_part(1, L"Rezee", 0);
+	sb.setup().add_fixed_part(wl::dpi::x(200), L"Second", 1);
 
 	rads.setup(0).pos = wl::dpi::pt(420, 10);
 	rads.setup(1).pos = wl::dpi::pt(420, 25);
@@ -148,6 +149,9 @@ RawMain::RawMain() {
 
 	tv.setup().pos = wl::dpi::pt(10, 190);
 	tv.setup().size = wl::dpi::sz(250, 90);
+
+	tab.setup().pos = wl::dpi::pt(656, 10);
+	tab.setup().size = wl::dpi::sz(220, 200);
 
 	wnd.on().wm_create([this](wl::wm::Create p) -> int {
 		lv.cols[1].set_justif(HDF_CENTER).set_width_to_fill();

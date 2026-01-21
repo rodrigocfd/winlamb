@@ -14,7 +14,8 @@ namespace wl {
 	/// Example calling [`CoCreateInstance`] to create a COM object:
 	///
 	/// ```cpp
-	/// wl::ComPtr<IFileOpenDialog> openDlg{CLSID_FileOpenDialog};
+	/// wl::ComPtr<IFileOpenDialog> openDlg{};
+	/// openDlg.co_create_instance(CLSID_FileOpenDialog);
 	/// openDlg->SetFileTypeIndex(1);
 	/// ```
 	///
@@ -54,17 +55,6 @@ namespace wl {
 		///
 		/// Ideally, you should never need this.
 		constexpr explicit ComPtr(T *p) : _p{p} { }
-
-		/// Initializes the internal pointer by calling [`CoCreateInstance`] immediately.
-		///
-		/// Example:
-		///
-		/// ```cpp
-		/// wl::ComPtr<IFileOpenDialog> openDlg{CLSID_FileOpenDialog};
-		/// ```
-		///
-		/// [`CoCreateInstance`]: https://learn.microsoft.com/en-us/windows/win32/api/combaseapi/nf-combaseapi-cocreateinstance
-		explicit ComPtr(REFCLSID clsid, DWORD clsctx = CLSCTX_INPROC_SERVER) { co_create_instance(clsid, clsctx); }
 
 		/// Copy-assignment operator.
 		///
@@ -130,10 +120,11 @@ namespace wl {
 		/// Example:
 		///
 		/// ```cpp
-		/// wl::ComPtr<IFileOpenDialog> ifod{CLSID_FileOpenDialog, CLSCTX_INPROC_SERVER};
-		/// IFileOpenDialog *pLeaked = ifod.leak();
+		/// wl::ComPtr<IFileOpenDialog> openDlg{};
+		/// openDlg.co_create_instance(CLSID_FileOpenDialog);
+		/// IFileOpenDialog *pLeaked = openDlg.leak();
 		///
-		/// wl::ComPtr<IFileOpenDialog> ifod2{pLeaked}; // take ownership again
+		/// wl::ComPtr<IFileOpenDialog> openDlg2{pLeaked}; // take ownership again
 		/// ```
 		[[nodiscard]] T* leak() {
 			T *ptr = _p;

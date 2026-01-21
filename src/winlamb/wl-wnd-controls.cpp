@@ -861,6 +861,14 @@ RadioGroup::RadioGroup(WindowParent &owner, Lay layout, std::initializer_list<WO
 	}
 }
 
+opts::RadioButtonOpts& RadioGroup::setup(size_t radioIndex) {
+	#ifdef _DEBUG
+	if (radioIndex >= _radios.size())
+		throw std::logic_error("Radio index is beyond the group size.");
+	#endif
+	return _radios[radioIndex].setup();
+}
+
 ////////////////////////////////////////////////////////////////////////////////
 
 Static::Static(WindowParent &owner, WORD ctrlId)
@@ -1183,4 +1191,30 @@ IconStore& TreeView::icons_16() {
 		TreeView_SetImageList(hwnd(), _imgList16.himagelist(), LVSIL_SMALL);
 	}
 	return _imgList16;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+Tab::Tab(WindowParent &owner, WORD ctrlId)
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
+		_ctrl.create_wnd(ctrl_id(), _opts.styleEx, WC_TABCONTROLW, {}, _opts.style, _opts.pos, _opts.size);
+		if (_opts.styleExTab)
+			set_extended_style(true, _opts.styleExTab);
+	});
+}
+
+Tab::Tab(WindowParent &owner, WORD ctrlId, Lay layout)
+	: _ctrl{owner}, _events{owner, valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parentWndBase._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
+		_ctrl.assign_dlg(ctrl_id());
+		_ctrl._parentWndBase._layout.add(hwnd(), layout);
+	});
+}
+
+const Tab& Tab::set_extended_style(bool doSet, DWORD exStyle) const {
+	SendMessageW(hwnd(), TCM_SETEXTENDEDSTYLE, exStyle, doSet ? exStyle : 0);
+	return *this;
 }
