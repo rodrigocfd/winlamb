@@ -1,10 +1,10 @@
 #include <system_error>
-#include "wnd-app.h"
+#include "ui-app.hpp"
 #include <VersionHelpers.h>
 #include <ole2.h>
 #include <shellapi.h>
-using namespace wl;
 using namespace _wl_internal;
+using namespace wl;
 
 int GuiApp::logPixelsX = 0, GuiApp::logPixelsY = 0;
 HFONT GuiApp::hUiFont = nullptr;
@@ -41,6 +41,8 @@ GuiApp::GuiApp() {
 	SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, 0, &ncm, 0);
 	hUiFont = CreateFontIndirectW(&ncm.lfMenuFont);
 }
+
+////////////////////////////////////////////////////////////////////////////////
 
 void _wl_internal::apply_ui_font(HWND hWnd) {
 	SendMessageW(hWnd, WM_SETFONT, reinterpret_cast<WPARAM>(GuiApp::hUiFont), TRUE);

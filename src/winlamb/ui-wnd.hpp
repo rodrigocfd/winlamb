@@ -1,25 +1,118 @@
 #pragma once
-#include <optional>
-#include "lib-include-win.h"
-#include "str.h"
-#include "wnd-interfaces.h"
-#include "wnd-base.h"
-#include "wnd-app.h"
+#include "ui-rawdlg.hpp"
+#include "ui-app.hpp"
+#include <oleidl.h>
 
 namespace _wl_internal {
 
+	/** Keeps either a raw or a dialog base. */
 	template<typename R, typename D>
-	[[nodiscard]] constexpr const WndBase& get_wnd_base(const std::optional<R> &raw, const std::optional<D> &dlg) {
-		return raw.has_value() ? raw.value()._rawBase._wndBase : dlg.value()._dlgBase._wndBase;
-	}
-	template<typename R, typename D>
-	[[nodiscard]] constexpr WndBase& get_wnd_base(std::optional<R> &raw, std::optional<D> &dlg) {
-		return raw.has_value() ? raw.value()._rawBase._wndBase : dlg.value()._dlgBase._wndBase;
-	}
+	struct RawOrDlg final {
+		[[nodiscard]] constexpr const WndBase& base() const {
+			return raw.has_value()
+				? raw.value()._rawBase._wndBase
+				: dlg.value()._dlgBase._wndBase;
+		}
+		[[nodiscard]] constexpr WndBase& base() {
+			return raw.has_value()
+				? raw.value()._rawBase._wndBase
+				: dlg.value()._dlgBase._wndBase;
+		}
+
+		std::optional<R> raw{};
+		std::optional<D> dlg{};
+	};
 
 }
 
 namespace wl {
+
+	class WindowModal; // forward declaration
+	class WindowControl;
+	class Button;
+	class CheckBox;
+	class ComboBox;
+	class DateTimePicker;
+	class Edit;
+	class ListView;
+	class MonthCalendar;
+	class RadioButton;
+	class RadioGroup;
+	class Static;
+	class StatusBar;
+	class Tab;
+	class TreeView;
+	class DropFiles;
+
+	/** @brief Pure abstract class; implemented by all windows. */
+	class Window {
+	public:
+		/** Returns the window handle. */
+		[[nodiscard]] virtual HWND hwnd() const = 0;
+	};
+
+	/** @brief Pure abstract class; implemented by all child controls. */
+	class WindowChild : public Window {
+	public:
+		/** Returns the control ID. */
+		[[nodiscard]] virtual WORD ctrl_id() const = 0;
+	};
+
+	/** @brief Pure abstract class; implemented by all windows which can host child controls. */
+	class WindowParent : public Window {
+	public:
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the window is created on the screen.
+		[[nodiscard]] virtual events::WindowEvents& on() = 0;
+
+		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in the UI thread.
+		/// After `cb` finishes, returns back to the calling thread.
+		///
+		/// Useful if you are processing something in a parallel thread, but need to update the UI.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// std::thread([this]() {
+		///
+		///     Sleep(5000); // do some parallel process
+		///
+		///     wnd.ui_thread([this]() {
+		///         wnd.set_title(L"First part complete"); // update UI
+		///     });
+		///
+		///     Sleep(5000); // do more parallel process
+		///
+		///     wnd.ui_thread([this]() {
+		///         wnd.set_title(L"Process finished"); // update UI again
+		///     });
+		///
+		/// }).detach();
+		/// ```
+		///
+		/// [`SendMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessagew
+		virtual void ui_thread(std::function<void()> &&cb) const = 0;
+
+	private:
+		[[nodiscard]] virtual const _wl_internal::WndBase& base() const = 0;
+		[[nodiscard]] virtual _wl_internal::WndBase& base() = 0;
+		friend WindowModal;
+		friend WindowControl;
+		friend Button;
+		friend CheckBox;
+		friend ComboBox;
+		friend DateTimePicker;
+		friend Edit;
+		friend ListView;
+		friend MonthCalendar;
+		friend RadioButton;
+		friend Static;
+		friend StatusBar;
+		friend Tab;
+		friend TreeView;
+		friend DropFiles;
+	};
 
 	/// @brief Main application window.
 	///
@@ -101,7 +194,7 @@ namespace wl {
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		WindowMain()
-			: _rawMain{std::make_optional<_wl_internal::RawMain>()} { }
+			: _rawOrDlg{.raw = std::make_optional<_wl_internal::RawMain>()} { }
 
 		/// Constructs the main window, which will be loaded from a dialog resource with [`CreateDialogParam`].
 		///
@@ -112,21 +205,25 @@ namespace wl {
 		/// ```
 		///
 		/// [`CreateDialogParam`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createdialogparamw
-		WindowMain(WORD dlgId, WORD iconId = 0, WORD accelTblId = 0)
-			: _dlgMain{std::make_optional<_wl_internal::DlgMain>(dlgId, iconId, accelTblId)} { }
+		explicit WindowMain(WORD dlgId, WORD iconId = 0, WORD accelTblId = 0)
+			: _rawOrDlg{.dlg = std::make_optional<_wl_internal::DlgMain>(dlgId, iconId, accelTblId)} { }
 
 		/** Returns the window handle. */
-		[[nodiscard]] constexpr HWND hwnd() const override { return wnd_base()._hWnd; };
+		[[nodiscard]] constexpr HWND hwnd() const override { return _rawOrDlg.base()._hWnd; };
 
 		/// For a window created programmatically, defines additional creation options.
 		///
 		/// If a dialog window, throws an exception.
-		[[nodiscard]] constexpr opts::MainOpts& setup() { return _wl_internal::valid_setup(hwnd(), _rawMain.value()._opts); }
+		[[nodiscard]] constexpr opts::MainOpts& setup() {
+			return _wl_internal::valid_setup(hwnd(), _rawOrDlg.raw.value()._opts);
+		}
 
 		/// Allows message events to be added.
 		///
 		/// The events must be added before the window is created on the screen.
-		[[nodiscard]] constexpr events::WindowEvents& on() override { return _wl_internal::valid_event(hwnd(), wnd_base()._userEvents); };
+		[[nodiscard]] constexpr events::WindowEvents& on() override {
+			return _wl_internal::valid_event(hwnd(), _rawOrDlg.base()._userEvents);
+		};
 
 		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in the UI thread.
 		/// After `cb` finishes, returns back to the calling thread.
@@ -154,7 +251,7 @@ namespace wl {
 		/// ```
 		///
 		/// [`SendMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessagew
-		void ui_thread(std::function<void()> &&cb) const override { wnd_base().ui_thread(std::move(cb)); }
+		void ui_thread(std::function<void()> &&cb) const override { _rawOrDlg.base().ui_thread(std::move(cb)); }
 
 		/// Calls [`GetWindowText`] to retrieve the window title.
 		///
@@ -172,11 +269,9 @@ namespace wl {
 		int run(HINSTANCE hInst, int cmdShow);
 
 	private:
-		[[nodiscard]] constexpr const _wl_internal::WndBase& wnd_base() const override { return get_wnd_base(_rawMain, _dlgMain); }
-		[[nodiscard]] constexpr _wl_internal::WndBase& wnd_base() override             { return get_wnd_base(_rawMain, _dlgMain); }
-
-		std::optional<_wl_internal::RawMain> _rawMain{}; // either one
-		std::optional<_wl_internal::DlgMain> _dlgMain{};
+		[[nodiscard]] const _wl_internal::WndBase& base() const override { return _rawOrDlg.base(); }
+		[[nodiscard]] _wl_internal::WndBase& base() override { return _rawOrDlg.base(); }
+		_wl_internal::RawOrDlg<_wl_internal::RawMain, _wl_internal::DlgMain> _rawOrDlg{};
 	};
 
 	/** @brief Modal window. */
@@ -197,7 +292,7 @@ namespace wl {
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		explicit WindowModal(const WindowParent &parent)
-			: _rawModal{std::make_optional<_wl_internal::RawModal>(parent)} { }
+			: _rawOrDlg{.raw = std::make_optional<_wl_internal::RawModal>(parent.base())} { }
 
 		/// Constructs the modal window, which will be loaded from a dialog resource with [`DialogBoxParam`].
 		///
@@ -214,20 +309,24 @@ namespace wl {
 		///
 		/// [`DialogBoxParam`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxparamw
 		WindowModal(const WindowParent &parent, WORD dlgId)
-			: _dlgModal{std::make_optional<_wl_internal::DlgModal>(parent, dlgId)} { }
+			: _rawOrDlg{.dlg = std::make_optional<_wl_internal::DlgModal>(parent.base(), dlgId)} { }
 
 		/** Returns the window handle. */
-		[[nodiscard]] constexpr HWND hwnd() const override { return wnd_base()._hWnd; };
+		[[nodiscard]] constexpr HWND hwnd() const override { return _rawOrDlg.base()._hWnd; };
 
 		/// For a window created programmatically, defines additional creation options.
 		///
 		/// If a dialog window, throws an exception.
-		[[nodiscard]] constexpr opts::ModalOpts& setup() { return _wl_internal::valid_setup(hwnd(), _rawModal.value()._opts); }
+		[[nodiscard]] constexpr opts::ModalOpts& setup() {
+			return _wl_internal::valid_setup(hwnd(), _rawOrDlg.raw.value()._opts);
+		}
 
 		/// Allows message events to be added.
 		///
 		/// The events must be added before the window is created on the screen.
-		[[nodiscard]] constexpr events::WindowEvents& on() override { return _wl_internal::valid_event(hwnd(), wnd_base()._userEvents); };
+		[[nodiscard]] constexpr events::WindowEvents& on() override {
+			return _wl_internal::valid_event(hwnd(), _rawOrDlg.base()._userEvents);
+		};
 
 		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in the UI thread.
 		/// After `cb` finishes, returns back to the calling thread.
@@ -255,7 +354,7 @@ namespace wl {
 		/// ```
 		///
 		/// [`SendMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessagew
-		void ui_thread(std::function<void()> &&cb) const override { wnd_base().ui_thread(std::move(cb)); }
+		void ui_thread(std::function<void()> &&cb) const override { _rawOrDlg.base().ui_thread(std::move(cb)); }
 
 		/// Calls [`GetWindowText`] to retrieve the window title.
 		///
@@ -271,11 +370,9 @@ namespace wl {
 		void show();
 
 	private:
-		[[nodiscard]] constexpr const _wl_internal::WndBase& wnd_base() const override { return get_wnd_base(_rawModal, _dlgModal); }
-		[[nodiscard]] constexpr _wl_internal::WndBase& wnd_base() override             { return get_wnd_base(_rawModal, _dlgModal); }
-
-		std::optional<_wl_internal::RawModal> _rawModal{}; // either one
-		std::optional<_wl_internal::DlgModal> _dlgModal{};
+		[[nodiscard]] const _wl_internal::WndBase& base() const override { return _rawOrDlg.base(); }
+		[[nodiscard]] _wl_internal::WndBase& base() override { return _rawOrDlg.base(); }
+		_wl_internal::RawOrDlg<_wl_internal::RawModal, _wl_internal::DlgModal> _rawOrDlg{};
 	};
 
 	/// @brief Custom control window.
@@ -321,7 +418,7 @@ namespace wl {
 		WindowControl(wl::WindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos, wl::Lay layout = wl::Lay::hold_hold);
 
 		/** Returns the window handle. */
-		[[nodiscard]] constexpr HWND hwnd() const override { return wnd_base()._hWnd; };
+		[[nodiscard]] constexpr HWND hwnd() const override { return _rawOrDlg.base()._hWnd; };
 
 		/** Returns the control ID. */
 		[[nodiscard]] WORD ctrl_id() const override;
@@ -329,12 +426,16 @@ namespace wl {
 		/// For a control created programmatically, defines additional creation options.
 		///
 		/// If a dialog control, throws an exception.
-		[[nodiscard]] constexpr opts::ControlOpts& setup() { return _wl_internal::valid_setup(hwnd(), _rawControl.value()._opts); }
+		[[nodiscard]] constexpr opts::ControlOpts& setup() {
+			return _wl_internal::valid_setup(hwnd(), _rawOrDlg.raw.value()._opts);
+		}
 
 		/// Allows message events to be added.
 		///
 		/// The events must be added before the window is created on the screen.
-		[[nodiscard]] constexpr events::WindowEvents& on() override { return _wl_internal::valid_event(hwnd(), wnd_base()._userEvents); };
+		[[nodiscard]] constexpr events::WindowEvents& on() override {
+			return _wl_internal::valid_event(hwnd(), _rawOrDlg.base()._userEvents);
+		};
 
 		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in the UI thread.
 		/// After `cb` finishes, returns back to the calling thread.
@@ -362,15 +463,73 @@ namespace wl {
 		/// ```
 		///
 		/// [`SendMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessagew
-		void ui_thread(std::function<void()> &&cb) const override { wnd_base().ui_thread(std::move(cb)); }
+		void ui_thread(std::function<void()> &&cb) const override { _rawOrDlg.base().ui_thread(std::move(cb)); }
 
 	private:
-		[[nodiscard]] constexpr const _wl_internal::WndBase& wnd_base() const override { return get_wnd_base(_rawControl, _dlgControl); }
-		[[nodiscard]] constexpr _wl_internal::WndBase& wnd_base() override             { return get_wnd_base(_rawControl, _dlgControl); }
+		[[nodiscard]] const _wl_internal::WndBase& base() const override { return _rawOrDlg.base(); }
+		[[nodiscard]] _wl_internal::WndBase& base() override { return _rawOrDlg.base(); }
 		void paint_custom_border(wm::NcPaint p) const;
+		_wl_internal::RawOrDlg<_wl_internal::RawControl, _wl_internal::DlgControl> _rawOrDlg{};
+	};
 
-		std::optional<_wl_internal::RawControl> _rawControl{}; // either one
-		std::optional<_wl_internal::DlgControl> _dlgControl{};
+	/// @brief Implements [`IDropTarget`] COM interface, allowing file drag & drop on the window.
+	///
+	/// Calls [`RegisterDragDrop`], calls [`RevokeDragDrop`], and extracts the dropped files automatically.
+	///
+	/// Example, .h and .cpp files:
+	///
+	/// ```cpp
+	/// class MyMain final {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{DLG_MAIN, ICO_MAIN};
+	///     wl::DropFiles dropFiles{wnd};
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
+	///
+	/// MyMain::MyMain() {
+	///     // ...
+	///
+	///     dropFiles.on_drop([](const std::vector<std::wstring> &files) -> void {
+	///         // ...
+	///     });
+	/// }
+	/// ```
+	///
+	/// [`IDropTarget`]: https://learn.microsoft.com/en-us/windows/win32/api/oleidl/nn-oleidl-idroptarget
+	/// [`RegisterDragDrop`]: https://learn.microsoft.com/en-us/windows/win32/api/ole2/nf-ole2-registerdragdrop
+	/// [`RevokeDragDrop`]: https://learn.microsoft.com/en-us/windows/win32/api/ole2/nf-ole2-revokedragdrop
+	class DropFiles final : public IDropTarget {
+	private:
+		DropFiles(DropFiles&&) = delete; // non-copyable, non-movable
+
+	public:
+		explicit DropFiles(WindowParent &owner);
+
+		HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) override;
+		ULONG STDMETHODCALLTYPE AddRef() override;
+		ULONG STDMETHODCALLTYPE Release() override;
+
+		HRESULT STDMETHODCALLTYPE DragEnter(IDataObject *pDataObj, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) override;
+		HRESULT STDMETHODCALLTYPE DragOver(DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) override;
+		HRESULT STDMETHODCALLTYPE DragLeave() override;
+		HRESULT STDMETHODCALLTYPE Drop(IDataObject *pDataObj, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) override;
+
+		/// Defines a callback to be called when files are dropped on the window.
+		///
+		/// Receives a [`std::vector`] with the full path of each file being dropped.
+		///
+		/// [`std::vector`]: https://en.cppreference.com/w/cpp/container/vector.html
+		void on_drop(std::function<void(const std::vector<std::wstring>&)> cb) { _cb = std::make_optional(cb); }
+
+	private:
+		std::vector<std::wstring> get_dropped(HANDLE hDrop) const;
+
+		LONG _refCount = 1;
+		std::optional<std::function<void(const std::vector<std::wstring>&)>> _cb{};
 	};
 
 }

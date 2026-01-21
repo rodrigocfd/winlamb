@@ -1,7 +1,7 @@
 #include <algorithm>
 #include <cwctype>
 #include <stdexcept>
-#include "str.h"
+#include "aux-str.hpp"
 using namespace wl;
 
 size_t WStrView::length() const {

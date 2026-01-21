@@ -1,194 +1,8 @@
-#include <memory>
 #include <system_error>
-#include "wnd-base.h"
-#include "wnd-interfaces.h"
-#include "wnd-app.h"
-#include <CommCtrl.h>
-using namespace wl;
+#include "ui-rawdlg.hpp"
+#include "ui-app.hpp"
 using namespace _wl_internal;
-
-struct ThreadPack final {
-	std::function<void()> cb;
-};
-static constexpr UINT WM_THREAD = WM_APP + 0x3fff; // last WM_APP value
-
-void WndBase::ui_thread(std::function<void()> &&cb) const {
-	auto pPack = std::make_unique<ThreadPack>(std::move(cb));
-	SendMessageW(_hWnd, WM_THREAD, WM_THREAD, reinterpret_cast<LPARAM>(pPack.release()));
-}
-
-WndBase::ProcResult WndBase::process_msgs(UINT msg, WPARAM wp, LPARAM lp) {
-	switch (msg) {
-	case WM_THREAD:
-		if (wp == WM_THREAD) { // additional safety check
-			std::unique_ptr<ThreadPack> pPack{reinterpret_cast<ThreadPack*>(lp)};
-			pPack->cb();
-			return {true, false, std::nullopt};
-		}
-		break;
-	case WM_SIZE:
-		_layout.rearrange(wp, lp);
-	}
-
-	bool hasPre = _preEvents.process_all({msg, wp, lp});
-	std::optional<LRESULT> userRet = _userEvents.process_last({msg, wp, lp});
-	bool hasPost = _postEvents.process_all({msg, wp, lp});
-
-	switch (msg) {
-	case WM_CREATE:
-	case WM_INITDIALOG:
-		_preEvents.clear_inis(); // since initial messages will never be called again, release
-		_userEvents.clear_inis();
-		_postEvents.clear_inis();
-		break;
-	case WM_NCDESTROY:
-		_preEvents.clear();
-		_userEvents.clear();
-		_postEvents.clear();
-	}
-
-	return {hasPre, hasPost, userRet};
-}
-
-int WndBase::main_loop(HACCEL hAccel, bool processDlgMsgs) {
-	MSG msg{};
-	BOOL ret = FALSE;
-	for (;;) {
-		if (BOOL ret = GetMessageW(&msg, nullptr, 0, 0); ret == -1) [[unlikely]] {
-			throw std::system_error(GetLastError(), std::system_category(), "Main loop: GetMessage failed");
-		} else if (!ret) {
-			// WM_QUIT was sent, gracefully terminate the program, wParam is the program exit code.
-			// https://learn.microsoft.com/en-us/windows/win32/winmsg/using-messages-and-message-queues
-			break;
-		}
-
-		// If a child window, will retrieve its top-level parent.
-		// If a top-level, use itself.
-		HWND hWndTopLevel = GetAncestor(_hWnd, GA_ROOT);
-		if (!hWndTopLevel) hWndTopLevel = msg.hwnd;
-
-		// If we have an accelerator table, try to translate the message.
-		if (hAccel && TranslateAcceleratorW(_hWnd, hAccel, &msg)) continue;
-
-		// Try to process keyboard actions for child controls.
-		if (processDlgMsgs && IsDialogMessageW(_hWnd, &msg)) continue;
-
-		TranslateMessage(&msg);
-		DispatchMessageW(&msg);
-	}
-	return static_cast<int>(msg.wParam); // can be used as program return value
-}
-
-void WndBase::modal_loop(bool processDlgMsgs) {
-	MSG msg{};
-	for (;;) {
-		if (BOOL ret = GetMessageW(&msg, nullptr, 0, 0); ret == -1) [[unlikely]] {
-			throw std::system_error(GetLastError(), std::system_category(), "Modal loop: GetMessage failed");
-		} else if (!ret) {
-			break; // our modal was destroyed
-		}
-
-		if (!_hWnd || !IsWindow(_hWnd)) break; // our modal was destroyed
-
-		// If a child window, will retrieve its top-level parent.
-		// If a top-level, use itself.
-		HWND hWndTopLevel = GetAncestor(_hWnd, GA_ROOT);
-		if (!hWndTopLevel) hWndTopLevel = _hWnd;
-
-		// Try to process keyboard actions for child controls.
-		if (processDlgMsgs && IsDialogMessageW(_hWnd, &msg)) {
-			// Processed all keyboard actions for child controls.
-			if (!_hWnd) break; // our modal was destroyed
-			else continue;
-		}
-
-		TranslateMessage(&msg);
-		DispatchMessageW(&msg);
-
-		if (!_hWnd || !IsWindow(_hWnd)) break; // our modal was destroyed
-	}
-}
-
-////////////////////////////////////////////////////////////////////////////////
-
-NativeCtrlBase::NativeCtrlBase(WindowParent &owner)
-	: _parentWndBase{owner.wnd_base()}
-{
-}
-
-void NativeCtrlBase::create_wnd(WORD ctrlId, DWORD exStyle, const wchar_t *className,
-	std::wstring &&title, DWORD style, POINT pos, SIZE size)
-{
-	#ifdef _DEBUG
-	if (_hWnd)
-		throw std::logic_error("Cannot create control twice.");
-	if (!_parentWndBase._hWnd)
-		throw std::logic_error("Cannot create control before parent.");
-	#endif
-
-	_hWnd = CreateWindowExW(exStyle, className, title.c_str(), style,
-		pos.x, pos.y, size.cx, size.cy, _parentWndBase._hWnd,
-		reinterpret_cast<HMENU>(valid_ctrl_id(ctrlId)), wnd_hinst(_parentWndBase._hWnd), nullptr);
-	#ifdef _DEBUG
-	if (!_hWnd)
-		throw std::system_error(GetLastError(), std::system_category(), "NativeCtrlBase: CreateWindowEx failed");
-	#endif
-
-	install_subclass();
-}
-
-void NativeCtrlBase::assign_dlg(WORD ctrlId) {
-	#ifdef _DEBUG
-	if (_hWnd)
-		throw std::logic_error("Cannot assign control twice.");
-	if (!_parentWndBase._hWnd)
-		throw std::logic_error("Cannot assign control before parent.");
-	#endif
-
-	_hWnd = GetDlgItem(_parentWndBase._hWnd, ctrlId);
-	#ifdef _DEBUG
-	if (!_hWnd)
-		throw std::system_error(GetLastError(), std::system_category(), "NativeCtrlBase: GetDlgItem failed");
-	#endif
-
-	install_subclass();
-}
-
-void NativeCtrlBase::install_subclass() {
-	static UINT_PTR subclassId = 0;
-	if (_subclassEvents.has_message()) {
-		BOOL ret = SetWindowSubclass(_hWnd, subclass_proc, ++subclassId, reinterpret_cast<DWORD_PTR>(this));
-		#ifdef _DEBUG
-		if (!ret)
-			throw std::runtime_error("SetWindowSubclass failed.");
-		#endif
-	}
-}
-
-LRESULT CALLBACK NativeCtrlBase::subclass_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp,
-	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
-{
-	NativeCtrlBase *pSelf = reinterpret_cast<NativeCtrlBase*>(dwRefData);
-
-	std::optional<LRESULT> ret{};
-	if (pSelf)
-		ret = pSelf->_subclassEvents.process_last({msg, wp, lp});
-
-	if (msg == WM_NCDESTROY) { // always check
-		// https://devblogs.microsoft.com/oldnewthing/20031111-00/?p=41883
-		BOOL ret = RemoveWindowSubclass(hWnd, subclass_proc, uIdSubclass);
-		#ifdef _DEBUG
-		if (!ret)
-			throw std::runtime_error("RemoveWindowSubclass failed.");
-		#endif
-		if (pSelf)
-			pSelf->_subclassEvents.clear();
-	}
-
-	return ret.has_value() ? ret.value() : DefSubclassProc(hWnd, msg, wp, lp);
-}
-
-////////////////////////////////////////////////////////////////////////////////
+using namespace wl;
 
 ATOM RawBase::register_class(HINSTANCE hInst, std::wstring &&className, DWORD classStyle,
 	WORD iconId, HBRUSH hbrBackground, HCURSOR hCursor)
@@ -367,15 +181,15 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RawModal::RawModal(const WindowParent &parent)
-	: _parent{parent}
+RawModal::RawModal(const WndBase &parentWndBase)
+	: _parent{parentWndBase}
 {
 	_rawBase._wndBase._preEvents.wm(WM_SETFOCUS, [this](wm::SetFocus) -> void {
 		_rawBase.focus_first_child();
 	});
 
 	_rawBase._wndBase._userEvents.wm_close([this]() -> void {
-		EnableWindow(_parent.hwnd(), TRUE); // re-enable parent
+		EnableWindow(_parent._hWnd, TRUE); // re-enable parent
 		if (_hWndChildPrevFocusParent)
 			SetFocus(_hWndChildPrevFocusParent); // could be on WM_DESTROY as well
 		DestroyWindow(_rawBase._wndBase._hWnd); // then destroy modal
@@ -383,12 +197,12 @@ RawModal::RawModal(const WindowParent &parent)
 }
 
 void RawModal::show() {
-	HINSTANCE hInst = wnd_hinst(_parent.hwnd());
+	HINSTANCE hInst = wnd_hinst(_parent._hWnd);
 	ATOM atom = _rawBase.register_class(hInst, std::move(_opts.className), _opts.classStyle,
 		_opts.iconId, _opts.hbrBackground, _opts.hCursor);
 
 	_hWndChildPrevFocusParent = GetFocus();
-	EnableWindow(_parent.hwnd(), FALSE); // https://devblogs.microsoft.com/oldnewthing/20040227-00/?p=40463
+	EnableWindow(_parent._hWnd, FALSE); // https://devblogs.microsoft.com/oldnewthing/20040227-00/?p=40463
 
 	RECT rcWnd{
 		.left = 0,
@@ -404,7 +218,7 @@ void RawModal::show() {
 	OffsetRect(&rcWnd, -rcWnd.left, -rcWnd.top);
 
 	RECT rcParent{};
-	GetWindowRect(_parent.hwnd(), &rcParent); // relative to screen
+	GetWindowRect(_parent._hWnd, &rcParent); // relative to screen
 
 	POINT ptWndCenter{
 		.x = rcParent.left + (rcParent.right - rcParent.left) / 2 - rcWnd.right / 2, // center on parent
@@ -420,14 +234,14 @@ void RawModal::show() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RawControl::RawControl(WindowParent &parent) {
-	parent.wnd_base()._preEvents.wm_create_or_init_dialog([this, pParent = &parent]() -> void {
-		HINSTANCE hInst = wnd_hinst(pParent->hwnd());
-		ATOM atom = _rawBase.register_class(hInst, std::move(_opts.className), _opts.classStyle,
+RawControl::RawControl(WndBase &parentWndBase) {
+	parentWndBase._preEvents.wm_create_or_init_dialog([this, pParent = &parentWndBase]() -> void {
+		HINSTANCE hInst = wnd_hinst(pParent->_hWnd);
+		ATOM atom = _rawBase.register_class(wnd_hinst(pParent->_hWnd), std::move(_opts.className), _opts.classStyle,
 			0, _opts.hbrBackground, _opts.hCursor);
 		_rawBase.create_window(_opts.styleEx, atom, {}, _opts.style,
-			_opts.pos, _opts.size, pParent->hwnd(), reinterpret_cast<HMENU>(valid_ctrl_id(_opts.ctrlId)), hInst);
-		pParent->wnd_base()._layout.add(_rawBase._wndBase._hWnd, _opts.layout);
+			_opts.pos, _opts.size, pParent->_hWnd, reinterpret_cast<HMENU>(valid_ctrl_id(_opts.ctrlId)), hInst);
+		pParent->_layout.add(_rawBase._wndBase._hWnd, _opts.layout);
 	});
 }
 
@@ -549,8 +363,8 @@ int DlgMain::run(HINSTANCE hInst, int cmdShow) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-DlgModal::DlgModal(const WindowParent &parent, WORD dlgId)
-	: _parent{parent}, _dlgBase{dlgId}
+DlgModal::DlgModal(const WndBase &parentWndBase, WORD dlgId)
+	: _parent{parentWndBase}, _dlgBase{dlgId}
 {
 	_dlgBase._wndBase._userEvents.wm_close([this]() -> void {
 		EndDialog(_dlgBase._wndBase._hWnd, 0);
@@ -558,18 +372,18 @@ DlgModal::DlgModal(const WindowParent &parent, WORD dlgId)
 }
 
 void DlgModal::show() {
-	_dlgBase.dialog_box_param(wnd_hinst(_parent.hwnd()), _parent.hwnd());
+	_dlgBase.dialog_box_param(wnd_hinst(_parent._hWnd), _parent._hWnd);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-DlgControl::DlgControl(WindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos, Lay layout)
+DlgControl::DlgControl(WndBase &parentWndBase, WORD dlgId, WORD ctrlId, POINT pos, Lay layout)
 	: _dlgBase{dlgId}
 {
-	parent.wnd_base()._preEvents.wm_create_or_init_dialog([this, pParent = &parent, ctrlId, pos, layout]() -> void {
-		_dlgBase.create_dialog_param(wnd_hinst(pParent->hwnd()), pParent->hwnd());
+	parentWndBase._preEvents.wm_create_or_init_dialog([this, pParent = &parentWndBase, ctrlId, pos, layout]() -> void {
+		_dlgBase.create_dialog_param(wnd_hinst(pParent->_hWnd), pParent->_hWnd);
 		SetWindowLongPtrW(_dlgBase._wndBase._hWnd, GWLP_ID, valid_ctrl_id(ctrlId)); // give the control its ID
 		SetWindowPos(_dlgBase._wndBase._hWnd, nullptr, pos.x, pos.y, 0, 0, SWP_NOZORDER | SWP_NOMOVE);
-		pParent->wnd_base()._layout.add(_dlgBase._wndBase._hWnd, layout);
+		pParent->_layout.add(_dlgBase._wndBase._hWnd, layout);
 	});
 }

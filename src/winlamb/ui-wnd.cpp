@@ -1,0 +1,176 @@
+#include "ui-wnd.hpp"
+#include <Uxtheme.h>
+#include <vsstyle.h>
+#include <shellapi.h>
+using namespace _wl_internal;
+using namespace wl;
+
+int WindowMain::run(HINSTANCE hInst, int cmdShow) {
+	return _rawOrDlg.raw.has_value()
+		? _rawOrDlg.raw.value().run(hInst, cmdShow)
+		: _rawOrDlg.dlg.value().run(hInst, cmdShow);
+}
+
+const WindowMain& WindowMain::set_title(WStrView newTitle) const {
+	set_wnd_text(hwnd(), newTitle);
+	return *this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+void WindowModal::show() {
+	return _rawOrDlg.raw.has_value()
+		? _rawOrDlg.raw.value().show()
+		: _rawOrDlg.dlg.value().show();
+}
+
+const WindowModal& WindowModal::set_title(WStrView newTitle) const {
+	_wl_internal::set_wnd_text(hwnd(), newTitle);
+	return *this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+WindowControl::WindowControl(WindowParent &parent)
+	: _rawOrDlg{.raw = std::make_optional<RawControl>(parent.base())}
+{
+	on().wm_nc_paint(std::bind(&WindowControl::paint_custom_border, this, std::placeholders::_1));
+}
+
+WindowControl::WindowControl(WindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos, Lay layout)
+	: _rawOrDlg{.dlg = std::make_optional<DlgControl>(parent.base(), dlgId, ctrlId, pos, layout)}
+{
+	on().wm_nc_paint(std::bind(&WindowControl::paint_custom_border, this, std::placeholders::_1));
+}
+
+WORD WindowControl::ctrl_id() const {
+	return GetDlgCtrlID(hwnd());
+}
+
+void WindowControl::paint_custom_border(wm::NcPaint p) const {
+	DefWindowProcW(hwnd(), WM_NCPAINT, p.wparam(), p.lparam()); // make the system draw the scrollbar for us
+
+	DWORD exStyle = static_cast<DWORD>(GetWindowLongPtrW(hwnd(), GWL_EXSTYLE));
+	bool hasBorderStyle = (exStyle & WS_EX_CLIENTEDGE) != 0;
+	if (!hasBorderStyle || !IsThemeActive() || !IsAppThemed())
+		return; // no theme borders to be painted
+
+	RECT rc{};
+	GetWindowRect(hwnd(), &rc); // control window outmost coordinates, including margins
+	ScreenToClient(hwnd(), reinterpret_cast<POINT*>(&rc));
+	ScreenToClient(hwnd(), reinterpret_cast<POINT*>(&rc.right));
+	OffsetRect(&rc, 2, 2); // because it comes up anchored at -2,-2
+
+	HDC hdc = GetWindowDC(hwnd());
+
+	// The HRGN which comes in WM_NCPAINT seems to be invalid, so we carve our own.
+	RECT rcHole = rc;
+	InflateRect(&rcHole, -2, -2);
+	HRGN hRgnHole = CreateRectRgnIndirect(&rcHole);
+	HRGN hRgnClip = CreateRectRgnIndirect(&rc);
+	CombineRgn(hRgnClip, hRgnClip, hRgnHole, RGN_DIFF);
+	SelectClipRgn(hdc, hRgnClip);
+
+	HTHEME hTheme = OpenThemeData(hwnd(), L"LISTVIEW");
+	DrawThemeBackground(hTheme, hdc, LVP_LISTDETAIL, 0, &rc, nullptr);
+
+	CloseThemeData(hTheme);
+	DeleteObject(hRgnClip);
+	DeleteObject(hRgnHole);
+	ReleaseDC(hwnd(), hdc);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+DropFiles::DropFiles(WindowParent &owner) {
+	owner.base()._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
+		RegisterDragDrop(pOwner->hwnd(), this);
+	});
+
+	owner.base()._postEvents.wm(WM_DESTROY, [pOwner = &owner](wm::Msg) -> void {
+		RevokeDragDrop(pOwner->hwnd());
+	});
+}
+
+HRESULT STDMETHODCALLTYPE DropFiles::QueryInterface(REFIID riid, void **ppvObject) {
+	if (riid == IID_IDropTarget || riid == IID_IUnknown) {
+		AddRef();
+		*ppvObject = this;
+		return S_OK;
+	} else {
+		*ppvObject = nullptr;
+		return E_NOINTERFACE;
+	}
+}
+
+ULONG STDMETHODCALLTYPE DropFiles::AddRef() {
+	return InterlockedIncrement(&_refCount);
+}
+
+ULONG STDMETHODCALLTYPE DropFiles::Release() {
+	ULONG c = InterlockedDecrement(&_refCount);
+	if (!_refCount) delete this;
+	return c;
+}
+
+HRESULT STDMETHODCALLTYPE DropFiles::DragEnter(
+	IDataObject *pDataObj, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect)
+{
+	*pdwEffect &= DROPEFFECT_COPY;
+	return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE DropFiles::DragOver(DWORD grfKeyState, POINTL pt, DWORD *pdwEffect) {
+	*pdwEffect &= DROPEFFECT_COPY;
+	return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE DropFiles::DragLeave() {
+	return S_OK;
+}
+
+HRESULT STDMETHODCALLTYPE DropFiles::Drop(
+	IDataObject *pDataObj, DWORD grfKeyState, POINTL pt, DWORD *pdwEffect)
+{
+	if (_cb.has_value()) { // do we have an user callback?
+		FORMATETC fetc{
+			.cfFormat = CF_HDROP,
+			.ptd = nullptr,
+			.dwAspect = DVASPECT_CONTENT,
+			.lindex = -1,
+			.tymed = TYMED_HGLOBAL,
+		};
+		STGMEDIUM medium{};
+
+		if (HRESULT hr = pDataObj->GetData(&fetc, &medium); FAILED(hr)) [[unlikely]] {
+			*pdwEffect = DROPEFFECT_NONE;
+			return hr;
+		}
+
+		HGLOBAL hFiles = medium.hGlobal;
+		HDROP hDrop = reinterpret_cast<HDROP>(GlobalLock(hFiles));
+		std::vector<std::wstring> files = get_dropped(hDrop);
+		GlobalUnlock(hFiles);
+		ReleaseStgMedium(&medium);
+
+		_cb.value()(files); // invoke user callback
+	}
+
+	*pdwEffect &= DROPEFFECT_COPY;
+	return S_OK;
+}
+
+std::vector<std::wstring> DropFiles::get_dropped(HANDLE hDrop) const {
+	UINT count = DragQueryFileW(reinterpret_cast<HDROP>(hDrop), 0xffff'ffff, nullptr, 0);
+	std::vector<std::wstring> paths;
+	paths.reserve(count);
+
+	for (UINT i = 0; i < count; ++i) {
+		wchar_t buf[MAX_PATH + 1] = {L'\0'};
+		DragQueryFileW(reinterpret_cast<HDROP>(hDrop), i, buf, MAX_PATH + 1);
+		paths.emplace_back(buf);
+	}
+
+	//DragFinish(hDrop); // will crash ReleaseStgMedium()
+	return paths;
+}

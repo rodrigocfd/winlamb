@@ -3,7 +3,7 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include "../winlamb/lib.h"
+#include "../winlamb/winlamb.hpp"
 #include "frame.h"
 
 namespace id3v2 {

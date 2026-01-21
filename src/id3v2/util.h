@@ -2,7 +2,7 @@
 #include <span>
 #include <string>
 #include <vector>
-#include "../winlamb/lib.h"
+#include "../winlamb/winlamb.hpp"
 
 namespace id3v2 {
 

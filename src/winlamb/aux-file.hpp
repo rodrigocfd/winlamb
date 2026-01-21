@@ -1,6 +1,5 @@
 #pragma once
-#include "lib-include-win.h"
-#include "str.h"
+#include "aux-str.hpp"
 
 namespace wl {
 

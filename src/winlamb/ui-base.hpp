@@ -2,7 +2,11 @@
 #include <functional>
 #include <optional>
 #include <vector>
-#include "lib-include-win.h"
+
+#include <sdkddkver.h>
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
 
 /// @brief [Message] crackers, passed as arguments to the window events.
 ///
@@ -239,7 +243,6 @@ namespace _wl_internal {
 		void wm_create_or_init_dialog(std::function<void()> &&cb);
 		void wm(UINT msg, std::function<void(wl::wm::Msg)> &&cb);
 		void wm_notify(WORD idFrom, int code, std::function<void(wl::wm::Notify)> &&cb);
-
 		void clear_inis(); // will delete WM_CREATE and WM_INITDIALOG
 		void clear();
 		[[nodiscard]] bool process_all(wl::wm::Msg procMsg) const;
@@ -250,11 +253,9 @@ namespace _wl_internal {
 		std::vector<Nfy> _nfys{}; // WM_NOTIFY
 	};
 
-}
-
-namespace _wl_internal {
-	class WndBase;
+	class WndBase; // forward declaration
 	class NativeCtrlBase;
+
 }
 
 /** @brief Events for windows and controls. */
@@ -431,7 +432,130 @@ namespace wl::events {
 		std::vector<Nfy> _nfys{}; // WM_NOTIFY
 
 		friend _wl_internal::WndBase;
-		friend _wl_internal::NativeCtrlBase; // subclassing uses these events
+		friend _wl_internal::NativeCtrlBase;
+	};
+
+}
+
+namespace _wl_internal {
+
+	constexpr BYTE LAY_H_MOVE   = 0b0000'0001;
+	constexpr BYTE LAY_H_RESIZE = 0b0000'0010;
+	constexpr BYTE LAY_V_MOVE   = 0b0000'0100;
+	constexpr BYTE LAY_V_RESIZE = 0b0000'1000;
+
+}
+
+namespace wl {
+
+	/** @brief Specifies the horizontal and vertical behavior for a control when the parent window is resized. */
+	enum class Lay : BYTE {
+		/** When parent is resized, nothing happens. */
+		hold_hold = 0,
+		/// When parent resizes:
+		/// - horizontal: nothing happens;
+		/// - vertical: control moves anchored at bottom.
+		hold_move = _wl_internal::LAY_V_MOVE,
+		/// When parent resizes:
+		/// - horizontal: nothing happens;
+		/// - vertical: control is resized together.
+		hold_resize = _wl_internal::LAY_V_RESIZE,
+		/// When parent resizes:
+		/// - horizontal: control moves anchored at right;
+		/// - vertical: nothing happens.
+		move_hold = _wl_internal::LAY_H_MOVE,
+		/// When parent resizes:
+		/// - horizontal: control moves anchored at right;
+		/// - vertical: control moves anchored at bottom.
+		move_move = _wl_internal::LAY_H_MOVE | _wl_internal::LAY_V_MOVE,
+		/// When parent resizes:
+		/// - horizontal: control moves anchored at right;
+		/// - vertical: control is resized together.
+		move_resize = _wl_internal::LAY_H_MOVE | _wl_internal::LAY_V_RESIZE,
+		/// When parent resizes:
+		/// - horizontal: control is resized together;
+		/// - vertical: nothing happens.
+		resize_hold = _wl_internal::LAY_H_RESIZE,
+		/// When parent resizes:
+		/// - horizontal: control is resized together;
+		/// - vertical: control moves anchored at bottom.
+		resize_move = _wl_internal::LAY_H_RESIZE | _wl_internal::LAY_V_MOVE,
+		/// When parent resizes:
+		/// - horizontal: control is resized together;
+		/// - vertical: control is resized together.
+		resize_resize = _wl_internal::LAY_H_RESIZE | _wl_internal::LAY_V_RESIZE,
+	};
+
+}
+
+namespace _wl_internal {
+
+	/** Rearranges position and size of each control when the parent resizes, according to `Lay` flags. */
+	class Layout final {
+	public:
+		struct Ctrl final {
+			HWND hCtrl;
+			wl::Lay layout;
+			RECT rcOrig;
+		};
+
+		void add(HWND hCtrl, wl::Lay layout);
+		void rearrange(WPARAM wp, LPARAM lp); // to be called internally within WM_SIZE
+
+		std::vector<Ctrl> _ctrls{};
+		SIZE _szOrig{}; // original parent client area
+	};
+
+	/// Base to all raw and dialog windows.
+	/// Stores the pre, user and post window messages for container windows.
+	/// Exposes exception-safe multi-threading operations.
+	class WndBase final {
+	public:
+		WndBase(WndBase&&) = delete; // non-copyable, non-movable
+
+		constexpr explicit WndBase(bool isDlg)
+			: _preEvents{isDlg}, _userEvents{isDlg}, _postEvents{isDlg} { }
+
+		struct ThreadPack final {
+			std::function<void()> cb;
+		};
+		void ui_thread(std::function<void()> &&cb) const;
+
+		struct ProcResult final {
+			bool hasPre, hasPost;
+			std::optional<LRESULT> userRet;
+		};
+		ProcResult process_msgs(UINT msg, WPARAM wp, LPARAM lp);
+
+		int main_loop(HACCEL hAccel, bool processDlgMsgs);
+		void modal_loop(bool processDlgMsgs);
+
+		HWND _hWnd = nullptr; // _hWnd member is set in wndproc
+		Layout _layout{};
+		InternalEvents _preEvents;
+		wl::events::WindowEvents _userEvents;
+		InternalEvents _postEvents;
+	};
+
+	/// Base to all native controls.
+	/// Stores the subclass messages.
+	class NativeCtrlBase final {
+	public:
+		NativeCtrlBase(NativeCtrlBase&&) = delete; // non-copyable, non-movable
+
+		explicit NativeCtrlBase(WndBase &parentWndBase) : _parent{parentWndBase} { }
+
+		void create_wnd(WORD ctrlId, DWORD exStyle, const wchar_t *className,
+			std::wstring &&title, DWORD style, POINT pos, SIZE size);
+		void assign_dlg(WORD ctrlId);
+		void install_subclass();
+
+		static LRESULT CALLBACK subclass_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp,
+			UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
+		HWND _hWnd = nullptr; // _hWnd member is set during control creation
+		WndBase &_parent;
+		wl::events::WindowEvents _subclassEvents{false};
 	};
 
 }

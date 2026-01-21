@@ -1,7 +1,7 @@
 #pragma once
 #include <array>
 #include <memory>
-#include "../winlamb/lib.h"
+#include "../winlamb/winlamb.hpp"
 
 namespace id3v2 {
 

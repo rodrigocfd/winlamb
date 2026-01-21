@@ -1,8 +1,6 @@
 #pragma once
 #include <functional>
-#include <vector>
-#include "lib-include-win.h"
-#include "str.h"
+#include "aux-str.hpp"
 
 /** @brief Filepath utilities. */
 namespace wl::path {

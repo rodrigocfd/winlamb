@@ -1,6 +1,5 @@
-#include <algorithm>
 #include <system_error>
-#include "path.h"
+#include "aux-path.hpp"
 
 std::wstring wl::path::dir_from(WStrView p) {
 	std::wstring ret{p.c_str()};

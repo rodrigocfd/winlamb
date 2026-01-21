@@ -3,7 +3,11 @@
 #include <span>
 #include <string>
 #include <vector>
-#include "lib-include-win.h"
+
+#include <sdkddkver.h>
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
 
 namespace wl {
 

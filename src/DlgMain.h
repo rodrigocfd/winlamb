@@ -1,5 +1,5 @@
 #pragma once
-#include "winlamb/lib.h"
+#include "winlamb/winlamb.hpp"
 
 #define ICO_MAIN        101
 #define MNU_FILES       200
