@@ -103,7 +103,7 @@ SIZE _wl_internal::calc_text_bound_box(WStrView text) {
 	desktop.hdcCloned = CreateCompatibleDC(desktop.hdcOrig);
 	#ifdef _DEBUG
 	if (!desktop.hdcCloned)
-		throw std::runtime_error("Failed to clone desktop HDC.");
+		throw std::runtime_error{"Failed to clone desktop HDC."};
 	#endif
 	desktop.hFontPrev = reinterpret_cast<HFONT>(SelectObject(desktop.hdcCloned, GuiApp::hUiFont));
 
@@ -111,7 +111,7 @@ SIZE _wl_internal::calc_text_bound_box(WStrView text) {
 	BOOL ret = GetTextExtentPoint32W(desktop.hdcCloned, wtext.c_str(), static_cast<int>(wtext.length()), &bounds);
 	#ifdef _DEBUG
 	if (!ret)
-		throw std::runtime_error("Calc box failed to \"" + str::to_ansi(wtext) + "\".");
+		throw std::runtime_error{"Calc box failed to \"" + str::to_ansi(wtext) + "\"."};
 	#endif
 
 	if (isEmpty)
@@ -179,7 +179,7 @@ SIZE wl::dpi::sz(SIZE value) {
 	if (!isIco16 && !isIco32) {
 		std::wstring msg = str::fmt(
 			L"Only 16x16 or 32x32 icons can be loaded from the shell, currently: %dx%d.", szIcon.cx, szIcon.cy);
-		throw std::invalid_argument(str::to_ansi(msg));
+		throw std::invalid_argument{str::to_ansi(msg)};
 	}
 	#endif
 
@@ -209,7 +209,7 @@ void ImageList::create(UINT ilcFlags) {
 	_hImageList = ImageList_Create(_szIcon.cx, _szIcon.cy, ilcFlags, 0, 0);
 	#ifdef _DEBUG
 	if (!_hImageList)
-		throw std::runtime_error("ImageList_Create failed.");
+		throw std::runtime_error{"ImageList_Create failed."};
 	#endif
 }
 
@@ -222,7 +222,7 @@ void ImageList::add_icon(HICON hIcon) {
 	DestroyIcon(hIcon);
 	#ifdef _DEBUG
 	if (idx == -1)
-		throw std::runtime_error("ImageList_AddIcon failed.");
+		throw std::runtime_error{"ImageList_AddIcon failed."};
 	#endif
 }
 

@@ -570,7 +570,7 @@ int ListView::Item::icon_index() const {
 			|| !_pOwner->_imgList16.count()
 			|| !_pOwner->_imgList32.himagelist()
 			|| !_pOwner->_imgList32.count())
-		throw std::logic_error("No icons have been added to any image list.");
+		throw std::logic_error{"No icons have been added to any image list."};
 	#endif
 
 	LVITEMW lvi{
@@ -587,7 +587,7 @@ const ListView::Item& ListView::Item::set_icon_index(int iconIndex) const {
 			|| !_pOwner->_imgList16.count()
 			|| !_pOwner->_imgList32.himagelist()
 			|| !_pOwner->_imgList32.count())
-		throw std::logic_error("No icons have been added to any image list.");
+		throw std::logic_error{"No icons have been added to any image list."};
 	#endif
 
 	LVITEMW lvi{
@@ -874,7 +874,7 @@ void ListView::show_context_menu(bool followCursor, bool hasCtrl, bool hasShift)
 			_opts.hMenuContext = LoadMenuW(GetModuleHandleW(nullptr), MAKEINTRESOURCEW(_opts.contextMenuId));
 			#ifdef _DEBUG
 			if (!_opts.hMenuContext)
-				throw std::invalid_argument("LoadMenu failed to load ListView context menu resource.");
+				throw std::invalid_argument{"LoadMenu failed to load ListView context menu resource."};
 			#endif
 		} else {
 			return; // no context menu defined
@@ -907,14 +907,14 @@ void ListView::show_context_menu(bool followCursor, bool hasCtrl, bool hasShift)
 	HMENU hSubMenu = GetSubMenu(_opts.hMenuContext, 0); // pop the first submenu
 	#ifdef _DEBUG
 	if (!hSubMenu)
-		throw std::invalid_argument("GetSubMenu failed to load ListView context submenu.");
+		throw std::invalid_argument{"GetSubMenu failed to load ListView context submenu."};
 	#endif
 	ClientToScreen(hwnd(), &menuPos); // from listview to screen
 	SetForegroundWindow(hParent);
 	BOOL retTrk = TrackPopupMenu(hSubMenu, TPM_LEFTBUTTON, menuPos.x, menuPos.y, 0, hParent, nullptr);
 	#ifdef _DEBUG
 	if (!retTrk)
-		throw std::runtime_error("TrackPopupMenu failed to load ListView context submenu.");
+		throw std::runtime_error{"TrackPopupMenu failed to load ListView context submenu."};
 	#endif
 	PostMessageW(hParent, WM_NULL, 0, 0); // necessary according to TrackPopupMenu docs
 }
@@ -1012,7 +1012,7 @@ RadioGroup::RadioGroup(WindowParent &owner, size_t numRadios)
 {
 	#ifdef _DEBUG
 	if (!numRadios)
-		throw std::logic_error("Cannot create a RadioGroup with zero radio controls.");
+		throw std::logic_error{"Cannot create a RadioGroup with zero radio controls."};
 	#endif
 
 	for (size_t i = 0; i < numRadios; ++i) {
@@ -1026,7 +1026,7 @@ RadioGroup::RadioGroup(WindowParent &owner, std::initializer_list<WORD> ctrlIds)
 {
 	#ifdef _DEBUG
 	if (!ctrlIds.size())
-		throw std::logic_error("Cannot create a RadioGroup with zero radio controls.");
+		throw std::logic_error{"Cannot create a RadioGroup with zero radio controls."};
 	#endif
 
 	size_t i = 0;
@@ -1041,7 +1041,7 @@ RadioGroup::RadioGroup(WindowParent &owner, Lay layout, std::initializer_list<WO
 {
 	#ifdef _DEBUG
 	if (!ctrlIds.size())
-		throw std::logic_error("Cannot create a RadioGroup with zero radio controls.");
+		throw std::logic_error{"Cannot create a RadioGroup with zero radio controls."};
 	#endif
 
 	size_t i = 0;
@@ -1054,7 +1054,7 @@ RadioGroup::RadioGroup(WindowParent &owner, Lay layout, std::initializer_list<WO
 opts::RadioButtonOpts& RadioGroup::setup(size_t radioIndex) {
 	#ifdef _DEBUG
 	if (radioIndex >= _radios.size())
-		throw std::logic_error("Radio index is beyond the group size.");
+		throw std::out_of_range{"Radio index is beyond the group size."};
 	#endif
 	return _radios[radioIndex].setup();
 }
@@ -1115,7 +1115,7 @@ const StatusBar::Part& StatusBar::Part::set_text(WStrView newText) const {
 const StatusBar::Part& StatusBar::Part::set_icon_index(int iconIndex) const {
 	#ifdef _DEBUG
 	if (!_pOwner->_iconStore16.count())
-		throw std::logic_error("No icons have been added to the icon store.");
+		throw std::logic_error{"No icons have been added to the icon store."};
 	#endif
 
 	SendMessageW(_pOwner->hwnd(), SB_SETICON, _index,
@@ -1262,7 +1262,7 @@ const TreeView::Item& TreeView::Item::expand(bool doExpand) const {
 int TreeView::Item::icon_index() const {
 	#ifdef _DEBUG
 	if (!_pOwner->_imgList16.himagelist() || !_pOwner->_imgList16.count())
-		throw std::logic_error("No icons have been added to any image list.");
+		throw std::logic_error{"No icons have been added to any image list."};
 	#endif
 
 	TVITEMEXW tvi{
@@ -1276,7 +1276,7 @@ int TreeView::Item::icon_index() const {
 const TreeView::Item& TreeView::Item::set_icon_index(int iconIndex) const {
 	#ifdef _DEBUG
 	if (!_pOwner->_imgList16.himagelist() || !_pOwner->_imgList16.count())
-		throw std::logic_error("No icons have been added to any image list.");
+		throw std::logic_error{"No icons have been added to any image list."};
 	#endif
 
 	TVITEMEXW tvi{

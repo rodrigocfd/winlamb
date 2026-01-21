@@ -67,8 +67,8 @@ unique_ptr<Frame> Frame::new_simple_text(wl::WStrView name4, wl::WStrView text) 
 	} else if (wl::str::starts_with_i(name4, L"T") && !wl::str::eq_i(name4, L"TDAT")) {
 		return std::make_unique<FrameText>(name4.c_str(), text);
 	} else {
-		throw std::invalid_argument(wl::str::to_ansi(
-			wl::str::fmt(L"Cannot create simple text frame for %s.", name4)));
+		throw std::invalid_argument{wl::str::to_ansi(
+			wl::str::fmt(L"Cannot create simple text frame for %s.", name4))};
 	}
 }
 
@@ -151,7 +151,7 @@ wstring FrameBinary::as_simple_text() const {
 }
 
 void FrameBinary::force_simple_text(wl::WStrView text) {
-	throw std::logic_error("Cannot force text to binary frame.");
+	throw std::logic_error{"Cannot force text to binary frame."};
 }
 
 void FrameBinary::serialize(vector<BYTE> &dest) const {
@@ -220,7 +220,7 @@ wstring FramePicture::as_simple_text() const {
 }
 
 void FramePicture::force_simple_text(wl::WStrView text) {
-	throw std::logic_error("Cannot force text to picture frame.");
+	throw std::logic_error{"Cannot force text to picture frame."};
 }
 
 size_t FramePicture::serializable_size() const {
@@ -258,7 +258,7 @@ wstring FrameGeob::as_simple_text() const {
 }
 
 void FrameGeob::force_simple_text(wl::WStrView text) {
-	throw std::logic_error("Cannot force text to general encapsulated object frame.");
+	throw std::logic_error{"Cannot force text to general encapsulated object frame."};
 }
 
 size_t FrameGeob::serializable_size() const {

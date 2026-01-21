@@ -101,7 +101,7 @@ std::wstring wl::str::fmt_error(DWORD errorCode) {
 
 	if (!nChars) [[unlikely]] {
 		std::wstring msg = str::fmt(L"FormatMessage failed with error %d.", GetLastError());
-		throw std::runtime_error(str::to_ansi(msg));
+		throw std::runtime_error{str::to_ansi(msg)};
 	}
 
 	std::wstring finalBuf(pBuf, nChars);
@@ -213,11 +213,11 @@ std::wstring wl::str::parse(std::span<BYTE> src) {
 		case utf8:     return parse_encoded(src, CP_UTF8);
 		case utf16_be: return parse_utf16(src, false);
 		case utf16_le: return parse_utf16(src, true);
-		case utf32_be: throw std::invalid_argument("UTF-32 big endian: encoding not implemented.");
-		case utf32_le: throw std::invalid_argument("UTF-32 little endian: encoding not implemented.");
-		case scsu:     throw std::invalid_argument("Standard compression scheme for Unicode: encoding not implemented.");
-		case bocu1:    throw std::invalid_argument("Binary ordered compression for Unicode: encoding not implemented.");
-		default:       throw std::invalid_argument("Unknown encoding.");
+		case utf32_be: throw std::invalid_argument{"UTF-32 big endian: encoding not implemented."};
+		case utf32_le: throw std::invalid_argument{"UTF-32 little endian: encoding not implemented."};
+		case scsu:     throw std::invalid_argument{"Standard compression scheme for Unicode: encoding not implemented."};
+		case bocu1:    throw std::invalid_argument{"Binary ordered compression for Unicode: encoding not implemented."};
+		default:       throw std::invalid_argument{"Unknown encoding."};
 	}
 }
 

@@ -11,7 +11,7 @@ std::wstring wl::path::dir_from(WStrView p) {
 
 void wl::path::dir_list(WStrView dirPath, std::function<void(const std::wstring &p)> &&cb) {
 	if (!is_dir(dirPath)) [[unlikely]] {
-		throw std::invalid_argument("Not a directory: " + str::to_ansi(dirPath) + ".");
+		throw std::invalid_argument{"Not a directory: " + str::to_ansi(dirPath) + "."};
 	}
 
 	std::wstring userPath{};
@@ -146,7 +146,7 @@ std::wstring wl::path::swap_extension(const std::wstring &p, WStrView newExt) {
 		p2.append(newExt.c_str());
 		return p2;
 	} else [[unlikely]] {
-		throw std::logic_error("File has no extension: " + str::to_ansi(p) + ".");
+		throw std::logic_error{"File has no extension: " + str::to_ansi(p) + "."};
 	}
 }
 

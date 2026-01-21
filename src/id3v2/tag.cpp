@@ -111,15 +111,14 @@ size_t Tag::parse_header(span<BYTE> src) {
 
 	// Validate tag version 2.3.0.
 	if (!wl::vec::eq(src.subspan(3, 2), {3, 0})) [[unlikely]] { // the first "2" is not stored
-		throw std::runtime_error(wl::str::to_ansi(
-			wl::str::fmt(L"Tag version 2.%d.%d not supported, only 2.3.0.", src[3], src[4])));
+		throw ParsingError{wl::str::fmt(L"Tag version 2.%d.%d not supported, only 2.3.0.", src[3], src[4])};
 	}
 
 	// Validate unsupported flags.
 	if (src[5] & 0b1000'0000) [[unlikely]] {
-		throw std::runtime_error("Unsynchronised tag not supported.");
+		throw ParsingError{"Unsynchronised tag not supported."};
 	} else if (src[5] & 0b0100'0000) [[unlikely]] {
-		throw std::runtime_error("Tag extended header not supported.");
+		throw ParsingError{"Tag extended header not supported."};
 	}
 
 	// Read declared tag size.
@@ -154,14 +153,13 @@ void Tag::parse_frames(span<BYTE> src) {
 					return;
 				}
 			}
-			throw std::logic_error("MP3 offset not found.");
+			throw ParsingError{"MP3 offset not found."};
 		}
 
 		unique_ptr<Frame> frame = Frame::parse(src);
 		if (frame->declared_size() > src.size()) [[unlikely]] { // means the size was serialized with error
-			throw std::runtime_error(wl::str::to_ansi(
-				wl::str::fmt(L"Declared frame size greater than block: %d vs %d",
-					frame->declared_size(), src.size())));
+			throw ParsingError{wl::str::fmt(L"Declared frame size greater than block: %d vs %d",
+				frame->declared_size(), src.size())};
 		}
 
 		_mp3Offset += frame->declared_size();

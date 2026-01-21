@@ -25,8 +25,7 @@ void id3v2::str_engine::serialize_str_ascii(vector<BYTE> &dest, wl::WStrView s) 
 Enc id3v2::str_engine::parse_enc(span<BYTE> &src) {
 	Enc encByte = static_cast<Enc>(src[0]);
 	if (encByte != Enc::iso88591 && encByte != Enc::unicode) [[unlikely]] {
-		wstring msg = wl::str::fmt(L"Unknown encoding: %d.", encByte);
-		throw std::runtime_error(wl::str::to_ansi(msg));
+		throw ParsingError{wl::str::fmt(L"Unknown encoding: %d.", encByte)};
 	}
 	src = src.subspan(1);
 	return encByte;
@@ -62,8 +61,7 @@ wstring id3v2::str_engine::parse_str(Enc encByte, span<BYTE> &src) {
 			return s;
 		}
 		[[unlikely]] default: {
-			wstring msg = wl::str::fmt(L"Unknown encoding: %d.", encByte);
-			throw std::runtime_error(wl::str::to_ansi(msg)); // should never happen
+			throw ParsingError{wl::str::fmt(L"Unknown encoding: %d.", encByte)}; // should never happen
 		}
 	}
 }
@@ -154,7 +152,7 @@ UINT id3v2::synch_safe::decode(UINT num) {
 
 UINT id3v2::conv::uint_from_be_bytes(span<BYTE> src) {
 	if (src.size() < 4) [[unlikely]] {
-		throw std::invalid_argument("UINT must be converted from at least 4 bytes.");
+		throw ParsingError{"UINT must be converted from at least 4 bytes."};
 	}
 	return MAKELONG(MAKEWORD(src[3], src[2]), MAKEWORD(src[1], src[0]));
 }

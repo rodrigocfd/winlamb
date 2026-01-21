@@ -1,4 +1,5 @@
 #pragma once
+#include <stdexcept>
 #include <span>
 #include <string>
 #include <vector>
@@ -10,6 +11,14 @@ namespace id3v2 {
 	enum class Enc : BYTE {
 		iso88591 = 0x00,
 		unicode  = 0x01,
+	};
+
+	class ParsingError : public std::runtime_error {
+	public:
+		explicit ParsingError(const std::string &text)
+			: std::runtime_error("Parsing error: " + text) { }
+		explicit ParsingError(const std::wstring &text)
+			: ParsingError{wl::str::to_ansi(text)} { }
 	};
 
 	namespace str_engine {

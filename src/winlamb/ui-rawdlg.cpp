@@ -68,7 +68,7 @@ void RawBase::create_window(DWORD exStyle, ATOM className, std::wstring &&title,
 {
 	#ifdef _DEBUG
 	if (_wndBase._hWnd)
-		throw std::logic_error("Cannot create window twice.");
+		throw std::logic_error{"Cannot create window twice."};
 	#endif
 
 	HWND hWnd = CreateWindowExW(exStyle, MAKEINTATOM(className), title.c_str(), style,
@@ -173,7 +173,7 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 	ret = UpdateWindow(_rawBase._wndBase._hWnd);
 	#ifdef _DEBUG
 	if (!ret)
-		throw std::runtime_error("UpdateWindow failed.");
+		throw std::runtime_error{"UpdateWindow failed."};
 	#endif
 
 	return _rawBase._wndBase.main_loop(_opts.hAccelTable, _opts.processDlgMsgs);
@@ -250,7 +250,7 @@ RawControl::RawControl(WndBase &parentWndBase) {
 void DlgBase::create_dialog_param(HINSTANCE hInst, HWND hParent) {
 	#ifdef _DEBUG
 	if (_wndBase._hWnd)
-		throw std::logic_error("Cannot create dialog twice.");
+		throw std::logic_error{"Cannot create dialog twice."};
 	#endif
 
 	HWND hDlg = CreateDialogParamW(hInst, MAKEINTRESOURCEW(_dlgId), hParent,
@@ -264,7 +264,7 @@ void DlgBase::create_dialog_param(HINSTANCE hInst, HWND hParent) {
 void DlgBase::dialog_box_param(HINSTANCE hInst, HWND hParent) {
 	#ifdef _DEBUG
 	if (_wndBase._hWnd)
-		throw std::logic_error("Cannot create dialog twice.");
+		throw std::logic_error{"Cannot create dialog twice."};
 	#endif
 
 	DialogBoxParamW(hInst, MAKEINTRESOURCEW(_dlgId), hParent,

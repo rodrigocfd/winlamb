@@ -13,7 +13,7 @@ void InternalEvents::wm_create_or_init_dialog(std::function<void()> &&cb) {
 void InternalEvents::wm(UINT msg, std::function<void(wl::wm::Msg)> &&cb) {
 	#ifdef _DEBUG
 	if (msg == WM_CREATE || msg == WM_INITDIALOG || msg == WM_NOTIFY)
-		throw std::logic_error("For WM_CREATE, WM_INITDIALOG, WM_NOTIFY, use the specific event methods.");
+		throw std::logic_error{"For WM_CREATE, WM_INITDIALOG, WM_NOTIFY, use the specific event methods."};
 	#endif
 	_msgs.emplace_back(msg, cb);
 }
@@ -73,7 +73,7 @@ bool InternalEvents::process_all(wm::Msg procMsg) const {
 void WindowEvents::wm(UINT msg, std::function<LRESULT(wm::Msg)> &&cb) {
 	#ifdef _DEBUG
 	if (msg == WM_CREATE || msg == WM_INITDIALOG || msg == WM_COMMAND || msg == WM_NOTIFY)
-		throw std::logic_error("For WM_CREATE, WM_INITDIALOG, WM_COMMAND or WM_NOTIFY, use the specific event methods.");
+		throw std::logic_error{"For WM_CREATE, WM_INITDIALOG, WM_COMMAND or WM_NOTIFY, use the specific event methods."};
 	#endif
 	_msgs.emplace_back(msg, cb);
 }
@@ -392,9 +392,9 @@ void NativeCtrlBase::create_wnd(WORD ctrlId, DWORD exStyle, const wchar_t *class
 {
 	#ifdef _DEBUG
 	if (_hWnd)
-		throw std::logic_error("Cannot create control twice.");
+		throw std::logic_error{"Cannot create control twice."};
 	if (!_parent._hWnd)
-		throw std::logic_error("Cannot create control before parent.");
+		throw std::logic_error{"Cannot create control before parent."};
 	#endif
 
 	_hWnd = CreateWindowExW(exStyle, className, title.c_str(), style,
@@ -411,9 +411,9 @@ void NativeCtrlBase::create_wnd(WORD ctrlId, DWORD exStyle, const wchar_t *class
 void NativeCtrlBase::assign_dlg(WORD ctrlId) {
 	#ifdef _DEBUG
 	if (_hWnd)
-		throw std::logic_error("Cannot assign control twice.");
+		throw std::logic_error{"Cannot assign control twice."};
 	if (!_parent._hWnd)
-		throw std::logic_error("Cannot assign control before parent.");
+		throw std::logic_error{"Cannot assign control before parent."};
 	#endif
 
 	_hWnd = GetDlgItem(_parent._hWnd, ctrlId);
@@ -431,7 +431,7 @@ void NativeCtrlBase::install_subclass() {
 		BOOL ret = SetWindowSubclass(_hWnd, subclass_proc, ++subclassId, reinterpret_cast<DWORD_PTR>(this));
 		#ifdef _DEBUG
 		if (!ret)
-			throw std::runtime_error("SetWindowSubclass failed.");
+			throw std::runtime_error{"SetWindowSubclass failed."};
 		#endif
 	}
 }
@@ -450,7 +450,7 @@ LRESULT CALLBACK NativeCtrlBase::subclass_proc(HWND hWnd, UINT msg, WPARAM wp, L
 		BOOL ret = RemoveWindowSubclass(hWnd, subclass_proc, uIdSubclass);
 		#ifdef _DEBUG
 		if (!ret)
-			throw std::runtime_error("RemoveWindowSubclass failed.");
+			throw std::runtime_error{"RemoveWindowSubclass failed."};
 		#endif
 		if (pSelf)
 			pSelf->_subclassEvents.clear();
