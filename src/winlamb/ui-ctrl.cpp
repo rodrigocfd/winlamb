@@ -711,18 +711,18 @@ void ListView::ItemCollection::delete_selected() const {
 
 std::optional<ListView::Item> ListView::ItemCollection::focused() const {
 	int idxFound = ListView_GetNextItem(_owner.hwnd(), -1, LVNI_FOCUSED);
-	return idxFound == -1 ? std::nullopt : std::make_optional(Item{_owner, idxFound});
+	return idxFound == -1 ? std::nullopt : std::make_optional<Item>(_owner, idxFound);
 }
 
 std::optional<ListView::Item> ListView::ItemCollection::get_by_unique_id(UINT uid) const {
 	int idx = ListView_MapIDToIndex(_owner.hwnd(), uid);
-	return idx == -1 ? std::nullopt : std::make_optional(Item{_owner, idx});
+	return idx == -1 ? std::nullopt : std::make_optional<Item>(_owner, idx);
 }
 
 std::optional<ListView::Item> ListView::ItemCollection::hit_test(POINT pt) const {
 	LVHITTESTINFO lvhti{.pt = pt};
 	int idxFound = ListView_HitTestEx(_owner.hwnd(), &lvhti);
-	return idxFound == -1 ? std::nullopt : std::make_optional(Item{_owner, idxFound});
+	return idxFound == -1 ? std::nullopt : std::make_optional<Item>(_owner, idxFound);
 }
 
 void ListView::ItemCollection::select_all(bool doSelect) const {
@@ -769,7 +769,7 @@ void ListView::ItemCollection::sort(std::function<int(Item, Item)> cb) const {
 
 std::optional<ListView::Item> ListView::ItemCollection::topmost_visible() const {
 	int idx = ListView_GetTopIndex(_owner.hwnd());
-	return idx == -1 ? std::nullopt : std::make_optional(Item{_owner, idx});
+	return idx == -1 ? std::nullopt : std::make_optional<Item>(_owner, idx);
 }
 
 //------------------------------------------------------------------------------
@@ -1184,6 +1184,52 @@ void StatusBar::resize_to_fit_parent(wm::Size p) {
 }
 
 ////////////////////////////////////////////////////////////////////////////////
+
+const Tab::Item& Tab::Item::select() const {
+	TabCtrl_SetCurSel(_owner.hwnd(), _index);
+	return *this;
+}
+
+std::wstring Tab::Item::text() const {
+	std::wstring buf(128, L'\0'); // arbitrary
+
+	TCITEMW tci{
+		.mask = TCIF_TEXT,
+		.pszText = buf.data(),
+		.cchTextMax = static_cast<int>(buf.size()),
+	};
+
+	TabCtrl_GetItem(_owner.hwnd(), _index, &tci);
+	str::trim_nulls(buf);
+	return buf;
+}
+
+const Tab::Item& Tab::Item::set_text(WStrView newText) const {
+	TCITEMW tci{
+		.mask = TCIF_TEXT,
+		.pszText = const_cast<LPWSTR>(newText.c_str()),
+	};
+	TabCtrl_SetItem(_owner.hwnd(), _index, &tci);
+	return *this;
+}
+
+//------------------------------------------------------------------------------
+
+size_t Tab::ItemCollection::count() const {
+	return TabCtrl_GetItemCount(_owner.hwnd());
+}
+
+std::optional<Tab::Item> Tab::ItemCollection::focused() const {
+	int idxFound = TabCtrl_GetCurFocus(_owner.hwnd());
+	return idxFound == -1 ? std::nullopt : std::make_optional(Item{_owner, idxFound});
+}
+
+std::optional<Tab::Item> Tab::ItemCollection::selected() const {
+	int idxFound = TabCtrl_GetCurSel(_owner.hwnd());
+	return idxFound == -1 ? std::nullopt : std::make_optional(Item{_owner, idxFound});
+}
+
+//------------------------------------------------------------------------------
 
 Tab::Tab(WindowParent &owner, WORD ctrlId)
 	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(ctrlId)}

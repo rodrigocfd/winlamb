@@ -1749,6 +1749,53 @@ namespace wl {
 	/// [tab]: https://learn.microsoft.com/en-us/windows/win32/controls/tab-controls
 	class Tab final : public WindowChild {
 	public:
+		class ItemCollection; // forward declaration
+
+		/** @brief A single item of the `Tab`. */
+		class Item final {
+		private:
+			constexpr Item(const Tab &owner, int itemIndex) : _owner{owner}, _index{itemIndex} { }
+
+		public:
+			/** Returns the zero-based index of the item. */
+			[[nodiscard]] constexpr int index() const { return _index; }
+
+			/** Selects this item. */
+			const Item& select() const;
+
+			/** Returns the text of the item. */
+			[[nodiscard]] std::wstring text() const;
+
+			/** Sets the text of the item. */
+			const Item& set_text(WStrView newText) const;
+
+		private:
+			const Tab &_owner;
+			int _index;
+			friend ItemCollection;
+		};
+
+		/** @brief Operations of the items. */
+		class ItemCollection final {
+		private:
+			ItemCollection(ItemCollection&&) = delete; // non-copyable, non-movable
+			constexpr explicit ItemCollection(const Tab &owner) : _owner{owner} { }
+
+		public:
+			/** Returns the item count. */
+			[[nodiscard]] size_t count() const;
+
+			/** Returns the focused item, if any. */
+			[[nodiscard]] std::optional<Item> focused() const;
+
+			/** Returns the selected item, if any. */
+			[[nodiscard]] std::optional<Item> selected() const;
+
+		private:
+			const Tab &_owner;
+			friend Tab;
+		};
+
 		/// Constructs the tab, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
@@ -1762,6 +1809,9 @@ namespace wl {
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
 		Tab(WindowParent &owner, WORD ctrlId, Lay layout);
+
+		/** Item methods. */
+		ItemCollection items{*this};
 
 		/** Returns the wrapped window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
