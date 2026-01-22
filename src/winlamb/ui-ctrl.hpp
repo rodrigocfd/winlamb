@@ -587,7 +587,7 @@ namespace wl {
 		class ItemCollection final {
 		private:
 			ItemCollection(ItemCollection&&) = delete; // non-copyable, non-movable
-			constexpr explicit ItemCollection(const ComboBox *pOwner) : _pOwner{pOwner} { }
+			constexpr explicit ItemCollection(const ComboBox &owner) : _owner{owner} { }
 
 		public:
 			/** Returns the item at the given index. */
@@ -615,7 +615,7 @@ namespace wl {
 			[[nodiscard]] std::optional<std::wstring> selected_text() const;
 
 		private:
-			const ComboBox *_pOwner;
+			const ComboBox &_owner;
 			friend ComboBox;
 		};
 
@@ -634,7 +634,7 @@ namespace wl {
 		ComboBox(WindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Item methods. */
-		ItemCollection items{this};
+		ItemCollection items{*this};
 
 		/** Returns the wrapped window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
@@ -945,7 +945,7 @@ namespace wl {
 		class Column final {
 		public:
 			/** Constructs a column for the given `ListView` and zero-based index. */
-			constexpr Column(const ListView &owner, int columnIndex) : _pOwner{&owner}, _index{columnIndex} { }
+			constexpr Column(const ListView &owner, int columnIndex) : _owner{owner}, _index{columnIndex} { }
 
 			/** Returns the zero-based index of the column. */
 			[[nodiscard]] constexpr int index() const { return _index; }
@@ -990,7 +990,7 @@ namespace wl {
 			const Column& set_width_to_fill() const;
 
 		private:
-			const ListView *_pOwner;
+			const ListView &_owner;
 			int _index;
 		};
 
@@ -998,11 +998,11 @@ namespace wl {
 		class ColumnCollection final {
 		private:
 			ColumnCollection(ColumnCollection&&) = delete; // non-copyable, non-movable
-			constexpr explicit ColumnCollection(const ListView *pOwner) : _pOwner{pOwner} { }
+			constexpr explicit ColumnCollection(const ListView &owner) : _owner{owner} { }
 
 		public:
 			/** Returns the column at the given index. */
-			[[nodiscard]] constexpr Column operator[](int index) const { return Column{*_pOwner, index}; }
+			[[nodiscard]] constexpr Column operator[](int index) const { return Column{_owner, index}; }
 
 			/// Adds a new column with the given width.
 			///
@@ -1017,7 +1017,7 @@ namespace wl {
 			[[nodiscard]] size_t count() const;
 
 		private:
-			const ListView *_pOwner;
+			const ListView &_owner;
 			friend ListView;
 		};
 
@@ -1025,7 +1025,7 @@ namespace wl {
 		class Item final {
 		public:
 			/** Constructs an item for the given `ListView` and zero-based index. */
-			constexpr Item(const ListView &owner, int itemIndex) : _pOwner{&owner}, _index{itemIndex} { }
+			constexpr Item(const ListView &owner, int itemIndex) : _owner{owner}, _index{itemIndex} { }
 
 			/** Returns the zero-based index of the item. */
 			[[nodiscard]] constexpr int index() const { return _index; }
@@ -1091,7 +1091,7 @@ namespace wl {
 		private:
 			[[nodiscard]] LPARAM raw_data() const;
 			const Item& set_raw_data(LPARAM data) const;
-			const ListView *_pOwner;
+			const ListView &_owner;
 			int _index;
 		};
 
@@ -1099,11 +1099,11 @@ namespace wl {
 		class ItemCollection final {
 		private:
 			ItemCollection(ItemCollection&&) = delete; // non-copyable, non-movable
-			constexpr explicit ItemCollection(const ListView *pOwner) : _pOwner{pOwner} { }
+			constexpr explicit ItemCollection(const ListView &owner) : _owner{owner} { }
 
 		public:
 			/** Returns the item at the given index. */
-			[[nodiscard]] constexpr Item operator[](int index) const { return Item{*_pOwner, index}; }
+			[[nodiscard]] constexpr Item operator[](int index) const { return Item{_owner, index}; }
 
 			/// Adds a new item, defining the text for the first column.
 			/// Optionally, you can provide texts for the subsequent columns.
@@ -1171,7 +1171,7 @@ namespace wl {
 			[[nodiscard]] std::optional<Item> topmost_visible() const;
 
 		private:
-			const ListView *_pOwner;
+			const ListView &_owner;
 			friend ListView;
 		};
 
@@ -1190,10 +1190,10 @@ namespace wl {
 		ListView(WindowParent &owner, WORD ctrlId, Lay layout, WORD contextMenuId = 0);
 
 		/** Column methods. */
-		ColumnCollection cols{this};
+		ColumnCollection cols{*this};
 
 		/** Item methods. */
-		ItemCollection items{this};
+		ItemCollection items{*this};
 
 		/** Returns the wrapped window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
@@ -1417,7 +1417,7 @@ namespace wl {
 	/// public:
 	///     MyMain();
 	///     wl::WindowMain wnd{};
-	///     wl::RadioGroup rads{wnd, 3};
+	///     wl::RadioGroup rads{wnd, 3}; // create 3 radio buttons
 	/// };
 	/// ```
 	///
@@ -1448,21 +1448,20 @@ namespace wl {
 		class RadioButtonCollection final {
 		private:
 			RadioButtonCollection(RadioButtonCollection&&) = delete; // non-copyable, non-movable
-
-			constexpr explicit RadioButtonCollection(RadioGroup *pOwner) : _pOwner{pOwner} { }
+			constexpr explicit RadioButtonCollection(RadioGroup &owner) : _owner{owner} { }
 
 		public:
 			/** Returns a const reference to the `RadioButton` at the given index. */
-			[[nodiscard]] constexpr const RadioButton& operator[](int index) const { return _pOwner->_radios[index]; }
+			[[nodiscard]] constexpr const RadioButton& operator[](int index) const { return _owner._radios[index]; }
 
 			/** Returns a reference to the `RadioButton` at the given index. */
-			[[nodiscard]] constexpr RadioButton& operator[](int index) { return _pOwner->_radios[index]; }
+			[[nodiscard]] constexpr RadioButton& operator[](int index) { return _owner._radios[index]; }
 
 			/** Returns the number of `RadioButton` controls in the group. */
-			[[nodiscard]] constexpr size_t count() const { return _pOwner->_radios.size(); }
+			[[nodiscard]] constexpr size_t count() const { return _owner._radios.size(); }
 
 		private:
-			RadioGroup *_pOwner;
+			RadioGroup &_owner;
 			friend RadioGroup;
 		};
 
@@ -1485,7 +1484,7 @@ namespace wl {
 		RadioGroup(WindowParent &owner, Lay layout, std::initializer_list<WORD> ctrlIds);
 
 		/** Radio button methods. */
-		RadioButtonCollection radios{this};
+		RadioButtonCollection radios{*this};
 
 		/// Allows message events to be added.
 		///
@@ -1640,7 +1639,7 @@ namespace wl {
 		class Part final {
 		public:
 			/** Constructs a part for the given `StatusBar` and zero-based index. */
-			constexpr Part(const StatusBar &owner, int partIndex) : _pOwner{&owner}, _index{partIndex} { }
+			constexpr Part(const StatusBar &owner, int partIndex) : _owner{owner}, _index{partIndex} { }
 
 			/** Returns the index of the part. */
 			[[nodiscard]] constexpr int index() const { return _index; }
@@ -1652,13 +1651,13 @@ namespace wl {
 			const Part& set_text(WStrView newText) const;
 
 			/** Returns true is the part has fixed width. */
-			[[nodiscard]] constexpr bool is_fixed_width() const { return _pOwner->_partsData[_index].is_fixed_width(); }
+			[[nodiscard]] constexpr bool is_fixed_width() const { return _owner._partsData[_index].is_fixed_width(); }
 
 			/** Sets the zero-based index of the `ImageList` icon associated to the item. */
 			const Part& set_icon_index(int iconIndex) const;
 
 		private:
-			const StatusBar *_pOwner;
+			const StatusBar &_owner;
 			int _index;
 		};
 
@@ -1666,17 +1665,17 @@ namespace wl {
 		class PartCollection final {
 		private:
 			PartCollection(PartCollection&&) = delete; // no-copyable, non-movable
-			constexpr explicit PartCollection(const StatusBar *pOwner) : _pOwner{pOwner} { }
+			constexpr explicit PartCollection(const StatusBar &owner) : _owner{owner} { }
 
 		public:
 			/** Returns the part at the given index. */
-			[[nodiscard]] constexpr Part operator[](int index) const { return Part{*_pOwner, index}; }
+			[[nodiscard]] constexpr Part operator[](int index) const { return Part{_owner, index}; }
 
 			/** Returns the number of parts. */
-			[[nodiscard]] constexpr size_t count() const { return _pOwner->_partsData.size(); }
+			[[nodiscard]] constexpr size_t count() const { return _owner._partsData.size(); }
 
 		private:
-			const StatusBar *_pOwner;
+			const StatusBar &_owner;
 			friend StatusBar;
 		};
 
@@ -1688,7 +1687,7 @@ namespace wl {
 		explicit StatusBar(WindowParent &owner, WORD ctrlId = 0);
 
 		/** Part methods. */
-		PartCollection parts{this};
+		PartCollection parts{*this};
 
 		/** Returns the wrapped window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
@@ -1807,7 +1806,7 @@ namespace wl {
 		class Item final {
 		public:
 			/** Constructs an item for the given `TreeView` and hItem. */
-			constexpr Item(const TreeView &owner, HTREEITEM hItem) : _pOwner{&owner}, _hItem{hItem} { }
+			constexpr Item(const TreeView &owner, HTREEITEM hItem) : _owner{owner}, _hItem{hItem} { }
 
 			/** Returns the item handle. */
 			[[nodiscard]] constexpr HTREEITEM hitem() const { return _hItem; }
@@ -1877,7 +1876,7 @@ namespace wl {
 		private:
 			[[nodiscard]] LPARAM raw_data() const;
 			const Item& set_raw_data(LPARAM data) const;
-			const TreeView *_pOwner;
+			const TreeView &_owner;
 			HTREEITEM _hItem;
 		};
 
@@ -1885,11 +1884,11 @@ namespace wl {
 		class ItemCollection final {
 		private:
 			ItemCollection(ItemCollection&&) = delete; // non-copyable, non-movable
-			constexpr explicit ItemCollection(const TreeView *pOwner) : _pOwner{pOwner} { }
+			constexpr explicit ItemCollection(const TreeView &owner) : _owner{owner} { }
 
 		public:
 			/** Returns the item with the given handle. */
-			[[nodiscard]] constexpr Item operator[](HTREEITEM hItem) const { return Item{*_pOwner, hItem}; }
+			[[nodiscard]] constexpr Item operator[](HTREEITEM hItem) const { return Item{_owner, hItem}; }
 
 			/// Adds a new root item, defining its text.
 			///
@@ -1912,7 +1911,7 @@ namespace wl {
 			[[nodiscard]] Item selected() const;
 
 		private:
-			const TreeView *_pOwner;
+			const TreeView &_owner;
 			friend TreeView;
 		};
 
@@ -1931,7 +1930,7 @@ namespace wl {
 		TreeView(WindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Item methods. */
-		ItemCollection items{this};
+		ItemCollection items{*this};
 
 		/** Returns the wrapped window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }

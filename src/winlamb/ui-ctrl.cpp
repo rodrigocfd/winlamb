@@ -283,15 +283,15 @@ const CheckBox& CheckBox::set_text_resize(WStrView newText) const {
 ////////////////////////////////////////////////////////////////////////////////
 
 std::wstring ComboBox::ItemCollection::operator[](int index) const {
-	size_t nChars = SendMessageW(_pOwner->hwnd(), CB_GETLBTEXTLEN, index, 0);
+	size_t nChars = SendMessageW(_owner.hwnd(), CB_GETLBTEXTLEN, index, 0);
 	std::wstring s(nChars + 1, L'\0');
-	SendMessageW(_pOwner->hwnd(), CB_GETLBTEXT, index, reinterpret_cast<LPARAM>(s.data()));
+	SendMessageW(_owner.hwnd(), CB_GETLBTEXT, index, reinterpret_cast<LPARAM>(s.data()));
 	s.resize(nChars);
 	return s;
 }
 
 void ComboBox::ItemCollection::add(WStrView text) const {
-	SendMessageW(_pOwner->hwnd(), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(text.c_str()));
+	SendMessageW(_owner.hwnd(), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(text.c_str()));
 }
 
 void ComboBox::ItemCollection::add(std::initializer_list<WStrView> texts) const {
@@ -300,19 +300,19 @@ void ComboBox::ItemCollection::add(std::initializer_list<WStrView> texts) const 
 }
 
 size_t ComboBox::ItemCollection::count() const {
-	return SendMessageW(_pOwner->hwnd(), CB_GETCOUNT, 0, 0);
+	return SendMessageW(_owner.hwnd(), CB_GETCOUNT, 0, 0);
 }
 
 void ComboBox::ItemCollection::delete_all() const {
-	SendMessageW(_pOwner->hwnd(), CB_RESETCONTENT, 0, 0);
+	SendMessageW(_owner.hwnd(), CB_RESETCONTENT, 0, 0);
 }
 
 void ComboBox::ItemCollection::select(int index) const {
-	SendMessageW(_pOwner->hwnd(), CB_SETCURSEL, index, 0);
+	SendMessageW(_owner.hwnd(), CB_SETCURSEL, index, 0);
 }
 
 int ComboBox::ItemCollection::selected_index() const {
-	return static_cast<int>(SendMessageW(_pOwner->hwnd(), CB_GETCURSEL, 0, 0));
+	return static_cast<int>(SendMessageW(_owner.hwnd(), CB_GETCURSEL, 0, 0));
 }
 
 std::optional<std::wstring> ComboBox::ItemCollection::selected_text() const {
@@ -419,29 +419,29 @@ const Edit& Edit::set_text(WStrView newText) const {
 ////////////////////////////////////////////////////////////////////////////////
 
 std::vector<std::wstring> ListView::Column::item_texts() const {
-	size_t count = _pOwner->items.count();
+	size_t count = _owner.items.count();
 	std::vector<std::wstring> texts;
 	texts.reserve(count);
 	for (UINT i = 0; i < count; ++i)
-		texts.emplace_back(_pOwner->items[i].text(_index));
+		texts.emplace_back(_owner.items[i].text(_index));
 	return texts;
 }
 
 std::vector<std::wstring> ListView::Column::selected_item_texts() const {
 	std::vector<std::wstring> texts;
-	texts.reserve(_pOwner->items.selected_count());
+	texts.reserve(_owner.items.selected_count());
 
 	int idx = -1;
 	for (;;) {
-		idx = ListView_GetNextItem(_pOwner->hwnd(), idx, LVNI_SELECTED);
+		idx = ListView_GetNextItem(_owner.hwnd(), idx, LVNI_SELECTED);
 		if (idx == -1) break;
-		texts.emplace_back(_pOwner->items[idx].text(_index));
+		texts.emplace_back(_owner.items[idx].text(_index));
 	}
 	return texts;
 }
 
 int ListView::Column::justif() const {
-	HWND hHeader = ListView_GetHeader(_pOwner->hwnd());
+	HWND hHeader = ListView_GetHeader(_owner.hwnd());
 
 	HDITEMW hdi{.mask = HDI_FORMAT};
 	Header_GetItem(hHeader, _index, &hdi);
@@ -450,7 +450,7 @@ int ListView::Column::justif() const {
 }
 
 const ListView::Column& ListView::Column::set_justif(WORD hdf) const {
-	HWND hHeader = ListView_GetHeader(_pOwner->hwnd());
+	HWND hHeader = ListView_GetHeader(_owner.hwnd());
 
 	HDITEMW hdi{.mask = HDI_FORMAT};
 	Header_GetItem(hHeader, _index, &hdi); // first, retrieve current
@@ -463,7 +463,7 @@ const ListView::Column& ListView::Column::set_justif(WORD hdf) const {
 }
 
 WORD ListView::Column::sort_arrow() const {
-	HWND hHeader = ListView_GetHeader(_pOwner->hwnd());
+	HWND hHeader = ListView_GetHeader(_owner.hwnd());
 
 	HDITEMW hdi{.mask = HDI_FORMAT};
 	Header_GetItem(hHeader, _index, &hdi);
@@ -472,7 +472,7 @@ WORD ListView::Column::sort_arrow() const {
 }
 
 const ListView::Column& ListView::Column::set_sort_arrow(WORD hdf) const {
-	HWND hHeader = ListView_GetHeader(_pOwner->hwnd());
+	HWND hHeader = ListView_GetHeader(_owner.hwnd());
 	UINT numCols = Header_GetItemCount(hHeader);
 
 	for (UINT i = 0; i < numCols; ++i) {
@@ -498,7 +498,7 @@ std::wstring ListView::Column::text() const {
 		.cchTextMax = static_cast<int>(buf.size()),
 	};
 
-	ListView_GetColumn(_pOwner->hwnd(), _index, &lvc);
+	ListView_GetColumn(_owner.hwnd(), _index, &lvc);
 	str::trim_nulls(buf);
 	return buf;
 }
@@ -508,31 +508,31 @@ const ListView::Column& ListView::Column::set_text(WStrView newText) const {
 		.mask = LVCF_TEXT,
 		.pszText = const_cast<LPWSTR>(newText.c_str()),
 	};
-	ListView_SetColumn(_pOwner->hwnd(), _index, &lvc);
+	ListView_SetColumn(_owner.hwnd(), _index, &lvc);
 	return *this;
 }
 
 UINT ListView::Column::width() const {
-	return ListView_GetColumnWidth(_pOwner->hwnd(), _index);
+	return ListView_GetColumnWidth(_owner.hwnd(), _index);
 }
 
 const ListView::Column& ListView::Column::set_width(UINT width) const {
-	ListView_SetColumnWidth(_pOwner->hwnd(), _index, width);
+	ListView_SetColumnWidth(_owner.hwnd(), _index, width);
 	return *this;
 }
 
 const ListView::Column& ListView::Column::set_width_to_fill() const {
-	size_t numCols = _pOwner->cols.count();
+	size_t numCols = _owner.cols.count();
 	if (numCols == 0) return *this;
 
 	UINT cxUsed = 0;
 	for (UINT i = 0; i < numCols; ++i) {
 		if (i != _index)
-			cxUsed += _pOwner->cols[i].width(); // retrieve cx of each column, but us
+			cxUsed += _owner.cols[i].width(); // retrieve cx of each column, but us
 	}
 
 	RECT rc{};
-	GetClientRect(_pOwner->hwnd(), &rc); // list view client area
+	GetClientRect(_owner.hwnd(), &rc); // list view client area
 	return set_width(rc.right - cxUsed);
 }
 
@@ -544,32 +544,32 @@ ListView::Column ListView::ColumnCollection::add(WStrView text, UINT width) cons
 		.cx = static_cast<int>(width),
 		.pszText = const_cast<LPWSTR>(text.c_str()),
 	};
-	int index = ListView_InsertColumn(_pOwner->hwnd(), 0xffff, &lvc); // insert as the last column
-	return {*_pOwner, index}; // return newly added column
+	int index = ListView_InsertColumn(_owner.hwnd(), 0xffff, &lvc); // insert as the last column
+	return {_owner, index}; // return newly added column
 }
 
 size_t ListView::ColumnCollection::count() const {
-	HWND hHeader = ListView_GetHeader(_pOwner->hwnd());
+	HWND hHeader = ListView_GetHeader(_owner.hwnd());
 	return Header_GetItemCount(hHeader);
 }
 
 //------------------------------------------------------------------------------
 
 bool ListView::Item::is_focused() const {
-	return ListView_GetItemState(_pOwner->hwnd(), _index, LVIS_FOCUSED) & LVIS_FOCUSED;
+	return ListView_GetItemState(_owner.hwnd(), _index, LVIS_FOCUSED) & LVIS_FOCUSED;
 }
 
 const ListView::Item& ListView::Item::focus() const {
-	ListView_SetItemState(_pOwner->hwnd(), _index, LVIS_FOCUSED, LVIS_FOCUSED);
+	ListView_SetItemState(_owner.hwnd(), _index, LVIS_FOCUSED, LVIS_FOCUSED);
 	return *this;
 }
 
 int ListView::Item::icon_index() const {
 	#ifdef _DEBUG
-	if (!_pOwner->_imgList16.himagelist()
-			|| !_pOwner->_imgList16.count()
-			|| !_pOwner->_imgList32.himagelist()
-			|| !_pOwner->_imgList32.count())
+	if (!_owner._imgList16.himagelist()
+			|| !_owner._imgList16.count()
+			|| !_owner._imgList32.himagelist()
+			|| !_owner._imgList32.count())
 		throw std::logic_error{"No icons have been added to any image list."};
 	#endif
 
@@ -577,16 +577,16 @@ int ListView::Item::icon_index() const {
 		.mask = LVIF_IMAGE,
 		.iItem = _index,
 	};
-	ListView_GetItem(_pOwner->hwnd(), &lvi);
+	ListView_GetItem(_owner.hwnd(), &lvi);
 	return lvi.iImage;
 }
 
 const ListView::Item& ListView::Item::set_icon_index(int iconIndex) const {
 	#ifdef _DEBUG
-	if (!_pOwner->_imgList16.himagelist()
-			|| !_pOwner->_imgList16.count()
-			|| !_pOwner->_imgList32.himagelist()
-			|| !_pOwner->_imgList32.count())
+	if (!_owner._imgList16.himagelist()
+			|| !_owner._imgList16.count()
+			|| !_owner._imgList32.himagelist()
+			|| !_owner._imgList32.count())
 		throw std::logic_error{"No icons have been added to any image list."};
 	#endif
 
@@ -595,21 +595,21 @@ const ListView::Item& ListView::Item::set_icon_index(int iconIndex) const {
 		.iItem = _index,
 		.iImage = iconIndex,
 	};
-	ListView_SetItem(_pOwner->hwnd(), &lvi);
+	ListView_SetItem(_owner.hwnd(), &lvi);
 	return *this;
 }
 
 const ListView::Item& ListView::Item::remove() const {
-	ListView_DeleteItem(_pOwner->hwnd(), _index);
+	ListView_DeleteItem(_owner.hwnd(), _index);
 	return *this;
 }
 
 bool ListView::Item::is_selected() const {
-	return ListView_GetItemState(_pOwner->hwnd(), _index, LVIS_SELECTED) & LVIS_SELECTED;
+	return ListView_GetItemState(_owner.hwnd(), _index, LVIS_SELECTED) & LVIS_SELECTED;
 }
 
 const ListView::Item& ListView::Item::select(bool doSelect) const {
-	ListView_SetItemState(_pOwner->hwnd(), _index, doSelect ? LVIS_SELECTED : 0, LVIS_SELECTED);
+	ListView_SetItemState(_owner.hwnd(), _index, doSelect ? LVIS_SELECTED : 0, LVIS_SELECTED);
 	return *this;
 }
 
@@ -626,7 +626,7 @@ std::wstring ListView::Item::text(UINT columnIndex) const {
 		};
 
 		UINT recvChars = static_cast<UINT>(
-			SendMessageW(_pOwner->hwnd(), LVM_GETITEMTEXTW, _index, reinterpret_cast<LPARAM>(&lvi)));
+			SendMessageW(_owner.hwnd(), LVM_GETITEMTEXTW, _index, reinterpret_cast<LPARAM>(&lvi)));
 		recvChars += 1; // plus terminating null count
 
 		if (recvChars < curBufSz) { // to break, must have at least 1 char gap
@@ -640,16 +640,16 @@ std::wstring ListView::Item::text(UINT columnIndex) const {
 }
 
 const ListView::Item& ListView::Item::set_text(WStrView newText, UINT columnIndex) const {
-	ListView_SetItemText(_pOwner->hwnd(), _index, columnIndex, const_cast<LPWSTR>(newText.c_str()));
+	ListView_SetItemText(_owner.hwnd(), _index, columnIndex, const_cast<LPWSTR>(newText.c_str()));
 	return *this;
 }
 
 UINT ListView::Item::unique_id() const {
-	return ListView_MapIndexToID(_pOwner->hwnd(), _index);
+	return ListView_MapIndexToID(_owner.hwnd(), _index);
 }
 
 bool ListView::Item::is_visible() const {
-	return ListView_IsItemVisible(_pOwner->hwnd(), _index);
+	return ListView_IsItemVisible(_owner.hwnd(), _index);
 }
 
 LPARAM ListView::Item::raw_data() const {
@@ -657,7 +657,7 @@ LPARAM ListView::Item::raw_data() const {
 		.mask = LVIF_PARAM,
 		.iItem = _index,
 	};
-	ListView_GetItem(_pOwner->hwnd(), &lvi);
+	ListView_GetItem(_owner.hwnd(), &lvi);
 	return lvi.lParam;
 }
 
@@ -667,7 +667,7 @@ const ListView::Item& ListView::Item::set_raw_data(LPARAM data) const {
 		.iItem = _index,
 		.lParam = data,
 	};
-	ListView_SetItem(_pOwner->hwnd(), &lvi);
+	ListView_SetItem(_owner.hwnd(), &lvi);
 	return *this;
 }
 
@@ -682,8 +682,8 @@ ListView::Item ListView::ItemCollection::add(WStrView text,
 		.pszText = const_cast<LPWSTR>(text.c_str()),
 		.iImage = iconIndex,
 	};
-	int index = ListView_InsertItem(_pOwner->hwnd(), &lvi);
-	Item newItem{*_pOwner, index};
+	int index = ListView_InsertItem(_owner.hwnd(), &lvi);
+	Item newItem{_owner, index};
 
 	for (auto colText = otherColumnsTexts.begin(); colText != otherColumnsTexts.end(); ++colText) {
 		size_t idx = std::distance(otherColumnsTexts.begin(), colText);
@@ -694,42 +694,42 @@ ListView::Item ListView::ItemCollection::add(WStrView text,
 }
 
 size_t ListView::ItemCollection::count() const {
-	return ListView_GetItemCount(_pOwner->hwnd());
+	return ListView_GetItemCount(_owner.hwnd());
 }
 
 void ListView::ItemCollection::delete_all() const {
-	ListView_DeleteAllItems(_pOwner->hwnd());
+	ListView_DeleteAllItems(_owner.hwnd());
 }
 
 void ListView::ItemCollection::delete_selected() const {
 	for (;;) {
-		int idxFound = ListView_GetNextItem(_pOwner->hwnd(), -1, LVNI_SELECTED); // always search first one
+		int idxFound = ListView_GetNextItem(_owner.hwnd(), -1, LVNI_SELECTED); // always search first one
 		if (idxFound == -1) break;
-		ListView_DeleteItem(_pOwner->hwnd(), idxFound);
+		ListView_DeleteItem(_owner.hwnd(), idxFound);
 	}
 }
 
 std::optional<ListView::Item> ListView::ItemCollection::focused() const {
-	int idxFound = ListView_GetNextItem(_pOwner->hwnd(), -1, LVNI_FOCUSED);
-	return idxFound == -1 ? std::nullopt : std::make_optional(Item{*_pOwner, idxFound});
+	int idxFound = ListView_GetNextItem(_owner.hwnd(), -1, LVNI_FOCUSED);
+	return idxFound == -1 ? std::nullopt : std::make_optional(Item{_owner, idxFound});
 }
 
 std::optional<ListView::Item> ListView::ItemCollection::get_by_unique_id(UINT uid) const {
-	int idx = ListView_MapIDToIndex(_pOwner->hwnd(), uid);
-	return idx == -1 ? std::nullopt : std::make_optional(Item{*_pOwner, idx});
+	int idx = ListView_MapIDToIndex(_owner.hwnd(), uid);
+	return idx == -1 ? std::nullopt : std::make_optional(Item{_owner, idx});
 }
 
 std::optional<ListView::Item> ListView::ItemCollection::hit_test(POINT pt) const {
 	LVHITTESTINFO lvhti{.pt = pt};
-	int idxFound = ListView_HitTestEx(_pOwner->hwnd(), &lvhti);
-	return idxFound == -1 ? std::nullopt : std::make_optional(Item{*_pOwner, idxFound});
+	int idxFound = ListView_HitTestEx(_owner.hwnd(), &lvhti);
+	return idxFound == -1 ? std::nullopt : std::make_optional(Item{_owner, idxFound});
 }
 
 void ListView::ItemCollection::select_all(bool doSelect) const {
-	if (GetWindowLongPtrW(_pOwner->hwnd(), GWL_STYLE) & LVS_SINGLESEL) [[unlikely]] {
+	if (GetWindowLongPtrW(_owner.hwnd(), GWL_STYLE) & LVS_SINGLESEL) [[unlikely]] {
 		return; // single-sel list views cannot have all items selected
 	}
-	ListView_SetItemState(_pOwner->hwnd(), -1, doSelect ? LVIS_SELECTED : 0, LVIS_SELECTED);
+	ListView_SetItemState(_owner.hwnd(), -1, doSelect ? LVIS_SELECTED : 0, LVIS_SELECTED);
 }
 
 std::vector<ListView::Item> ListView::ItemCollection::selected() const {
@@ -738,38 +738,38 @@ std::vector<ListView::Item> ListView::ItemCollection::selected() const {
 
 	int idx = -1;
 	for (;;) {
-		idx = ListView_GetNextItem(_pOwner->hwnd(), idx, LVNI_SELECTED);
+		idx = ListView_GetNextItem(_owner.hwnd(), idx, LVNI_SELECTED);
 		if (idx == -1) break;
-		items.emplace_back(*_pOwner, idx);
+		items.emplace_back(_owner, idx);
 	}
 	return items;
 }
 
 size_t ListView::ItemCollection::selected_count() const {
-	return ListView_GetSelectedCount(_pOwner->hwnd());
+	return ListView_GetSelectedCount(_owner.hwnd());
 }
 
 void ListView::ItemCollection::sort(std::function<int(Item, Item)> cb) const {
 	struct Info final {
-		const ListView *pOwner;
+		const ListView &owner;
 		std::function<int(Item, Item)> cb;
 	};
 	Info nfo = {
-		.pOwner = _pOwner,
+		.owner = _owner,
 		.cb = std::move(cb),
 	};
 
-	ListView_SortItemsEx(_pOwner->hwnd(), [](LPARAM idxA, LPARAM idxB, LPARAM lp) -> int { // receives indexes
+	ListView_SortItemsEx(_owner.hwnd(), [](LPARAM idxA, LPARAM idxB, LPARAM lp) -> int { // receives indexes
 		Info* pNfo = reinterpret_cast<Info*>(lp);
 		return pNfo->cb(
-			pNfo->pOwner->items[static_cast<int>(idxA)],
-			pNfo->pOwner->items[static_cast<int>(idxB)]);
+			pNfo->owner.items[static_cast<int>(idxA)],
+			pNfo->owner.items[static_cast<int>(idxB)]);
 	}, &nfo);
 }
 
 std::optional<ListView::Item> ListView::ItemCollection::topmost_visible() const {
-	int idx = ListView_GetTopIndex(_pOwner->hwnd());
-	return idx == -1 ? std::nullopt : std::make_optional(Item{*_pOwner, idx});
+	int idx = ListView_GetTopIndex(_owner.hwnd());
+	return idx == -1 ? std::nullopt : std::make_optional(Item{_owner, idx});
 }
 
 //------------------------------------------------------------------------------
@@ -1095,27 +1095,27 @@ const Static& Static::set_text_resize(WStrView newText) const {
 ////////////////////////////////////////////////////////////////////////////////
 
 std::wstring StatusBar::Part::text() const {
-	LRESULT len = SendMessageW(_pOwner->hwnd(), SB_GETTEXTLENGTHW, 0, 0);
+	LRESULT len = SendMessageW(_owner.hwnd(), SB_GETTEXTLENGTHW, 0, 0);
 	std::wstring buf(len + 1, L'\0');
-	SendMessageW(_pOwner->hwnd(), SB_GETTEXTW, _index, reinterpret_cast<LPARAM>(buf.data()));
+	SendMessageW(_owner.hwnd(), SB_GETTEXTW, _index, reinterpret_cast<LPARAM>(buf.data()));
 	buf.resize(len);
 	return buf;
 }
 
 const StatusBar::Part& StatusBar::Part::set_text(WStrView newText) const {
-	SendMessageW(_pOwner->hwnd(), SB_SETTEXTW, MAKELONG(_index, 0),
+	SendMessageW(_owner.hwnd(), SB_SETTEXTW, MAKELONG(_index, 0),
 		reinterpret_cast<LPARAM>(newText.c_str()));
 	return *this;
 }
 
 const StatusBar::Part& StatusBar::Part::set_icon_index(int iconIndex) const {
 	#ifdef _DEBUG
-	if (!_pOwner->_iconStore16.count())
+	if (!_owner._iconStore16.count())
 		throw std::logic_error{"No icons have been added to the icon store."};
 	#endif
 
-	SendMessageW(_pOwner->hwnd(), SB_SETICON, _index,
-		reinterpret_cast<LPARAM>(_pOwner->_iconStore16[iconIndex]));
+	SendMessageW(_owner.hwnd(), SB_SETICON, _index,
+		reinterpret_cast<LPARAM>(_owner._iconStore16[iconIndex]));
 	return *this;
 }
 
@@ -1221,43 +1221,43 @@ TreeView::Item TreeView::Item::add_child(WStrView itemText, int iconIndex) const
 			.iImage = iconIndex,
 		},
 	};
-	HTREEITEM hItemNew = TreeView_InsertItem(_pOwner->hwnd(), &tvi);
-	return Item{*_pOwner, hItemNew};
+	HTREEITEM hItemNew = TreeView_InsertItem(_owner.hwnd(), &tvi);
+	return Item{_owner, hItemNew};
 }
 
 std::vector<TreeView::Item> TreeView::Item::children() const {
 	std::vector<Item> items;
 	HTREEITEM hItem = nullptr;
 	for (;;) {
-		hItem = TreeView_GetNextItem(_pOwner->hwnd(), hItem, TVGN_NEXT);
+		hItem = TreeView_GetNextItem(_owner.hwnd(), hItem, TVGN_NEXT);
 		if (!hItem) break;
-		items.emplace_back(*_pOwner, hItem);
+		items.emplace_back(_owner, hItem);
 	}
 	return items;
 }
 
 const TreeView::Item& TreeView::Item::remove() const {
-	TreeView_DeleteItem(_pOwner->hwnd(), _hItem);
+	TreeView_DeleteItem(_owner.hwnd(), _hItem);
 	return *this;
 }
 
 const TreeView::Item& TreeView::Item::ensure_visible() const {
-	TreeView_EnsureVisible(_pOwner->hwnd(), _hItem);
+	TreeView_EnsureVisible(_owner.hwnd(), _hItem);
 	return *this;
 }
 
 bool TreeView::Item::is_expanded() const {
-	return TreeView_GetItemState(_pOwner->hwnd(), _hItem, TVIS_EXPANDED) & TVIS_EXPANDED;
+	return TreeView_GetItemState(_owner.hwnd(), _hItem, TVIS_EXPANDED) & TVIS_EXPANDED;
 }
 
 const TreeView::Item& TreeView::Item::expand(bool doExpand) const {
-	TreeView_Expand(_pOwner->hwnd(), _hItem, doExpand ? TVE_EXPAND : TVE_COLLAPSE);
+	TreeView_Expand(_owner.hwnd(), _hItem, doExpand ? TVE_EXPAND : TVE_COLLAPSE);
 	return *this;
 }
 
 int TreeView::Item::icon_index() const {
 	#ifdef _DEBUG
-	if (!_pOwner->_imgList16.himagelist() || !_pOwner->_imgList16.count())
+	if (!_owner._imgList16.himagelist() || !_owner._imgList16.count())
 		throw std::logic_error{"No icons have been added to any image list."};
 	#endif
 
@@ -1265,13 +1265,13 @@ int TreeView::Item::icon_index() const {
 		.mask = TVIF_IMAGE,
 		.hItem = _hItem,
 	};
-	TreeView_GetItem(_pOwner->hwnd(), &tvi);
+	TreeView_GetItem(_owner.hwnd(), &tvi);
 	return tvi.iImage;
 }
 
 const TreeView::Item& TreeView::Item::set_icon_index(int iconIndex) const {
 	#ifdef _DEBUG
-	if (!_pOwner->_imgList16.himagelist() || !_pOwner->_imgList16.count())
+	if (!_owner._imgList16.himagelist() || !_owner._imgList16.count())
 		throw std::logic_error{"No icons have been added to any image list."};
 	#endif
 
@@ -1280,23 +1280,23 @@ const TreeView::Item& TreeView::Item::set_icon_index(int iconIndex) const {
 		.hItem = _hItem,
 		.iImage = iconIndex,
 	};
-	TreeView_SetItem(_pOwner->hwnd(), &tvi);
+	TreeView_SetItem(_owner.hwnd(), &tvi);
 	return *this;
 }
 
 TreeView::Item TreeView::Item::next_sibling() const {
-	HTREEITEM hItem = TreeView_GetNextItem(_pOwner->hwnd(), _hItem, TVGN_NEXT);
-	return Item{*_pOwner, hItem};
+	HTREEITEM hItem = TreeView_GetNextItem(_owner.hwnd(), _hItem, TVGN_NEXT);
+	return Item{_owner, hItem};
 }
 
 TreeView::Item TreeView::Item::parent() const {
-	HTREEITEM hItem = TreeView_GetNextItem(_pOwner->hwnd(), _hItem, TVGN_PARENT);
-	return Item{*_pOwner, hItem};
+	HTREEITEM hItem = TreeView_GetNextItem(_owner.hwnd(), _hItem, TVGN_PARENT);
+	return Item{_owner, hItem};
 }
 
 TreeView::Item TreeView::Item::prev_sibling() const {
-	HTREEITEM hItem = TreeView_GetNextItem(_pOwner->hwnd(), _hItem, TVGN_PREVIOUS);
-	return Item{*_pOwner, hItem};
+	HTREEITEM hItem = TreeView_GetNextItem(_owner.hwnd(), _hItem, TVGN_PREVIOUS);
+	return Item{_owner, hItem};
 }
 
 std::wstring TreeView::Item::text() const {
@@ -1309,7 +1309,7 @@ std::wstring TreeView::Item::text() const {
 		.cchTextMax = static_cast<int>(buf.size()),
 	};
 
-	TreeView_GetItem(_pOwner->hwnd(), &tvi);
+	TreeView_GetItem(_owner.hwnd(), &tvi);
 	str::trim_nulls(buf);
 	return buf;
 }
@@ -1320,7 +1320,7 @@ const TreeView::Item& TreeView::Item::set_text(WStrView newText) const {
 		.hItem = _hItem,
 		.pszText = const_cast<LPWSTR>(newText.c_str()),
 	};
-	TreeView_SetItem(_pOwner->hwnd(), &tvi);
+	TreeView_SetItem(_owner.hwnd(), &tvi);
 	return *this;
 }
 
@@ -1329,7 +1329,7 @@ LPARAM TreeView::Item::raw_data() const {
 		.mask = TVIF_PARAM,
 		.hItem = _hItem,
 	};
-	TreeView_GetItem(_pOwner->hwnd(), &tvi);
+	TreeView_GetItem(_owner.hwnd(), &tvi);
 	return tvi.lParam;
 }
 
@@ -1339,36 +1339,36 @@ const TreeView::Item& TreeView::Item::set_raw_data(LPARAM data) const {
 		.hItem = _hItem,
 		.lParam = data,
 	};
-	TreeView_SetItem(_pOwner->hwnd(), &tvi);
+	TreeView_SetItem(_owner.hwnd(), &tvi);
 	return *this;
 }
 
 //------------------------------------------------------------------------------
 
 TreeView::Item TreeView::ItemCollection::add_root(WStrView text, int iconIndex) const {
-	return Item{*_pOwner, nullptr}.add_child(text, iconIndex);
+	return Item{_owner, nullptr}.add_child(text, iconIndex);
 }
 
 size_t TreeView::ItemCollection::count() const {
-	return TreeView_GetCount(_pOwner->hwnd());
+	return TreeView_GetCount(_owner.hwnd());
 }
 
 void TreeView::ItemCollection::delete_all() const {
-	TreeView_DeleteAllItems(_pOwner->hwnd());
+	TreeView_DeleteAllItems(_owner.hwnd());
 }
 
 TreeView::Item TreeView::ItemCollection::first_visible() const {
-	HTREEITEM hItem = TreeView_GetFirstVisible(_pOwner->hwnd());
-	return Item{*_pOwner, hItem};
+	HTREEITEM hItem = TreeView_GetFirstVisible(_owner.hwnd());
+	return Item{_owner, hItem};
 }
 
 std::vector<TreeView::Item> TreeView::ItemCollection::roots() const {
-	return Item{*_pOwner, nullptr}.children();
+	return Item{_owner, nullptr}.children();
 }
 
 TreeView::Item TreeView::ItemCollection::selected() const {
-	HTREEITEM hItem = TreeView_GetSelection(_pOwner->hwnd());
-	return Item{*_pOwner, hItem};
+	HTREEITEM hItem = TreeView_GetSelection(_owner.hwnd());
+	return Item{_owner, hItem};
 }
 
 //------------------------------------------------------------------------------
