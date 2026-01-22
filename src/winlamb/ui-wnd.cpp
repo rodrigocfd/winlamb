@@ -61,23 +61,32 @@ void WindowControl::paint_custom_border(wm::NcPaint p) const {
 	ScreenToClient(hwnd(), reinterpret_cast<POINT*>(&rc.right));
 	OffsetRect(&rc, 2, 2); // because it comes up anchored at -2,-2
 
-	HDC hdc = GetWindowDC(hwnd());
+	struct Handles final {
+		~Handles() {
+			if (hTheme) CloseThemeData(hTheme); // make sure resources will be freed
+			if (hRgnClip) DeleteObject(hRgnClip);
+			if (hRgnHole) DeleteObject(hRgnHole);
+			if (hdc) ReleaseDC(hWnd, hdc);
+		}
+		HWND hWnd;
+		HDC hdc = nullptr;
+		HRGN hRgnHole = nullptr;
+		HRGN hRgnClip = nullptr;
+		HTHEME hTheme = nullptr;
+	} handles{.hWnd = hwnd()};
+
+	handles.hdc = GetWindowDC(hwnd());
 
 	// The HRGN which comes in WM_NCPAINT seems to be invalid, so we carve our own.
 	RECT rcHole = rc;
 	InflateRect(&rcHole, -2, -2);
-	HRGN hRgnHole = CreateRectRgnIndirect(&rcHole);
-	HRGN hRgnClip = CreateRectRgnIndirect(&rc);
-	CombineRgn(hRgnClip, hRgnClip, hRgnHole, RGN_DIFF);
-	SelectClipRgn(hdc, hRgnClip);
+	handles.hRgnHole = CreateRectRgnIndirect(&rcHole);
+	handles.hRgnClip = CreateRectRgnIndirect(&rc);
+	CombineRgn(handles.hRgnClip, handles.hRgnClip, handles.hRgnHole, RGN_DIFF);
+	SelectClipRgn(handles.hdc, handles.hRgnClip);
 
-	HTHEME hTheme = OpenThemeData(hwnd(), L"LISTVIEW");
-	DrawThemeBackground(hTheme, hdc, LVP_LISTDETAIL, 0, &rc, nullptr);
-
-	CloseThemeData(hTheme);
-	DeleteObject(hRgnClip);
-	DeleteObject(hRgnHole);
-	ReleaseDC(hwnd(), hdc);
+	handles.hTheme = OpenThemeData(hwnd(), L"LISTVIEW");
+	DrawThemeBackground(handles.hTheme, handles.hdc, LVP_LISTDETAIL, 0, &rc, nullptr);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
