@@ -826,7 +826,6 @@ namespace _wl_internal {
 	class RawBase final {
 	public:
 		RawBase(RawBase&&) = delete; // non-copyable, non-movable
-
 		constexpr RawBase() = default;
 
 		[[nodiscard]] ATOM register_class(HINSTANCE hInst, std::wstring &&className, DWORD classStyle,
@@ -844,7 +843,6 @@ namespace _wl_internal {
 	class RawMain final {
 	public:
 		RawMain(RawMain&&) = delete; // non-copyable, non-movable
-
 		RawMain();
 		int run(HINSTANCE hInst, int cmdShow);
 
@@ -857,7 +855,6 @@ namespace _wl_internal {
 	class RawModal final {
 	public:
 		RawModal(RawModal&&) = delete; // non-copyable, non-movable
-
 		explicit RawModal(const WndBase &parentWndBase);
 		void show();
 
@@ -871,7 +868,6 @@ namespace _wl_internal {
 	class RawControl final {
 	public:
 		RawControl(RawControl&&) = delete; // non-copyable, non-movable
-
 		RawControl(WndBase &parentWndBase);
 
 		RawBase _rawBase{};
@@ -882,7 +878,6 @@ namespace _wl_internal {
 	class DlgBase final {
 	public:
 		DlgBase(DlgBase&&) = delete; // non-copyable, non-movable
-
 		constexpr DlgBase(WORD dlgId) : _wndBase{true}, _dlgId{dlgId} { }
 
 		void create_dialog_param(HINSTANCE hInst, HWND hParent);
@@ -900,7 +895,6 @@ namespace _wl_internal {
 	class DlgMain final {
 	public:
 		DlgMain(DlgMain&&) = delete; // non-copyable, non-movable
-
 		DlgMain(WORD dlgId, WORD iconId, WORD accelTblId);
 		int run(HINSTANCE hInst, int cmdShow);
 
@@ -912,7 +906,6 @@ namespace _wl_internal {
 	class DlgModal final {
 	public:
 		DlgModal(DlgModal&&) = delete; // non-copyable, non-movable
-
 		DlgModal(const WndBase &parentWndBase, WORD dlgId);
 		void show();
 
@@ -924,7 +917,6 @@ namespace _wl_internal {
 	class DlgControl final {
 	public:
 		DlgControl(DlgControl&&) = delete; // non-copyable, non-movable
-
 		DlgControl(WndBase &parentWndBase, WORD dlgId, WORD ctrlId, POINT pos, wl::Lay layout);
 
 		DlgBase _dlgBase;

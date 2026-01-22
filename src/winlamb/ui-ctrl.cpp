@@ -1015,10 +1015,9 @@ RadioGroup::RadioGroup(WindowParent &owner, size_t numRadios)
 		throw std::logic_error{"Cannot create a RadioGroup with zero radio controls."};
 	#endif
 
-	for (size_t i = 0; i < numRadios; ++i) {
+	for (size_t i = 0; i < numRadios; ++i)
 		new (&_radios[i]) RadioButton{owner}; // invoke constructor manually
-		if (i) _radios[i].setup().style &= ~WS_GROUP;
-	}
+	style_radios();
 }
 
 RadioGroup::RadioGroup(WindowParent &owner, std::initializer_list<WORD> ctrlIds)
@@ -1030,10 +1029,9 @@ RadioGroup::RadioGroup(WindowParent &owner, std::initializer_list<WORD> ctrlIds)
 	#endif
 
 	size_t i = 0;
-	for (WORD ctrlId : ctrlIds) {
-		new (&_radios[i]) RadioButton{owner, ctrlId};
-		if (i) _radios[i++].setup().style &= ~WS_GROUP;
-	}
+	for (WORD ctrlId : ctrlIds)
+		new (&_radios[i]) RadioButton{owner, ctrlId}; // invoke constructor manually
+	style_radios();
 }
 
 RadioGroup::RadioGroup(WindowParent &owner, Lay layout, std::initializer_list<WORD> ctrlIds)
@@ -1045,18 +1043,16 @@ RadioGroup::RadioGroup(WindowParent &owner, Lay layout, std::initializer_list<WO
 	#endif
 
 	size_t i = 0;
-	for (WORD ctrlId : ctrlIds) {
-		new (&_radios[i]) RadioButton{owner, ctrlId, layout};
-		if (i) _radios[i++].setup().style &= ~WS_GROUP;
-	}
+	for (WORD ctrlId : ctrlIds)
+		new (&_radios[i]) RadioButton{owner, ctrlId, layout}; // invoke constructor manually
+	style_radios();
 }
 
-opts::RadioButtonOpts& RadioGroup::setup(size_t radioIndex) {
-	#ifdef _DEBUG
-	if (radioIndex >= _radios.size())
-		throw std::out_of_range{"Radio index is beyond the group size."};
-	#endif
-	return _radios[radioIndex].setup();
+void RadioGroup::style_radios() {
+	for (size_t i = 0; i < _radios.size(); ++i) {
+		if (!i) _radios[i].setup().style |= WS_GROUP;
+		else    _radios[i].setup().style &= ~WS_GROUP;
+	}
 }
 
 ////////////////////////////////////////////////////////////////////////////////

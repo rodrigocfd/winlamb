@@ -587,7 +587,6 @@ namespace wl {
 		class ItemCollection final {
 		private:
 			ItemCollection(ItemCollection&&) = delete; // non-copyable, non-movable
-
 			constexpr explicit ItemCollection(const ComboBox *pOwner) : _pOwner{pOwner} { }
 
 		public:
@@ -999,7 +998,6 @@ namespace wl {
 		class ColumnCollection final {
 		private:
 			ColumnCollection(ColumnCollection&&) = delete; // non-copyable, non-movable
-
 			constexpr explicit ColumnCollection(const ListView *pOwner) : _pOwner{pOwner} { }
 
 		public:
@@ -1101,7 +1099,6 @@ namespace wl {
 		class ItemCollection final {
 		private:
 			ItemCollection(ItemCollection&&) = delete; // non-copyable, non-movable
-
 			constexpr explicit ItemCollection(const ListView *pOwner) : _pOwner{pOwner} { }
 
 		public:
@@ -1430,15 +1427,15 @@ namespace wl {
 	/// MyMain::MyMain() {
 	///     wnd.setup().title = L"My main window";
 	///
-	///     rads.setup(0).pos = wl::dpi::pt(10, 10);
-	///     rads.setup(0).text = L"First";
-	///     rads.setup(0).selected = true;
+	///     rads.radios[0].setup().pos = wl::dpi::pt(10, 10);
+	///     rads.radios[0].setup().text = L"First";
+	///     rads.radios[0].setup().selected = true;
 	///
-	///     rads.setup(1).pos = wl::dpi::pt(10, 30);
-	///     rads.setup(1).text = L"Second";
+	///     rads.radios[1].setup().pos = wl::dpi::pt(10, 30);
+	///     rads.radios[1].setup().text = L"Second";
 	///
-	///     rads.setup(2).pos = wl::dpi::pt(10, 50);
-	///     rads.setup(2).text = L"Third";
+	///     rads.radios[2].setup().pos = wl::dpi::pt(10, 50);
+	///     rads.radios[2].setup().text = L"Third";
 	///
 	///     rads.on().bn_clicked([this](int i) -> void {
 	///         MessageBoxW(wnd.hwnd(), L"Radio selected", rads.radios[i].text().c_str(), MB_ICONINFORMATION);
@@ -1490,9 +1487,6 @@ namespace wl {
 		/** Radio button methods. */
 		RadioButtonCollection radios{this};
 
-		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] opts::RadioButtonOpts& setup(size_t radioIndex);
-
 		/// Allows message events to be added.
 		///
 		/// The events must be added before the control is created on the screen.
@@ -1507,6 +1501,7 @@ namespace wl {
 		[[nodiscard]] constexpr events::RadioGroupEvents& on() { return _wl_internal::valid_event(_radios[0].hwnd(), _events); }
 
 	private:
+		void style_radios();
 		WindowParent &_owner;
 		_wl_internal::NonMovableArray<RadioButton> _radios;
 		events::RadioGroupEvents _events;
@@ -1671,7 +1666,6 @@ namespace wl {
 		class PartCollection final {
 		private:
 			PartCollection(PartCollection&&) = delete; // no-copyable, non-movable
-
 			constexpr explicit PartCollection(const StatusBar *pOwner) : _pOwner{pOwner} { }
 
 		public:
@@ -1891,7 +1885,6 @@ namespace wl {
 		class ItemCollection final {
 		private:
 			ItemCollection(ItemCollection&&) = delete; // non-copyable, non-movable
-
 			constexpr explicit ItemCollection(const TreeView *pOwner) : _pOwner{pOwner} { }
 
 		public:

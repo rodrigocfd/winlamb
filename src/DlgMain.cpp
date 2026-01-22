@@ -139,13 +139,13 @@ RawMain::RawMain() {
 	sb.setup().add_resizable_part(1, L"Rezee", 0);
 	sb.setup().add_fixed_part(wl::dpi::x(200), L"Second", 1);
 
-	rads.setup(0).pos = wl::dpi::pt(420, 10);
-	rads.setup(1).pos = wl::dpi::pt(420, 25);
-	rads.setup(2).pos = wl::dpi::pt(420, 40);
-	rads.setup(0).text = L"First";
-	rads.setup(1).text = L"Second";
-	rads.setup(2).text = L"Turd";
-	rads.setup(2).selected = true;
+	rads.radios[0].setup().pos = wl::dpi::pt(420, 10);
+	rads.radios[1].setup().pos = wl::dpi::pt(420, 25);
+	rads.radios[2].setup().pos = wl::dpi::pt(420, 40);
+	rads.radios[0].setup().text = L"First";
+	rads.radios[1].setup().text = L"Second";
+	rads.radios[2].setup().text = L"Turd";
+	rads.radios[2].setup().selected = true;
 
 	tv.setup().pos = wl::dpi::pt(10, 190);
 	tv.setup().size = wl::dpi::sz(250, 90);
