@@ -156,6 +156,28 @@ EVENT_NFY_ARG_RET(nm_r_dbl_clk, NM_RDBLCLK, NMMOUSE, bool)
 EVENT_NFY_ARG(sbn_simple_mode_change, SBN_SIMPLEMODECHANGE, NMMOUSE)
 
 #undef EVENT_CLS
+#define EVENT_CLS TrackbarEvents
+EVENT_NFY_ARG_RET(trbn_thumb_pos_changing, TRBN_THUMBPOSCHANGING, NMTRBTHUMBPOSCHANGING, bool)
+void TrackbarEvents::wm_h_scroll(std::function<void(wm::HScroll)> &&cb) {
+	_ctrlEvents._parent._userEvents.wm(WM_HSCROLL, [this, cb = std::move(cb)](wl::wm::Msg p) -> LRESULT {
+		wm::HScroll hs{p};
+		if (GetDlgItem(_ctrlEvents._parent._hWnd, _ctrlEvents._ctrlId) == hs.hwnd_scrollbar())
+			cb(hs);
+		return _ctrlEvents._parent._preEvents._isDlg ? TRUE : 0;
+	});
+}
+void TrackbarEvents::wm_v_scroll(std::function<void(wm::VScroll)> &&cb) {
+	_ctrlEvents._parent._userEvents.wm(WM_VSCROLL, [this, cb = std::move(cb)](wl::wm::Msg p) -> LRESULT {
+		wm::VScroll vs{p};
+		if (GetDlgItem(_ctrlEvents._parent._hWnd, _ctrlEvents._ctrlId) == vs.hwnd_scrollbar())
+			cb(vs);
+		return _ctrlEvents._parent._preEvents._isDlg ? TRUE : 0;
+	});
+}
+EVENT_NFY_ARG_RET(nm_custom_draw, NM_CUSTOMDRAW, NMCUSTOMDRAW, DWORD)
+EVENT_NFY(nm_released_capture, NM_RELEASEDCAPTURE)
+
+#undef EVENT_CLS
 #define EVENT_CLS TreeViewEvents
 EVENT_NFY_ARG(tvn_async_draw, TVN_ASYNCDRAW, NMTVASYNCDRAW)
 EVENT_NFY_ARG(tvn_begin_drag, TVN_BEGINDRAGW, NMTREEVIEWW)
@@ -1324,6 +1346,59 @@ void Tab::custom_events() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
+Trackbar::Trackbar(WindowParent &owner, WORD ctrlId)
+	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(ctrlId)}
+{
+	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
+		_ctrl.create_wnd(ctrl_id(), _opts.styleEx, TRACKBAR_CLASSW, {}, _opts.style, _opts.pos, _opts.size);
+		_ctrl._parent._layout.add(hwnd(), _opts.layout);
+		if (_opts.rangeMin || _opts.rangeMax != 100) set_range(_opts.rangeMin, _opts.rangeMax);
+		if (_opts.pageSize) set_page_size(_opts.pageSize);
+		if (_opts.value) set_pos(_opts.value);
+	});
+}
+
+Trackbar::Trackbar(WindowParent &owner, WORD ctrlId, Lay layout)
+	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
+{
+	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
+		_ctrl.assign_dlg(ctrl_id());
+		_ctrl._parent._layout.add(hwnd(), layout);
+	});
+}
+
+int Trackbar::page_size() const {
+	return static_cast<int>(SendMessageW(hwnd(), TBM_GETPAGESIZE, 0, 0));
+}
+
+const Trackbar& Trackbar::set_page_size(int pageSize) const {
+	SendMessageW(hwnd(), TBM_SETPAGESIZE, 0, pageSize);
+	return *this;
+}
+
+int Trackbar::pos() const {
+	return static_cast<int>(SendMessageW(hwnd(), TBM_GETPOS, 0, 0));
+}
+
+const Trackbar& Trackbar::set_pos(int pageSize) const {
+	SendMessageW(hwnd(), TBM_SETPOS, TRUE, pageSize);
+	return *this;
+}
+
+std::pair<int, int> Trackbar::range() const {
+	int rmin = static_cast<int>(SendMessageW(hwnd(), TBM_GETRANGEMIN, 0, 0));
+	int rmax = static_cast<int>(SendMessageW(hwnd(), TBM_GETRANGEMAX, 0, 0));
+	return {rmin, rmax};
+}
+
+const Trackbar& Trackbar::set_range(int rangeMin, int rangeMax) const {
+	SendMessageW(hwnd(), TBM_SETRANGEMIN, TRUE, rangeMin);
+	SendMessageW(hwnd(), TBM_SETRANGEMAX, TRUE, rangeMax);
+	return *this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 TreeView::Item TreeView::Item::add_child(WStrView itemText, int iconIndex) const {
 	TVINSERTSTRUCTW tvi{
 		.hParent = _hItem,
@@ -1493,6 +1568,7 @@ TreeView::TreeView(WindowParent &owner, WORD ctrlId)
 		_ctrl.create_wnd(ctrl_id(), _opts.styleEx, WC_TREEVIEWW, {}, _opts.style, _opts.pos, _opts.size);
 		if (_opts.styleExTreeView)
 			set_extended_style(true, _opts.styleExTreeView);
+		_ctrl._parent._layout.add(hwnd(), _opts.layout);
 	});
 }
 

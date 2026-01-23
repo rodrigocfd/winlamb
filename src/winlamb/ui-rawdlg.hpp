@@ -792,6 +792,55 @@ namespace wl::opts {
 		HCURSOR &hCursor;
 	};
 
+	/** Options to create a `Trackbar` programmatically. */
+	struct TrackbarOpts final {
+		/// The [window] and [Trackbar style] passed to [`CreateWindowEx`].
+		///
+		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [Trackbar style]: https://learn.microsoft.com/en-us/windows/win32/controls/trackbar-control-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | TBS_AUTOTICKS | TBS_HORZ;
+		/// The [window extended style] passed to [`CreateWindowEx`].
+		///
+		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD styleEx = WS_EX_LEFT;
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// tb.setup().pos = wl::dpi::pt(10, 10);
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		POINT pos{};
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// tb.setup().size = wl::dpi::sz(175, 28);
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SIZE size = {.cx = 175, .cy = 28};
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Page size. */
+		int pageSize = 0;
+		/** Minimum value of the selectable range. */
+		int rangeMin = 0;
+		/** Maximum value of the selectable range. */
+		int rangeMax = 100;
+		/** Current selected position. */
+		int value = 0;
+	};
+
 	/** Options to create a `TreeView` programmatically. */
 	struct TreeViewOpts final {
 		/// The [window] and [TreeView style] passed to [`CreateWindowEx`].

@@ -150,6 +150,11 @@ RawMain::RawMain() {
 	tv.setup().pos = wl::dpi::pt(10, 190);
 	tv.setup().size = wl::dpi::sz(250, 90);
 
+	trb.setup().pos = wl::dpi::pt(260, 190);
+	trb.setup().size = wl::dpi::sz(140, 28);
+	trb.setup().rangeMax = 12;
+	trb.setup().value = 6;
+
 	tab.setup().pos = wl::dpi::pt(656, 10);
 	tab.setup().size = wl::dpi::sz(220, 200);
 	tab.items[0].setup().title = L"First";
@@ -218,6 +223,11 @@ RawMain::RawMain() {
 	tv.on().tvn_sel_changed([this](NMTREEVIEW&) -> void {
 		wl::TreeView::Item sel = tv.items.selected();
 		wnd.set_title(sel.hitem() ? sel.text() : L"No tree sel");
+	});
+
+	trb.on().wm_h_scroll([this](wl::wm::HScroll) -> void {
+		auto s = wl::str::fmt(L"Track bar at %d", trb.pos());
+		wnd.set_title(s);
 	});
 
 }

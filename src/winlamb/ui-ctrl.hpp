@@ -255,6 +255,26 @@ namespace wl::events {
 		friend wl::Tab;
 	};
 
+	/** Native `Trackbar` events. */
+	class TrackbarEvents final {
+	private:
+		TrackbarEvents(TrackbarEvents&&) = delete; // non-copyable, non-movable
+
+		TrackbarEvents(_wl_internal::WndBase &parentWndBase, WORD ctrlId)
+			: _ctrlEvents{parentWndBase, ctrlId} { }
+
+	public:
+		void trbn_thumb_pos_changing(std::function<bool(NMTRBTHUMBPOSCHANGING&)> &&cb);
+		void wm_h_scroll(std::function<void(wm::HScroll)> &&cb);
+		void wm_v_scroll(std::function<void(wm::VScroll)> &&cb);
+		void nm_custom_draw(std::function<DWORD(NMCUSTOMDRAW&)> &&cb);
+		void nm_released_capture(std::function<void()> &&cb);
+
+	private:
+		_wl_internal::NativeCtrlEvents _ctrlEvents;
+		friend wl::Trackbar;
+	};
+
 	/** Native `TreeView` events. */
 	class TreeViewEvents final {
 	private:
@@ -1908,6 +1928,108 @@ namespace wl {
 		opts::TabOpts _opts{};
 		_wl_internal::NonMovableArray<WindowControl> _children;
 		std::vector<std::wstring> _titles{};
+	};
+
+	/// @brief Native [trackbar] control.
+	///
+	/// Example of creating a window with a trackbar programmatically, .h and .cpp files:
+	///
+	/// ```cpp
+	/// class MyMain final {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{};
+	///     wl::Trackbar tb{wnd};
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
+	///
+	/// MyMain::MyMain() {
+	///     wnd.setup().title = L"My main window";
+	///
+	///     tb.setup().pos = wl::dpi::pt(10, 10);
+	///     tb.setup().rangeMax = 12;
+	///     tb.setup().value = 6;
+	///
+	///     tb.on().wm_h_scroll([this](wl::wm::HScroll p) -> void {
+	///         std::wstring s = wl::str::fmt(L"Track bar at %d", tb.pos());
+	///         wnd.set_title(s);
+	///     });
+	/// }
+	/// ```
+	///
+	/// [trackbar]: https://learn.microsoft.com/en-us/windows/win32/controls/trackbar-controls
+	class Trackbar final : public WindowChild {
+	public:
+		/// Constructs the tree view, which will be created programmatically with [`CreateWindowEx`].
+		///
+		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
+		///
+		/// Further options can be defined with the `setup` method.
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		explicit Trackbar(WindowParent &owner, WORD ctrlId = 0);
+
+		/// Constructs the tree view, which will be loaded from the dialog resource.
+		///
+		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		Trackbar(WindowParent &owner, WORD ctrlId, Lay layout);
+
+		/** Returns the wrapped window handle. */
+		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
+
+		/** Returns the control ID. */
+		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
+
+		/** For controls created programmatically, defines additional creation options. */
+		[[nodiscard]] constexpr opts::TrackbarOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
+
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// tb.on().wm_h_scroll([](wm::HScroll p) -> void {
+		///     // ...
+		/// });
+		/// ```
+		[[nodiscard]] constexpr events::TrackbarEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+
+		/// [Subclasses] the control allowing message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		///
+		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
+		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+
+		/** Retrieves the current page size. */
+		[[nodiscard]] int page_size() const;
+
+		/** Sets the current page size. */
+		const Trackbar& set_page_size(int pageSize) const;
+
+		/** Retrieves the current position. */
+		[[nodiscard]] int pos() const;
+
+		/** Sets the current position. */
+		const Trackbar& set_pos(int pos) const;
+
+		/** Returns the current minimum and maximum range values. */
+		[[nodiscard]] std::pair<int, int> range() const;
+
+		/** Sets the current minimum and maximum range values. */
+		const Trackbar& set_range(int rangeMin, int rangeMax) const;
+
+	private:
+		_wl_internal::NativeCtrlBase _ctrl;
+		events::TrackbarEvents _events;
+		opts::TrackbarOpts _opts{};
 	};
 
 	/// @brief Native [tree view] control.

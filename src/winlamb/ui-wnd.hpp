@@ -41,6 +41,7 @@ namespace wl {
 	class Static;
 	class StatusBar;
 	class Tab;
+	class Trackbar;
 	class TreeView;
 	class DropFiles;
 
@@ -110,6 +111,7 @@ namespace wl {
 		friend Static;
 		friend StatusBar;
 		friend Tab;
+		friend Trackbar;
 		friend TreeView;
 		friend DropFiles;
 	};
