@@ -415,7 +415,8 @@ namespace wl {
 		/// The `dlgId` parameter must identify a dialog resource.
 		///
 		/// [`CreateDialogParam`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createdialogparamw
-		WindowControl(wl::WindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos, wl::Lay layout = wl::Lay::hold_hold);
+		WindowControl(wl::WindowParent &parent, WORD dlgId,
+			WORD ctrlId = 0, POINT pos = POINT{}, wl::Lay layout = wl::Lay::hold_hold);
 
 		/** Returns the window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return _rawOrDlg.base()._hWnd; };

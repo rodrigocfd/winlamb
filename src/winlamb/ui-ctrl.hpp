@@ -1252,7 +1252,6 @@ namespace wl {
 	private:
 		void custom_events();
 		void show_context_menu(bool followCursor, bool hasCtrl, bool hasShift);
-
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::ListViewEvents _events;
 		opts::ListViewOpts _opts{};
@@ -1754,9 +1753,22 @@ namespace wl {
 		/** @brief A single item of the `Tab`. */
 		class Item final {
 		private:
-			constexpr Item(const Tab &owner, int itemIndex) : _owner{owner}, _index{itemIndex} { }
+			constexpr Item(Tab &owner, int itemIndex) : _owner{owner}, _index{itemIndex} { }
 
 		public:
+			/** For controls created programmatically, defines additional creation options. */
+			[[nodiscard]] constexpr opts::TabItemOpts setup() const {
+				return {
+					.title = _owner._titles[_index],
+					.className = _owner._children[_index].setup().className,
+					.hbrBackground = _owner._children[_index].setup().hbrBackground,
+					.hCursor = _owner._children[_index].setup().hCursor,
+				};
+			}
+
+			/** Returns the child `WindowControl` rendered within this tab item. */
+			[[nodiscard]] constexpr WindowControl& child() const { return _owner._children[_index]; }
+
 			/** Returns the zero-based index of the item. */
 			[[nodiscard]] constexpr int index() const { return _index; }
 
@@ -1770,7 +1782,7 @@ namespace wl {
 			const Item& set_text(WStrView newText) const;
 
 		private:
-			const Tab &_owner;
+			Tab &_owner;
 			int _index;
 			friend ItemCollection;
 		};
@@ -1779,9 +1791,12 @@ namespace wl {
 		class ItemCollection final {
 		private:
 			ItemCollection(ItemCollection&&) = delete; // non-copyable, non-movable
-			constexpr explicit ItemCollection(const Tab &owner) : _owner{owner} { }
+			constexpr explicit ItemCollection(Tab &owner) : _owner{owner} { }
 
 		public:
+			/** Returns the column at the given index. */
+			[[nodiscard]] constexpr Item operator[](int index) const { return Item{_owner, index}; }
+
 			/** Returns the item count. */
 			[[nodiscard]] size_t count() const;
 
@@ -1792,23 +1807,33 @@ namespace wl {
 			[[nodiscard]] std::optional<Item> selected() const;
 
 		private:
-			const Tab &_owner;
+			Tab &_owner;
 			friend Tab;
 		};
 
 		/// Constructs the tab, which will be created programmatically with [`CreateWindowEx`].
 		///
-		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
+		/// The control will receive an auto-generated ID.
 		///
 		/// Further options can be defined with the `setup` method.
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		explicit Tab(WindowParent &owner, WORD ctrlId = 0);
+		Tab(WindowParent &owner, size_t numItems)
+			: Tab{owner, 0, numItems} { }
+
+		/// Constructs the tab, which will be created programmatically with [`CreateWindowEx`].
+		///
+		/// Further options can be defined with the `setup` method.
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		Tab(WindowParent &owner, WORD ctrlId, size_t numItems);
 
 		/// Constructs the tab, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
-		Tab(WindowParent &owner, WORD ctrlId, Lay layout);
+		///
+		/// The `childrenDlgIds` are the IDs of the dialog resources of each children to be added.
+		Tab(WindowParent &owner, WORD ctrlId, Lay layout, std::initializer_list<WORD> childrenDlgIds);
 
 		/** Item methods. */
 		ItemCollection items{*this};
@@ -1842,9 +1867,14 @@ namespace wl {
 		const Tab& set_extended_style(bool doSet, DWORD exStyle) const;
 
 	private:
+		void create_tabs() const;
+		void display_tab(size_t index) const;
+		void custom_events();
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::TabEvents _events;
 		opts::TabOpts _opts{};
+		_wl_internal::NonMovableArray<WindowControl> _children;
+		std::vector<std::wstring> _titles{};
 	};
 
 	/// @brief Native [tree view] control.

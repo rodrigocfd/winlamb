@@ -18,6 +18,7 @@ namespace _wl_internal {
 	[[nodiscard]] HINSTANCE wnd_hinst(HWND hWnd);
 	[[nodiscard]] std::wstring wnd_text(HWND hWnd);
 	void set_wnd_text(HWND hWnd, wl::WStrView text);
+	void screen_to_client_rc(HWND hWnd, RECT *pRc);
 	[[nodiscard]] SIZE calc_text_bound_box(wl::WStrView text);
 	[[nodiscard]] SIZE calc_text_bound_box_with_check(wl::WStrView text);
 
@@ -54,6 +55,7 @@ namespace _wl_internal {
 			StorageT *pMem = new StorageT[numElems]; // don't forget to call placement new on each element!
 			_ptr = reinterpret_cast<T*>(pMem);
 		}
+		[[nodiscard]] constexpr bool empty() const { return !size(); }
 		[[nodiscard]] constexpr size_t size() const { return _sz; }
 		[[nodiscard]] constexpr const T& operator[](size_t index) const { return _ptr[index]; }
 		[[nodiscard]] constexpr T& operator[](size_t index) { return _ptr[index]; }

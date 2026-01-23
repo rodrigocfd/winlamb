@@ -55,10 +55,11 @@ ATOM RawBase::register_class(HINSTANCE hInst, std::wstring &&className, DWORD cl
 			if (!atom)
 				throw std::system_error(GetLastError(), std::system_category(), "RawBase: GetClassInfoEx failed");
 			#endif
+		} else {
+			#ifdef _DEBUG
+			throw std::system_error(GetLastError(), std::system_category(), "RawBase: RegisterClassEx failed");
+			#endif
 		}
-		#ifdef _DEBUG
-		throw std::system_error(GetLastError(), std::system_category(), "RawBase: RegisterClassEx failed");
-		#endif
 	}
 	return atom;
 }
@@ -380,10 +381,11 @@ void DlgModal::show() {
 DlgControl::DlgControl(WndBase &parentWndBase, WORD dlgId, WORD ctrlId, POINT pos, Lay layout)
 	: _dlgBase{dlgId}
 {
-	parentWndBase._preEvents.wm_create_or_init_dialog([this, pParent = &parentWndBase, ctrlId, pos, layout]() -> void {
-		_dlgBase.create_dialog_param(wnd_hinst(pParent->_hWnd), pParent->_hWnd);
-		SetWindowLongPtrW(_dlgBase._wndBase._hWnd, GWLP_ID, valid_ctrl_id(ctrlId)); // give the control its ID
-		SetWindowPos(_dlgBase._wndBase._hWnd, nullptr, pos.x, pos.y, 0, 0, SWP_NOZORDER | SWP_NOMOVE);
-		pParent->_layout.add(_dlgBase._wndBase._hWnd, layout);
-	});
+	parentWndBase._preEvents.wm_create_or_init_dialog(
+		[this, pParent = &parentWndBase, ctrlId, pos, layout]() -> void {
+			_dlgBase.create_dialog_param(wnd_hinst(pParent->_hWnd), pParent->_hWnd);
+			SetWindowLongPtrW(_dlgBase._wndBase._hWnd, GWLP_ID, valid_ctrl_id(ctrlId)); // give the control its ID
+			SetWindowPos(_dlgBase._wndBase._hWnd, nullptr, pos.x, pos.y, 0, 0, SWP_NOZORDER | SWP_NOMOVE);
+			pParent->_layout.add(_dlgBase._wndBase._hWnd, layout);
+		});
 }

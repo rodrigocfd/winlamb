@@ -214,7 +214,7 @@ Button::Button(WindowParent &owner, WORD ctrlId)
 }
 
 Button::Button(WindowParent &owner, WORD ctrlId, Lay layout)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(ctrlId)}
+	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
 		_ctrl.assign_dlg(ctrl_id());
@@ -250,7 +250,7 @@ CheckBox::CheckBox(WindowParent &owner, WORD ctrlId)
 }
 
 CheckBox::CheckBox(WindowParent &owner, WORD ctrlId, Lay layout)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(ctrlId)}
+	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
 		_ctrl.assign_dlg(ctrl_id());
@@ -340,7 +340,7 @@ ComboBox::ComboBox(WindowParent &owner, WORD ctrlId)
 }
 
 ComboBox::ComboBox(WindowParent &owner, WORD ctrlId, Lay layout)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(ctrlId)}
+	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
 		_ctrl.assign_dlg(ctrl_id());
@@ -367,7 +367,7 @@ DateTimePicker::DateTimePicker(WindowParent &owner, WORD ctrlId)
 }
 
 DateTimePicker::DateTimePicker(WindowParent &owner, WORD ctrlId, Lay layout)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(ctrlId)}
+	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
 		_ctrl.assign_dlg(ctrl_id());
@@ -403,7 +403,7 @@ Edit::Edit(WindowParent &owner, WORD ctrlId)
 }
 
 Edit::Edit(WindowParent &owner, WORD ctrlId, Lay layout)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(ctrlId)}
+	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
 		_ctrl.assign_dlg(ctrl_id());
@@ -791,7 +791,7 @@ ListView::ListView(WindowParent &owner, WORD ctrlId)
 }
 
 ListView::ListView(WindowParent &owner, WORD ctrlId, Lay layout, WORD contextMenuId)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(ctrlId)}
+	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_opts.contextMenuId = contextMenuId;
 
@@ -939,7 +939,7 @@ MonthCalendar::MonthCalendar(WindowParent &owner, WORD ctrlId)
 }
 
 MonthCalendar::MonthCalendar(WindowParent &owner, WORD ctrlId, Lay layout)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(ctrlId)}
+	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
 		_ctrl.assign_dlg(ctrl_id());
@@ -976,7 +976,7 @@ RadioButton::RadioButton(WindowParent &owner, WORD ctrlId)
 }
 
 RadioButton::RadioButton(WindowParent &owner, WORD ctrlId, Lay layout)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(ctrlId)}
+	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
 		_ctrl.assign_dlg(ctrl_id());
@@ -1012,7 +1012,7 @@ RadioGroup::RadioGroup(WindowParent &owner, size_t numRadios)
 {
 	#ifdef _DEBUG
 	if (!numRadios)
-		throw std::logic_error{"Cannot create a RadioGroup with zero radio controls."};
+		throw std::invalid_argument{"Cannot create a RadioGroup with zero radio controls."};
 	#endif
 
 	for (size_t i = 0; i < numRadios; ++i)
@@ -1025,12 +1025,12 @@ RadioGroup::RadioGroup(WindowParent &owner, std::initializer_list<WORD> ctrlIds)
 {
 	#ifdef _DEBUG
 	if (!ctrlIds.size())
-		throw std::logic_error{"Cannot create a RadioGroup with zero radio controls."};
+		throw std::invalid_argument{"Cannot create a RadioGroup with zero radio controls."};
 	#endif
 
 	size_t i = 0;
 	for (WORD ctrlId : ctrlIds)
-		new (&_radios[i]) RadioButton{owner, ctrlId}; // invoke constructor manually
+		new (&_radios[i++]) RadioButton{owner, ctrlId}; // invoke constructor manually
 	style_radios();
 }
 
@@ -1039,12 +1039,12 @@ RadioGroup::RadioGroup(WindowParent &owner, Lay layout, std::initializer_list<WO
 {
 	#ifdef _DEBUG
 	if (!ctrlIds.size())
-		throw std::logic_error{"Cannot create a RadioGroup with zero radio controls."};
+		throw std::invalid_argument{"Cannot create a RadioGroup with zero radio controls."};
 	#endif
 
 	size_t i = 0;
 	for (WORD ctrlId : ctrlIds)
-		new (&_radios[i]) RadioButton{owner, ctrlId, layout}; // invoke constructor manually
+		new (&_radios[i++]) RadioButton{owner, ctrlId, layout}; // invoke constructor manually
 	style_radios();
 }
 
@@ -1072,7 +1072,7 @@ Static::Static(WindowParent &owner, WORD ctrlId)
 }
 
 Static::Static(WindowParent &owner, WORD ctrlId, Lay layout)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(ctrlId)}
+	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
 		_ctrl.assign_dlg(ctrl_id());
@@ -1231,28 +1231,95 @@ std::optional<Tab::Item> Tab::ItemCollection::selected() const {
 
 //------------------------------------------------------------------------------
 
-Tab::Tab(WindowParent &owner, WORD ctrlId)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(ctrlId)}
+Tab::Tab(WindowParent &owner, WORD ctrlId, size_t numItems)
+	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(ctrlId)}, _children{numItems}
 {
+	#ifdef _DEBUG
+	if (!numItems)
+		throw std::invalid_argument{"Cannot create a Tab with zero items."};
+	else if (numItems > 100) // arbitrary
+		throw std::invalid_argument{"Cannot create a Tab with more than 100 items."};
+	#endif
+
+	for (size_t i = 0; i < numItems; ++i)
+		new (&_children[i]) WindowControl{owner}; // invoke constructor manually
+	_titles.resize(numItems);
+
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
 		_ctrl.create_wnd(ctrl_id(), _opts.styleEx, WC_TABCONTROLW, {}, _opts.style, _opts.pos, _opts.size);
+		apply_ui_font(hwnd());
 		if (_opts.styleExTab)
 			set_extended_style(true, _opts.styleExTab);
+		_ctrl._parent._layout.add(hwnd(), _opts.layout);
+		create_tabs();
+		display_tab(0);
 	});
+
+	custom_events();
 }
 
-Tab::Tab(WindowParent &owner, WORD ctrlId, Lay layout)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(ctrlId)}
+Tab::Tab(WindowParent &owner, WORD ctrlId, Lay layout, std::initializer_list<WORD> childrenDlgIds)
+	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}, _children{childrenDlgIds.size()}
 {
+	#ifdef _DEBUG
+	if (!childrenDlgIds.size())
+		throw std::invalid_argument{"Cannot create a Tab with zero items."};
+	else if (childrenDlgIds.size() > 100) // arbitrary
+		throw std::invalid_argument{"Cannot create a Tab with more than 100 items."};
+	#endif
+
+	size_t i = 0;
+	for (WORD dlgId : childrenDlgIds)
+		new (&_children[i]) WindowControl{owner, dlgId}; // invoke constructor manually
+	_titles.resize(childrenDlgIds.size());
+
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
 		_ctrl.assign_dlg(ctrl_id());
+		apply_ui_font(hwnd());
 		_ctrl._parent._layout.add(hwnd(), layout);
+		create_tabs();
+		display_tab(0);
 	});
+
+	custom_events();
 }
 
 const Tab& Tab::set_extended_style(bool doSet, DWORD exStyle) const {
 	SendMessageW(hwnd(), TCM_SETEXTENDEDSTYLE, exStyle, doSet ? exStyle : 0);
 	return *this;
+}
+
+void Tab::create_tabs() const {
+	TCITEMW tci{
+		.mask = TCIF_TEXT,
+	};
+	for (auto &&title : _titles) {
+		tci.pszText = const_cast<wchar_t*>(title.c_str());
+		TabCtrl_InsertItem(hwnd(), 0x0fff'ffff, &tci);
+	}
+}
+
+void Tab::display_tab(size_t index) const {
+	if (_children.empty()) return;
+	for (size_t i = 0; i < _children.size(); ++i) {
+		if (i != index) ShowWindow(_children[i].hwnd(), SW_HIDE); // hide all others
+	}
+
+	RECT rcTab{};
+	GetWindowRect(hwnd(), &rcTab);
+	screen_to_client_rc(GetParent(hwnd()), &rcTab);
+	TabCtrl_AdjustRect(hwnd(), FALSE, &rcTab);
+	SetWindowPos(_children[index].hwnd(), nullptr,
+		rcTab.left, rcTab.top, rcTab.right - rcTab.left, rcTab.bottom - rcTab.top,
+		SWP_NOZORDER | SWP_SHOWWINDOW);
+}
+
+void Tab::custom_events() {
+	_ctrl._parent._preEvents.wm_notify(ctrl_id(), TCN_SELCHANGE, [this](wm::Notify) -> void {
+		std::optional<Tab::Item> sel = items.selected();
+		if (sel.has_value())
+			display_tab(sel.value().index());
+	});
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1430,7 +1497,7 @@ TreeView::TreeView(WindowParent &owner, WORD ctrlId)
 }
 
 TreeView::TreeView(WindowParent &owner, WORD ctrlId, Lay layout)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(ctrlId)}
+	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
 		_ctrl.assign_dlg(ctrl_id());

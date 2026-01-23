@@ -772,6 +772,26 @@ namespace wl::opts {
 		WORD ctrlId = 0;
 	};
 
+	/** Options to create a `Tab` item programmatically. */
+	struct TabItemOpts final {
+		/** The title of the tab item. */
+		std::wstring &title;
+		/// Class name passed to [`WNDCLASSEX`].
+		///
+		/// Defaults to an auto-generated string.
+		///
+		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
+		std::wstring &className;
+		/// The window background brush passed to [`WNDCLASSEX`].
+		///
+		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
+		HBRUSH &hbrBackground;
+		/// The window cursor passed to [`WNDCLASSEX`].
+		///
+		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
+		HCURSOR &hCursor;
+	};
+
 	/** Options to create a `TreeView` programmatically. */
 	struct TreeViewOpts final {
 		/// The [window] and [TreeView style] passed to [`CreateWindowEx`].

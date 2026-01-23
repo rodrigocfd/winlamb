@@ -48,6 +48,10 @@ public:
 	wl::StatusBar sb{wnd};
 	wl::RadioGroup rads{wnd, 3};
 	wl::TreeView tv{wnd};
-	wl::Tab tab{wnd};
+
+	wl::Tab tab{wnd, 2};
+	wl::Button btn2{tab.items[0].child()};
+	wl::Button btn3{tab.items[1].child()};
+	
 	Contro ctl{wnd};
 };

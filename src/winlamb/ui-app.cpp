@@ -79,6 +79,11 @@ void _wl_internal::set_wnd_text(HWND hWnd, WStrView text) {
 	}
 }
 
+void _wl_internal::screen_to_client_rc(HWND hWnd, RECT *pRc) {
+	ScreenToClient(hWnd, reinterpret_cast<POINT*>(pRc));
+	ScreenToClient(hWnd, reinterpret_cast<POINT*>(&pRc->right));
+}
+
 SIZE _wl_internal::calc_text_bound_box(WStrView text) {
 	std::wstring wtext{text.c_str()};
 	str::trim(wtext);

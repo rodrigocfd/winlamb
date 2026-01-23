@@ -57,8 +57,7 @@ void WindowControl::paint_custom_border(wm::NcPaint p) const {
 
 	RECT rc{};
 	GetWindowRect(hwnd(), &rc); // control window outmost coordinates, including margins
-	ScreenToClient(hwnd(), reinterpret_cast<POINT*>(&rc));
-	ScreenToClient(hwnd(), reinterpret_cast<POINT*>(&rc.right));
+	screen_to_client_rc(hwnd(), &rc);
 	OffsetRect(&rc, 2, 2); // because it comes up anchored at -2,-2
 
 	struct Handles final {

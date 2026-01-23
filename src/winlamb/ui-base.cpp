@@ -244,8 +244,7 @@ void Layout::add(HWND hCtrl, wl::Lay layout) {
 	if (!ret)
 		throw std::system_error(GetLastError(), std::system_category(), "GetWindowRect failed");
 	#endif
-	ScreenToClient(hParent, reinterpret_cast<POINT*>(&rcCtrl)); // now relative to parent
-	ScreenToClient(hParent, reinterpret_cast<POINT*>(&rcCtrl.right)); // now relative to parent
+	screen_to_client_rc(hParent, &rcCtrl); // now relative to parent
 
 	_ctrls.emplace_back(hCtrl, layout, rcCtrl);
 }
@@ -399,7 +398,7 @@ void NativeCtrlBase::create_wnd(WORD ctrlId, DWORD exStyle, const wchar_t *class
 
 	_hWnd = CreateWindowExW(exStyle, className, title.c_str(), style,
 		pos.x, pos.y, size.cx, size.cy, _parent._hWnd,
-		reinterpret_cast<HMENU>(valid_ctrl_id(ctrlId)), wnd_hinst(_parent._hWnd), nullptr);
+		reinterpret_cast<HMENU>(ctrlId), wnd_hinst(_parent._hWnd), nullptr);
 	#ifdef _DEBUG
 	if (!_hWnd)
 		throw std::system_error(GetLastError(), std::system_category(), "NativeCtrlBase: CreateWindowEx failed");

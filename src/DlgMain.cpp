@@ -152,6 +152,10 @@ RawMain::RawMain() {
 
 	tab.setup().pos = wl::dpi::pt(656, 10);
 	tab.setup().size = wl::dpi::sz(220, 200);
+	tab.items[0].setup().title = L"First";
+	tab.items[1].setup().title = L"Second";
+	btn2.setup().text = L"In tab";
+	btn3.setup().text = L"Another";
 
 	wnd.on().wm_create([this](wl::wm::Create p) -> int {
 		lv.cols[1].set_justif(HDF_CENTER).set_width_to_fill();
