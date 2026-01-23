@@ -1352,7 +1352,7 @@ Trackbar::Trackbar(WindowParent &owner, WORD ctrlId)
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
 		_ctrl.create_wnd(ctrl_id(), _opts.styleEx, TRACKBAR_CLASSW, {}, _opts.style, _opts.pos, _opts.size);
 		_ctrl._parent._layout.add(hwnd(), _opts.layout);
-		if (_opts.rangeMin || _opts.rangeMax != 100) set_range(_opts.rangeMin, _opts.rangeMax);
+		if (_opts.range != std::pair{0, 100}) set_range(_opts.range);
 		if (_opts.pageSize) set_page_size(_opts.pageSize);
 		if (_opts.value) set_pos(_opts.value);
 	});
@@ -1380,8 +1380,8 @@ int Trackbar::pos() const {
 	return static_cast<int>(SendMessageW(hwnd(), TBM_GETPOS, 0, 0));
 }
 
-const Trackbar& Trackbar::set_pos(int pageSize) const {
-	SendMessageW(hwnd(), TBM_SETPOS, TRUE, pageSize);
+const Trackbar& Trackbar::set_pos(int value) const {
+	SendMessageW(hwnd(), TBM_SETPOS, TRUE, value);
 	return *this;
 }
 
@@ -1395,6 +1395,10 @@ const Trackbar& Trackbar::set_range(int rangeMin, int rangeMax) const {
 	SendMessageW(hwnd(), TBM_SETRANGEMIN, TRUE, rangeMin);
 	SendMessageW(hwnd(), TBM_SETRANGEMAX, TRUE, rangeMax);
 	return *this;
+}
+
+const Trackbar& Trackbar::set_range(std::pair<int, int> rangeMinMax) const {
+	return set_range(rangeMinMax.first, rangeMinMax.second);
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -1773,7 +1773,7 @@ namespace wl {
 	/// public:
 	///     MyMain();
 	///     wl::WindowMain wnd{};
-	///     wl::Tab tab{wnd, 2};
+	///     wl::Tab tab{wnd, 2}; // create 2 tab items
 	///     wl::Button btn{tab.items[0].child()}; // this button will be inside the 1st tab
 	/// };
 	/// ```
@@ -1950,7 +1950,7 @@ namespace wl {
 	///     wnd.setup().title = L"My main window";
 	///
 	///     tb.setup().pos = wl::dpi::pt(10, 10);
-	///     tb.setup().rangeMax = 12;
+	///     tb.setup().range = {0, 8};
 	///     tb.setup().value = 6;
 	///
 	///     tb.on().wm_h_scroll([this](wl::wm::HScroll p) -> void {
@@ -2018,13 +2018,16 @@ namespace wl {
 		[[nodiscard]] int pos() const;
 
 		/** Sets the current position. */
-		const Trackbar& set_pos(int pos) const;
+		const Trackbar& set_pos(int value) const;
 
 		/** Returns the current minimum and maximum range values. */
 		[[nodiscard]] std::pair<int, int> range() const;
 
 		/** Sets the current minimum and maximum range values. */
 		const Trackbar& set_range(int rangeMin, int rangeMax) const;
+
+		/** Sets the current minimum and maximum range values. */
+		const Trackbar& set_range(std::pair<int, int> rangeMinMax) const;
 
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;

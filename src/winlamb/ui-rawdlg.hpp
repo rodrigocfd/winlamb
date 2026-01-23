@@ -833,10 +833,10 @@ namespace wl::opts {
 		WORD ctrlId = 0;
 		/** Page size. */
 		int pageSize = 0;
-		/** Minimum value of the selectable range. */
-		int rangeMin = 0;
-		/** Maximum value of the selectable range. */
-		int rangeMax = 100;
+		/// Minimum and maximum values for the selectable range.
+		///
+		/// Defaults to `{0, 100}`.
+		std::pair<int, int> range = {0, 100};
 		/** Current selected position. */
 		int value = 0;
 	};

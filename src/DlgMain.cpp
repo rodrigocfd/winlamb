@@ -152,8 +152,7 @@ RawMain::RawMain() {
 
 	trb.setup().pos = wl::dpi::pt(260, 190);
 	trb.setup().size = wl::dpi::sz(140, 28);
-	trb.setup().rangeMax = 12;
-	trb.setup().value = 6;
+	trb.setup().range = {0, 8};
 
 	tab.setup().pos = wl::dpi::pt(656, 10);
 	tab.setup().size = wl::dpi::sz(220, 200);
