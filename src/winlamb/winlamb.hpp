@@ -7,6 +7,7 @@
 /** @brief WinLamb library namespace. */
 namespace wl { }
 
+#include "aux-com.hpp"
 #include "aux-file.hpp"
 #include "aux-path.hpp"
 #include "aux-str.hpp"

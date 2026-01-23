@@ -1745,6 +1745,39 @@ namespace wl {
 
 	/// @brief Native [tab] control.
 	///
+	/// Example of creating a window with a tab programmatically, with a `Button`
+	/// inside the tab, .h and .cpp files:
+	///
+	/// ```cpp
+	/// class MyMain final {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{};
+	///     wl::Tab tab{wnd, 2};
+	///     wl::Button btn{tab.items[0].child()}; // this button will be inside the 1st tab
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
+	///
+	/// MyMain::MyMain() {
+	///     wnd.setup().title = L"My main window";
+	///
+	///     tab.setup().pos = wl::dpi::pt(10, 10);
+	///     tab.setup().size = wl::dpi::sz(300, 200);
+	///     tab.items[0].setup().title = L"First tab";
+	///     tab.items[1].setup().title = L"Second tab";
+	///
+	///     btn.setup().pos = wl::dpi::pt(50, 40); // button position inside the 1st tab
+	///     btn.setup().text = L"&Click";
+	///
+	///     btn.on().bn_clicked([this]() -> void {
+	///         MessageBoxW(wnd.hwnd(), L"Button clicked", L"Hello", MB_ICONINFORMATION);
+	///     });
+	/// }
+	/// ```
+	///
 	/// [tab]: https://learn.microsoft.com/en-us/windows/win32/controls/tab-controls
 	class Tab final : public WindowChild {
 	public:

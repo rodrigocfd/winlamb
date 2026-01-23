@@ -11,13 +11,13 @@ Goals:
     * programmatically; or
     * loading dialog resources.
 
+All WinLamb entities are enclosed in the `wl` namespace.
+
 ## Installation
 
 WinLamb has no dependencies other than the Win32 itself, and won't require any special build steps.
 
-Just copy all the files under your compilation tree and `#include <winlamb/lib.h>`, and that's it.
-
-All WinLamb entities are enclosed in the `wl` namespace.
+Just copy all source files under your compilation tree, and `#include <winlamb/winlamb.hpp>`. That's all.
 
 ## Classes
 
