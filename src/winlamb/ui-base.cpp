@@ -222,8 +222,8 @@ std::optional<LRESULT> WindowEvents::process_last(wm::Msg procMsg) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-void Layout::add(HWND hCtrl, wl::Lay layout) {
-	if (layout == Lay::hold_hold)
+void Layout::add(HWND hCtrl, wl::Lay lay) {
+	if (lay == Lay::hold_hold)
 		return; // nothing to do, don't even bother adding the control
 
 	HWND hParent = GetParent(hCtrl);
@@ -246,7 +246,7 @@ void Layout::add(HWND hCtrl, wl::Lay layout) {
 	#endif
 	screen_to_client_rc(hParent, &rcCtrl); // now relative to parent
 
-	_ctrls.emplace_back(hCtrl, layout, rcCtrl);
+	_ctrls.emplace_back(hCtrl, lay, rcCtrl);
 }
 
 void Layout::rearrange(WPARAM wp, LPARAM lp) {
@@ -257,7 +257,7 @@ void Layout::rearrange(WPARAM wp, LPARAM lp) {
 	HDWP hdwp = BeginDeferWindowPos(static_cast<int>(_ctrls.size()));
 	for (auto &&ctrl : _ctrls) {
 		WORD flags = SWP_NOZORDER;
-		switch (ctrl.layout) {
+		switch (ctrl.lay) {
 		case Lay::move_move: // repos both horz and vert
 			flags |= SWP_NOSIZE;
 			break;
@@ -266,16 +266,16 @@ void Layout::rearrange(WPARAM wp, LPARAM lp) {
 		}
 
 		DeferWindowPos(hdwp, ctrl.hCtrl, nullptr,
-			(static_cast<BYTE>(ctrl.layout) & LAY_H_MOVE)
+			(ctrl.lay == Lay::move_hold || ctrl.lay == Lay::move_move || ctrl.lay == Lay::move_resize) // horz move
 				? p.sz().cx - _szOrig.cx + ctrl.rcOrig.left
 				: ctrl.rcOrig.left, // keep original horz pos
-			(static_cast<BYTE>(ctrl.layout) & LAY_V_MOVE)
+			(ctrl.lay == Lay::hold_move || ctrl.lay == Lay::move_move || ctrl.lay == Lay::resize_move) // vert move
 				? p.sz().cy - _szOrig.cy + ctrl.rcOrig.top
 				: ctrl.rcOrig.top, // keep original vert pos
-			(static_cast<BYTE>(ctrl.layout) & LAY_H_RESIZE)
+			(ctrl.lay == Lay::resize_hold || ctrl.lay == Lay::resize_move || ctrl.lay == Lay::resize_resize) // horz resize
 				? p.sz().cx - _szOrig.cx + ctrl.rcOrig.right - ctrl.rcOrig.left
 				: ctrl.rcOrig.right - ctrl.rcOrig.left, // keep original width
-			(static_cast<BYTE>(ctrl.layout) & LAY_V_RESIZE)
+			(ctrl.lay == Lay::hold_resize || ctrl.lay == Lay::move_resize || ctrl.lay == Lay::resize_resize) // vert resize
 				? p.sz().cy - _szOrig.cy + ctrl.rcOrig.bottom - ctrl.rcOrig.top
 				: ctrl.rcOrig.bottom - ctrl.rcOrig.top, // keep original height
 			flags);

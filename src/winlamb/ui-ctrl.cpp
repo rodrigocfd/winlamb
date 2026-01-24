@@ -1274,7 +1274,9 @@ Tab::Tab(WindowParent &owner, WORD ctrlId, size_t numItems)
 			set_extended_style(true, _opts.styleExTab);
 		_ctrl._parent._layout.add(hwnd(), _opts.layout);
 		create_tabs();
-		display_tab(0);
+		if (_opts.selected)
+			items[static_cast<int>(_opts.selected)].select();
+		display_cur_tab();
 	});
 
 	custom_events();
@@ -1300,7 +1302,7 @@ Tab::Tab(WindowParent &owner, WORD ctrlId, Lay layout, std::initializer_list<WOR
 		apply_ui_font(hwnd());
 		_ctrl._parent._layout.add(hwnd(), layout);
 		create_tabs();
-		display_tab(0);
+		display_cur_tab(); // 1st tab will be selected by default
 	});
 
 	custom_events();
@@ -1321,8 +1323,13 @@ void Tab::create_tabs() const {
 	}
 }
 
-void Tab::display_tab(size_t index) const {
+void Tab::display_cur_tab() const {
 	if (_children.empty()) return;
+
+	std::optional<Tab::Item> selTab = items.selected();
+	if (!selTab.has_value()) return;
+	size_t index = selTab.value().index();
+
 	for (size_t i = 0; i < _children.size(); ++i) {
 		if (i != index) ShowWindow(_children[i].hwnd(), SW_HIDE); // hide all others
 	}
@@ -1338,9 +1345,11 @@ void Tab::display_tab(size_t index) const {
 
 void Tab::custom_events() {
 	_ctrl._parent._preEvents.wm_notify(ctrl_id(), TCN_SELCHANGE, [this](wm::Notify) -> void {
-		std::optional<Tab::Item> sel = items.selected();
-		if (sel.has_value())
-			display_tab(sel.value().index());
+		display_cur_tab();
+	});
+
+	_ctrl._parent._preEvents.wm(WM_SIZE, [this](wm::Size p) -> void {
+		display_cur_tab();
 	});
 }
 

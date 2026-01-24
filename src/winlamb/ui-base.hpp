@@ -437,53 +437,44 @@ namespace wl::events {
 
 }
 
-namespace _wl_internal {
-
-	constexpr BYTE LAY_H_MOVE   = 0b0000'0001;
-	constexpr BYTE LAY_H_RESIZE = 0b0000'0010;
-	constexpr BYTE LAY_V_MOVE   = 0b0000'0100;
-	constexpr BYTE LAY_V_RESIZE = 0b0000'1000;
-
-}
-
 namespace wl {
 
 	/** @brief Specifies the horizontal and vertical behavior for a control when the parent window is resized. */
 	enum class Lay : BYTE {
 		/** When parent is resized, nothing happens. */
-		hold_hold = 0,
+		hold_hold,
 		/// When parent resizes:
 		/// - horizontal: nothing happens;
 		/// - vertical: control moves anchored at bottom.
-		hold_move = _wl_internal::LAY_V_MOVE,
+		hold_move,
 		/// When parent resizes:
 		/// - horizontal: nothing happens;
 		/// - vertical: control is resized together.
-		hold_resize = _wl_internal::LAY_V_RESIZE,
+		hold_resize,
 		/// When parent resizes:
 		/// - horizontal: control moves anchored at right;
 		/// - vertical: nothing happens.
-		move_hold = _wl_internal::LAY_H_MOVE,
+		move_hold,
 		/// When parent resizes:
 		/// - horizontal: control moves anchored at right;
 		/// - vertical: control moves anchored at bottom.
-		move_move = _wl_internal::LAY_H_MOVE | _wl_internal::LAY_V_MOVE,
+		move_move,
 		/// When parent resizes:
 		/// - horizontal: control moves anchored at right;
 		/// - vertical: control is resized together.
-		move_resize = _wl_internal::LAY_H_MOVE | _wl_internal::LAY_V_RESIZE,
+		move_resize,
 		/// When parent resizes:
 		/// - horizontal: control is resized together;
 		/// - vertical: nothing happens.
-		resize_hold = _wl_internal::LAY_H_RESIZE,
+		resize_hold,
 		/// When parent resizes:
 		/// - horizontal: control is resized together;
 		/// - vertical: control moves anchored at bottom.
-		resize_move = _wl_internal::LAY_H_RESIZE | _wl_internal::LAY_V_MOVE,
+		resize_move,
 		/// When parent resizes:
 		/// - horizontal: control is resized together;
 		/// - vertical: control is resized together.
-		resize_resize = _wl_internal::LAY_H_RESIZE | _wl_internal::LAY_V_RESIZE,
+		resize_resize,
 	};
 
 }
@@ -495,7 +486,7 @@ namespace _wl_internal {
 	public:
 		struct Ctrl final {
 			HWND hCtrl;
-			wl::Lay layout;
+			wl::Lay lay;
 			RECT rcOrig;
 		};
 

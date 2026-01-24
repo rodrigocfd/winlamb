@@ -149,13 +149,17 @@ RawMain::RawMain() {
 
 	tv.setup().pos = wl::dpi::pt(10, 190);
 	tv.setup().size = wl::dpi::sz(250, 90);
+	tv.setup().layout = wl::Lay::hold_move;
 
 	trb.setup().pos = wl::dpi::pt(260, 190);
 	trb.setup().size = wl::dpi::sz(140, 28);
 	trb.setup().range = {0, 8};
+	trb.setup().layout = wl::Lay::hold_move;
 
 	tab.setup().pos = wl::dpi::pt(656, 10);
 	tab.setup().size = wl::dpi::sz(220, 200);
+	tab.setup().layout = wl::Lay::move_hold;
+	tab.setup().selected = 1;
 	tab.items[0].setup().title = L"First";
 	tab.items[1].setup().title = L"Second";
 	btn2.setup().text = L"In tab";

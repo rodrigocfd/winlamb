@@ -237,11 +237,11 @@ void RawModal::show() {
 
 RawControl::RawControl(WndBase &parentWndBase) {
 	parentWndBase._preEvents.wm_create_or_init_dialog([this, pParent = &parentWndBase]() -> void {
-		HINSTANCE hInst = wnd_hinst(pParent->_hWnd);
 		ATOM atom = _rawBase.register_class(wnd_hinst(pParent->_hWnd), std::move(_opts.className), _opts.classStyle,
 			0, _opts.hbrBackground, _opts.hCursor);
 		_rawBase.create_window(_opts.styleEx, atom, {}, _opts.style,
-			_opts.pos, _opts.size, pParent->_hWnd, reinterpret_cast<HMENU>(valid_ctrl_id(_opts.ctrlId)), hInst);
+			_opts.pos, _opts.size, pParent->_hWnd, reinterpret_cast<HMENU>(valid_ctrl_id(_opts.ctrlId)),
+			wnd_hinst(pParent->_hWnd));
 		pParent->_layout.add(_rawBase._wndBase._hWnd, _opts.layout);
 	});
 }
