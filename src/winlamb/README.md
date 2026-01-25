@@ -1,5 +1,7 @@
 # WinLamb
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?label=license&style=flat-square)](https://opensource.org/licenses/MIT)
+
 A lightweight modern C++20 library for the [Win32 API](https://en.wikipedia.org/wiki/Windows_API), using [lambdas](https://en.cppreference.com/w/cpp/language/lambda.html) to handle window messages.
 
 Goals:
@@ -111,6 +113,16 @@ MyMain::MyMain() {
        MessageBoxW(wnd.hwnd(), L"Button clicked", L"Hello", MB_ICONINFORMATION);
     });
 }
+```
+
+## Documentation
+
+WinLamb headers contain comment blocks which can be turned into documentation with [Doxygen](https://www.doxygen.nl/). The file [doxyfile.ini](doxyfile.ini) will configure the output, and [doxystyle.css](doxystyle.css) will customize the styles.
+
+To generate the docs, run:
+
+```
+doxygen doxyfile.ini
 ```
 
 ## License
