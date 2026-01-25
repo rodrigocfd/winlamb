@@ -2,9 +2,10 @@ html {
 	--page-foreground-color: #1f2328;
 	--fragment-foreground-color: #1f2328;
 	--code-comment-color: #aaa;
-	--code-keyword-color: #008000;
-	--code-type-keyword-color: #008000;
-	--code-flow-keyword-color: #008000;
+	--code-string-literal-color: #008000;
+	--code-keyword-color: #1848e3;
+	--code-type-keyword-color: #1848e3;
+	--code-flow-keyword-color: #1848e3;
 	--font-family-normal: 'Segoe UI', Arial, sans-serif;
 	--font-family-nav: 'Segoe UI', Arial, sans-serif;
 	--font-family-monospace: Consolas, monospace;

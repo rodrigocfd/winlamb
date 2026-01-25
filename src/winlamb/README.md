@@ -74,14 +74,6 @@ A few utility entities are included for convenience:
 
 The example below is a full native Win32 program consisting of a single window, managed by `wl::WindowMain`. Note there's no need to write a [message loop](https://learn.microsoft.com/en-us/windows/win32/winmsg/using-messages-and-message-queues) or [register a window](https://learn.microsoft.com/en-us/windows/win32/winmsg/about-window-classes).
 
-This is what's happening:
-
-* the header declares our main class, which has two members: the `wl::WindowMain` and the `wl::Button`;
-* the `RUN_MAIN` macro takes care of writing the [`WinMain`](https://learn.microsoft.com/en-us/windows/win32/learnwin32/winmain--the-application-entry-point) entry point for you;
-* in the constructor, the `setup()` calls define the creation options for the window and the button;
-* under the hood, `wnd.on().wm_create()` call will handle the [`WM_CREATE`](https://learn.microsoft.com/en-us/windows/win32/winmsg/wm-create) message with a lambda;
-* the `btn.on().bn_clicked()` call will handle a [`WM_COMMAND`](https://learn.microsoft.com/en-us/windows/win32/menurc/wm-command) message for a [`BN_CLICKED`](https://learn.microsoft.com/en-us/windows/win32/controls/bn-clicked) notification, for the given button.
-
 The whole code, .h and .cpp files:
 
 ```cpp
@@ -92,30 +84,30 @@ The whole code, .h and .cpp files:
 class MyMain final {
 public:
     MyMain();
-    wl::WindowMain wnd{};
-    wl::Button btn{wnd};
+    wl::WindowMain wnd{wl::MainOpts{ // manages our main window
+        .size = wl::dpi::sz(500, 300),
+        .style = wl::MainOpts{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
+        .title = L"My main window",
+    }};
+    wl::Button btn{wnd, wl::ButtonOpts{ // this button is a child control of our main window
+        .pos = wl::dpi::pt(10, 10),
+        .text = L"&Click me",
+    }};
 };
 ```
 
 ```cpp
 // -- MyMain.cpp implementation file --
 
-RUN_MAIN(MyMain, wnd)
+RUN_MAIN(MyMain, wnd) // will generate WinMain() entry point
 
 MyMain::MyMain() {
-    wnd.setup().title = L"My main window";
-    wnd.setup().size = wl::dpi::sz(500, 300);
-    wnd.setup().style |= WS_SIZEBOX | WS_MAXIMIZEBOX;
-
-    btn.setup().pos = wl::dpi::pt(10, 10);
-    btn.setup().text = L"&Click me";
-
-    wnd.on().wm_create([this](wl::wm::Create p) -> int {
+    wnd.on().wm_create([this](wl::wm::Create p) -> int { // WM_CREATE event
         wnd.set_title(L"A new title");
         return 0;
     });
 
-    btn.on().bn_clicked([this]() -> void {
+    btn.on().bn_clicked([this]() -> void { // WM_COMMAND event for BN_CLICKED
        MessageBoxW(wnd.hwnd(), L"Button clicked", L"Hello", MB_ICONINFORMATION);
     });
 }

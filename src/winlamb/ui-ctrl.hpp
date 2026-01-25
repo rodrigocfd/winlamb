@@ -318,14 +318,46 @@ namespace wl::events {
 
 }
 
-namespace wl::opts {
+namespace wl {
 
-	/** Options to create a `Button` programmatically. */
+	/// Options to create a `Button` programmatically.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// in the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
 	struct ButtonOpts final {
-		/// Control text passed to [`CreateWindowEx`].
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::ButtonOpts myOpts{
+		///     .pos = wl::dpi::pt(10, 10),
+		/// };
+		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		std::wstring text{};
+		POINT pos{};
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::ButtonOpts myOpts{
+		///     .size = wl::dpi::sz(88, 26),
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SIZE size = {.cx = 88, .cy = 26};
 		/// The [window] and [Button style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -337,12 +369,34 @@ namespace wl::opts {
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD styleEx = WS_EX_LEFT;
+		/// Control text passed to [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		std::wstring text{};
+	};
+
+	/// Options to create a `CheckBox` programmatically.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	struct CheckBoxOpts final {
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// btn.setup().pos = wl::dpi::pt(10, 10);
+		/// wl::CheckBoxOpts myOpts{
+		///     .pos = wl::dpi::pt(10, 10),
+		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -352,25 +406,17 @@ namespace wl::opts {
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// btn.setup().size = wl::dpi::sz(88, 26);
+		/// wl::CheckBoxOpts myOpts{
+		///     .size = wl::dpi::sz(88, 26),
+		/// };
 		/// ```
 		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size = {.cx = 88, .cy = 26};
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
-		/// Control ID.
-		///
-		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-	};
-
-	/** Options to create a `CheckBox` programmatically. */
-	struct CheckBoxOpts final {
-		/// Control text passed to [`CreateWindowEx`].
+		/// If not defined, the control will resize to automatically fit its initial text.
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		std::wstring text{};
+		SIZE size{};
+		/** Initial selection state. */
+		WORD state = BST_UNCHECKED;
 		/// The [window] and [CheckBox style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -382,40 +428,38 @@ namespace wl::opts {
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD styleEx = WS_EX_LEFT;
+		/// Control text passed to [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		std::wstring text{};
+	};
+
+	/// Options to create a `ComboBox` programmatically.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	struct ComboBoxOpts final {
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// chk.setup().pos = wl::dpi::pt(10, 10);
+		/// wl::ComboBoxOpts myOpts{
+		///     .pos = wl::dpi::pt(10, 10),
+		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		POINT pos{};
-		/// Control size passed to [`CreateWindowEx`].
-		///
-		/// Prefer using DPI-aware values:
-		///
-		/// ```cpp
-		/// chk.setup().size = wl::dpi::sz(88, 26);
-		/// ```
-		///
-		/// If not defined, the control will resize to automatically fit its initial text.
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size{};
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
-		/// Control ID.
-		///
-		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/** Initial state. */
-		WORD state = BST_UNCHECKED;
-	};
-
-	/** Options to create a `ComboBox` programmatically. */
-	struct ComboBoxOpts final {
 		/// The [window] and [ComboBox style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -427,12 +471,52 @@ namespace wl::opts {
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD styleEx = WS_EX_LEFT;
+		/// Texts to be added.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// wl::ComboBoxOpts myOpts{
+		///     .texts = {L"Hello", L"World"},
+		/// };
+		/// ```
+		std::vector<std::wstring> texts{};
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::ComboBoxOpts myOpts{
+		///     .width = wl::dpi::x(100),
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		int width = 100;
+	};
+
+	/// Options to create a `DateTimePicker` programmatically.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	struct DateTimePickerOpts final {
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// cmb.setup().pos = wl::dpi::pt(10, 10);
+		/// wl::DateTimePickerOpts myOpts{
+		///     .pos = wl::dpi::pt(10, 10),
+		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -442,29 +526,13 @@ namespace wl::opts {
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// cmb.setup().width = wl::dpi::x(100);
+		/// wl::DateTimePickerOpts myOpts{
+		///     .size = wl::dpi::sz(230, 23),
+		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		int width = 100;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
-		/// Control ID.
-		///
-		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/// Texts to be added.
-		///
-		/// Example:
-		///
-		/// ```cpp
-		/// cmb.setup().texts = {L"Hello", L"World"};
-		/// ```
-		std::vector<std::wstring> texts{};
-	};
-
-	/** Options to create a `DateTimePicker` programmatically. */
-	struct DateTimePickerOpts final {
+		SIZE size = {.cx = 230, .cy = 23};
 		/// The [window] and [DateTimePicker style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -476,12 +544,34 @@ namespace wl::opts {
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD styleEx = WS_EX_LEFT | WS_EX_CLIENTEDGE;
+		/// Initial [`SYSTEMTIME`].
+		///
+		/// [`SYSTEMTIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
+		SYSTEMTIME value{};
+	};
+
+	/// Options to create an `Edit` programmatically.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	struct EditOpts final {
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// dtp.setup().pos = wl::dpi::pt(10, 10);
+		/// wl::EditOpts myOpts{
+		///     .pos = wl::dpi::pt(10, 10),
+		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -491,37 +581,13 @@ namespace wl::opts {
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// dtp.setup().size = wl::dpi::sz(230, 23);
+		/// wl::EditOpts myOpts{
+		///     .size = wl::dpi::sz(100, 23),
+		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size = {.cx = 230, .cy = 23};
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
-		/// Control ID.
-		///
-		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/// Initial [`SYSTEMTIME`].
-		///
-		/// Example:
-		///
-		/// ```cpp
-		/// SYSTEMTIME st{};
-		/// GetLocalTime(&st);
-		/// dtp.setup().value = st;
-		/// ```
-		///
-		/// [`SYSTEMTIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
-		SYSTEMTIME value{};
-	};
-
-	/** Options to create an `Edit` programmatically. */
-	struct EditOpts final {
-		/// Control text passed to [`CreateWindowEx`].
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		std::wstring text{};
+		SIZE size = {.cx = 100, .cy = 23};
 		/// The [window] and [Edit style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -533,12 +599,58 @@ namespace wl::opts {
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD styleEx = WS_EX_LEFT | WS_EX_CLIENTEDGE;
+		/// Control text passed to [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		std::wstring text{};
+	};
+
+	/// Options to create a `ListView` programmatically.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	struct ListViewOpts final {
+		/** A column to be added to the `ListView`. */
+		struct Col final {
+			/** Column header text. */
+			std::wstring text{};
+			/** Column width. */
+			int width = 0;
+		};
+		/// Columns to be added, title and width.
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::ListViewOpts myOpts{
+		///     .cols = {
+		///         {L"First", wl::dpi::x(100)},
+		///         {L"Second", wl::dpi::x(120)},
+		///     },
+		/// };
+		/// ```
+		std::vector<Col> cols{};
+		/// Context menu resource to be loaded as the context menu with [`LoadMenu`].
+		///
+		/// [`LoadMenu`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadmenuw
+		WORD contextMenuId = 0;
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// txt.setup().pos = wl::dpi::pt(10, 10);
+		/// wl::ListViewOpts myOpts{
+		///     .pos = wl::dpi::pt(10, 10),
+		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -548,21 +660,13 @@ namespace wl::opts {
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// btn.setup().size = wl::dpi::sz(100, 23);
+		/// wl::ListViewOpts myOpts{
+		///     .size = wl::dpi::sz(120, 120),
+		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size = {.cx = 100, .cy = 23};
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
-		/// Control ID.
-		///
-		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-	};
-
-	/** Options to create a `ListView` programmatically. */
-	struct ListViewOpts final {
+		SIZE size = {.cx = 120, .cy = 120};
 		/// The [window] and [ListView style] passed to [`CreateWindowEx`].
 		///
 		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be set.
@@ -580,68 +684,34 @@ namespace wl::opts {
 		///
 		/// [ListView extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/extended-list-view-styles
 		DWORD styleExListView = LVS_EX_FULLROWSELECT;
+	};
+
+	/// Options to create a `MonthCalendar` programmatically.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	struct MonthCalendarOpts final {
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// lv.setup().pos = wl::dpi::pt(10, 10);
+		/// wl::MonthCalendarOpts myOpts{
+		///     .pos = wl::dpi::pt(10, 10),
+		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		POINT pos{};
-		/// Control size passed to [`CreateWindowEx`].
-		///
-		/// Prefer using DPI-aware values:
-		///
-		/// ```cpp
-		/// lv.setup().size = wl::dpi::sz(120, 120);
-		/// ```
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size = {.cx = 120, .cy = 120};
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
-		/// Control ID.
-		///
-		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/// Context menu resource to be loaded as the context menu with [`LoadMenu`].
-		/// If defined, overwrites `hMenuContext`.
-		///
-		/// This menu will be owned by the list view, and destroyed automatically.
-		///
-		/// [`LoadMenu`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadmenuw
-		WORD contextMenuId = 0;
-		/// Optional list view context menu, usually created programmatically with [`CreatePopupMenu`].
-		///
-		/// This menu will be owned by the list view, and destroyed automatically.
-		///
-		/// Ignored if you define `contextMenuId`.
-		///
-		/// [`CreatePopupMenu`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createpopupmenu
-		HMENU hMenuContext = nullptr;
-
-		/** A column to be added to the `ListView`. */
-		struct Col final {
-			std::wstring name{};
-			int width = 0;
-		};
-		/// Columns to be added, title and width.
-		///
-		/// Prefer using DPI-aware values:
-		///
-		/// ```cpp
-		/// lv.setup().columns = {
-		///     {L"First", wl::dpi::x(100)},
-		///     {L"Second", wl::dpi::x(120)},
-		/// };
-		/// ```
-		std::vector<Col> columns{};
-	};
-
-	/** Options to create a `MonthCalendar` programmatically. */
-	struct MonthCalendarOpts final {
 		/// The [window] and [MonthCalendar style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -653,42 +723,56 @@ namespace wl::opts {
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD styleEx = WS_EX_LEFT;
-		/// Control position passed to [`CreateWindowEx`].
-		///
-		/// Prefer using DPI-aware values:
-		///
-		/// ```cpp
-		/// mcal.setup().pos = wl::dpi::pt(10, 10);
-		/// ```
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
-		/// Control ID.
-		///
-		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
 		/// Initial [`SYSTEMTIME`].
-		///
-		/// Example:
-		///
-		/// ```cpp
-		/// SYSTEMTIME st{};
-		/// GetLocalTime(&st);
-		/// mcal.setup().value = st;
-		/// ```
 		///
 		/// [`SYSTEMTIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
 		SYSTEMTIME value{};
 	};
 
-	/** Options to create a `RadioButton` programmatically. */
+	/// Options to create a `RadioButton` programmatically.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
 	struct RadioButtonOpts final {
-		/// Control text passed to [`CreateWindowEx`].
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::RadioButtonOpts myOpts{
+		///     .pos = wl::dpi::pt(10, 10),
+		/// };
+		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		std::wstring text{};
+		POINT pos{};
+		/// Initial state.
+		///
+		/// Only one radio button can be selected at once in its group.
+		bool selected = false;
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::RadioButtonOpts myOpts{
+		///     .size = wl::dpi::sz(88, 26),
+		/// };
+		/// ```
+		///
+		/// If not defined, the control will resize to automatically fit its initial text.
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SIZE size{};
 		/// The [window] and [RadioButton style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -700,12 +784,34 @@ namespace wl::opts {
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD styleEx = WS_EX_LEFT;
+		/// Control text passed to [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		std::wstring text{};
+	};
+
+	/// Options to create a `Static` programmatically.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	struct StaticOpts final {
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// rad.setup().pos = wl::dpi::pt(10, 10);
+		/// wl::StaticOpts myOpts{
+		///     .pos = wl::dpi::pt(10, 10),
+		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -715,31 +821,15 @@ namespace wl::opts {
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// rad.setup().size = wl::dpi::sz(88, 26);
+		/// wl::StaticOpts myOpts{
+		///     .size = wl::dpi::sz(88, 26),
+		/// };
 		/// ```
 		///
 		/// If not defined, the control will resize to automatically fit its initial text.
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		SIZE size{};
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
-		/// Control ID.
-		///
-		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/// Initial state.
-		///
-		/// Only one radio button can be selected at once in its group.
-		bool selected = false;
-	};
-
-	/** Options to create a `Static` programmatically. */
-	struct StaticOpts final {
-		/// Control text passed to [`CreateWindowEx`].
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		std::wstring text{};
 		/// The [window] and [Static style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -751,38 +841,20 @@ namespace wl::opts {
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD styleEx = WS_EX_LEFT;
-		/// Control position passed to [`CreateWindowEx`].
-		///
-		/// Prefer using DPI-aware values:
-		///
-		/// ```cpp
-		/// lbl.setup().pos = wl::dpi::pt(10, 10);
-		/// ```
+		/// Control text passed to [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
-		/// Control size passed to [`CreateWindowEx`].
-		///
-		/// Prefer using DPI-aware values:
-		///
-		/// ```cpp
-		/// lbl.setup().size = wl::dpi::sz(88, 26);
-		/// ```
-		///
-		/// If not defined, the control will resize to automatically fit its initial text.
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size{};
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
-		/// Control ID.
-		///
-		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
+		std::wstring text{};
 	};
 
-	/** Options to create a `StatusBar` programmatically. */
-	struct StatusBarOpts final {
+	/// Options to create a `StatusBar` programmatically.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	struct StatusbarOpts final {
 		/// Adds a fixed part to the `StatusBar`. When the parent window is resized, this part will keep its width.
 		///
 		/// Prefer using a DPI-aware width:
@@ -834,8 +906,46 @@ namespace wl::opts {
 		friend wl::StatusBar;
 	};
 
-	/** Options to create a `Tab` programmatically. */
+	/// Options to create a `Tab` programmatically.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
 	struct TabOpts final {
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::TabOpts myOpts{
+		///     .pos = wl::dpi::pt(10, 10),
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		POINT pos{};
+		/** Zero-based index of initially selected tab item. */
+		size_t selected = 0;
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::TabOpts myOpts{
+		///     .size = wl::dpi::sz(120, 120),
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SIZE size = {.cx = 120, .cy = 120};
 		/// The [window] and [Tab style] passed to [`CreateWindowEx`].
 		///
 		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be set.
@@ -853,58 +963,54 @@ namespace wl::opts {
 		///
 		/// [Tab extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/tab-control-extended-styles
 		DWORD styleExTab = 0;
+		/** Titles of each tab item to be created. */
+		std::vector<std::wstring> titles{};
+	};
+
+	/// Options to create a `Trackbar` programmatically.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	struct TrackbarOpts final {
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
+		/** Page size. */
+		int pageSize = 0;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// tab.setup().pos = wl::dpi::pt(10, 10);
+		/// wl::TrackbarOpts myOpts{
+		///     .pos = wl::dpi::pt(10, 10),
+		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		POINT pos{};
+		/// Minimum and maximum values for the selectable range.
+		///
+		/// Defaults to `{0, 100}`.
+		std::pair<int, int> range = {0, 100};
 		/// Control size passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// tab.setup().size = wl::dpi::sz(120, 120);
+		/// wl::TrackbarOpts myOpts{
+		///     .size = wl::dpi::sz(175, 28),
+		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size = {.cx = 120, .cy = 120};
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
-		/// Control ID.
-		///
-		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/** Zero-based index of initially selected tab item. */
-		size_t selected = 0;
-	};
-
-	/** Options to create a `Tab` item programmatically. */
-	struct TabItemOpts final {
-		/** The title of the tab item. */
-		std::wstring &title;
-		/// Class name passed to [`WNDCLASSEX`].
-		///
-		/// Defaults to an auto-generated string.
-		///
-		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
-		std::wstring &className;
-		/// The window background brush passed to [`WNDCLASSEX`].
-		///
-		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
-		HBRUSH &hbrBackground;
-		/// The window cursor passed to [`WNDCLASSEX`].
-		///
-		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
-		HCURSOR &hCursor;
-	};
-
-	/** Options to create a `Trackbar` programmatically. */
-	struct TrackbarOpts final {
+		SIZE size = {.cx = 175, .cy = 28};
 		/// The [window] and [Trackbar style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -916,12 +1022,32 @@ namespace wl::opts {
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD styleEx = WS_EX_LEFT;
+		/** Current selected position. */
+		int value = 0;
+	};
+
+	/// Options to create a `TreeView` programmatically.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	struct TreeViewOpts final {
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// tb.setup().pos = wl::dpi::pt(10, 10);
+		/// wl::TreeViewOpts myOpts{
+		///     .pos = wl::dpi::pt(10, 10),
+		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -931,29 +1057,13 @@ namespace wl::opts {
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// tb.setup().size = wl::dpi::sz(175, 28);
+		/// wl::TreeViewOpts myOpts{
+		///     .size = wl::dpi::sz(120, 120),
+		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size = {.cx = 175, .cy = 28};
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
-		/// Control ID.
-		///
-		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/** Page size. */
-		int pageSize = 0;
-		/// Minimum and maximum values for the selectable range.
-		///
-		/// Defaults to `{0, 100}`.
-		std::pair<int, int> range = {0, 100};
-		/** Current selected position. */
-		int value = 0;
-	};
-
-	/** Options to create a `TreeView` programmatically. */
-	struct TreeViewOpts final {
+		SIZE size = {.cx = 120, .cy = 120};
 		/// The [window] and [TreeView style] passed to [`CreateWindowEx`].
 		///
 		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be set.
@@ -971,32 +1081,6 @@ namespace wl::opts {
 		///
 		/// [TreeView extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/tree-view-control-window-extended-styles
 		DWORD styleExTreeView = 0;
-		/// Control position passed to [`CreateWindowEx`].
-		///
-		/// Prefer using DPI-aware values:
-		///
-		/// ```cpp
-		/// tv.setup().pos = wl::dpi::pt(10, 10);
-		/// ```
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
-		/// Control size passed to [`CreateWindowEx`].
-		///
-		/// Prefer using DPI-aware values:
-		///
-		/// ```cpp
-		/// tv.setup().size = wl::dpi::sz(120, 120);
-		/// ```
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size = {.cx = 120, .cy = 120};
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
-		/// Control ID.
-		///
-		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
 	};
 
 }
@@ -1011,8 +1095,13 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{};
-	///     wl::Button btn{wnd};
+	///     wl::WindowMain wnd{wl::MainOpts{
+	///         .title = L"My main window",
+	///     }};
+	///     wl::Button btn{wnd, wl::ButtonOpts{
+	///         .pos = wl::dpi::pt(10, 10),
+	///         .text = L"&Click me",
+	///     }};
 	/// };
 	/// ```
 	///
@@ -1020,11 +1109,6 @@ namespace wl {
 	/// RUN_MAIN(MyMain, wnd)
 	///
 	/// MyMain::MyMain() {
-	///     wnd.setup().title = L"My main window";
-	///
-	///     btn.setup().pos = wl::dpi::pt(10, 10);
-	///     btn.setup().text = L"&Click me";
-	///
 	///     btn.on().bn_clicked([this]() -> void {
 	///         MessageBoxW(wnd.hwnd(), L"Button clicked", L"Hello", MB_ICONINFORMATION);
 	///     });
@@ -1057,12 +1141,8 @@ namespace wl {
 	public:
 		/// Constructs the button, which will be created programmatically with [`CreateWindowEx`].
 		///
-		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
-		///
-		/// Further options can be defined with the `setup` method.
-		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		explicit Button(WindowParent &owner, WORD ctrlId = 0);
+		Button(WindowParent &owner, ButtonOpts creationOpts);
 
 		/// Constructs the button, which will be loaded from the dialog resource.
 		///
@@ -1074,9 +1154,6 @@ namespace wl {
 
 		/** Returns the control ID. */
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
-
-		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::ButtonOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -1118,7 +1195,6 @@ namespace wl {
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::ButtonEvents _events;
-		opts::ButtonOpts _opts{};
 	};
 
 	/// @brief Native [check box] control.
@@ -1129,8 +1205,13 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{};
-	///     wl::CheckBox chk{wnd};
+	///     wl::WindowMain wnd{wl::MainOpts{
+	///         .title = L"My main window",
+	///     }};
+	///     wl::CheckBox chk{wnd, wl::CheckBoxOpts{
+	///         .pos = wl::dpi::pt(10, 10);
+	///         .text = L"&Check me";
+	///     }};
 	/// };
 	/// ```
 	///
@@ -1138,11 +1219,6 @@ namespace wl {
 	/// RUN_MAIN(MyMain, wnd)
 	///
 	/// MyMain::MyMain() {
-	///     wnd.setup().title = L"My main window";
-	///
-	///     chk.setup().pos = wl::dpi::pt(10, 10);
-	///     chk.setup().text = L"&Check me";
-	///
 	///     chk.on().bn_clicked([this]() -> void {
 	///         std::wstring title = wl::str::fmt(L"Check box is %s", chk.is_checked() ? L"YES" : L"NO");
 	///         wnd.set_title(title);
@@ -1155,12 +1231,8 @@ namespace wl {
 	public:
 		/// Constructs the check box, which will be created programmatically with [`CreateWindowEx`].
 		///
-		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
-		///
-		/// Further options can be defined with the `setup` method.
-		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		explicit CheckBox(WindowParent &owner, WORD ctrlId = 0);
+		CheckBox(WindowParent &owner, CheckBoxOpts opts);
 
 		/// Constructs the check box, which will be loaded from the dialog resource.
 		///
@@ -1172,9 +1244,6 @@ namespace wl {
 
 		/** Returns the control ID. */
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
-
-		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::CheckBoxOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -1246,7 +1315,6 @@ namespace wl {
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::ButtonEvents _events;
-		opts::CheckBoxOpts _opts{};
 	};
 
 	/// @brief Native [combo box] control (dropdown).
@@ -1257,8 +1325,13 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{};
-	///     wl::ComboBox cmb{wnd};
+	///     wl::WindowMain wnd{wl::MainOpts{
+	///         .title = L"My main window",
+	///     }};
+	///     wl::ComboBox cmb{wnd, wl::ComboBoxOpts{
+	///         .pos = wl::dpi::pt(10, 10),
+	///         .texts = {L"Hello", L"World"},
+	///     }};
 	/// };
 	/// ```
 	///
@@ -1266,11 +1339,6 @@ namespace wl {
 	/// RUN_MAIN(MyMain, wnd)
 	///
 	/// MyMain::MyMain() {
-	///     wnd.setup().title = L"My main window";
-	///
-	///     cmb.setup().pos = wl::dpi::pt(10, 10);
-	///     cmb.setup().texts = {L"Hello", L"World"};
-	///
 	///     cmb.on().cbn_sel_change([this]() -> void {
 	///         std::optional<std::wstring> selText = cmb.items.selected_text();
 	///         if (selText.has_value()) {
@@ -1324,12 +1392,8 @@ namespace wl {
 
 		/// Constructs the combo box, which will be created programmatically with [`CreateWindowEx`].
 		///
-		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
-		///
-		/// Further options can be defined with the `setup` method.
-		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		explicit ComboBox(WindowParent &owner, WORD ctrlId = 0);
+		ComboBox(WindowParent &owner, ComboBoxOpts creationOpts);
 
 		/// Constructs the combo box, which will be loaded from the dialog resource.
 		///
@@ -1344,9 +1408,6 @@ namespace wl {
 
 		/** Returns the control ID. */
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
-
-		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::ComboBoxOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -1373,7 +1434,6 @@ namespace wl {
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::ComboBoxEvents _events;
-		opts::ComboBoxOpts _opts{};
 	};
 
 	/// @brief Native [date and time picker] control.
@@ -1384,8 +1444,12 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{};
-	///     wl::DateTimePicker dtp{wnd};
+	///     wl::WindowMain wnd{wl::MainOpts{
+	///         .title = L"My main window",
+	///     }};
+	///     wl::DateTimePicker dtp{wnd, wl::DateTimePickerOpts{
+	///         .pos = wl::dpi::pt(10, 10),
+	///     }};
 	/// };
 	/// ```
 	///
@@ -1393,10 +1457,6 @@ namespace wl {
 	/// RUN_MAIN(MyMain, wnd)
 	///
 	/// MyMain::MyMain() {
-	///     wnd.setup().title = L"My main window";
-	///
-	///     dtp.setup().pos = wl::dpi::pt(10, 10);
-	///
 	///     dtp.on().dtn_date_time_change([this](NMDATETIMECHANGE &p) -> void {
 	///         std::wstring title = wl::str::fmt(L"%d-%d-%d", p.st.wYear, p.st.wMonth, p.st.wDay);
 	///         wnd.set_title(title);
@@ -1409,12 +1469,8 @@ namespace wl {
 	public:
 		/// Constructs the date and time picker, which will be created programmatically with [`CreateWindowEx`].
 		///
-		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
-		///
-		/// Further options can be defined with the `setup` method.
-		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		explicit DateTimePicker(WindowParent &owner, WORD ctrlId = 0);
+		DateTimePicker(WindowParent &owner, DateTimePickerOpts creationOpts);
 
 		/// Constructs the date and time picker, which will be loaded from the dialog resource.
 		///
@@ -1426,9 +1482,6 @@ namespace wl {
 
 		/** Returns the control ID. */
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
-
-		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::DateTimePickerOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -1465,7 +1518,6 @@ namespace wl {
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::DateTimePickerEvents _events;
-		opts::DateTimePickerOpts _opts{};
 	};
 
 	/// @brief Native [edit] control (textbox).
@@ -1476,8 +1528,12 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{};
-	///     wl::Edit txt{wnd};
+	///     wl::WindowMain wnd{wl::MainOpts{
+	///         .title = L"My main window",
+	///     }};
+	///     wl::Edit txt{wnd, wl::EditOpts{
+	///         .pos = wl::dpi::pt(10, 10),
+	///     }};
 	/// };
 	/// ```
 	///
@@ -1485,10 +1541,6 @@ namespace wl {
 	/// RUN_MAIN(MyMain, wnd)
 	///
 	/// MyMain::MyMain() {
-	///     wnd.setup().title = L"My main window";
-	///
-	///     txt.setup().pos = wl::dpi::pt(10, 10);
-	///
 	///     txt.on().en_change([this]() -> void {
 	///         std::wstring s = txt.text();
 	///         wnd.set_title(s);
@@ -1523,12 +1575,8 @@ namespace wl {
 	public:
 		/// Constructs the edit, which will be created programmatically with [`CreateWindowEx`].
 		///
-		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
-		///
-		/// Further options can be defined with the `setup` method.
-		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		explicit Edit(WindowParent &owner, WORD ctrlId = 0);
+		Edit(WindowParent &owner, EditOpts creationOpts);
 
 		/// Constructs the edit, which will be loaded from the dialog resource.
 		///
@@ -1540,9 +1588,6 @@ namespace wl {
 
 		/** Returns the control ID. */
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
-
-		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::EditOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -1579,7 +1624,6 @@ namespace wl {
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::EditEvents _events;
-		opts::EditOpts _opts{};
 	};
 
 	/// @brief Native [list view] control.
@@ -1590,8 +1634,17 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{};
-	///     wl::ListView lv{wnd};
+	///     wl::WindowMain wnd{wl::MainOpts{
+	///         .title = L"My main window",
+	///     }};
+	///     wl::ListView lv{wnd, wl::ListViewOpts{
+	///         .cols = {
+	///             {L"First", wl::dpi::x(200)},
+	///             {L"Second", wl::dpi::x(100)},
+	///         },
+	///         .pos = wl::dpi::pt(10, 10),
+	///         .size = wl::dpi::sz(400, 200),
+	///     }};
 	/// };
 	/// ```
 	///
@@ -1599,11 +1652,6 @@ namespace wl {
 	/// RUN_MAIN(MyMain, wnd)
 	///
 	/// MyMain::MyMain() {
-	///     wnd.setup().size = wl::dpi::sz(500, 300);
-	///
-	///     lv.setup().pos = wl::dpi::pt(10, 10);
-	///     lv.setup().size = wl::dpi::sz(400, 200);
-	///
 	///     wnd.on().wm_create([this](wl::wm::Create p) -> int {
 	///         lv.set_extended_style(true, LVS_EX_FULLROWSELECT);
 	///         return 0;
@@ -1880,12 +1928,8 @@ namespace wl {
 
 		/// Constructs the list view, which will be created programmatically with [`CreateWindowEx`].
 		///
-		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
-		///
-		/// Further options can be defined with the `setup` method.
-		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		explicit ListView(WindowParent &owner, WORD ctrlId = 0);
+		ListView(WindowParent &owner, ListViewOpts creationOpts);
 
 		/// Constructs the list view, which will be loaded from the dialog resource.
 		///
@@ -1903,9 +1947,6 @@ namespace wl {
 
 		/** Returns the control ID. */
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
-
-		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::ListViewOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -1953,11 +1994,12 @@ namespace wl {
 		IconStore& icons_32();
 
 	private:
+		void load_context_menu(WORD contextMenuId);
 		void custom_events();
 		void show_context_menu(bool followCursor, bool hasCtrl, bool hasShift);
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::ListViewEvents _events;
-		opts::ListViewOpts _opts{};
+		HMENU _hMenuContext = nullptr;
 		_wl_internal::ImageList _imgList16{{16, 16}}, _imgList32{{32, 32}};
 	};
 
@@ -1968,12 +2010,8 @@ namespace wl {
 	public:
 		/// Constructs the month calendar, which will be created programmatically with [`CreateWindowEx`].
 		///
-		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
-		///
-		/// Further options can be defined with the `setup` method.
-		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		explicit MonthCalendar(WindowParent &owner, WORD ctrlId = 0);
+		MonthCalendar(WindowParent &owner, MonthCalendarOpts creationOpts);
 
 		/// Constructs the month calendar, which will be loaded from the dialog resource.
 		///
@@ -1985,9 +2023,6 @@ namespace wl {
 
 		/** Returns the control ID. */
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
-
-		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::MonthCalendarOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -2024,7 +2059,6 @@ namespace wl {
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::MonthCalendarEvents _events;
-		opts::MonthCalendarOpts _opts{};
 	};
 
 	/// @brief Native [radio button] control.
@@ -2036,12 +2070,8 @@ namespace wl {
 	public:
 		/// Constructs the radio button, which will be created programmatically with [`CreateWindowEx`].
 		///
-		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
-		///
-		/// Further options can be defined with the `setup` method.
-		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		explicit RadioButton(WindowParent &owner, WORD ctrlId = 0);
+		RadioButton(WindowParent &owner, RadioButtonOpts creationOpts);
 
 		/// Constructs the radio button, which will be loaded from the dialog resource.
 		///
@@ -2053,9 +2083,6 @@ namespace wl {
 
 		/** Returns the control ID. */
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
-
-		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::RadioButtonOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -2107,7 +2134,7 @@ namespace wl {
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::ButtonEvents _events;
-		opts::RadioButtonOpts _opts{};
+		friend RadioGroup;
 	};
 
 	/// @brief Manages a group of `RadioButton` controls.
@@ -2118,8 +2145,24 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{};
-	///     wl::RadioGroup rads{wnd, 3}; // create 3 radio buttons
+	///     wl::WindowMain wnd{wl::MainOpts{
+	///         .title = L"My main window",
+	///     }};
+	///     wl::RadioGroup rads{wnd, {
+	///         wl::RadioButtonOpts{
+	///             .pos = wl::dpi::pt(420, 10),
+	///             .text = L"First",
+	///         },
+	///         wl::RadioButtonOpts{
+	///             .pos = wl::dpi::pt(420, 25),
+	///             .text = L"Second",
+	///         },
+	///         wl::RadioButtonOpts{
+	///             .pos = wl::dpi::pt(420, 40),
+	///             .selected = true,
+	///             .text = L"Turd",
+	///         },
+	///     }};
 	/// };
 	/// ```
 	///
@@ -2127,18 +2170,6 @@ namespace wl {
 	/// RUN_MAIN(MyMain, wnd)
 	///
 	/// MyMain::MyMain() {
-	///     wnd.setup().title = L"My main window";
-	///
-	///     rads.radios[0].setup().pos = wl::dpi::pt(10, 10);
-	///     rads.radios[0].setup().text = L"First";
-	///     rads.radios[0].setup().selected = true;
-	///
-	///     rads.radios[1].setup().pos = wl::dpi::pt(10, 30);
-	///     rads.radios[1].setup().text = L"Second";
-	///
-	///     rads.radios[2].setup().pos = wl::dpi::pt(10, 50);
-	///     rads.radios[2].setup().text = L"Third";
-	///
 	///     rads.on().bn_clicked([this](int i) -> void {
 	///         MessageBoxW(wnd.hwnd(), L"Radio selected", rads.radios[i].text().c_str(), MB_ICONINFORMATION);
 	///     });
@@ -2167,17 +2198,10 @@ namespace wl {
 			friend RadioGroup;
 		};
 
-		/// Constructs the radio group with the given number of radio buttons, each one created
-		/// programmatically with [`CreateWindowEx`], and an auto-generated ID.
+		/// Constructs the grouped radio buttons, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		RadioGroup(WindowParent &owner, size_t numRadios);
-
-		/// Constructs the radio group using each provided ID to programmatically create
-		/// a radio button with [`CreateWindowEx`].
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		RadioGroup(WindowParent &owner, std::initializer_list<WORD> ctrlIds);
+		RadioGroup(WindowParent &owner, std::initializer_list<RadioButtonOpts> creationOpts);
 
 		/// Constructs the radio group using each provided ID to programmatically create
 		/// a radio button which will be loaded from the dialog resource.
@@ -2202,7 +2226,6 @@ namespace wl {
 		[[nodiscard]] constexpr events::RadioGroupEvents& on() { return _wl_internal::valid_event(_radios[0].hwnd(), _events); }
 
 	private:
-		void style_radios();
 		WindowParent &_owner;
 		_wl_internal::NonMovableArray<RadioButton> _radios;
 		events::RadioGroupEvents _events;
@@ -2216,8 +2239,13 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{};
-	///     wl::Static lbl{wnd};
+	///     wl::WindowMain wnd{wl::MainOpts{
+	///         .title = L"My main window",
+	///     }};
+	///     wl::Static lbl{wnd, wl::StaticOpts{
+	///         .pos = wl::dpi::pt(10, 10),
+	///         .text = L"Hello",
+	///     }};
 	/// };
 	/// ```
 	///
@@ -2225,11 +2253,6 @@ namespace wl {
 	/// RUN_MAIN(MyMain, wnd)
 	///
 	/// MyMain::MyMain() {
-	///     wnd.setup().title = L"My main window";
-	///
-	///     lbl.setup().pos = wl::dpi::pt(10, 10);
-	///     lbl.setup().text = L"Hello";
-	///
 	///     lbl.on().stn_clicked([this]() -> void {
 	///         wnd.set_title(L"Label clicked");
 	///     });
@@ -2241,12 +2264,8 @@ namespace wl {
 	public:
 		/// Constructs the static, which will be created programmatically with [`CreateWindowEx`].
 		///
-		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
-		///
-		/// Further options can be defined with the `setup` method.
-		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		explicit Static(WindowParent &owner, WORD ctrlId = 0);
+		Static(WindowParent &owner, StaticOpts creationOpts);
 
 		/// Constructs the static, which will be loaded from the dialog resource.
 		///
@@ -2258,9 +2277,6 @@ namespace wl {
 
 		/** Returns the control ID. */
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
-
-		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::StaticOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -2302,7 +2318,6 @@ namespace wl {
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::StaticEvents _events;
-		opts::StaticOpts _opts{};
 	};
 
 	/// @brief Native [status bar] control.
@@ -2313,7 +2328,9 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{};
+	///     wl::WindowMain wnd{wl::MainOpts{
+	///         .title = L"My main window",
+	///     }};
 	///     wl::StatusBar sb{wnd};
 	/// };
 	/// ```
@@ -2322,8 +2339,6 @@ namespace wl {
 	/// RUN_MAIN(MyMain, wnd)
 	///
 	/// MyMain::MyMain() {
-	///     wnd.setup().title = L"My main window";
-	///
 	///     sb.setup().add_resizable_part(1, L"First");
 	///     sb.setup().add_fixed_part(wl::dpi::x(200), L"Second");
 	///
@@ -2398,7 +2413,7 @@ namespace wl {
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
 
 		/** Defines additional creation options. */
-		[[nodiscard]] constexpr opts::StatusBarOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
+		[[nodiscard]] constexpr StatusbarOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -2434,7 +2449,7 @@ namespace wl {
 
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::StatusBarEvents _events;
-		opts::StatusBarOpts _opts{};
+		StatusbarOpts _opts{};
 		_wl_internal::HIconStore _iconStore16{{16, 16}};
 
 		struct PartData final {
@@ -2455,9 +2470,18 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{};
-	///     wl::Tab tab{wnd, 2}; // create 2 tab items
-	///     wl::Button btn{tab.items[0].child()}; // this button will be inside the 1st tab
+	///     wl::WindowMain wnd{wl::MainOpts{
+	///         .title = L"My main window",
+	///     }};
+	///     wl::Tab tab{wnd, wl::TabOpts{
+	///         .pos = wl::dpi::pt(10, 10),
+	///         .size = wl::dpi::sz(300, 200),
+	///         .titles = {L"First tab", L"Second tab"},
+	///     }};
+	///     wl::Button btn{tab.items[0].child(), wl::ButtonOpts{
+	///         .pos = wl::dpi::pt(50, 40), // button position inside the 1st tab
+	///         .text = L"&Click",
+	///     }};
 	/// };
 	/// ```
 	///
@@ -2465,16 +2489,6 @@ namespace wl {
 	/// RUN_MAIN(MyMain, wnd)
 	///
 	/// MyMain::MyMain() {
-	///     wnd.setup().title = L"My main window";
-	///
-	///     tab.setup().pos = wl::dpi::pt(10, 10);
-	///     tab.setup().size = wl::dpi::sz(300, 200);
-	///     tab.items[0].setup().title = L"First tab";
-	///     tab.items[1].setup().title = L"Second tab";
-	///
-	///     btn.setup().pos = wl::dpi::pt(50, 40); // button position inside the 1st tab
-	///     btn.setup().text = L"&Click";
-	///
 	///     btn.on().bn_clicked([this]() -> void {
 	///         MessageBoxW(wnd.hwnd(), L"Button clicked", L"Hello", MB_ICONINFORMATION);
 	///     });
@@ -2492,16 +2506,6 @@ namespace wl {
 			constexpr Item(Tab &owner, int itemIndex) : _owner{owner}, _index{itemIndex} { }
 
 		public:
-			/** For controls created programmatically, defines additional creation options. */
-			[[nodiscard]] constexpr opts::TabItemOpts setup() const {
-				return {
-					.title = _owner._titles[_index],
-					.className = _owner._children[_index].setup().className,
-					.hbrBackground = _owner._children[_index].setup().hbrBackground,
-					.hCursor = _owner._children[_index].setup().hCursor,
-				};
-			}
-
 			/** Returns the child `WindowControl` rendered within this tab item. */
 			[[nodiscard]] constexpr WindowControl& child() const { return _owner._children[_index]; }
 
@@ -2549,27 +2553,18 @@ namespace wl {
 
 		/// Constructs the tab, which will be created programmatically with [`CreateWindowEx`].
 		///
-		/// The control will receive an auto-generated ID.
-		///
-		/// Further options can be defined with the `setup` method.
-		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		Tab(WindowParent &owner, size_t numItems)
-			: Tab{owner, 0, numItems} { }
-
-		/// Constructs the tab, which will be created programmatically with [`CreateWindowEx`].
-		///
-		/// Further options can be defined with the `setup` method.
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		Tab(WindowParent &owner, WORD ctrlId, size_t numItems);
+		Tab(WindowParent &owner, TabOpts creationOpts);
 
 		/// Constructs the tab, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
 		///
-		/// The `childrenDlgIds` are the IDs of the dialog resources of each children to be added.
-		Tab(WindowParent &owner, WORD ctrlId, Lay layout, std::initializer_list<WORD> childrenDlgIds);
+		/// The `childrenDlgIds` are the IDs of the dialog resources of each
+		/// children to be added, and it should have the same number of elements
+		/// in `titles`.
+		Tab(WindowParent &owner, WORD ctrlId, Lay layout,
+			std::initializer_list<WORD> childrenDlgIds, std::initializer_list<WStrView> titles);
 
 		/** Item methods. */
 		ItemCollection items{*this};
@@ -2579,9 +2574,6 @@ namespace wl {
 
 		/** Returns the control ID. */
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
-
-		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::TabOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -2603,14 +2595,12 @@ namespace wl {
 		const Tab& set_extended_style(bool doSet, DWORD exStyle) const;
 
 	private:
-		void create_tabs() const;
+		void create_tab(WStrView title) const;
 		void display_cur_tab() const;
 		void custom_events();
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::TabEvents _events;
-		opts::TabOpts _opts{};
 		_wl_internal::NonMovableArray<WindowControl> _children;
-		std::vector<std::wstring> _titles{};
 	};
 
 	/// @brief Native [trackbar] control.
@@ -2621,8 +2611,14 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{};
-	///     wl::Trackbar tb{wnd};
+	///     wl::WindowMain wnd{wl::MainOpts{
+	///         .title = L"My main window",
+	///     }};
+	///     wl::Trackbar tb{wnd, wl::TrackbarOpts{
+	///         .pos = wl::dpi::pt(10, 10),
+	///         .range = {0, 8},
+	///         .value = 6,
+	///     }};
 	/// };
 	/// ```
 	///
@@ -2630,12 +2626,6 @@ namespace wl {
 	/// RUN_MAIN(MyMain, wnd)
 	///
 	/// MyMain::MyMain() {
-	///     wnd.setup().title = L"My main window";
-	///
-	///     tb.setup().pos = wl::dpi::pt(10, 10);
-	///     tb.setup().range = {0, 8};
-	///     tb.setup().value = 6;
-	///
 	///     tb.on().wm_h_scroll([this](wl::wm::HScroll p) -> void {
 	///         std::wstring s = wl::str::fmt(L"Track bar at %d", tb.pos());
 	///         wnd.set_title(s);
@@ -2648,12 +2638,8 @@ namespace wl {
 	public:
 		/// Constructs the tree view, which will be created programmatically with [`CreateWindowEx`].
 		///
-		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
-		///
-		/// Further options can be defined with the `setup` method.
-		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		explicit Trackbar(WindowParent &owner, WORD ctrlId = 0);
+		Trackbar(WindowParent &owner, TrackbarOpts creationOpts);
 
 		/// Constructs the tree view, which will be loaded from the dialog resource.
 		///
@@ -2665,9 +2651,6 @@ namespace wl {
 
 		/** Returns the control ID. */
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
-
-		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::TrackbarOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -2715,7 +2698,6 @@ namespace wl {
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::TrackbarEvents _events;
-		opts::TrackbarOpts _opts{};
 	};
 
 	/// @brief Native [tree view] control.
@@ -2838,12 +2820,8 @@ namespace wl {
 
 		/// Constructs the tree view, which will be created programmatically with [`CreateWindowEx`].
 		///
-		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
-		///
-		/// Further options can be defined with the `setup` method.
-		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		explicit TreeView(WindowParent &owner, WORD ctrlId = 0);
+		TreeView(WindowParent &owner, TreeViewOpts creationOpts);
 
 		/// Constructs the tree view, which will be loaded from the dialog resource.
 		///
@@ -2858,9 +2836,6 @@ namespace wl {
 
 		/** Returns the control ID. */
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
-
-		/** For controls created programmatically, defines additional creation options. */
-		[[nodiscard]] constexpr opts::TreeViewOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -2904,7 +2879,6 @@ namespace wl {
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::TreeViewEvents _events;
-		opts::TreeViewOpts _opts{};
 		_wl_internal::ImageList _imgList16{{16, 16}};
 	};
 

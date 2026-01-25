@@ -3,10 +3,15 @@
 #include "ui-base.hpp"
 #include <CommCtrl.h>
 
-/** @brief Options to create window and controls programmatically. */
-namespace wl::opts {
+namespace wl {
 
-	/** Options to create a `WindowMain` programmatically. */
+	/// Options to create a `WindowMain` programmatically.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// in the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
 	struct MainOpts final {
 		/// Class name passed to [`WNDCLASSEX`].
 		///
@@ -18,6 +23,10 @@ namespace wl::opts {
 		///
 		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
 		DWORD classStyle = CS_DBLCLKS;
+		/// Optional window [accelerator table], to define keyboard shortcuts.
+		///
+		/// [accelerator table]: https://learn.microsoft.com/en-us/windows/win32/learnwin32/accelerator-tables
+		HACCEL hAccelTable = nullptr;
 		/// The window background brush passed to [`WNDCLASSEX`].
 		///
 		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
@@ -26,19 +35,28 @@ namespace wl::opts {
 		///
 		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
 		HCURSOR hCursor = nullptr;
-		/** Optional window icon resource ID. */
-		WORD iconId = 0;
-
-		/// The window title, passed to [`CreateWindowEx`].
+		/// Optional window main menu, passed to [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		std::wstring title{};
+		HMENU hMenu = nullptr;
+		/** Optional window icon resource ID. */
+		WORD iconId = 0;
+		/// In most applications, the window loop calls [`IsDialogMessage`] so child control messages will properly work.
+		/// However, this has the side-effect of inhibiting [`WM_CHAR`] messages from being sent, which is bad for applications like text editors.
+		///
+		/// So if your application has no child controls and needs to process `WM_CHAR` messages, pass `false` to suppress `IsDialogMessage` call.
+		///
+		/// [`IsDialogMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-isdialogmessagew
+		/// [`WM_CHAR`]: https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-char
+		bool processDlgMsgs = true;
 		/// The window size passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wnd.setup().size = wl::dpi::sz(500, 300);
+		/// wl::MainOpts myOpts{
+		///     .size = wl::dpi::sz(500, 300),
+		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -48,7 +66,9 @@ namespace wl::opts {
 		/// For a resizable window, use:
 		///
 		/// ```cpp
-		/// wnd.setup().style |= WS_SIZEBOX | WS_MAXIMIZEBOX;
+		/// wl::MainOpts myOpts{
+		///     .style = wl::MainOpts{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
+		/// };
 		/// ```
 		///
 		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -59,26 +79,19 @@ namespace wl::opts {
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD styleEx = WS_EX_LEFT;
-		/// Optional window main menu, passed to [`CreateWindowEx`].
+		/// The window title, passed to [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		HMENU hMenu = nullptr;
-		/// Optional window [accelerator table], to define keyboard shortcuts.
-		///
-		/// [accelerator table]: https://learn.microsoft.com/en-us/windows/win32/learnwin32/accelerator-tables
-		HACCEL hAccelTable = nullptr;
-
-		/// In most applications, the window loop calls [`IsDialogMessage`] so child control messages will properly work.
-		/// However, this has the side-effect of inhibiting [`WM_CHAR`] messages from being sent, which is bad for applications like text editors.
-		///
-		/// So if your application has no child controls and needs to process `WM_CHAR` messages, pass `false` to suppress `IsDialogMessage` call.
-		///
-		/// [`IsDialogMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-isdialogmessagew
-		/// [`WM_CHAR`]: https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-char
-		bool processDlgMsgs = true;
+		std::wstring title{};
 	};
 
-	/** Options to create a `WindowModal` programmatically. */
+	/// Options to create a `WindowModal` programmatically.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// in the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
 	struct ModalOpts final {
 		/// Class name passed to [`WNDCLASSEX`].
 		///
@@ -100,17 +113,22 @@ namespace wl::opts {
 		HCURSOR hCursor = nullptr;
 		/** Optional window icon resource ID. */
 		WORD iconId = 0;
-
-		/// The window title, passed to [`CreateWindowEx`].
+		/// In most applications, the window loop calls [`IsDialogMessage`] so child control messages will properly work.
+		/// However, this has the side-effect of inhibiting [`WM_CHAR`] messages from being sent, which is bad for applications like text editors.
 		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		std::wstring title{};
+		/// So if your application has no child controls and needs to process `WM_CHAR` messages, pass `false` to suppress `IsDialogMessage` call.
+		///
+		/// [`IsDialogMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-isdialogmessagew
+		/// [`WM_CHAR`]: https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-char
+		bool processDlgMsgs = true;
 		/// The window size passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wnd.setup().size = wl::dpi::sz(400, 200);
+		/// wl::ModalOpts myOpts{
+		///     .size = wl::dpi::sz(400, 200),
+		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
@@ -120,7 +138,9 @@ namespace wl::opts {
 		/// For a resizable window, use:
 		///
 		/// ```cpp
-		/// wnd.setup().style |= WS_SIZEBOX | WS_MAXIMIZEBOX;
+		/// wl::ModalOpts myOpts{
+		///     .style = wl::ModalOpts{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
+		/// };
 		/// ```
 		///
 		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -131,18 +151,19 @@ namespace wl::opts {
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD styleEx = WS_EX_LEFT;
-
-		/// In most applications, the window loop calls [`IsDialogMessage`] so child control messages will properly work.
-		/// However, this has the side-effect of inhibiting [`WM_CHAR`] messages from being sent, which is bad for applications like text editors.
+		/// The window title, passed to [`CreateWindowEx`].
 		///
-		/// So if your application has no child controls and needs to process `WM_CHAR` messages, pass `false` to suppress `IsDialogMessage` call.
-		///
-		/// [`IsDialogMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-isdialogmessagew
-		/// [`WM_CHAR`]: https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-char
-		bool processDlgMsgs = true;
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		std::wstring title{};
 	};
 
-	/** Options to create a `WindowControl` programmatically. */
+	/// Options to create a `WindowControl` programmatically.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// in the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
 	struct ControlOpts final {
 		/// Class name passed to [`WNDCLASSEX`].
 		///
@@ -154,6 +175,10 @@ namespace wl::opts {
 		///
 		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
 		DWORD classStyle = CS_DBLCLKS;
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
 		/// The window background brush passed to [`WNDCLASSEX`].
 		///
 		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
@@ -162,7 +187,32 @@ namespace wl::opts {
 		///
 		/// [`WNDCLASSEX`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
 		HCURSOR hCursor = nullptr;
-
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::ControlOpts myOpts{
+		///     .pos = wl::dpi::pt(10, 10),
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		POINT pos{};
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::ControlOpts myOpts{
+		///     .pos = wl::dpi::sz(100, 100),
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SIZE size = {.cx = 100, .cy = 100};
 		/// The [window style] passed to [`CreateWindowEx`].
 		///
 		/// [window style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
@@ -173,38 +223,14 @@ namespace wl::opts {
 		/// Example adding a border:
 		///
 		/// ```cpp
-		/// wnd.setup().styleEx |= WS_EX_CLIENTEDGE;
+		/// wl::ControlOpts myOpts{
+		///     .style = wl::ControlOpts{}.style | WS_EX_CLIENTEDGE,
+		/// };
 		/// ```
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD styleEx = WS_EX_LEFT;
-		/// Control position passed to [`CreateWindowEx`].
-		///
-		/// Prefer using DPI-aware values:
-		///
-		/// ```cpp
-		/// wnd.setup().pos = wl::dpi::pt(10, 10);
-		/// ```
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
-		/// Control size passed to [`CreateWindowEx`].
-		///
-		/// Prefer using DPI-aware values:
-		///
-		/// ```cpp
-		/// wnd.setup().pos = wl::dpi::sz(100, 100);
-		/// ```
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size = {.cx = 100, .cy = 100};
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
-		/// Control ID.
-		///
-		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
 	};
 
 }
@@ -232,11 +258,11 @@ namespace _wl_internal {
 	class RawMain final {
 	public:
 		RawMain(RawMain&&) = delete; // non-copyable, non-movable
-		RawMain();
+		explicit RawMain(wl::MainOpts creationOpts);
 		int run(HINSTANCE hInst, int cmdShow);
 
 		RawBase _rawBase{};
-		wl::opts::MainOpts _opts{};
+		wl::MainOpts _opts;
 		HWND _hWndChildPrevFocus = nullptr;
 	};
 
@@ -244,12 +270,12 @@ namespace _wl_internal {
 	class RawModal final {
 	public:
 		RawModal(RawModal&&) = delete; // non-copyable, non-movable
-		explicit RawModal(const WndBase &parentWndBase);
+		RawModal(const WndBase &parentWndBase, wl::ModalOpts creationOpts);
 		void show();
 
 		RawBase _rawBase{};
 		const WndBase &_parent;
-		wl::opts::ModalOpts _opts{};
+		wl::ModalOpts _opts;
 		HWND _hWndChildPrevFocusParent = nullptr;
 	};
 
@@ -257,17 +283,16 @@ namespace _wl_internal {
 	class RawControl final {
 	public:
 		RawControl(RawControl&&) = delete; // non-copyable, non-movable
-		RawControl(WndBase &parentWndBase);
+		RawControl(WndBase &parentWndBase, wl::ControlOpts creationOpts);
 
 		RawBase _rawBase{};
-		wl::opts::ControlOpts _opts{};
 	};
 
 	/** Base to all dialog container windows. */
 	class DlgBase final {
 	public:
 		DlgBase(DlgBase&&) = delete; // non-copyable, non-movable
-		constexpr DlgBase(WORD dlgId) : _wndBase{true}, _dlgId{dlgId} { }
+		constexpr explicit DlgBase(WORD dlgId) : _wndBase{true}, _dlgId{dlgId} { }
 
 		void create_dialog_param(HINSTANCE hInst, HWND hParent);
 		void dialog_box_param(HINSTANCE hInst, HWND hParent);

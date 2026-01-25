@@ -72,8 +72,9 @@ void RawBase::create_window(DWORD exStyle, ATOM className, std::wstring &&title,
 		throw std::logic_error{"Cannot create window twice."};
 	#endif
 
-	HWND hWnd = CreateWindowExW(exStyle, MAKEINTATOM(className), title.c_str(), style,
-		pos.x, pos.y, sz.cx, sz.cy, hParent, hMenu, hInst, reinterpret_cast<LPVOID>(this));
+	HWND hWnd = CreateWindowExW(exStyle, MAKEINTATOM(className),
+		title.empty() ? nullptr : title.c_str(),
+		style, pos.x, pos.y, sz.cx, sz.cy, hParent, hMenu, hInst, reinterpret_cast<LPVOID>(this));
 	#ifdef _DEBUG
 	if (!hWnd)
 		throw std::system_error(GetLastError(), std::system_category(), "RawBase: CreateWindowEx failed");
@@ -122,7 +123,9 @@ LRESULT CALLBACK RawBase::raw_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RawMain::RawMain() {
+RawMain::RawMain(MainOpts creationOpts)
+	: _opts{creationOpts}
+{
 	_rawBase._wndBase._preEvents.wm(WM_ACTIVATE, [this](wm::Activate p) -> void {
 		if (!p.is_minimized()) { // https://devblogs.microsoft.com/oldnewthing/20140521-00/?p=943
 			if (p.active_state() == WA_INACTIVE) {
@@ -182,8 +185,8 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RawModal::RawModal(const WndBase &parentWndBase)
-	: _parent{parentWndBase}
+RawModal::RawModal(const WndBase &parentWndBase, ModalOpts creationOpts)
+	: _parent{parentWndBase}, _opts{creationOpts}
 {
 	_rawBase._wndBase._preEvents.wm(WM_SETFOCUS, [this](wm::SetFocus) -> void {
 		_rawBase.focus_first_child();
@@ -235,15 +238,16 @@ void RawModal::show() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RawControl::RawControl(WndBase &parentWndBase) {
-	parentWndBase._preEvents.wm_create_or_init_dialog([this, pParent = &parentWndBase]() -> void {
-		ATOM atom = _rawBase.register_class(wnd_hinst(pParent->_hWnd), std::move(_opts.className), _opts.classStyle,
-			0, _opts.hbrBackground, _opts.hCursor);
-		_rawBase.create_window(_opts.styleEx, atom, {}, _opts.style,
-			_opts.pos, _opts.size, pParent->_hWnd, reinterpret_cast<HMENU>(valid_ctrl_id(_opts.ctrlId)),
-			wnd_hinst(pParent->_hWnd));
-		pParent->_layout.add(_rawBase._wndBase._hWnd, _opts.layout);
-	});
+RawControl::RawControl(WndBase &parentWndBase, ControlOpts creationOpts) {
+	parentWndBase._preEvents.wm_create_or_init_dialog(
+		[this, pParent = &parentWndBase, opts = std::move(creationOpts)]() mutable -> void {
+			ATOM atom = _rawBase.register_class(wnd_hinst(pParent->_hWnd), std::move(opts.className),
+				opts.classStyle, 0, opts.hbrBackground, opts.hCursor);
+			_rawBase.create_window(opts.styleEx, atom, {}, opts.style,
+				opts.pos, opts.size, pParent->_hWnd, reinterpret_cast<HMENU>(valid_ctrl_id(opts.ctrlId)),
+				wnd_hinst(pParent->_hWnd));
+			pParent->_layout.add(_rawBase._wndBase._hWnd, opts.layout);
+		});
 }
 
 ////////////////////////////////////////////////////////////////////////////////

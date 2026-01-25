@@ -78,17 +78,15 @@ void DlgMain::on_about() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Contro::Contro(wl::WindowParent &parent)
-	: wnd{parent}
+Contro::Contro(wl::WindowParent &parent, POINT pos, SIZE size)
+	: wnd{parent, wl::ControlOpts{
+		.layout = wl::Lay::move_hold,
+		.pos = pos,
+		.size = size,
+		.styleEx = wl::ControlOpts{}.styleEx | WS_EX_CLIENTEDGE,
+	}}
 {
-	wnd.setup().styleEx |= WS_EX_CLIENTEDGE;
-	wnd.setup().pos = wl::dpi::pt(550, 10);
-	wnd.setup().size = wl::dpi::sz(80, 80);
-	wnd.setup().layout = wl::Lay::move_hold;
-
 	wnd.on().wm_paint(std::bind(&Contro::on_paint, this));
-
-
 }
 
 void Contro::on_paint() {
@@ -101,69 +99,10 @@ void Contro::on_paint() {
 ////////////////////////////////////////////////////////////////////////////////
 
 RawMain::RawMain() {
-	wnd.setup().iconId = ICO_MAIN;
-	wnd.setup().title = L"My main window";
-	wnd.setup().size = wl::dpi::sz(900, 320);
-	wnd.setup().style |= WS_SIZEBOX | WS_MAXIMIZEBOX;
-
-	btn.setup().pos = wl::dpi::pt(10, 10);
-	btn.setup().text = L"&Click me";
-
-	chk.setup().pos = wl::dpi::pt(110, 10);
-	chk.setup().text = L"&Check me";
-
-	cmb.setup().pos = wl::dpi::pt(200, 10);
-	cmb.setup().texts = {L"Hello", L"World"};
-
-	dtp.setup().pos = wl::dpi::pt(10, 48);
-
-	txt.setup().pos = wl::dpi::pt(250, 48);
-
-	lv.setup().pos = wl::dpi::pt(10, 80);
-	lv.setup().size = wl::dpi::sz(400, 100);
-	lv.setup().layout = wl::Lay::resize_resize;
-	lv.setup().contextMenuId = MNU_FILES;
-	lv.setup().columns = {
-		{L"First", wl::dpi::x(200)},
-		{L"Second", 1},
-	};
-
-	mcal.setup().pos = wl::dpi::pt(420, 100);
-	mcal.setup().layout = wl::Lay::move_hold;
-
-	lbl.setup().pos = wl::dpi::pt(320, 10);
-	lbl.setup().text = L"Label";
-
 	sb.icons().add_resource(ICO_MAIN);
 	sb.icons().add_shell_ext(L"xlsx");
 	sb.setup().add_resizable_part(1, L"Rezee", 0);
 	sb.setup().add_fixed_part(wl::dpi::x(200), L"Second", 1);
-
-	rads.radios[0].setup().pos = wl::dpi::pt(420, 10);
-	rads.radios[1].setup().pos = wl::dpi::pt(420, 25);
-	rads.radios[2].setup().pos = wl::dpi::pt(420, 40);
-	rads.radios[0].setup().text = L"First";
-	rads.radios[1].setup().text = L"Second";
-	rads.radios[2].setup().text = L"Turd";
-	rads.radios[2].setup().selected = true;
-
-	tv.setup().pos = wl::dpi::pt(10, 190);
-	tv.setup().size = wl::dpi::sz(250, 90);
-	tv.setup().layout = wl::Lay::hold_move;
-
-	trb.setup().pos = wl::dpi::pt(260, 190);
-	trb.setup().size = wl::dpi::sz(140, 28);
-	trb.setup().range = {0, 8};
-	trb.setup().layout = wl::Lay::hold_move;
-
-	tab.setup().pos = wl::dpi::pt(656, 10);
-	tab.setup().size = wl::dpi::sz(220, 200);
-	tab.setup().layout = wl::Lay::move_hold;
-	tab.setup().selected = 1;
-	tab.items[0].setup().title = L"First";
-	tab.items[1].setup().title = L"Second";
-	btn2.setup().text = L"In tab";
-	btn3.setup().text = L"Another";
 
 	wnd.on().wm_create([this](wl::wm::Create p) -> int {
 		lv.cols[1].set_justif(HDF_CENTER).set_width_to_fill();
@@ -176,7 +115,11 @@ RawMain::RawMain() {
 	});
 
 	btn.on().bn_clicked([this]() -> void {
-		MessageBoxW(wnd.hwnd(), L"Button clicked", L"Click", MB_ICONINFORMATION);
+		wl::WindowModal modal{wnd, wl::ModalOpts{
+			.size = wl::dpi::sz(200, 200),
+			.title = L"My modal",
+		}};
+		modal.show();
 	});
 
 	chk.on().bn_clicked([this]() -> void {

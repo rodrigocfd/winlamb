@@ -124,7 +124,11 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{};
+	///     wl::WindowMain wnd{wl::MainOpts{
+	///         .size = wl::dpi::sz(500, 300),
+	///         .style = wl::MainOpts{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
+	///         .title = L"My main window",
+	///     }};
 	/// };
 	/// ```
 	///
@@ -132,10 +136,6 @@ namespace wl {
 	/// RUN_MAIN(MyMain, wnd)
 	///
 	/// MyMain::MyMain() {
-	///     wnd.setup().title = L"My main window";
-	///     wnd.setup().size = wl::dpi::sz(500, 300);
-	///     wnd.setup().style |= WS_SIZEBOX | WS_MAXIMIZEBOX;
-	///
 	///     wnd.on().wm_create([this](wl::wm::Create p) -> int {
 	///         wnd.set_title(L"A new title");
 	///         return 0;
@@ -195,8 +195,8 @@ namespace wl {
 		/// Constructs the main window, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		WindowMain()
-			: _rawOrDlg{.raw = std::make_optional<_wl_internal::RawMain>()} { }
+		explicit WindowMain(MainOpts creationOpts)
+			: _rawOrDlg{.raw = std::make_optional<_wl_internal::RawMain>(creationOpts)} { }
 
 		/// Constructs the main window, which will be loaded from a dialog resource with [`CreateDialogParam`].
 		///
@@ -212,13 +212,6 @@ namespace wl {
 
 		/** Returns the window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return _rawOrDlg.base()._hWnd; };
-
-		/// For a window created programmatically, defines additional creation options.
-		///
-		/// If a dialog window, throws an exception.
-		[[nodiscard]] constexpr opts::MainOpts& setup() {
-			return _wl_internal::valid_setup(hwnd(), _rawOrDlg.raw.value()._opts);
-		}
 
 		/// Allows message events to be added.
 		///
@@ -285,16 +278,19 @@ namespace wl {
 		///
 		/// ```cpp
 		/// void show_my_modal(const wl::WindowParent &wnd) {
-		///     wl::WindowModal myModal{wnd};
-		///     myModal.setup().title = L"My modal title";
-		///     myModal.setup().size = wl::dpi::sz(400, 200);
+		///
+		///     wl::WindowModal myModal{wnd, wl::ModalOpts{
+		///         .size = wl::dpi::sz(200, 200),
+		///         .title = L"My modal",
+		///     }};
 		///     myModal.show();
+		///
 		/// }
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		explicit WindowModal(const WindowParent &parent)
-			: _rawOrDlg{.raw = std::make_optional<_wl_internal::RawModal>(parent.base())} { }
+		WindowModal(const WindowParent &parent, ModalOpts creationOpts)
+			: _rawOrDlg{.raw = std::make_optional<_wl_internal::RawModal>(parent.base(), creationOpts)} { }
 
 		/// Constructs the modal window, which will be loaded from a dialog resource with [`DialogBoxParam`].
 		///
@@ -315,13 +311,6 @@ namespace wl {
 
 		/** Returns the window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return _rawOrDlg.base()._hWnd; };
-
-		/// For a window created programmatically, defines additional creation options.
-		///
-		/// If a dialog window, throws an exception.
-		[[nodiscard]] constexpr opts::ModalOpts& setup() {
-			return _wl_internal::valid_setup(hwnd(), _rawOrDlg.raw.value()._opts);
-		}
 
 		/// Allows message events to be added.
 		///
@@ -410,7 +399,7 @@ namespace wl {
 		/// Constructs the custom control window, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		explicit WindowControl(WindowParent &parent);
+		WindowControl(WindowParent &parent, ControlOpts creationOpts);
 
 		/// Constructs the custom control window, which will be loaded from a dialog resource with [`CreateDialogParam`].
 		///
@@ -425,13 +414,6 @@ namespace wl {
 
 		/** Returns the control ID. */
 		[[nodiscard]] WORD ctrl_id() const override;
-
-		/// For a control created programmatically, defines additional creation options.
-		///
-		/// If a dialog control, throws an exception.
-		[[nodiscard]] constexpr opts::ControlOpts& setup() {
-			return _wl_internal::valid_setup(hwnd(), _rawOrDlg.raw.value()._opts);
-		}
 
 		/// Allows message events to be added.
 		///

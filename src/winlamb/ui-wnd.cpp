@@ -31,8 +31,8 @@ const WindowModal& WindowModal::set_title(WStrView newTitle) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-WindowControl::WindowControl(WindowParent &parent)
-	: _rawOrDlg{.raw = std::make_optional<RawControl>(parent.base())}
+WindowControl::WindowControl(WindowParent &parent, ControlOpts creationOpts)
+	: _rawOrDlg{.raw = std::make_optional<RawControl>(parent.base(), creationOpts)}
 {
 	on().wm_nc_paint(std::bind(&WindowControl::paint_custom_border, this, std::placeholders::_1));
 }
