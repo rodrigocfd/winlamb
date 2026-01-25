@@ -3,6 +3,8 @@
 #include <VersionHelpers.h>
 #include <ole2.h>
 #include <shellapi.h>
+#pragma comment(lib, "comctl32.lib") // not linked by default by MSVC
+#pragma comment(lib, "uxtheme.lib")
 using namespace _wl_internal;
 using namespace wl;
 
