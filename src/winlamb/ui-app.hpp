@@ -125,7 +125,7 @@ namespace wl {
 	///
 	/// Controls which make use of icons will have a method which expose this abstract class,
 	/// so icons can be added in various ways.
-	class IconStore {
+	class IStoreIcon {
 	public:
 		/** Adds the `HICON` to the store, taking ownership of it. */
 		virtual void add_icon(HICON hIcon) = 0;
@@ -147,7 +147,7 @@ namespace wl {
 namespace _wl_internal {
 
 	/** Manages a `HIMAGELIST`. */
-	class ImageList final : public wl::IconStore {
+	class ImageList final : public wl::IStoreIcon {
 	public:
 		~ImageList();
 		constexpr explicit ImageList(SIZE szIcon) : _szIcon{szIcon} { }
@@ -166,7 +166,7 @@ namespace _wl_internal {
 	};
 
 	/** Stores `HICON` handles. */
-	class HIconStore final : public wl::IconStore {
+	class HIconStore final : public wl::IStoreIcon {
 	public:
 		~HIconStore();
 		constexpr explicit HIconStore(SIZE szIcon) : _szIcon{szIcon} { }

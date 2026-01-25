@@ -27,7 +27,7 @@ private:
 
 class Contro final {
 public:
-	Contro(wl::WindowParent &parent, POINT pos, SIZE size);
+	Contro(wl::IWindowParent &parent, POINT pos, SIZE size);
 	wl::WindowControl wnd;
 private:
 	void on_paint();

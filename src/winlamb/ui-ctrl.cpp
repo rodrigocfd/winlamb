@@ -198,7 +198,7 @@ EVENT_NFY(TabEvents, nm_released_capture, NM_RELEASEDCAPTURE)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Button::Button(WindowParent &owner, ButtonOpts creationOpts)
+Button::Button(IWindowParent &owner, ButtonOpts creationOpts)
 	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
@@ -213,7 +213,7 @@ Button::Button(WindowParent &owner, ButtonOpts creationOpts)
 		});
 }
 
-Button::Button(WindowParent &owner, WORD ctrlId, Lay layout)
+Button::Button(IWindowParent &owner, WORD ctrlId, Lay layout)
 	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
@@ -234,7 +234,7 @@ const Button& Button::trigger_click() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CheckBox::CheckBox(WindowParent &owner, CheckBoxOpts creationOpts)
+CheckBox::CheckBox(IWindowParent &owner, CheckBoxOpts creationOpts)
 	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
@@ -250,7 +250,7 @@ CheckBox::CheckBox(WindowParent &owner, CheckBoxOpts creationOpts)
 		});
 }
 
-CheckBox::CheckBox(WindowParent &owner, WORD ctrlId, Lay layout)
+CheckBox::CheckBox(IWindowParent &owner, WORD ctrlId, Lay layout)
 	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
@@ -323,7 +323,7 @@ std::optional<std::wstring> ComboBox::ItemCollection::selected_text() const {
 
 //------------------------------------------------------------------------------
 
-ComboBox::ComboBox(WindowParent &owner, ComboBoxOpts creationOpts)
+ComboBox::ComboBox(IWindowParent &owner, ComboBoxOpts creationOpts)
 	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
@@ -340,7 +340,7 @@ ComboBox::ComboBox(WindowParent &owner, ComboBoxOpts creationOpts)
 		});
 }
 
-ComboBox::ComboBox(WindowParent &owner, WORD ctrlId, Lay layout)
+ComboBox::ComboBox(IWindowParent &owner, WORD ctrlId, Lay layout)
 	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
@@ -351,7 +351,7 @@ ComboBox::ComboBox(WindowParent &owner, WORD ctrlId, Lay layout)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-DateTimePicker::DateTimePicker(WindowParent &owner, DateTimePickerOpts creationOpts)
+DateTimePicker::DateTimePicker(IWindowParent &owner, DateTimePickerOpts creationOpts)
 	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
@@ -368,7 +368,7 @@ DateTimePicker::DateTimePicker(WindowParent &owner, DateTimePickerOpts creationO
 		});
 }
 
-DateTimePicker::DateTimePicker(WindowParent &owner, WORD ctrlId, Lay layout)
+DateTimePicker::DateTimePicker(IWindowParent &owner, WORD ctrlId, Lay layout)
 	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
@@ -390,7 +390,7 @@ const DateTimePicker& DateTimePicker::set_value(const SYSTEMTIME &st) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Edit::Edit(WindowParent &owner, EditOpts creationOpts)
+Edit::Edit(IWindowParent &owner, EditOpts creationOpts)
 	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
@@ -405,7 +405,7 @@ Edit::Edit(WindowParent &owner, EditOpts creationOpts)
 		});
 }
 
-Edit::Edit(WindowParent &owner, WORD ctrlId, Lay layout)
+Edit::Edit(IWindowParent &owner, WORD ctrlId, Lay layout)
 	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
@@ -777,7 +777,7 @@ std::optional<ListView::Item> ListView::ItemCollection::topmost_visible() const 
 
 //------------------------------------------------------------------------------
 
-ListView::ListView(WindowParent &owner, ListViewOpts creationOpts)
+ListView::ListView(IWindowParent &owner, ListViewOpts creationOpts)
 	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
 {
 	load_context_menu(creationOpts.contextMenuId);
@@ -799,7 +799,7 @@ ListView::ListView(WindowParent &owner, ListViewOpts creationOpts)
 	custom_events();
 }
 
-ListView::ListView(WindowParent &owner, WORD ctrlId, Lay layout, WORD contextMenuId)
+ListView::ListView(IWindowParent &owner, WORD ctrlId, Lay layout, WORD contextMenuId)
 	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	load_context_menu(contextMenuId);
@@ -818,7 +818,7 @@ const ListView& ListView::set_extended_style(bool doSet, DWORD exStyle) const {
 	return *this;
 }
 
-IconStore& ListView::icons_16() {
+IStoreIcon& ListView::icons_16() {
 	if (!_imgList16.himagelist()) { // not created yet?
 		_imgList16.create();
 		ListView_SetImageList(hwnd(), _imgList16.himagelist(), LVSIL_SMALL);
@@ -826,7 +826,7 @@ IconStore& ListView::icons_16() {
 	return _imgList16;
 }
 
-IconStore& ListView::icons_32() {
+IStoreIcon& ListView::icons_32() {
 	if (!_imgList32.himagelist()) { // not created yet?
 		_imgList32.create();
 		ListView_SetImageList(hwnd(), _imgList32.himagelist(), LVSIL_NORMAL);
@@ -930,7 +930,7 @@ void ListView::show_context_menu(bool followCursor, bool hasCtrl, bool hasShift)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-MonthCalendar::MonthCalendar(WindowParent &owner, wl::MonthCalendarOpts creationOpts)
+MonthCalendar::MonthCalendar(IWindowParent &owner, wl::MonthCalendarOpts creationOpts)
 	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
@@ -948,7 +948,7 @@ MonthCalendar::MonthCalendar(WindowParent &owner, wl::MonthCalendarOpts creation
 		});
 }
 
-MonthCalendar::MonthCalendar(WindowParent &owner, WORD ctrlId, Lay layout)
+MonthCalendar::MonthCalendar(IWindowParent &owner, WORD ctrlId, Lay layout)
 	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
@@ -970,7 +970,7 @@ const MonthCalendar& MonthCalendar::set_value(const SYSTEMTIME &st) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RadioButton::RadioButton(WindowParent &owner, RadioButtonOpts creationOpts)
+RadioButton::RadioButton(IWindowParent &owner, RadioButtonOpts creationOpts)
 	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
@@ -986,7 +986,7 @@ RadioButton::RadioButton(WindowParent &owner, RadioButtonOpts creationOpts)
 		});
 }
 
-RadioButton::RadioButton(WindowParent &owner, WORD ctrlId, Lay layout)
+RadioButton::RadioButton(IWindowParent &owner, WORD ctrlId, Lay layout)
 	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
@@ -1018,7 +1018,7 @@ const RadioButton& RadioButton::set_text_resize(WStrView newText) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RadioGroup::RadioGroup(WindowParent &owner, std::initializer_list<RadioButtonOpts> creationOpts)
+RadioGroup::RadioGroup(IWindowParent &owner, std::initializer_list<RadioButtonOpts> creationOpts)
 	: _owner{owner}, _radios{creationOpts.size()}, _events{*this}
 {
 	#ifdef _DEBUG
@@ -1036,7 +1036,7 @@ RadioGroup::RadioGroup(WindowParent &owner, std::initializer_list<RadioButtonOpt
 	}
 }
 
-RadioGroup::RadioGroup(WindowParent &owner, Lay layout, std::initializer_list<WORD> ctrlIds)
+RadioGroup::RadioGroup(IWindowParent &owner, Lay layout, std::initializer_list<WORD> ctrlIds)
 	: _owner{owner}, _radios{ctrlIds.size()}, _events{*this}
 {
 	#ifdef _DEBUG
@@ -1051,7 +1051,7 @@ RadioGroup::RadioGroup(WindowParent &owner, Lay layout, std::initializer_list<WO
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Static::Static(WindowParent &owner, StaticOpts creationOpts)
+Static::Static(IWindowParent &owner, StaticOpts creationOpts)
 	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
@@ -1066,7 +1066,7 @@ Static::Static(WindowParent &owner, StaticOpts creationOpts)
 		});
 }
 
-Static::Static(WindowParent &owner, WORD ctrlId, Lay layout)
+Static::Static(IWindowParent &owner, WORD ctrlId, Lay layout)
 	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
@@ -1116,7 +1116,7 @@ const StatusBar::Part& StatusBar::Part::set_icon_index(int iconIndex) const {
 
 //------------------------------------------------------------------------------
 
-StatusBar::StatusBar(WindowParent &owner, StatusBarOpts creationOpts) :
+StatusBar::StatusBar(IWindowParent &owner, StatusBarOpts creationOpts) :
 	_ctrl{owner.base()},
 	_events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)},
 	_parts{std::move(creationOpts.parts)}
@@ -1225,7 +1225,7 @@ std::optional<Tab::Item> Tab::ItemCollection::selected() const {
 
 //------------------------------------------------------------------------------
 
-Tab::Tab(WindowParent &owner, TabOpts creationOpts) :
+Tab::Tab(IWindowParent &owner, TabOpts creationOpts) :
 	_ctrl{owner.base()},
 	_events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)},
 	_children{creationOpts.titles.size()}
@@ -1261,7 +1261,7 @@ Tab::Tab(WindowParent &owner, TabOpts creationOpts) :
 	custom_events();
 }
 
-Tab::Tab(WindowParent &owner, WORD ctrlId, Lay layout,
+Tab::Tab(IWindowParent &owner, WORD ctrlId, Lay layout,
 	std::initializer_list<WORD> childrenDlgIds, std::initializer_list<WStrView> titles)
 	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}, _children{childrenDlgIds.size()}
 {
@@ -1336,7 +1336,7 @@ void Tab::custom_events() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Trackbar::Trackbar(WindowParent &owner, TrackbarOpts creationOpts)
+Trackbar::Trackbar(IWindowParent &owner, TrackbarOpts creationOpts)
 	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
@@ -1353,7 +1353,7 @@ Trackbar::Trackbar(WindowParent &owner, TrackbarOpts creationOpts)
 		});
 }
 
-Trackbar::Trackbar(WindowParent &owner, WORD ctrlId, Lay layout)
+Trackbar::Trackbar(IWindowParent &owner, WORD ctrlId, Lay layout)
 	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
@@ -1560,7 +1560,7 @@ TreeView::Item TreeView::ItemCollection::selected() const {
 
 //------------------------------------------------------------------------------
 
-TreeView::TreeView(WindowParent &owner, TreeViewOpts creationOpts)
+TreeView::TreeView(IWindowParent &owner, TreeViewOpts creationOpts)
 	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
@@ -1576,7 +1576,7 @@ TreeView::TreeView(WindowParent &owner, TreeViewOpts creationOpts)
 		});
 }
 
-TreeView::TreeView(WindowParent &owner, WORD ctrlId, Lay layout)
+TreeView::TreeView(IWindowParent &owner, WORD ctrlId, Lay layout)
 	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
@@ -1590,7 +1590,7 @@ const TreeView& TreeView::set_extended_style(bool doSet, DWORD exStyle) const {
 	return *this;
 }
 
-IconStore& TreeView::icons_16() {
+IStoreIcon& TreeView::icons_16() {
 	if (!_imgList16.himagelist()) { // not created yet?
 		_imgList16.create();
 		TreeView_SetImageList(hwnd(), _imgList16.himagelist(), LVSIL_SMALL);

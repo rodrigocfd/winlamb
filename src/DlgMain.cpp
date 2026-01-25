@@ -78,7 +78,7 @@ void DlgMain::on_about() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Contro::Contro(wl::WindowParent &parent, POINT pos, SIZE size)
+Contro::Contro(wl::IWindowParent &parent, POINT pos, SIZE size)
 	: wnd{parent, wl::ControlOpts{
 		.layout = wl::Lay::move_hold,
 		.pos = pos,

@@ -31,13 +31,13 @@ const WindowModal& WindowModal::set_title(WStrView newTitle) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-WindowControl::WindowControl(WindowParent &parent, ControlOpts creationOpts)
+WindowControl::WindowControl(IWindowParent &parent, ControlOpts creationOpts)
 	: _rawOrDlg{.raw = std::make_optional<RawControl>(parent.base(), creationOpts)}
 {
 	on().wm_nc_paint(std::bind(&WindowControl::paint_custom_border, this, std::placeholders::_1));
 }
 
-WindowControl::WindowControl(WindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos, Lay layout)
+WindowControl::WindowControl(IWindowParent &parent, WORD dlgId, WORD ctrlId, POINT pos, Lay layout)
 	: _rawOrDlg{.dlg = std::make_optional<DlgControl>(parent.base(), dlgId, ctrlId, pos, layout)}
 {
 	on().wm_nc_paint(std::bind(&WindowControl::paint_custom_border, this, std::placeholders::_1));
@@ -90,7 +90,7 @@ void WindowControl::paint_custom_border(wm::NcPaint p) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-DropFiles::DropFiles(WindowParent &owner) {
+DropFiles::DropFiles(IWindowParent &owner) {
 	owner.base()._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
 		RegisterDragDrop(pOwner->hwnd(), this);
 	});

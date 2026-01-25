@@ -1122,17 +1122,17 @@ namespace wl {
 	/// ```
 	///
 	/// [button]: https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#push-buttons
-	class Button final : public WindowChild {
+	class Button final : public IWindowChild {
 	public:
 		/// Constructs the button, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		Button(WindowParent &owner, ButtonOpts creationOpts);
+		Button(IWindowParent &owner, ButtonOpts creationOpts);
 
 		/// Constructs the button, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
-		Button(WindowParent &owner, WORD ctrlId, Lay layout);
+		Button(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Returns the wrapped window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
@@ -1212,17 +1212,17 @@ namespace wl {
 	/// ```
 	///
 	/// [check box]: https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#check-boxes
-	class CheckBox final : public WindowChild {
+	class CheckBox final : public IWindowChild {
 	public:
 		/// Constructs the check box, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		CheckBox(WindowParent &owner, CheckBoxOpts opts);
+		CheckBox(IWindowParent &owner, CheckBoxOpts opts);
 
 		/// Constructs the check box, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
-		CheckBox(WindowParent &owner, WORD ctrlId, Lay layout);
+		CheckBox(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Returns the wrapped window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
@@ -1337,7 +1337,7 @@ namespace wl {
 	/// ```
 	///
 	/// [combo box]: https://learn.microsoft.com/en-us/windows/win32/controls/about-combo-boxes
-	class ComboBox final : public WindowChild {
+	class ComboBox final : public IWindowChild {
 	public:
 		/** @brief Operations over the items. */
 		class ItemCollection final {
@@ -1378,12 +1378,12 @@ namespace wl {
 		/// Constructs the combo box, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		ComboBox(WindowParent &owner, ComboBoxOpts creationOpts);
+		ComboBox(IWindowParent &owner, ComboBoxOpts creationOpts);
 
 		/// Constructs the combo box, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
-		ComboBox(WindowParent &owner, WORD ctrlId, Lay layout);
+		ComboBox(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Item methods. */
 		ItemCollection items{*this};
@@ -1450,17 +1450,17 @@ namespace wl {
 	/// ```
 	///
 	/// [date and time picker]: https://learn.microsoft.com/en-us/windows/win32/controls/date-and-time-picker-controls
-	class DateTimePicker final : public WindowChild {
+	class DateTimePicker final : public IWindowChild {
 	public:
 		/// Constructs the date and time picker, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DateTimePicker(WindowParent &owner, DateTimePickerOpts creationOpts);
+		DateTimePicker(IWindowParent &owner, DateTimePickerOpts creationOpts);
 
 		/// Constructs the date and time picker, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
-		DateTimePicker(WindowParent &owner, WORD ctrlId, Lay layout);
+		DateTimePicker(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Returns the wrapped window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
@@ -1556,17 +1556,17 @@ namespace wl {
 	/// ```
 	///
 	/// [edit]: https://learn.microsoft.com/en-us/windows/win32/controls/about-edit-controls
-	class Edit final : public WindowChild {
+	class Edit final : public IWindowChild {
 	public:
 		/// Constructs the edit, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		Edit(WindowParent &owner, EditOpts creationOpts);
+		Edit(IWindowParent &owner, EditOpts creationOpts);
 
 		/// Constructs the edit, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
-		Edit(WindowParent &owner, WORD ctrlId, Lay layout);
+		Edit(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Returns the wrapped window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
@@ -1675,7 +1675,7 @@ namespace wl {
 	/// ```
 	///
 	/// [list view]: https://learn.microsoft.com/en-us/windows/win32/controls/list-view-controls-overview
-	class ListView final : public WindowChild {
+	class ListView final : public IWindowChild {
 	public:
 		/** @brief A single column of the `ListView`. */
 		class Column final {
@@ -1914,12 +1914,12 @@ namespace wl {
 		/// Constructs the list view, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		ListView(WindowParent &owner, ListViewOpts creationOpts);
+		ListView(IWindowParent &owner, ListViewOpts creationOpts);
 
 		/// Constructs the list view, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
-		ListView(WindowParent &owner, WORD ctrlId, Lay layout, WORD contextMenuId = 0);
+		ListView(IWindowParent &owner, WORD ctrlId, Lay layout, WORD contextMenuId = 0);
 
 		/** Column methods. */
 		ColumnCollection cols{*this};
@@ -1966,17 +1966,17 @@ namespace wl {
 		/// [extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/extended-list-view-styles
 		const ListView& set_extended_style(bool doSet, DWORD exStyle) const;
 
-		/// Retrieves the 16x16 `IconStore`.
+		/// Retrieves the 16x16 `IStoreIcon`.
 		///
 		/// Allows icons to be added to the control's image list.
 		/// An `Item` can display an icon referring to its zero-based index.
-		IconStore& icons_16();
+		IStoreIcon& icons_16();
 
-		/// Retrieves the 32x32 `IconStore`.
+		/// Retrieves the 32x32 `IStoreIcon`.
 		///
 		/// Allows icons to be added to the control's image list.
 		/// An `Item` can display an icon referring to its zero-based index.
-		IconStore& icons_32();
+		IStoreIcon& icons_32();
 
 	private:
 		void load_context_menu(WORD contextMenuId);
@@ -1991,17 +1991,17 @@ namespace wl {
 	/// @brief Native [month calendar] control.
 	///
 	/// [month calendar]: https://learn.microsoft.com/en-us/windows/win32/controls/month-calendar-controls
-	class MonthCalendar final : public WindowChild {
+	class MonthCalendar final : public IWindowChild {
 	public:
 		/// Constructs the month calendar, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		MonthCalendar(WindowParent &owner, MonthCalendarOpts creationOpts);
+		MonthCalendar(IWindowParent &owner, MonthCalendarOpts creationOpts);
 
 		/// Constructs the month calendar, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
-		MonthCalendar(WindowParent &owner, WORD ctrlId, Lay layout);
+		MonthCalendar(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Returns the wrapped window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
@@ -2051,17 +2051,17 @@ namespace wl {
 	/// Instead of creating the radio buttons directly, prefer using a `RadioGroup`.
 	///
 	/// [radio button]: https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#radio-buttons
-	class RadioButton final : public WindowChild {
+	class RadioButton final : public IWindowChild {
 	public:
 		/// Constructs the radio button, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		RadioButton(WindowParent &owner, RadioButtonOpts creationOpts);
+		RadioButton(IWindowParent &owner, RadioButtonOpts creationOpts);
 
 		/// Constructs the radio button, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
-		RadioButton(WindowParent &owner, WORD ctrlId, Lay layout);
+		RadioButton(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Returns the wrapped window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
@@ -2186,13 +2186,13 @@ namespace wl {
 		/// Constructs the grouped radio buttons, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		RadioGroup(WindowParent &owner, std::initializer_list<RadioButtonOpts> creationOpts);
+		RadioGroup(IWindowParent &owner, std::initializer_list<RadioButtonOpts> creationOpts);
 
 		/// Constructs the radio group using each provided ID to programmatically create
 		/// a radio button which will be loaded from the dialog resource.
 		///
 		/// The layout will be applied to all radio buttons.
-		RadioGroup(WindowParent &owner, Lay layout, std::initializer_list<WORD> ctrlIds);
+		RadioGroup(IWindowParent &owner, Lay layout, std::initializer_list<WORD> ctrlIds);
 
 		/** Radio button methods. */
 		RadioButtonCollection radios{*this};
@@ -2211,7 +2211,7 @@ namespace wl {
 		[[nodiscard]] constexpr events::RadioGroupEvents& on() { return _wl_internal::valid_event(_radios[0].hwnd(), _events); }
 
 	private:
-		WindowParent &_owner;
+		IWindowParent &_owner;
 		_wl_internal::NonMovableArray<RadioButton> _radios;
 		events::RadioGroupEvents _events;
 	};
@@ -2245,17 +2245,17 @@ namespace wl {
 	/// ```
 	///
 	/// [static]: https://learn.microsoft.com/en-us/windows/win32/controls/about-static-controls
-	class Static final : public WindowChild {
+	class Static final : public IWindowChild {
 	public:
 		/// Constructs the static, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		Static(WindowParent &owner, StaticOpts creationOpts);
+		Static(IWindowParent &owner, StaticOpts creationOpts);
 
 		/// Constructs the static, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
-		Static(WindowParent &owner, WORD ctrlId, Lay layout);
+		Static(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Returns the wrapped window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
@@ -2349,7 +2349,7 @@ namespace wl {
 	/// ```
 	///
 	/// [status bar]: https://learn.microsoft.com/en-us/windows/win32/controls/status-bars
-	class StatusBar final : public WindowChild {
+	class StatusBar final : public IWindowChild {
 	public:
 		/** @brief A single part of the `StatusBar`. */
 		class Part final {
@@ -2401,7 +2401,7 @@ namespace wl {
 		/// Constructs the status bar, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		StatusBar(WindowParent &owner, StatusBarOpts creationOpts);
+		StatusBar(IWindowParent &owner, StatusBarOpts creationOpts);
 
 		/** Part methods. */
 		PartCollection parts{*this};
@@ -2435,11 +2435,11 @@ namespace wl {
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
-		/// Retrieves the 16x16 `IconStore`.
+		/// Retrieves the 16x16 `IStoreIcon`.
 		///
 		/// Allows icons to be added to the control's image list.
 		/// A `Part` can display an icon referring to its zero-based index.
-		constexpr IconStore& icons() { return _iconStore16; }
+		constexpr IStoreIcon& icons() { return _iconStore16; }
 
 	private:
 		void resize_to_fit_parent(wm::Size p);
@@ -2485,7 +2485,7 @@ namespace wl {
 	/// ```
 	///
 	/// [tab]: https://learn.microsoft.com/en-us/windows/win32/controls/tab-controls
-	class Tab final : public WindowChild {
+	class Tab final : public IWindowChild {
 	public:
 		class ItemCollection; // forward declaration
 
@@ -2543,7 +2543,7 @@ namespace wl {
 		/// Constructs the tab, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		Tab(WindowParent &owner, TabOpts creationOpts);
+		Tab(IWindowParent &owner, TabOpts creationOpts);
 
 		/// Constructs the tab, which will be loaded from the dialog resource.
 		///
@@ -2552,7 +2552,7 @@ namespace wl {
 		/// The `childrenDlgIds` are the IDs of the dialog resources of each
 		/// children to be added, and it should have the same number of elements
 		/// in `titles`.
-		Tab(WindowParent &owner, WORD ctrlId, Lay layout,
+		Tab(IWindowParent &owner, WORD ctrlId, Lay layout,
 			std::initializer_list<WORD> childrenDlgIds, std::initializer_list<WStrView> titles);
 
 		/** Item methods. */
@@ -2623,17 +2623,17 @@ namespace wl {
 	/// ```
 	///
 	/// [trackbar]: https://learn.microsoft.com/en-us/windows/win32/controls/trackbar-controls
-	class Trackbar final : public WindowChild {
+	class Trackbar final : public IWindowChild {
 	public:
 		/// Constructs the tree view, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		Trackbar(WindowParent &owner, TrackbarOpts creationOpts);
+		Trackbar(IWindowParent &owner, TrackbarOpts creationOpts);
 
 		/// Constructs the tree view, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
-		Trackbar(WindowParent &owner, WORD ctrlId, Lay layout);
+		Trackbar(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Returns the wrapped window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
@@ -2692,7 +2692,7 @@ namespace wl {
 	/// @brief Native [tree view] control.
 	///
 	/// [tree view]: https://learn.microsoft.com/en-us/windows/win32/controls/tree-view-controls
-	class TreeView final : public WindowChild {
+	class TreeView final : public IWindowChild {
 	public:
 		/** @brief A single item of the `TreeView`. */
 		class Item final {
@@ -2810,12 +2810,12 @@ namespace wl {
 		/// Constructs the tree view, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		TreeView(WindowParent &owner, TreeViewOpts creationOpts);
+		TreeView(IWindowParent &owner, TreeViewOpts creationOpts);
 
 		/// Constructs the tree view, which will be loaded from the dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
-		TreeView(WindowParent &owner, WORD ctrlId, Lay layout);
+		TreeView(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Item methods. */
 		ItemCollection items{*this};
@@ -2859,11 +2859,11 @@ namespace wl {
 		/// [extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/tree-view-control-window-extended-styles
 		const TreeView& set_extended_style(bool doSet, DWORD exStyle) const;
 
-		/// Retrieves the 16x16 `IconStore`.
+		/// Retrieves the 16x16 `IStoreIcon`.
 		///
 		/// Allows icons to be added to the control's image list.
 		/// An `Item` can display an icon referring to its zero-based index.
-		IconStore& icons_16();
+		IStoreIcon& icons_16();
 
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;

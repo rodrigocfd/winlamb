@@ -35,9 +35,9 @@ There are a few pure abstract classes (interfaces) which are implemented by wind
 
 | Interface | Description |
 | -- | -- |
-| `wl::Window` | Implemented by all windows. |
-| `wl::WindowParent` | Implemented by all windows which can host child controls. |
-| `wl::WindowChild` | Implemented by all child controls. |
+| `wl::IWindow` | Implemented by all windows. |
+| `wl::IWindowParent` | Implemented by all windows which can host child controls. |
+| `wl::IWindowChild` | Implemented by all child controls. |
 
 Native controls are the Win32 built-in widgets:
 

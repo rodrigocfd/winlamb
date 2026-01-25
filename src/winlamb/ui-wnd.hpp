@@ -46,21 +46,21 @@ namespace wl {
 	class DropFiles;
 
 	/** @brief Pure abstract class; implemented by all windows. */
-	class Window {
+	class IWindow {
 	public:
 		/** Returns the window handle. */
 		[[nodiscard]] virtual HWND hwnd() const = 0;
 	};
 
 	/** @brief Pure abstract class; implemented by all child controls. */
-	class WindowChild : public Window {
+	class IWindowChild : public IWindow {
 	public:
 		/** Returns the control ID. */
 		[[nodiscard]] virtual WORD ctrl_id() const = 0;
 	};
 
 	/** @brief Pure abstract class; implemented by all windows which can host child controls. */
-	class WindowParent : public Window {
+	class IWindowParent : public IWindow {
 	public:
 		/// Allows message events to be added.
 		///
@@ -190,7 +190,7 @@ namespace wl {
 	/// ```
 	///
 	/// [`std::bind`]: https://en.cppreference.com/w/cpp/utility/functional/bind.html
-	class WindowMain final : public WindowParent {
+	class WindowMain final : public IWindowParent {
 	public:
 		/// Constructs the main window, which will be created programmatically with [`CreateWindowEx`].
 		///
@@ -270,14 +270,14 @@ namespace wl {
 	};
 
 	/** @brief Modal window. */
-	class WindowModal final : public WindowParent {
+	class WindowModal final : public IWindowParent {
 	public:
 		/// Constructs the modal window, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// Example:
 		///
 		/// ```cpp
-		/// void show_my_modal(const wl::WindowParent &wnd) {
+		/// void show_my_modal(const wl::IWindowParent &wnd) {
 		///
 		///     wl::WindowModal myModal{wnd, wl::ModalOpts{
 		///         .size = wl::dpi::sz(200, 200),
@@ -289,7 +289,7 @@ namespace wl {
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		WindowModal(const WindowParent &parent, ModalOpts creationOpts)
+		WindowModal(const IWindowParent &parent, ModalOpts creationOpts)
 			: _rawOrDlg{.raw = std::make_optional<_wl_internal::RawModal>(parent.base(), creationOpts)} { }
 
 		/// Constructs the modal window, which will be loaded from a dialog resource with [`DialogBoxParam`].
@@ -299,14 +299,14 @@ namespace wl {
 		/// Example:
 		///
 		/// ```cpp
-		/// void show_my_modal(const wl::WindowParent &wnd) {
+		/// void show_my_modal(const wl::IWindowParent &wnd) {
 		///     wl::WindowModal myModal{wnd, DLG_MAIN};
 		///     myModal.show();
 		/// }
 		/// ```
 		///
 		/// [`DialogBoxParam`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxparamw
-		WindowModal(const WindowParent &parent, WORD dlgId)
+		WindowModal(const IWindowParent &parent, WORD dlgId)
 			: _rawOrDlg{.dlg = std::make_optional<_wl_internal::DlgModal>(parent.base(), dlgId)} { }
 
 		/** Returns the window handle. */
@@ -373,13 +373,13 @@ namespace wl {
 	/// ```cpp
 	/// class MyControl final {
 	/// public:
-	///     MyControl(wl::WindowParent &parent, POINT pos, SIZE sz);
+	///     MyControl(wl::IWindowParent &parent, POINT pos, SIZE sz);
 	///     wl::WindowControl wnd;
 	/// };
 	/// ```
 	///
 	/// ```cpp
-	/// MyControl::MyControl(wl::WindowParent &parent, POINT pos, SIZE sz)
+	/// MyControl::MyControl(wl::IWindowParent &parent, POINT pos, SIZE sz)
 	///     : wnd{parent, wl::ControlOpts{
 	///         .layout = wl::Lay::hold_hold,
 	///         .pos = pos,
@@ -395,19 +395,19 @@ namespace wl {
 	///     });
 	/// }
 	/// ```
-	class WindowControl final : public WindowParent, public WindowChild {
+	class WindowControl final : public IWindowParent, public IWindowChild {
 	public:
 		/// Constructs the custom control window, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		WindowControl(WindowParent &parent, ControlOpts creationOpts);
+		WindowControl(IWindowParent &parent, ControlOpts creationOpts);
 
 		/// Constructs the custom control window, which will be loaded from a dialog resource with [`CreateDialogParam`].
 		///
 		/// The `dlgId` parameter must identify a dialog resource.
 		///
 		/// [`CreateDialogParam`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createdialogparamw
-		WindowControl(wl::WindowParent &parent, WORD dlgId,
+		WindowControl(wl::IWindowParent &parent, WORD dlgId,
 			WORD ctrlId = 0, POINT pos = POINT{}, wl::Lay layout = wl::Lay::hold_hold);
 
 		/** Returns the window handle. */
@@ -493,7 +493,7 @@ namespace wl {
 		DropFiles(DropFiles&&) = delete; // non-copyable, non-movable
 
 	public:
-		explicit DropFiles(WindowParent &owner);
+		explicit DropFiles(IWindowParent &owner);
 
 		HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, void **ppvObject) override;
 		ULONG STDMETHODCALLTYPE AddRef() override;
