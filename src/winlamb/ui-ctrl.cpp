@@ -1116,8 +1116,10 @@ const StatusBar::Part& StatusBar::Part::set_icon_index(int iconIndex) const {
 
 //------------------------------------------------------------------------------
 
-StatusBar::StatusBar(WindowParent &owner, std::initializer_list<SbPart> allParts, WORD ctrlId)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(ctrlId)}, _parts{allParts}
+StatusBar::StatusBar(WindowParent &owner, StatusBarOpts creationOpts) :
+	_ctrl{owner.base()},
+	_events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)},
+	_parts{std::move(creationOpts.parts)}
 {
 	_rightEdges.resize(_parts.size(), 0);
 

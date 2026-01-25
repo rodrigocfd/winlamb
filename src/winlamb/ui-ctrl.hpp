@@ -875,6 +875,22 @@ namespace wl {
 		int width = 0;
 	};
 
+	/// Options to create a `StatusBar` programmatically.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	struct StatusBarOpts final {
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Fixed-width and flexible parts to be added. */
+		std::vector<SbPart> parts{};
+	};
+
 	/// Options to create a `Tab` programmatically.
 	///
 	/// The fields are declared in alphabetical order to make it easy to work
@@ -2301,14 +2317,16 @@ namespace wl {
 	///         .title = L"My main window",
 	///     }};
 	///     wl::StatusBar sb{wnd, {
-	///         wl::SbPart{
-	///             .flex = 1,
-	///             .text = L"Here",
-	///         },
-	///         wl::SbPart{
-	///             .iconIndex = 0, // icon is loaded below in wm_create
-	///             .text = L"Hello",
-	///             .width = wl::dpi::x(200),
+	///         .parts = {
+	///             wl::SbPart{
+	///                 .flex = 1,
+	///                 .text = L"Here",
+	///             },
+	///             wl::SbPart{
+	///                 .iconIndex = 0, // icon is loaded below in wm_create
+	///                 .text = L"Hello",
+	///                 .width = wl::dpi::x(200),
+	///             },
 	///         },
 	///     }};
 	/// };
@@ -2382,10 +2400,8 @@ namespace wl {
 
 		/// Constructs the status bar, which will be created programmatically with [`CreateWindowEx`].
 		///
-		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
-		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		StatusBar(WindowParent &owner, std::initializer_list<SbPart> allParts, WORD ctrlId = 0);
+		StatusBar(WindowParent &owner, StatusBarOpts creationOpts);
 
 		/** Part methods. */
 		PartCollection parts{*this};

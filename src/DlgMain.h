@@ -78,9 +78,11 @@ public:
 		.pos = wl::dpi::pt(320, 10),
 		.text = L"Label",
 	}};
-	wl::StatusBar sb{wnd, {
-		wl::SbPart{.flex = 1, .text = L"Here"},
-		wl::SbPart{.iconIndex = 0, .text = L"Hello", .width = wl::dpi::x(200)},
+	wl::StatusBar sb{wnd, wl::StatusBarOpts{
+		.parts = {
+			wl::SbPart{.flex = 1, .text = L"Here"},
+			wl::SbPart{.iconIndex = 0, .text = L"Hello", .width = wl::dpi::x(200)},
+		},
 	}};
 	wl::RadioGroup rads{wnd, {
 		wl::RadioButtonOpts{
