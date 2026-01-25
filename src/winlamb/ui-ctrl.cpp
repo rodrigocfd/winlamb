@@ -1116,28 +1116,31 @@ const StatusBar::Part& StatusBar::Part::set_icon_index(int iconIndex) const {
 
 //------------------------------------------------------------------------------
 
-StatusBar::StatusBar(WindowParent &owner, WORD ctrlId)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(ctrlId)}
+StatusBar::StatusBar(WindowParent &owner, std::initializer_list<SbPart> allParts, WORD ctrlId)
+	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(ctrlId)}, _parts{allParts}
 {
+	_rightEdges.resize(_parts.size(), 0);
+
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
 		DWORD parentStyle = static_cast<DWORD>(GetWindowLongPtrW(pOwner->hwnd(), GWL_STYLE));
 		bool isParentResizable = (parentStyle & WS_MAXIMIZEBOX) || (parentStyle & WS_SIZEBOX);
 		DWORD style = WS_CHILD | WS_VISIBLE | SBARS_TOOLTIPS | (isParentResizable ? SBARS_SIZEGRIP : 0);
 		_ctrl.create_wnd(ctrl_id(), WS_EX_LEFT, STATUSCLASSNAMEW, {}, style, {}, {});
 
-		_rightEdges.resize(_opts._parts.size(), 0);
-		_partsData.reserve(_opts._parts.size());
-		for (auto &&optPart : _opts._parts)
-			_partsData.emplace_back(optPart.sizePixels, optPart.resizeWeight);
-
 		RECT rcParent{};
 		GetClientRect(pOwner->hwnd(), &rcParent);
 		resize_to_fit_parent(wm::Msg{WM_SIZE, SIZE_RESTORED, MAKELPARAM(rcParent.right, 0)}); // will create the parts
 
-		for (UINT i = 0; i < _partsData.size(); ++i) { // add text and icon
-			parts[i].set_text(_opts._parts[i].text);
-			if (_opts._parts[i].iconIndex != -1)
-				parts[i].set_icon_index(_opts._parts[i].iconIndex);
+		for (UINT i = 0; i < _parts.size(); ++i) { // add text
+			if (!_parts[i].text.empty())
+				parts[i].set_text(_parts[i].text);
+		}
+	});
+
+	_ctrl._parent._postEvents.wm_create_or_init_dialog([this]() -> void {
+		for (UINT i = 0; i < _parts.size(); ++i) { // icons are manually added by user in WM_CREATE/WM_INITDIALOG
+			if (_parts[i].iconIndex != -1)
+				parts[i].set_icon_index(_parts[i].iconIndex);
 		}
 	});
 
@@ -1147,32 +1150,27 @@ StatusBar::StatusBar(WindowParent &owner, WORD ctrlId)
 }
 
 void StatusBar::resize_to_fit_parent(wm::Size p) {
-	if (p.is_minimized() || !hwnd())
-		return;
+	if (p.is_minimized() || !hwnd()) return;
 
 	SendMessageW(hwnd(), WM_SIZE, 0, 0); // tell status bar to fit parent
+	if (_parts.empty()) return;
 
-	if (_partsData.empty())
-		return;
-
-	int totalWeight = 0; // total weight of all variable-width parts
-	int cxVariable = p.sz().cx; // total width to be divided among variable-width parts
-	for (auto &&partData : _partsData) {
-		if (partData.is_fixed_width()) {
-			cxVariable -= partData.sizePixels;
-		} else {
-			totalWeight += partData.resizeWeight;
-		}
+	int totalWeight = 0; // total weight of all flex parts
+	int cxVariable = p.sz().cx; // remaning width to be divided among flex parts
+	for (int i = 0; i < _parts.size(); ++i) {
+		if (parts[i].is_fixed_width())
+			cxVariable -= _parts[i].width; // decrease available width room
+		else
+			totalWeight += _parts[i].flex;
 	}
 
 	int cxTotal = p.sz().cx;
-	for (size_t i = _partsData.size(); i-- > 0; ) { // fill right edges array with the right edge of each part
+	for (int i = static_cast<int>(_parts.size()); i-- > 0; ) { // fill right edges array with the right edge of each part
 		_rightEdges[i] = cxTotal;
-		if (_partsData[i].is_fixed_width()) {
-			cxTotal -= _partsData[i].sizePixels;
-		} else {
-			cxTotal -= (cxVariable / totalWeight) * _partsData[i].resizeWeight;
-		}
+		if (parts[i].is_fixed_width())
+			cxTotal -= _parts[i].width;
+		else
+			cxTotal -= (cxVariable / totalWeight) * _parts[i].flex;
 	}
 	SendMessageW(hwnd(), SB_SETPARTS, _rightEdges.size(), reinterpret_cast<LPARAM>(_rightEdges.data()));
 }

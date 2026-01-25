@@ -99,15 +99,12 @@ void Contro::on_paint() {
 ////////////////////////////////////////////////////////////////////////////////
 
 RawMain::RawMain() {
-	sb.icons().add_resource(ICO_MAIN);
-	sb.icons().add_shell_ext(L"xlsx");
-	sb.setup().add_resizable_part(1, L"Rezee", 0);
-	sb.setup().add_fixed_part(wl::dpi::x(200), L"Second", 1);
-
 	wnd.on().wm_create([this](wl::wm::Create p) -> int {
 		lv.cols[1].set_justif(HDF_CENTER).set_width_to_fill();
 		lv.items.add(L"Bronco kid", {L"Surreal"});
 		lv.items.add(L"Ground control", {L"to major tom"});
+
+		sb.icons().add_shell_ext(L"xlsx");
 
 		tv.items.add_root(L"Xabregas").add_child(L"Donegas");
 		tv.items.add_root(L"Dumpster fire");

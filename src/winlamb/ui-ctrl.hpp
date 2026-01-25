@@ -847,63 +847,32 @@ namespace wl {
 		std::wstring text{};
 	};
 
-	/// Options to create a `StatusBar` programmatically.
+	/// A fixed-width or flexible part to be added to a `StatusBar`.
 	///
 	/// The fields are declared in alphabetical order to make it easy to work
 	/// with [designated initializers], which require the fields to be set
 	/// the same order they appear in the struct.
 	///
 	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
-	struct StatusbarOpts final {
-		/// Adds a fixed part to the `StatusBar`. When the parent window is resized, this part will keep its width.
+	struct SbPart final {
+		/// Resizing weight for a flexible part, which expands to fill the remaining space.
 		///
-		/// Prefer using a DPI-aware width:
+		/// If `width` is specified, this field is ignored.
+		int flex = 0;
+		/** Zero-based icon index. */
+		int iconIndex = -1;
+		/** Text to be rendered. */
+		std::wstring text{};
+		/// Width in pixels. If defined, this part will have a fixed width and `flex` field will be ignored.
 		///
-		/// ```cpp
-		/// sb.setup().add_fixed_part(wl::dpi::x(200), L"Foo");
-		/// ```
-		///
-		/// If you want to pass a zero-based `iconIndex`, you must feed the icon first:
-		///
-		/// ```cpp
-		/// sb.icons().add_resource(ICO_FOO);
-		/// sb.setup().add_fixed_part(wl::dpi::x(200), L"Foo", 0);
-		/// ```
-		void add_fixed_part(UINT width, WStrView text = L"", int iconIndex = -1) {
-			_parts.emplace_back(width, 0, text.c_str(), iconIndex);
-		}
-
-		/// Adds a resizable part to the `StatusBar`. When the parent window is resized, this part will resize as well.
-		///
-		/// How `resizeWeight` works:
-		/// - Suppose you have 3 parts, respectively with weights of 1, 1 and 2.
-		/// - If available client area is 400px, respective part widths will be 100, 100 and 200px.
-		///
-		/// Example:
+		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// sb.setup().add_fixed_part(1, L"Foo");
+		/// wl::SbPart myPart{
+		///     .width = wl::dpi::x(200),
+		/// };
 		/// ```
-		///
-		/// If you want to pass a zero-based `iconIndex`, you must feed the icon first:
-		///
-		/// ```cpp
-		/// sb.icons().add_resource(ICO_FOO);
-		/// sb.setup().add_fixed_part(1, L"Foo", 0);
-		/// ```
-		void add_resizable_part(UINT resizeWeight, WStrView text = L"", int iconIndex = -1) {
-			_parts.emplace_back(0, resizeWeight, text.c_str(), iconIndex);
-		}
-
-	private:
-		struct Part final {
-			int sizePixels = 0; // one used, the other zero
-			int resizeWeight = 0;
-			std::wstring text{};
-			int iconIndex = -1;
-		};
-		std::vector<Part> _parts{};
-		friend wl::StatusBar;
+		int width = 0;
 	};
 
 	/// Options to create a `Tab` programmatically.
@@ -2331,7 +2300,17 @@ namespace wl {
 	///     wl::WindowMain wnd{wl::MainOpts{
 	///         .title = L"My main window",
 	///     }};
-	///     wl::StatusBar sb{wnd};
+	///     wl::StatusBar sb{wnd, {
+	///         wl::SbPart{
+	///             .flex = 1,
+	///             .text = L"Here",
+	///         },
+	///         wl::SbPart{
+	///             .iconIndex = 0, // icon is loaded below in wm_create
+	///             .text = L"Hello",
+	///             .width = wl::dpi::x(200),
+	///         },
+	///     }};
 	/// };
 	/// ```
 	///
@@ -2339,8 +2318,10 @@ namespace wl {
 	/// RUN_MAIN(MyMain, wnd)
 	///
 	/// MyMain::MyMain() {
-	///     sb.setup().add_resizable_part(1, L"First");
-	///     sb.setup().add_fixed_part(wl::dpi::x(200), L"Second");
+	///     wnd.on().wm_create([this](wl::wm::Create p) -> int {
+	///         sb.icons().add_shell_ext(L"txt"); // loads the system text icon
+	///         return 0;
+	///     });
 	///
 	///     sb.on().nm_click([this](NMMOUSE &p) -> bool {
 	///         MessageBoxW(wnd.hwnd(), L"Status bar clicked", L"Click", MB_ICONINFORMATION);
@@ -2367,8 +2348,11 @@ namespace wl {
 			/** Sets the text of the part. */
 			const Part& set_text(WStrView newText) const;
 
+			/** Returns true is the part width is flexible. */
+			[[nodiscard]] constexpr bool is_flex() const { return !is_fixed_width(); }
+
 			/** Returns true is the part has fixed width. */
-			[[nodiscard]] constexpr bool is_fixed_width() const { return _owner._partsData[_index].is_fixed_width(); }
+			[[nodiscard]] constexpr bool is_fixed_width() const { return _owner._parts[_index].width > 0; }
 
 			/** Sets the zero-based index of the `ImageList` icon associated to the item. */
 			const Part& set_icon_index(int iconIndex) const;
@@ -2389,7 +2373,7 @@ namespace wl {
 			[[nodiscard]] constexpr Part operator[](int index) const { return Part{_owner, index}; }
 
 			/** Returns the number of parts. */
-			[[nodiscard]] constexpr size_t count() const { return _owner._partsData.size(); }
+			[[nodiscard]] constexpr size_t count() const { return _owner._parts.size(); }
 
 		private:
 			const StatusBar &_owner;
@@ -2401,7 +2385,7 @@ namespace wl {
 		/// The `ctrlId` parameter is optional. If not set, the control will receive an auto-generated ID.
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		explicit StatusBar(WindowParent &owner, WORD ctrlId = 0);
+		StatusBar(WindowParent &owner, std::initializer_list<SbPart> allParts, WORD ctrlId = 0);
 
 		/** Part methods. */
 		PartCollection parts{*this};
@@ -2411,9 +2395,6 @@ namespace wl {
 
 		/** Returns the control ID. */
 		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
-
-		/** Defines additional creation options. */
-		[[nodiscard]] constexpr StatusbarOpts& setup() { return _wl_internal::valid_setup(hwnd(), _opts); }
 
 		/// Allows message events to be added.
 		///
@@ -2446,19 +2427,11 @@ namespace wl {
 
 	private:
 		void resize_to_fit_parent(wm::Size p);
-
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::StatusBarEvents _events;
-		StatusbarOpts _opts{};
-		_wl_internal::HIconStore _iconStore16{{16, 16}};
-
-		struct PartData final {
-			int sizePixels = 0; // one used, the other zero
-			int resizeWeight = 0;
-			[[nodiscard]] constexpr bool is_fixed_width() const { return resizeWeight == 0; }
-		};
-		std::vector<PartData> _partsData{};
+		std::vector<SbPart> _parts;
 		std::vector<int> _rightEdges{}; // buffer to speed up resize calls
+		_wl_internal::HIconStore _iconStore16{{16, 16}};
 	};
 
 	/// @brief Native [tab] control.
