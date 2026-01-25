@@ -373,19 +373,20 @@ namespace wl {
 	/// ```cpp
 	/// class MyControl final {
 	/// public:
-	///     MyControl(wl::WindowParent &parent);
+	///     MyControl(wl::WindowParent &parent, POINT pos, SIZE sz);
 	///     wl::WindowControl wnd;
 	/// };
 	/// ```
 	///
 	/// ```cpp
-	/// MyControl::MyControl(wl::WindowParent &parent)
-	///     : wnd{parent}
+	/// MyControl::MyControl(wl::WindowParent &parent, POINT pos, SIZE sz)
+	///     : wnd{parent, wl::ControlOpts{
+	///         .layout = wl::Lay::hold_hold,
+	///         .pos = pos,
+	///         .size = sz,
+	///         .styleEx = wl::ControlOpts{}.styleEx | WS_EX_CLIENTEDGE,
+	///     }}
 	/// {
-	///     wnd.setup().pos = wl::dpi::pt(420, 10);
-	///     wnd.setup().size = wl::dpi::sz(80, 80);
-	///     wnd.setup().layout = wl::Lay::move_hold;
-	///
 	///     wnd.on().wm_paint([this]() -> void {
 	///         PAINTSTRUCT ps{};
 	///         HDC hdc = BeginPaint(wnd.hwnd(), &ps);
