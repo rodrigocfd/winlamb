@@ -320,6 +320,27 @@ namespace wl::events {
 
 namespace wl {
 
+	/// Options to load an icon, either from resource or from the system.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// in the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	struct IconLoad final {
+		/// Resource identifier of the icon.
+		///
+		/// If specified, the `ext` field is ignored.
+		WORD id = 0;
+		/// File extension of the icon to be loaded from the system, like "txt".
+		///
+		/// The icon displayed is the same used by Windows Explorer when listing
+		/// the file with the given extension.
+		///
+		/// If `id` is specified, this field is ignored.
+		std::wstring ext{};
+	};
+
 	/// Options to create a `Button` programmatically.
 	///
 	/// The fields are declared in alphabetical order to make it easy to work
@@ -887,6 +908,11 @@ namespace wl {
 		///
 		/// Defaults to an auto-generated number.
 		WORD ctrlId = 0;
+		/// Icons to be loaded into the `StatusBar`.
+		///
+		/// They can be later referenced by index, following the same order they
+		/// are added.
+		std::vector<IconLoad> icons{};
 		/** Fixed-width and flexible parts to be added. */
 		std::vector<SbPart> parts{};
 	};
@@ -2317,13 +2343,16 @@ namespace wl {
 	///         .title = L"My main window",
 	///     }};
 	///     wl::StatusBar sb{wnd, {
+	///         .icons = {
+	///             wl::IconLoad{.ext = L"xlsx"},
+	///         },
 	///         .parts = {
 	///             wl::SbPart{
 	///                 .flex = 1,
 	///                 .text = L"Here",
 	///             },
 	///             wl::SbPart{
-	///                 .iconIndex = 0, // icon is loaded below in wm_create
+	///                 .iconIndex = 0,
 	///                 .text = L"Hello",
 	///                 .width = wl::dpi::x(200),
 	///             },
@@ -2336,11 +2365,6 @@ namespace wl {
 	/// RUN_MAIN(MyMain, wnd)
 	///
 	/// MyMain::MyMain() {
-	///     wnd.on().wm_create([this](wl::wm::Create p) -> int {
-	///         sb.icons().add_shell_ext(L"txt"); // loads the system text icon
-	///         return 0;
-	///     });
-	///
 	///     sb.on().nm_click([this](NMMOUSE &p) -> bool {
 	///         MessageBoxW(wnd.hwnd(), L"Status bar clicked", L"Click", MB_ICONINFORMATION);
 	///         return true;
@@ -2434,12 +2458,6 @@ namespace wl {
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
-
-		/// Retrieves the 16x16 `IStoreIcon`.
-		///
-		/// Allows icons to be added to the control's image list.
-		/// A `Part` can display an icon referring to its zero-based index.
-		constexpr IStoreIcon& icons() { return _iconStore16; }
 
 	private:
 		void resize_to_fit_parent(wm::Size p);

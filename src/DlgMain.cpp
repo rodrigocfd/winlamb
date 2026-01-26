@@ -104,8 +104,6 @@ RawMain::RawMain() {
 		lv.items.add(L"Bronco kid", {L"Surreal"});
 		lv.items.add(L"Ground control", {L"to major tom"});
 
-		sb.icons().add_shell_ext(L"xlsx");
-
 		tv.items.add_root(L"Xabregas").add_child(L"Donegas");
 		tv.items.add_root(L"Dumpster fire");
 		return 0;

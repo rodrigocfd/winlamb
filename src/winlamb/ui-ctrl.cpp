@@ -1122,6 +1122,10 @@ StatusBar::StatusBar(IWindowParent &owner, StatusBarOpts creationOpts) :
 	_parts{std::move(creationOpts.parts)}
 {
 	_rightEdges.resize(_parts.size(), 0);
+	for (auto &&ico : creationOpts.icons) {
+		if (ico.id) _iconStore16.add_resource(ico.id);
+		else        _iconStore16.add_shell_ext(ico.ext);
+	}
 
 	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
 		DWORD parentStyle = static_cast<DWORD>(GetWindowLongPtrW(pOwner->hwnd(), GWL_STYLE));
