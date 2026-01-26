@@ -22,16 +22,6 @@ namespace _wl_internal {
 	[[nodiscard]] SIZE calc_text_bound_box(wl::WStrView text);
 	[[nodiscard]] SIZE calc_text_bound_box_with_check(wl::WStrView text);
 
-	/** Validates opts access. */
-	template<typename O>
-	constexpr O& valid_setup(HWND hWnd, O &opts) {
-		#ifdef _DEBUG
-		if (hWnd)
-			throw "Cannot change setup options after the window or control is created.";
-		#endif
-		return opts;
-	}
-
 	/** Validates event access. */
 	template<typename E>
 	constexpr E& valid_event(HWND hWnd, E &events) {
