@@ -680,7 +680,7 @@ ListView::Item ListView::ItemCollection::add(WStrView text,
 	std::initializer_list<WStrView> otherColumnsTexts, int iconIndex) const
 {
 	LVITEMW lvi{
-		.mask = LVIF_TEXT | static_cast<UINT>(iconIndex != -1 ? LVIF_IMAGE : 0),
+		.mask = LVIF_TEXT | static_cast<UINT>(iconIndex > -1 ? LVIF_IMAGE : 0),
 		.iItem = 0x0fff'ffff, // insert as the last item
 		.pszText = const_cast<LPWSTR>(text.c_str()),
 		.iImage = iconIndex,
@@ -794,6 +794,15 @@ ListView::ListView(IWindowParent &owner, ListViewOpts creationOpts)
 			_ctrl._parent._layout.add(hwnd(), opts.layout);
 			for (auto &&c : opts.cols)
 				cols.add(c.text, c.width);
+
+			for (auto &&ico : opts.icons16) {
+				if (ico.id) icons_16().add_resource(ico.id);
+				else        icons_16().add_shell_ext(ico.ext);
+			}
+			for (auto &&ico : opts.icons32) {
+				if (ico.id) icons_32().add_resource(ico.id);
+				else        icons_32().add_shell_ext(ico.ext);
+			}
 		});
 
 	custom_events();
@@ -1145,7 +1154,7 @@ StatusBar::StatusBar(IWindowParent &owner, StatusBarOpts creationOpts) :
 
 	_ctrl._parent._postEvents.wm_create_or_init_dialog([this]() -> void {
 		for (UINT i = 0; i < _parts.size(); ++i) { // icons are manually added by user in WM_CREATE/WM_INITDIALOG
-			if (_parts[i].iconIndex != -1)
+			if (_parts[i].iconIndex > -1)
 				parts[i].set_icon_index(_parts[i].iconIndex);
 		}
 	});
@@ -1407,7 +1416,7 @@ TreeView::Item TreeView::Item::add_child(WStrView itemText, int iconIndex) const
 		.hParent = _hItem,
 		.hInsertAfter = TVI_LAST,
 		.itemex = {
-			.mask = TVIF_TEXT | static_cast<UINT>(iconIndex != -1 ? TVIF_IMAGE : 0),
+			.mask = TVIF_TEXT | static_cast<UINT>(iconIndex > -1 ? TVIF_IMAGE : 0),
 			.pszText = const_cast<LPWSTR>(itemText.c_str()),
 			.iImage = iconIndex,
 		},

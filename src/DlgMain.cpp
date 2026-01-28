@@ -101,8 +101,8 @@ void Contro::on_paint() {
 RawMain::RawMain() {
 	wnd.on().wm_create([this](wl::wm::Create p) -> int {
 		lv.cols[1].set_justif(HDF_CENTER).set_width_to_fill();
-		lv.items.add(L"Bronco kid", {L"Surreal"});
-		lv.items.add(L"Ground control", {L"to major tom"});
+		lv.items.add(L"Bronco kid", {L"Surreal"}, 0);
+		lv.items.add(L"Ground control", {L"to major tom"}, 1);
 
 		tv.items.add_root(L"Xabregas").add_child(L"Donegas");
 		tv.items.add_root(L"Dumpster fire");

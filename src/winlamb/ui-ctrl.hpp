@@ -662,6 +662,16 @@ namespace wl {
 		///
 		/// Defaults to an auto-generated number.
 		WORD ctrlId = 0;
+		/// 16x16 icons to be loaded into the `ListView`.
+		///
+		/// They can be later referenced by index, following the same order they
+		/// are added.
+		std::vector<IconLoad> icons16{};
+		/// 32x32 icons to be loaded into the `ListView`.
+		///
+		/// They can be later referenced by index, following the same order they
+		/// are added.
+		std::vector<IconLoad> icons32{};
 		/** Horizontal and vertical behavior of the control when the parent window is resized. */
 		Lay layout = Lay::hold_hold;
 		/// Control position passed to [`CreateWindowEx`].

@@ -66,6 +66,10 @@ public:
 			{L"Second", 1},
 		},
 		.contextMenuId = MNU_FILES,
+		.icons16 = {
+			wl::IconLoad{.ext = L"docx"},
+			wl::IconLoad{.ext = L"zip"},
+		},
 		.layout = wl::Lay::resize_resize,
 		.pos = wl::dpi::pt(10, 80),
 		.size = wl::dpi::sz(400, 100),
