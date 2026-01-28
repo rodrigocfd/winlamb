@@ -111,6 +111,22 @@ namespace wl::dpi {
 
 namespace wl {
 
+	/// @brief A base class which makes derived classes non-copyable an non-movable.
+	///
+	/// ```cpp
+	/// class Person final : private wl::NoCopyNoMove {
+	///     std::wstring name{};
+	/// };
+	/// ```
+	class NoCopyNoMove {
+	public:
+		constexpr NoCopyNoMove() = default;
+		NoCopyNoMove(const NoCopyNoMove&) = delete;
+		NoCopyNoMove(NoCopyNoMove&&) = delete;
+		NoCopyNoMove& operator=(const NoCopyNoMove&&) = delete;
+		NoCopyNoMove& operator=(NoCopyNoMove&&) = delete;
+	};
+
 	/// @brief Pure abstract class; implemented by icon stores.
 	///
 	/// Controls which make use of icons will have a method which expose this abstract class,

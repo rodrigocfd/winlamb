@@ -1,6 +1,5 @@
 #include <system_error>
 #include "ui-rawdlg.hpp"
-#include "ui-app.hpp"
 using namespace _wl_internal;
 using namespace wl;
 

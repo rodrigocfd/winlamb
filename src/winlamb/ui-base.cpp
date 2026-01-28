@@ -1,7 +1,6 @@
 #include <memory>
 #include <system_error>
 #include "ui-base.hpp"
-#include "ui-app.hpp"
 using namespace _wl_internal;
 using namespace wl;
 using namespace wl::events;

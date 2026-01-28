@@ -4,10 +4,8 @@
 namespace _wl_internal {
 
 	/** Base to all native control events. */
-	class NativeCtrlEvents final {
+	class NativeCtrlEvents final : private wl::NoCopyNoMove {
 	public:
-		NativeCtrlEvents(NativeCtrlEvents&&) = delete; // non-copyable, non-movable
-
 		NativeCtrlEvents(WndBase &parentWndBase, WORD ctrlId)
 			: _parent{parentWndBase}, _ctrlId{ctrlId} { }
 
@@ -20,10 +18,8 @@ namespace _wl_internal {
 namespace wl::events {
 
 	/** Native `Button` control events. */
-	class ButtonEvents final {
+	class ButtonEvents final : private wl::NoCopyNoMove {
 	private:
-		ButtonEvents(ButtonEvents&&) = delete; // non-copyable, non-movable
-
 		ButtonEvents(_wl_internal::WndBase &parentWndBase, WORD ctrlId)
 			: _ctrlEvents{parentWndBase, ctrlId} { }
 
@@ -44,10 +40,8 @@ namespace wl::events {
 	};
 
 	/** Native `ComboBox` control events. */
-	class ComboBoxEvents final {
+	class ComboBoxEvents final : private wl::NoCopyNoMove {
 	private:
-		ComboBoxEvents(ComboBoxEvents&&) = delete; // non-copyable, non-movable
-
 		ComboBoxEvents(_wl_internal::WndBase &parentWndBase, WORD ctrlId)
 			: _ctrlEvents{parentWndBase, ctrlId} { }
 
@@ -69,10 +63,8 @@ namespace wl::events {
 	};
 
 	/** Native `DateTimePicker` control events. */
-	class DateTimePickerEvents final {
+	class DateTimePickerEvents final : private wl::NoCopyNoMove {
 	private:
-		DateTimePickerEvents(DateTimePickerEvents&&) = delete; // non-copyable, non-movable
-
 		DateTimePickerEvents(_wl_internal::WndBase &parentWndBase, WORD ctrlId)
 			: _ctrlEvents{parentWndBase, ctrlId} { }
 
@@ -93,10 +85,8 @@ namespace wl::events {
 	};
 
 	/** Native `Edit` control events. */
-	class EditEvents final {
+	class EditEvents final : private wl::NoCopyNoMove {
 	private:
-		EditEvents(EditEvents&&) = delete; // non-copyable, non-movable
-
 		EditEvents(_wl_internal::WndBase &parentWndBase, WORD ctrlId)
 			: _ctrlEvents{parentWndBase, ctrlId} { }
 
@@ -115,10 +105,8 @@ namespace wl::events {
 	};
 
 	/** Native `ListView` events. */
-	class ListViewEvents final {
+	class ListViewEvents final : private wl::NoCopyNoMove {
 	private:
-		ListViewEvents(ListViewEvents&&) = delete; // non-copyable, non-movable
-
 		ListViewEvents(_wl_internal::WndBase &parentWndBase, WORD ctrlId)
 			: _ctrlEvents{parentWndBase, ctrlId} { }
 
@@ -154,10 +142,8 @@ namespace wl::events {
 	};
 
 	/** Native `MonthCalendar` events. */
-	class MonthCalendarEvents final {
+	class MonthCalendarEvents final : private wl::NoCopyNoMove {
 	private:
-		MonthCalendarEvents(MonthCalendarEvents&&) = delete; // non-copyable, non-movable
-
 		MonthCalendarEvents(_wl_internal::WndBase &parentWndBase, WORD ctrlId)
 			: _ctrlEvents{parentWndBase, ctrlId} { }
 
@@ -174,10 +160,8 @@ namespace wl::events {
 	};
 
 	/** Native `RadioGroup` events. */
-	class RadioGroupEvents final {
+	class RadioGroupEvents final : private wl::NoCopyNoMove {
 	private:
-		RadioGroupEvents(RadioGroupEvents&&) = delete; // non-copyable, non-movable
-
 		RadioGroupEvents(wl::RadioGroup &owner) : _ownerGroup{owner} { }
 
 	public:
@@ -192,10 +176,8 @@ namespace wl::events {
 	};
 
 	/** Native `Static` events. */
-	class StaticEvents final {
+	class StaticEvents final : private wl::NoCopyNoMove {
 	private:
-		StaticEvents(StaticEvents&&) = delete; // non-copyable, non-movable
-
 		StaticEvents(_wl_internal::WndBase &parentWndBase, WORD ctrlId)
 			: _ctrlEvents{parentWndBase, ctrlId} { }
 
@@ -211,10 +193,8 @@ namespace wl::events {
 	};
 
 	/** Native `StatusBar` events. */
-	class StatusBarEvents final {
+	class StatusBarEvents final : private wl::NoCopyNoMove {
 	private:
-		StatusBarEvents(StatusBarEvents&&) = delete; // non-copyable, non-movable
-
 		StatusBarEvents(_wl_internal::WndBase &parentWndBase, WORD ctrlId)
 			: _ctrlEvents{parentWndBase, ctrlId} { }
 
@@ -231,10 +211,8 @@ namespace wl::events {
 	};
 
 	/** Native `Tab` events. */
-	class TabEvents final {
+	class TabEvents final : private wl::NoCopyNoMove {
 	private:
-		TabEvents(TabEvents&&) = delete; // non-copyable, non-movable
-
 		TabEvents(_wl_internal::WndBase &parentWndBase, WORD ctrlId)
 			: _ctrlEvents{parentWndBase, ctrlId} { }
 
@@ -256,10 +234,8 @@ namespace wl::events {
 	};
 
 	/** Native `Trackbar` events. */
-	class TrackbarEvents final {
+	class TrackbarEvents final : private wl::NoCopyNoMove {
 	private:
-		TrackbarEvents(TrackbarEvents&&) = delete; // non-copyable, non-movable
-
 		TrackbarEvents(_wl_internal::WndBase &parentWndBase, WORD ctrlId)
 			: _ctrlEvents{parentWndBase, ctrlId} { }
 
@@ -276,10 +252,8 @@ namespace wl::events {
 	};
 
 	/** Native `TreeView` events. */
-	class TreeViewEvents final {
+	class TreeViewEvents final : private wl::NoCopyNoMove {
 	private:
-		TreeViewEvents(TreeViewEvents&&) = delete; // non-copyable, non-movable
-
 		TreeViewEvents(_wl_internal::WndBase &parentWndBase, WORD ctrlId)
 			: _ctrlEvents{parentWndBase, ctrlId} { }
 
@@ -1376,9 +1350,8 @@ namespace wl {
 	class ComboBox final : public IWindowChild {
 	public:
 		/** @brief Operations over the items. */
-		class ItemCollection final {
+		class ItemCollection final : private wl::NoCopyNoMove {
 		private:
-			ItemCollection(ItemCollection&&) = delete; // non-copyable, non-movable
 			constexpr explicit ItemCollection(const ComboBox &owner) : _owner{owner} { }
 
 		public:
@@ -1767,9 +1740,8 @@ namespace wl {
 		};
 
 		/** @brief Operations over the columns. */
-		class ColumnCollection final {
+		class ColumnCollection final : private wl::NoCopyNoMove {
 		private:
-			ColumnCollection(ColumnCollection&&) = delete; // non-copyable, non-movable
 			constexpr explicit ColumnCollection(const ListView &owner) : _owner{owner} { }
 
 		public:
@@ -1868,9 +1840,8 @@ namespace wl {
 		};
 
 		/** @brief Operations over the items. */
-		class ItemCollection final {
+		class ItemCollection final : private wl::NoCopyNoMove {
 		private:
-			ItemCollection(ItemCollection&&) = delete; // non-copyable, non-movable
 			constexpr explicit ItemCollection(const ListView &owner) : _owner{owner} { }
 
 		public:
@@ -2199,9 +2170,8 @@ namespace wl {
 	class RadioGroup final {
 	public:
 		/** Accesses the managed `RadioButton` controls. */
-		class RadioButtonCollection final {
+		class RadioButtonCollection final : private wl::NoCopyNoMove {
 		private:
-			RadioButtonCollection(RadioButtonCollection&&) = delete; // non-copyable, non-movable
 			constexpr explicit RadioButtonCollection(RadioGroup &owner) : _owner{owner} { }
 
 		public:
@@ -2415,9 +2385,8 @@ namespace wl {
 		};
 
 		/** @brief Operations over the parts of a `StatusBar`. */
-		class PartCollection final {
+		class PartCollection final : private wl::NoCopyNoMove {
 		private:
-			PartCollection(PartCollection&&) = delete; // no-copyable, non-movable
 			constexpr explicit PartCollection(const StatusBar &owner) : _owner{owner} { }
 
 		public:
@@ -2545,9 +2514,8 @@ namespace wl {
 		};
 
 		/** @brief Operations of the items. */
-		class ItemCollection final {
+		class ItemCollection final : private wl::NoCopyNoMove {
 		private:
-			ItemCollection(ItemCollection&&) = delete; // non-copyable, non-movable
 			constexpr explicit ItemCollection(Tab &owner) : _owner{owner} { }
 
 		public:
@@ -2801,9 +2769,8 @@ namespace wl {
 		};
 
 		/** @brief Operations over the items. */
-		class ItemCollection final {
+		class ItemCollection final : private wl::NoCopyNoMove {
 		private:
-			ItemCollection(ItemCollection&&) = delete; // non-copyable, non-movable
 			constexpr explicit ItemCollection(const TreeView &owner) : _owner{owner} { }
 
 		public:

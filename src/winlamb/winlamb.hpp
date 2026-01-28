@@ -14,6 +14,6 @@ namespace wl { }
 #include "aux-vec.hpp"
 #include "ui-app.hpp"
 #include "ui-base.hpp"
-#include "ui-ctrl.hpp"
 #include "ui-rawdlg.hpp"
 #include "ui-wnd.hpp"
+#include "ui-wndctrl.hpp"

@@ -1,7 +1,5 @@
 #pragma once
-#include "aux-str.hpp"
 #include "ui-base.hpp"
-#include <CommCtrl.h>
 
 namespace wl {
 
@@ -238,9 +236,8 @@ namespace wl {
 namespace _wl_internal {
 
 	/** Base to all raw container windows. */
-	class RawBase final {
+	class RawBase final : private wl::NoCopyNoMove {
 	public:
-		RawBase(RawBase&&) = delete; // non-copyable, non-movable
 		constexpr RawBase() = default;
 
 		[[nodiscard]] ATOM register_class(HINSTANCE hInst, std::wstring &&className, DWORD classStyle,
@@ -255,9 +252,8 @@ namespace _wl_internal {
 	};
 
 	/** Main raw window. */
-	class RawMain final {
+	class RawMain final : private wl::NoCopyNoMove {
 	public:
-		RawMain(RawMain&&) = delete; // non-copyable, non-movable
 		explicit RawMain(wl::MainOpts creationOpts);
 		int run(HINSTANCE hInst, int cmdShow);
 
@@ -267,9 +263,8 @@ namespace _wl_internal {
 	};
 
 	/** Modal raw window. */
-	class RawModal final {
+	class RawModal final : private wl::NoCopyNoMove {
 	public:
-		RawModal(RawModal&&) = delete; // non-copyable, non-movable
 		RawModal(const WndBase &parentWndBase, wl::ModalOpts creationOpts);
 		void show();
 
@@ -280,18 +275,16 @@ namespace _wl_internal {
 	};
 
 	/** Control raw window. */
-	class RawControl final {
+	class RawControl final : private wl::NoCopyNoMove {
 	public:
-		RawControl(RawControl&&) = delete; // non-copyable, non-movable
 		RawControl(WndBase &parentWndBase, wl::ControlOpts creationOpts);
 
 		RawBase _rawBase{};
 	};
 
 	/** Base to all dialog container windows. */
-	class DlgBase final {
+	class DlgBase final : private wl::NoCopyNoMove {
 	public:
-		DlgBase(DlgBase&&) = delete; // non-copyable, non-movable
 		constexpr explicit DlgBase(WORD dlgId) : _wndBase{true}, _dlgId{dlgId} { }
 
 		void create_dialog_param(HINSTANCE hInst, HWND hParent);
@@ -306,9 +299,8 @@ namespace _wl_internal {
 	};
 
 	/** Main dialog window. */
-	class DlgMain final {
+	class DlgMain final : private wl::NoCopyNoMove {
 	public:
-		DlgMain(DlgMain&&) = delete; // non-copyable, non-movable
 		DlgMain(WORD dlgId, WORD iconId, WORD accelTblId);
 		int run(HINSTANCE hInst, int cmdShow);
 
@@ -317,9 +309,8 @@ namespace _wl_internal {
 	};
 
 	/** Modal dialog window. */
-	class DlgModal final {
+	class DlgModal final : private wl::NoCopyNoMove {
 	public:
-		DlgModal(DlgModal&&) = delete; // non-copyable, non-movable
 		DlgModal(const WndBase &parentWndBase, WORD dlgId);
 		void show();
 
@@ -328,9 +319,8 @@ namespace _wl_internal {
 	};
 
 	/** Control dialog window. */
-	class DlgControl final {
+	class DlgControl final : private wl::NoCopyNoMove {
 	public:
-		DlgControl(DlgControl&&) = delete; // non-copyable, non-movable
 		DlgControl(WndBase &parentWndBase, WORD dlgId, WORD ctrlId, POINT pos, wl::Lay layout);
 
 		DlgBase _dlgBase;

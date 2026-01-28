@@ -1,6 +1,5 @@
 #pragma once
 #include "ui-rawdlg.hpp"
-#include "ui-app.hpp"
 #include <oleidl.h>
 
 namespace _wl_internal {
@@ -488,10 +487,7 @@ namespace wl {
 	/// [`IDropTarget`]: https://learn.microsoft.com/en-us/windows/win32/api/oleidl/nn-oleidl-idroptarget
 	/// [`RegisterDragDrop`]: https://learn.microsoft.com/en-us/windows/win32/api/ole2/nf-ole2-registerdragdrop
 	/// [`RevokeDragDrop`]: https://learn.microsoft.com/en-us/windows/win32/api/ole2/nf-ole2-revokedragdrop
-	class DropFiles final : public IDropTarget {
-	private:
-		DropFiles(DropFiles&&) = delete; // non-copyable, non-movable
-
+	class DropFiles final : public IDropTarget, private wl::NoCopyNoMove {
 	public:
 		explicit DropFiles(IWindowParent &owner);
 

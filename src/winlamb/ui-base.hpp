@@ -1,12 +1,6 @@
 #pragma once
 #include <functional>
-#include <optional>
-#include <vector>
-
-#include <sdkddkver.h>
-#define NOMINMAX
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
+#include "ui-app.hpp"
 
 /// @brief [Message] crackers, passed as arguments to the window events.
 ///
@@ -224,7 +218,7 @@ namespace wl::wm {
 namespace _wl_internal {
 
 	/** Keeps pre and post internal events. */
-	class InternalEvents final {
+	class InternalEvents final : private wl::NoCopyNoMove {
 	public:
 		struct Msg final { // ordinary WM messages
 			UINT wm;
@@ -235,8 +229,6 @@ namespace _wl_internal {
 			int code;
 			std::function<void(wl::wm::Notify)> cb;
 		};
-
-		InternalEvents(InternalEvents&&) = delete; // non-copyable, non-movable
 
 		constexpr explicit InternalEvents(bool isDlg) : _isDlg{isDlg} { }
 
@@ -262,7 +254,7 @@ namespace _wl_internal {
 namespace wl::events {
 
 	/** Native `IWindowParent` events. */
-	class WindowEvents final {
+	class WindowEvents final : private wl::NoCopyNoMove {
 	private:
 		struct Msg final { // ordinary WM messages
 			UINT wm;
@@ -278,8 +270,6 @@ namespace wl::events {
 			int code;
 			std::function<LRESULT(wl::wm::Notify)> cb;
 		};
-
-		WindowEvents(WindowEvents&&) = delete; // non-copyable, non-movable
 
 		constexpr explicit WindowEvents(bool isDlg) : _isDlg{isDlg} { }
 
@@ -500,10 +490,8 @@ namespace _wl_internal {
 	/// Base to all raw and dialog windows.
 	/// Stores the pre, user and post window messages for container windows.
 	/// Exposes exception-safe multi-threading operations.
-	class WndBase final {
+	class WndBase final : private wl::NoCopyNoMove {
 	public:
-		WndBase(WndBase&&) = delete; // non-copyable, non-movable
-
 		constexpr explicit WndBase(bool isDlg)
 			: _preEvents{isDlg}, _userEvents{isDlg}, _postEvents{isDlg} { }
 
@@ -530,10 +518,8 @@ namespace _wl_internal {
 
 	/// Base to all native controls.
 	/// Stores the subclass messages.
-	class NativeCtrlBase final {
+	class NativeCtrlBase final : private wl::NoCopyNoMove {
 	public:
-		NativeCtrlBase(NativeCtrlBase&&) = delete; // non-copyable, non-movable
-
 		explicit NativeCtrlBase(WndBase &parentWndBase) : _parent{parentWndBase} { }
 
 		void create_wnd(WORD ctrlId, DWORD exStyle, const wchar_t *className,
