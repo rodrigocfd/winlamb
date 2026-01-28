@@ -1410,92 +1410,104 @@ const Trackbar& Trackbar::set_range(std::pair<int, int> rangeMinMax) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-TreeView::Item TreeView::Item::add_child(WStrView itemText, int iconIndex) const {
+TreeView::Item TreeView::ChildCollection::operator[](size_t index) const {
+	HTREEITEM hChild = TreeView_GetChild(_pOwner->hwnd(), _hItem);
+	for (size_t i = 0; i < index; ++i) {
+		hChild = TreeView_GetNextSibling(_pOwner->hwnd(), hChild);
+		if (!hChild) break;
+	}
+	return Item{*_pOwner, hChild};
+}
+
+TreeView::Item TreeView::ChildCollection::add(WStrView text, int iconIndex) const {
 	TVINSERTSTRUCTW tvi{
 		.hParent = _hItem,
 		.hInsertAfter = TVI_LAST,
 		.itemex = {
 			.mask = TVIF_TEXT | static_cast<UINT>(iconIndex > -1 ? TVIF_IMAGE : 0),
-			.pszText = const_cast<LPWSTR>(itemText.c_str()),
+			.pszText = const_cast<LPWSTR>(text.c_str()),
 			.iImage = iconIndex,
 		},
 	};
-	HTREEITEM hItemNew = TreeView_InsertItem(_owner.hwnd(), &tvi);
-	return Item{_owner, hItemNew};
+	HTREEITEM hItemNew = TreeView_InsertItem(_pOwner->hwnd(), &tvi);
+	return Item{*_pOwner, hItemNew};
 }
 
-std::vector<TreeView::Item> TreeView::Item::children() const {
-	std::vector<Item> items;
-	HTREEITEM hItem = nullptr;
-	for (;;) {
-		hItem = TreeView_GetNextItem(_owner.hwnd(), hItem, TVGN_NEXT);
-		if (!hItem) break;
-		items.emplace_back(_owner, hItem);
+size_t TreeView::ChildCollection::count() const {
+	HTREEITEM hChild = TreeView_GetChild(_pOwner->hwnd(), _hItem);
+	size_t n = 0;
+	while (hChild) {
+		++n;
+		hChild = TreeView_GetNextSibling(_pOwner->hwnd(), hChild);
 	}
-	return items;
+	return n;
 }
 
-const TreeView::Item& TreeView::Item::remove() const {
-	TreeView_DeleteItem(_owner.hwnd(), _hItem);
-	return *this;
-}
+//------------------------------------------------------------------------------
 
 const TreeView::Item& TreeView::Item::ensure_visible() const {
-	TreeView_EnsureVisible(_owner.hwnd(), _hItem);
+	TreeView_EnsureVisible(children._pOwner->hwnd(), children._hItem);
 	return *this;
 }
 
 bool TreeView::Item::is_expanded() const {
-	return TreeView_GetItemState(_owner.hwnd(), _hItem, TVIS_EXPANDED) & TVIS_EXPANDED;
+	return TreeView_GetItemState(children._pOwner->hwnd(), children._hItem, TVIS_EXPANDED) & TVIS_EXPANDED;
 }
 
 const TreeView::Item& TreeView::Item::expand(bool doExpand) const {
-	TreeView_Expand(_owner.hwnd(), _hItem, doExpand ? TVE_EXPAND : TVE_COLLAPSE);
+	TreeView_Expand(children._pOwner->hwnd(), children._hItem, doExpand ? TVE_EXPAND : TVE_COLLAPSE);
 	return *this;
 }
 
 int TreeView::Item::icon_index() const {
 	#ifdef _DEBUG
-	if (!_owner._imgList16.himagelist() || !_owner._imgList16.count())
+	if (!children._pOwner->_imgList16.himagelist()
+		|| !children._pOwner->_imgList16.count())
 		throw std::logic_error{"No icons have been added to any image list."};
 	#endif
 
 	TVITEMEXW tvi{
 		.mask = TVIF_IMAGE,
-		.hItem = _hItem,
+		.hItem = children._hItem,
 	};
-	TreeView_GetItem(_owner.hwnd(), &tvi);
+	TreeView_GetItem(children._pOwner->hwnd(), &tvi);
 	return tvi.iImage;
 }
 
 const TreeView::Item& TreeView::Item::set_icon_index(int iconIndex) const {
 	#ifdef _DEBUG
-	if (!_owner._imgList16.himagelist() || !_owner._imgList16.count())
+	if (!children._pOwner->_imgList16.himagelist()
+		|| !children._pOwner->_imgList16.count())
 		throw std::logic_error{"No icons have been added to any image list."};
 	#endif
 
 	TVITEMEXW tvi{
-		.mask = LVIF_IMAGE,
-		.hItem = _hItem,
+		.mask = TVIF_IMAGE,
+		.hItem = children._hItem,
 		.iImage = iconIndex,
 	};
-	TreeView_SetItem(_owner.hwnd(), &tvi);
+	TreeView_SetItem(children._pOwner->hwnd(), &tvi);
 	return *this;
 }
 
 TreeView::Item TreeView::Item::next_sibling() const {
-	HTREEITEM hItem = TreeView_GetNextItem(_owner.hwnd(), _hItem, TVGN_NEXT);
-	return Item{_owner, hItem};
+	HTREEITEM hItem = TreeView_GetNextSibling(children._pOwner->hwnd(), children._hItem);
+	return Item{*children._pOwner, hItem};
 }
 
 TreeView::Item TreeView::Item::parent() const {
-	HTREEITEM hItem = TreeView_GetNextItem(_owner.hwnd(), _hItem, TVGN_PARENT);
-	return Item{_owner, hItem};
+	HTREEITEM hItem = TreeView_GetNextItem(children._pOwner->hwnd(), children._hItem, TVGN_PARENT);
+	return Item{*children._pOwner, hItem};
 }
 
 TreeView::Item TreeView::Item::prev_sibling() const {
-	HTREEITEM hItem = TreeView_GetNextItem(_owner.hwnd(), _hItem, TVGN_PREVIOUS);
-	return Item{_owner, hItem};
+	HTREEITEM hItem = TreeView_GetPrevSibling(children._pOwner->hwnd(), children._hItem);
+	return Item{*children._pOwner, hItem};
+}
+
+const TreeView::Item& TreeView::Item::remove() const {
+	TreeView_DeleteItem(children._pOwner->hwnd(), children._hItem);
+	return *this;
 }
 
 std::wstring TreeView::Item::text() const {
@@ -1503,12 +1515,12 @@ std::wstring TreeView::Item::text() const {
 
 	TVITEMEXW tvi{
 		.mask = TVIF_TEXT,
-		.hItem = _hItem,
+		.hItem = children._hItem,
 		.pszText = buf.data(),
 		.cchTextMax = static_cast<int>(buf.size()),
 	};
 
-	TreeView_GetItem(_owner.hwnd(), &tvi);
+	TreeView_GetItem(children._pOwner->hwnd(), &tvi);
 	str::trim_nulls(buf);
 	return buf;
 }
@@ -1516,44 +1528,36 @@ std::wstring TreeView::Item::text() const {
 const TreeView::Item& TreeView::Item::set_text(WStrView newText) const {
 	TVITEMEXW tvi{
 		.mask = TVIF_TEXT,
-		.hItem = _hItem,
+		.hItem = children._hItem,
 		.pszText = const_cast<LPWSTR>(newText.c_str()),
 	};
-	TreeView_SetItem(_owner.hwnd(), &tvi);
+	TreeView_SetItem(children._pOwner->hwnd(), &tvi);
 	return *this;
 }
 
 LPARAM TreeView::Item::raw_data() const {
 	TVITEMEXW tvi{
 		.mask = TVIF_PARAM,
-		.hItem = _hItem,
+		.hItem = children._hItem,
 	};
-	TreeView_GetItem(_owner.hwnd(), &tvi);
+	TreeView_GetItem(children._pOwner->hwnd(), &tvi);
 	return tvi.lParam;
 }
 
 const TreeView::Item& TreeView::Item::set_raw_data(LPARAM data) const {
 	TVITEMEXW tvi{
 		.mask = TVIF_PARAM,
-		.hItem = _hItem,
+		.hItem = children._hItem,
 		.lParam = data,
 	};
-	TreeView_SetItem(_owner.hwnd(), &tvi);
+	TreeView_SetItem(children._pOwner->hwnd(), &tvi);
 	return *this;
 }
 
 //------------------------------------------------------------------------------
 
-TreeView::Item TreeView::ItemCollection::add_root(WStrView text, int iconIndex) const {
-	return Item{_owner, nullptr}.add_child(text, iconIndex);
-}
-
 size_t TreeView::ItemCollection::count() const {
 	return TreeView_GetCount(_owner.hwnd());
-}
-
-void TreeView::ItemCollection::delete_all() const {
-	TreeView_DeleteAllItems(_owner.hwnd());
 }
 
 TreeView::Item TreeView::ItemCollection::first_visible() const {
@@ -1561,8 +1565,9 @@ TreeView::Item TreeView::ItemCollection::first_visible() const {
 	return Item{_owner, hItem};
 }
 
-std::vector<TreeView::Item> TreeView::ItemCollection::roots() const {
-	return Item{_owner, nullptr}.children();
+TreeView::Item TreeView::ItemCollection::last_visible() const {
+	HTREEITEM hItem = TreeView_GetLastVisible(_owner.hwnd());
+	return Item{_owner, hItem};
 }
 
 TreeView::Item TreeView::ItemCollection::selected() const {
@@ -1585,6 +1590,11 @@ TreeView::TreeView(IWindowParent &owner, TreeViewOpts creationOpts)
 			if (opts.styleExTreeView)
 				set_extended_style(true, opts.styleExTreeView);
 			_ctrl._parent._layout.add(hwnd(), opts.layout);
+
+			for (auto &&ico : opts.icons) {
+				if (ico.id) icons().add_resource(ico.id);
+				else        icons().add_shell_ext(ico.ext);
+			}
 		});
 }
 
@@ -1602,10 +1612,10 @@ const TreeView& TreeView::set_extended_style(bool doSet, DWORD exStyle) const {
 	return *this;
 }
 
-IStoreIcon& TreeView::icons_16() {
+IStoreIcon& TreeView::icons() {
 	if (!_imgList16.himagelist()) { // not created yet?
 		_imgList16.create();
-		TreeView_SetImageList(hwnd(), _imgList16.himagelist(), LVSIL_SMALL);
+		TreeView_SetImageList(hwnd(), _imgList16.himagelist(), TVSIL_NORMAL);
 	}
 	return _imgList16;
 }

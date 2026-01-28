@@ -1033,6 +1033,11 @@ namespace wl {
 		///
 		/// Defaults to an auto-generated number.
 		WORD ctrlId = 0;
+		/// 16x16 icons to be loaded into the `TreeView`.
+		///
+		/// They can be later referenced by index, following the same order they
+		/// are added.
+		std::vector<IconLoad> icons{};
 		/** Horizontal and vertical behavior of the control when the parent window is resized. */
 		Lay layout = Lay::hold_hold;
 		/// Control position passed to [`CreateWindowEx`].
@@ -2687,25 +2692,113 @@ namespace wl {
 
 	/// @brief Native [tree view] control.
 	///
+	/// Example of creating a window with a tree view programmatically, .h and .cpp files:
+	///
+	/// ```cpp
+	/// class MyMain final {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{wl::MainOpts{
+	///         .title = L"My main window",
+	///     }};
+	///     wl::TreeView tv{wnd, wl::TreeViewOpts{
+	///         .icons = {
+	///             wl::IconLoad{.ext = L"docx"},
+	///         },
+	///         .pos = wl::dpi::pt(10, 190),
+	///         .size = wl::dpi::sz(250, 90),
+	///     }};
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
+	///
+	/// MyMain::MyMain() {
+	///     wnd.on().wm_create([this](wl::wm::Create p) -> int {
+	///         tv.roots.add(L"First root", 0);
+	///         tv.roots.add(L"Second root", 0);
+	///
+	///         tv.roots[0].children.add(L"Child", 0);
+	///         tv.roots[0].expand(true);
+	///
+	///         return 0;
+	///     });
+	///
+	///     tv.on().tvn_sel_changed([this](NMTREEVIEW &p) -> void {
+	///         wl::TreeView::Item sel = tv.items.selected();
+	///         wnd.set_title(sel.hitem() ? sel.text() : L"No tree sel");
+	///     });
+	/// }
+	/// ```
+	///
 	/// [tree view]: https://learn.microsoft.com/en-us/windows/win32/controls/tree-view-controls
 	class TreeView final : public IWindowChild {
 	public:
-		/** @brief A single item of the `TreeView`. */
-		class Item final {
-		public:
-			/** Constructs an item for the given `TreeView` and hItem. */
-			constexpr Item(const TreeView &owner, HTREEITEM hItem) : _owner{owner}, _hItem{hItem} { }
+		class Item;
 
-			/** Returns the item handle. */
-			[[nodiscard]] constexpr HTREEITEM hitem() const { return _hItem; }
+		/** @brief Operations over the child items. */
+		class ChildCollection final : private wl::NoCopyNoMove {
+		private:
+			constexpr ChildCollection(const TreeView &owner, HTREEITEM hItem)
+				: _pOwner{&owner}, _hItem{hItem} { }
+
+		public:
+			/// Retrieves the element at the given zero-based index.
+			///
+			/// This method calls [`TreeView_GetNextSibling`] up to the desired
+			/// item, so if there are too many, it can be potentially slow.
+			///
+			/// If the index is out-of-bounds, the returned `Item` will have a
+			/// `nullptr` handle.
+			///
+			/// [`TreeView_GetNextSibling`]: https://learn.microsoft.com/en-us/windows/win32/api/commctrl/nf-commctrl-treeview_getnextsibling
+			[[nodiscard]] Item operator[](size_t index) const;
 
 			/// Adds a new child item, defining its text.
 			///
-			/// The optional `iconIndex` refers to the zero-based index of an icon previusly added to one of the image lists.
-			Item add_child(WStrView itemText, int iconIndex = -1) const;
+			/// The optional iconIndex refers to the zero-based index of an icon
+			/// previusly added to one of the image lists.
+			Item add(WStrView text, int iconIndex = -1) const;
 
-			/** Returns the child items. */
-			[[nodiscard]] std::vector<Item> children() const;
+			/// Counts the number child items, not recursively.
+			///
+			/// This method calls [`TreeView_GetNextSibling`] up to the last item,
+			/// so if there are too many, it can be potentially slow.
+			///
+			/// [`TreeView_GetNextSibling`]: https://learn.microsoft.com/en-us/windows/win32/api/commctrl/nf-commctrl-treeview_getnextsibling
+			[[nodiscard]] size_t count() const;
+
+		private:
+			const TreeView *_pOwner;
+			HTREEITEM _hItem;
+			friend TreeView;
+		};
+
+		/// @brief A single item of the `TreeView`.
+		///
+		/// An item may be invalid by having a `nullptr` handle.
+		class Item final {
+		public:
+			/** Copy-constructor. */
+			constexpr Item(const Item &other)
+				: children{*other.children._pOwner, other.children._hItem} { }
+
+			/** Copy-assignment operator. */
+			constexpr Item& operator=(const Item &other) {
+				children._pOwner = other.children._pOwner;
+				children._hItem = other.children._hItem;
+				return *this;
+			}
+
+			/** Constructs an item for the given `TreeView` and hItem. */
+			constexpr Item(const TreeView &owner, HTREEITEM hItem) : children{owner, hItem} { }
+
+			/** Child item methods. */
+			ChildCollection children;
+
+			/** Returns the item handle, which uniquely identifies the item. */
+			[[nodiscard]] constexpr HTREEITEM hitem() const { return children._hItem; }
 
 			/** Returns the data associated with the item. */
 			template<typename T>
@@ -2731,25 +2824,31 @@ namespace wl {
 			/** Makes sure the item is visible. */
 			const Item& ensure_visible() const;
 
-			/** Returns true if the item is currently expanded. */
-			[[nodiscard]] bool is_expanded() const;
-
-			/** Expands or collapses the item. */
-			const Item& expand(bool doExpand) const;
-
 			/** Returns the zero-based index of the `ImageList` icon associated to the item. */
 			[[nodiscard]] int icon_index() const;
 
 			/** Sets the zero-based index of the `ImageList` icon associated to the item. */
 			const Item& set_icon_index(int iconIndex) const;
 
-			/** Retrieves the next sibling, if any. */
+			/** Returns true if the item is currently expanded. */
+			[[nodiscard]] bool is_expanded() const;
+
+			/** Expands or collapses the item. */
+			const Item& expand(bool doExpand) const;
+
+			/// Retrieves the next sibling.
+			///
+			/// If none, the returned `Item` will have a `nullptr` handle.
 			[[nodiscard]] Item next_sibling() const;
 
-			/** Retrieves the parent item, if any. */
+			/// Retrieves the parent item.
+			///
+			/// If a root, the returned `Item` will have a `nullptr` handle.
 			[[nodiscard]] Item parent() const;
 
-			/** Retrieves the previous sibling, if any. */
+			/// Retrieves the previous sibling.
+			///
+			/// If none, the returned `Item` will have a `nullptr` handle.
 			[[nodiscard]] Item prev_sibling() const;
 
 			/** Deletes the item from the tree view. */
@@ -2764,37 +2863,33 @@ namespace wl {
 		private:
 			[[nodiscard]] LPARAM raw_data() const;
 			const Item& set_raw_data(LPARAM data) const;
-			const TreeView &_owner;
-			HTREEITEM _hItem;
 		};
 
-		/** @brief Operations over the items. */
+		/** @brief Operations over all items. */
 		class ItemCollection final : private wl::NoCopyNoMove {
 		private:
 			constexpr explicit ItemCollection(const TreeView &owner) : _owner{owner} { }
 
 		public:
 			/** Returns the item with the given handle. */
-			[[nodiscard]] constexpr Item operator[](HTREEITEM hItem) const { return Item{_owner, hItem}; }
+			[[nodiscard]] constexpr Item by_hitem(HTREEITEM hItem) const { return {_owner, hItem}; }
 
-			/// Adds a new root item, defining its text.
-			///
-			/// The optional `iconIndex` refers to the zero-based index of an icon previusly added to one of the image lists.
-			Item add_root(WStrView text, int iconIndex = -1) const;
-
-			/** Returns the item count. */
+			/** Retrieves the total number of items. */
 			[[nodiscard]] size_t count() const;
 
-			/** Deletes all items. */
-			void delete_all() const;
-
-			/** Retrieves the first visible item, if any. */
+			/// Retrieves the first visible item.
+			///
+			/// If none, the returned `Item` will have a `nullptr` handle.
 			[[nodiscard]] Item first_visible() const;
 
-			/** Returns the root items. */
-			[[nodiscard]] std::vector<Item> roots() const;
+			/// Retrieves the last visible item.
+			///
+			/// If none, the returned `Item` will have a `nullptr` handle.
+			[[nodiscard]] Item last_visible() const;
 
-			/** Retrieves the selected item, if any. */
+			/// Retrieves the currently selected item.
+			///
+			/// If none, the returned `Item` will have a `nullptr` handle.
 			[[nodiscard]] Item selected() const;
 
 		private:
@@ -2812,7 +2907,10 @@ namespace wl {
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
 		TreeView(IWindowParent &owner, WORD ctrlId, Lay layout);
 
-		/** Item methods. */
+		/** Root item methods. */
+		ChildCollection roots{*this, nullptr};
+
+		/** All items methods. */
 		ItemCollection items{*this};
 
 		/** Returns the wrapped window handle. */
@@ -2858,7 +2956,7 @@ namespace wl {
 		///
 		/// Allows icons to be added to the control's image list.
 		/// An `Item` can display an icon referring to its zero-based index.
-		IStoreIcon& icons_16();
+		IStoreIcon& icons();
 
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;

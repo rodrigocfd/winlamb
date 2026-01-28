@@ -104,8 +104,11 @@ RawMain::RawMain() {
 		lv.items.add(L"Bronco kid", {L"Surreal"}, 0);
 		lv.items.add(L"Ground control", {L"to major tom"}, 1);
 
-		tv.items.add_root(L"Xabregas").add_child(L"Donegas");
-		tv.items.add_root(L"Dumpster fire");
+		tv.roots.add(L"Roote", 1);
+		tv.roots.add(L"Rotte 2", 0);
+		tv.roots.add(L"Rotte 3", 0);
+		tv.roots[2].children.add(L"Son", 0).parent().expand(true);
+
 		return 0;
 	});
 

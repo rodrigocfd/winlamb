@@ -107,6 +107,10 @@ public:
 		},
 	}};
 	wl::TreeView tv{wnd, wl::TreeViewOpts{
+		.icons = {
+			wl::IconLoad{.ext = L"docx"},
+			wl::IconLoad{.ext = L"cpp"},
+		},
 		.layout = wl::Lay::hold_move,
 		.pos = wl::dpi::pt(10, 190),
 		.size = wl::dpi::sz(250, 90),
