@@ -69,9 +69,9 @@ namespace wl {
 		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in the UI thread.
 		/// After `cb` finishes, returns back to the calling thread.
 		///
-		/// Useful if you are processing something in a parallel thread, but need to update the UI.
+		/// Useful if you are processing something in a parallel thread, then need to update the UI.
 		///
-		/// Example:
+		/// Example using [`std::thread`] to launch a thread:
 		///
 		/// ```cpp
 		/// std::thread([this]() {
@@ -92,6 +92,7 @@ namespace wl {
 		/// ```
 		///
 		/// [`SendMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessagew
+		/// [`std::thread`]: https://en.cppreference.com/w/cpp/thread/thread.html
 		virtual void ui_thread(std::function<void()> &&cb) const = 0;
 
 	private:
@@ -145,6 +146,9 @@ namespace wl {
 	/// Example of creating a window from a dialog resource, .h and .cpp files:
 	///
 	/// ```cpp
+	/// #define ICO_MAIN 101
+	/// #define DLG_MAIN 1000
+	///
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
@@ -222,9 +226,9 @@ namespace wl {
 		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in the UI thread.
 		/// After `cb` finishes, returns back to the calling thread.
 		///
-		/// Useful if you are processing something in a parallel thread, but need to update the UI.
+		/// Useful if you are processing something in a parallel thread, then need to update the UI.
 		///
-		/// Example:
+		/// Example using [`std::thread`] to launch a thread:
 		///
 		/// ```cpp
 		/// std::thread([this]() {
@@ -245,6 +249,7 @@ namespace wl {
 		/// ```
 		///
 		/// [`SendMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessagew
+		/// [`std::thread`]: https://en.cppreference.com/w/cpp/thread/thread.html
 		void ui_thread(std::function<void()> &&cb) const override { _rawOrDlg.base().ui_thread(std::move(cb)); }
 
 		/// Calls [`GetWindowText`] to retrieve the window title.
@@ -321,9 +326,9 @@ namespace wl {
 		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in the UI thread.
 		/// After `cb` finishes, returns back to the calling thread.
 		///
-		/// Useful if you are processing something in a parallel thread, but need to update the UI.
+		/// Useful if you are processing something in a parallel thread, then need to update the UI.
 		///
-		/// Example:
+		/// Example using [`std::thread`] to launch a thread:
 		///
 		/// ```cpp
 		/// std::thread([this]() {
@@ -344,6 +349,7 @@ namespace wl {
 		/// ```
 		///
 		/// [`SendMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessagew
+		/// [`std::thread`]: https://en.cppreference.com/w/cpp/thread/thread.html
 		void ui_thread(std::function<void()> &&cb) const override { _rawOrDlg.base().ui_thread(std::move(cb)); }
 
 		/// Calls [`GetWindowText`] to retrieve the window title.
@@ -425,9 +431,9 @@ namespace wl {
 		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in the UI thread.
 		/// After `cb` finishes, returns back to the calling thread.
 		///
-		/// Useful if you are processing something in a parallel thread, but need to update the UI.
+		/// Useful if you are processing something in a parallel thread, then need to update the UI.
 		///
-		/// Example:
+		/// Example using [`std::thread`] to launch a thread:
 		///
 		/// ```cpp
 		/// std::thread([this]() {
@@ -448,6 +454,7 @@ namespace wl {
 		/// ```
 		///
 		/// [`SendMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-sendmessagew
+		/// [`std::thread`]: https://en.cppreference.com/w/cpp/thread/thread.html
 		void ui_thread(std::function<void()> &&cb) const override { _rawOrDlg.base().ui_thread(std::move(cb)); }
 
 	private:
@@ -459,7 +466,7 @@ namespace wl {
 
 	/// @brief Implements [`IDropTarget`] COM interface, allowing file drag & drop on the window.
 	///
-	/// Calls [`RegisterDragDrop`], calls [`RevokeDragDrop`], and extracts the dropped files automatically.
+	/// Calls [`RegisterDragDrop`] and [`RevokeDragDrop`], and extracts the dropped files automatically.
 	///
 	/// Example, .h and .cpp files:
 	///

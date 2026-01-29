@@ -1118,6 +1118,10 @@ namespace wl {
 	/// Example of creating a window with a button from a dialog resource, .h and .cpp files:
 	///
 	/// ```cpp
+	/// #define ICO_MAIN  101
+	/// #define DLG_MAIN  1000
+	/// #define BTN_HELLO 1001
+	///
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
@@ -1550,6 +1554,10 @@ namespace wl {
 	/// Example of creating a window with an edit from a dialog resource, .h and .cpp files:
 	///
 	/// ```cpp
+	/// #define ICO_MAIN  101
+	/// #define DLG_MAIN  1000
+	/// #define TXT_HELLO 1001
+	///
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
@@ -1665,6 +1673,10 @@ namespace wl {
 	/// Example of creating a window with a list view from a dialog resource, .h and .cpp files:
 	///
 	/// ```cpp
+	/// #define ICO_MAIN  101
+	/// #define DLG_MAIN  1000
+	/// #define LST_FILES 1001
+	///
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
