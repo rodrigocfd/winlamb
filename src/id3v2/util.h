@@ -16,7 +16,7 @@ namespace id3v2 {
 	class ParsingError : public std::runtime_error {
 	public:
 		explicit ParsingError(const std::string &text)
-			: std::runtime_error("Parsing error: " + text) { }
+			: std::runtime_error{"Parsing error: " + text} { }
 		explicit ParsingError(const std::wstring &text)
 			: ParsingError{wl::str::to_ansi(text)} { }
 	};

@@ -65,7 +65,7 @@ A few utility entities are included for convenience:
 | `wl::DropFiles` | Implements [`IDropTarget`](https://learn.microsoft.com/en-us/windows/win32/api/oleidl/nn-oleidl-idroptarget) COM interface, allowing file drag & drop on the window. |
 | `wl::Encoding` | Character encoding information. |
 | `wl::File` | Manages a file `HANDLE`. |
-| `wl::FileMapped` | Manages a memory-mapped file. |
+| `wl::FileMapped` | Manages a [memory-mapped file](https://learn.microsoft.com/en-us/windows/win32/memory/file-mapping). |
 | `wl::NoCopyNoMove` | A base class which makes derived classes non-copyable an non-movable. |
 | `wl::WStrView` | Wraps a pointer to a null-terminated string. |
 | `wl::dpi` | Adjusts pixel values according to the current system [DPI](https://learn.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows). |

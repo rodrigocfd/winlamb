@@ -285,13 +285,23 @@ const CheckBox& CheckBox::set_text_resize(WStrView newText) const {
 std::wstring ComboBox::ItemCollection::operator[](int index) const {
 	size_t nChars = SendMessageW(_owner.hwnd(), CB_GETLBTEXTLEN, index, 0);
 	std::wstring s(nChars + 1, L'\0');
-	SendMessageW(_owner.hwnd(), CB_GETLBTEXT, index, reinterpret_cast<LPARAM>(s.data()));
+
+	LRESULT ret = SendMessageW(_owner.hwnd(), CB_GETLBTEXT, index, reinterpret_cast<LPARAM>(s.data()));
+	#ifdef _DEBUG
+	if (ret == CB_ERR)
+		throw std::runtime_error{"CB_GETLBTEXT failed to get text."};
+	#endif
+
 	s.resize(nChars);
 	return s;
 }
 
 void ComboBox::ItemCollection::add(WStrView text) const {
-	SendMessageW(_owner.hwnd(), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(text.c_str()));
+	LRESULT ret = SendMessageW(_owner.hwnd(), CB_ADDSTRING, 0, reinterpret_cast<LPARAM>(text.c_str()));
+	#ifdef _DEBUG
+	if (ret == CB_ERR || ret == CB_ERRSPACE)
+		throw std::runtime_error{"CB_ADDSTRING failed to add text."};
+	#endif
 }
 
 void ComboBox::ItemCollection::add(std::initializer_list<WStrView> texts) const {
@@ -378,12 +388,20 @@ DateTimePicker::DateTimePicker(IWindowParent &owner, WORD ctrlId, Lay layout)
 
 SYSTEMTIME DateTimePicker::value() const {
 	SYSTEMTIME st{};
-	DateTime_GetSystemtime(hwnd(), &st);
+	DWORD ret = DateTime_GetSystemtime(hwnd(), &st);
+	#ifdef _DEBUG
+	if (ret == GDT_VALID)
+		throw std::runtime_error{"DateTime_SetSystemtime failed to set value."};
+	#endif
 	return st;
 }
 
 const DateTimePicker& DateTimePicker::set_value(const SYSTEMTIME &st) const {
-	DateTime_SetSystemtime(hwnd(), GDT_VALID, &st);
+	BOOL ret = DateTime_SetSystemtime(hwnd(), GDT_VALID, &st);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"DateTime_SetSystemtime failed to set value."};
+	#endif
 	return *this;
 }
 
@@ -444,48 +462,89 @@ std::vector<std::wstring> ListView::Column::selected_item_texts() const {
 
 int ListView::Column::justif() const {
 	HWND hHeader = ListView_GetHeader(_owner.hwnd());
+	#ifdef _DEBUG
+	if (!hHeader)
+		throw std::runtime_error{"ListView_GetHeader failed to get justification."};
+	#endif
 
 	HDITEMW hdi{.mask = HDI_FORMAT};
-	Header_GetItem(hHeader, _index, &hdi);
+	BOOL ret = Header_GetItem(hHeader, _index, &hdi);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"Header_GetItem failed to get justification."};
+	#endif
 
 	return hdi.fmt & (HDF_LEFT | HDF_CENTER | HDF_RIGHT); // filter out
 }
 
 const ListView::Column& ListView::Column::set_justif(WORD hdf) const {
 	HWND hHeader = ListView_GetHeader(_owner.hwnd());
+	#ifdef _DEBUG
+	if (!hHeader)
+		throw std::runtime_error{"ListView_GetHeader failed to set justification."};
+	#endif
 
 	HDITEMW hdi{.mask = HDI_FORMAT};
-	Header_GetItem(hHeader, _index, &hdi); // first, retrieve current
+	BOOL ret = Header_GetItem(hHeader, _index, &hdi); // first, retrieve current
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"Header_GetItem failed to get justification."};
+	#endif
 
 	hdi.fmt &= ~(HDF_CENTER | HDF_LEFT | HDF_RIGHT); // clear all three
 	hdi.fmt |= (hdf & (HDF_LEFT | HDF_CENTER | HDF_RIGHT)); // sanitize
-	Header_SetItem(hHeader, _index, &hdi);
+	ret = Header_SetItem(hHeader, _index, &hdi);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"Header_SetItem failed to set justification."};
+	#endif
 
 	return *this;
 }
 
 WORD ListView::Column::sort_arrow() const {
 	HWND hHeader = ListView_GetHeader(_owner.hwnd());
+	#ifdef _DEBUG
+	if (!hHeader)
+		throw std::runtime_error{"ListView_GetHeader failed to get sort arrow."};
+	#endif
 
 	HDITEMW hdi{.mask = HDI_FORMAT};
-	Header_GetItem(hHeader, _index, &hdi);
+	BOOL ret = Header_GetItem(hHeader, _index, &hdi);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"Header_GetItem failed to get sort arrow."};
+	#endif
 
 	return hdi.fmt & (HDF_SORTDOWN | HDF_SORTUP); // filter out
 }
 
 const ListView::Column& ListView::Column::set_sort_arrow(WORD hdf) const {
 	HWND hHeader = ListView_GetHeader(_owner.hwnd());
+	#ifdef _DEBUG
+	if (!hHeader)
+		throw std::runtime_error{"ListView_GetHeader failed to set sort arrow."};
+	#endif
+
 	UINT numCols = Header_GetItemCount(hHeader);
 
 	for (UINT i = 0; i < numCols; ++i) {
 		HDITEMW hdi{.mask = HDI_FORMAT};
-		Header_GetItem(hHeader, i, &hdi); // first, retrieve current
+		BOOL ret = Header_GetItem(hHeader, i, &hdi); // first, retrieve current
+		#ifdef _DEBUG
+		if (!ret)
+			throw std::runtime_error{"Header_GetItem failed to get sort arrow."};
+		#endif
 
 		hdi.fmt &= ~(HDF_SORTDOWN | HDF_SORTUP); // clear all two
 		if (i == _index) // only the targeted column will have the flag set
 			hdi.fmt |= (hdf & (HDF_SORTDOWN | HDF_SORTUP)); // sanitize
 
-		Header_SetItem(hHeader, i, &hdi);
+		ret = Header_SetItem(hHeader, i, &hdi);
+		#ifdef _DEBUG
+		if (!ret)
+			throw std::runtime_error{"Header_SetItem failed to set sort arrow."};
+		#endif
 	}
 
 	return *this;
@@ -579,7 +638,13 @@ int ListView::Item::icon_index() const {
 		.mask = LVIF_IMAGE,
 		.iItem = _index,
 	};
-	ListView_GetItem(_owner.hwnd(), &lvi);
+
+	BOOL ret = ListView_GetItem(_owner.hwnd(), &lvi);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"ListView_GetItem failed to get LPARAM."};
+	#endif
+
 	return lvi.iImage;
 }
 
@@ -597,7 +662,13 @@ const ListView::Item& ListView::Item::set_icon_index(int iconIndex) const {
 		.iItem = _index,
 		.iImage = iconIndex,
 	};
-	ListView_SetItem(_owner.hwnd(), &lvi);
+
+	BOOL ret = ListView_SetItem(_owner.hwnd(), &lvi);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"ListView_SetItem failed to set icon."};
+	#endif
+
 	return *this;
 }
 
@@ -659,7 +730,13 @@ LPARAM ListView::Item::raw_data() const {
 		.mask = LVIF_PARAM,
 		.iItem = _index,
 	};
-	ListView_GetItem(_owner.hwnd(), &lvi);
+
+	BOOL ret = ListView_GetItem(_owner.hwnd(), &lvi);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"ListView_GetItem failed to get LPARAM."};
+	#endif
+
 	return lvi.lParam;
 }
 
@@ -669,7 +746,13 @@ const ListView::Item& ListView::Item::set_raw_data(LPARAM data) const {
 		.iItem = _index,
 		.lParam = data,
 	};
-	ListView_SetItem(_owner.hwnd(), &lvi);
+
+	BOOL ret = ListView_SetItem(_owner.hwnd(), &lvi);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"ListView_SetItem failed to set LPARAM."};
+	#endif
+
 	return *this;
 }
 
@@ -685,6 +768,11 @@ ListView::Item ListView::ItemCollection::add(WStrView text,
 		.iImage = iconIndex,
 	};
 	int index = ListView_InsertItem(_owner.hwnd(), &lvi);
+	#ifdef _DEBUG
+	if (index == -1)
+		throw std::runtime_error{"ListView_InsertItem failed."};
+	#endif
+
 	Item newItem{_owner, index};
 
 	for (auto colText = otherColumnsTexts.begin(); colText != otherColumnsTexts.end(); ++colText) {
@@ -761,12 +849,16 @@ void ListView::ItemCollection::sort(std::function<int(Item, Item)> cb) const {
 		.cb = std::move(cb),
 	};
 
-	ListView_SortItemsEx(_owner.hwnd(), [](LPARAM idxA, LPARAM idxB, LPARAM lp) -> int { // receives indexes
+	BOOL ret = ListView_SortItemsEx(_owner.hwnd(), [](LPARAM idxA, LPARAM idxB, LPARAM lp) -> int { // receives indexes
 		Info* pNfo = reinterpret_cast<Info*>(lp);
 		return pNfo->cb(
 			pNfo->owner.items[static_cast<int>(idxA)],
 			pNfo->owner.items[static_cast<int>(idxB)]);
 	}, &nfo);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"ListView_SortItemsEx failed."};
+	#endif
 }
 
 std::optional<ListView::Item> ListView::ItemCollection::topmost_visible() const {
@@ -967,12 +1059,20 @@ MonthCalendar::MonthCalendar(IWindowParent &owner, WORD ctrlId, Lay layout)
 
 SYSTEMTIME MonthCalendar::value() const {
 	SYSTEMTIME st{};
-	SendMessageW(hwnd(), MCM_GETCURSEL, 0, reinterpret_cast<LPARAM>(&st));
+	LRESULT ret = SendMessageW(hwnd(), MCM_GETCURSEL, 0, reinterpret_cast<LPARAM>(&st));
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"MCM_GETCURSEL failed."};
+	#endif
 	return st;
 }
 
 const MonthCalendar& MonthCalendar::set_value(const SYSTEMTIME &st) const {
-	SendMessageW(hwnd(), MCM_SETCURSEL, 0, reinterpret_cast<LPARAM>(&st));
+	LRESULT ret = SendMessageW(hwnd(), MCM_SETCURSEL, 0, reinterpret_cast<LPARAM>(&st));
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"MCM_SETCURSEL failed."};
+	#endif
 	return *this;
 }
 
@@ -1205,7 +1305,12 @@ std::wstring Tab::Item::text() const {
 		.cchTextMax = static_cast<int>(buf.size()),
 	};
 
-	TabCtrl_GetItem(_owner.hwnd(), _index, &tci);
+	BOOL ret = TabCtrl_GetItem(_owner.hwnd(), _index, &tci);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"TabCtrl_GetItem failed to get text."};
+	#endif
+
 	str::trim_nulls(buf);
 	return buf;
 }
@@ -1215,7 +1320,13 @@ const Tab::Item& Tab::Item::set_text(WStrView newText) const {
 		.mask = TCIF_TEXT,
 		.pszText = const_cast<LPWSTR>(newText.c_str()),
 	};
-	TabCtrl_SetItem(_owner.hwnd(), _index, &tci);
+
+	BOOL ret = TabCtrl_SetItem(_owner.hwnd(), _index, &tci);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"TabCtrl_SetItem failed to set text."};
+	#endif
+
 	return *this;
 }
 
@@ -1313,7 +1424,12 @@ void Tab::create_tab(WStrView title) const {
 		.mask = TCIF_TEXT,
 		.pszText = const_cast<wchar_t*>(title.c_str()),
 	};
-	TabCtrl_InsertItem(hwnd(), 0x0fff'ffff, &tci);
+
+	int newIdx = TabCtrl_InsertItem(hwnd(), 0x0fff'ffff, &tci);
+	#ifdef _DEBUG
+	if (newIdx == -1)
+		throw std::runtime_error{"TabCtrl_InsertItem failed."};
+	#endif
 }
 
 void Tab::display_cur_tab() const {
@@ -1429,7 +1545,13 @@ TreeView::Item TreeView::ChildCollection::add(WStrView text, int iconIndex) cons
 			.iImage = iconIndex,
 		},
 	};
+
 	HTREEITEM hItemNew = TreeView_InsertItem(_pOwner->hwnd(), &tvi);
+	#ifdef _DEBUG
+	if (!hItemNew)
+		throw std::runtime_error{"TreeView_InsertItem failed."};
+	#endif
+
 	return Item{*_pOwner, hItemNew};
 }
 
@@ -1470,7 +1592,13 @@ int TreeView::Item::icon_index() const {
 		.mask = TVIF_IMAGE,
 		.hItem = children._hItem,
 	};
-	TreeView_GetItem(children._pOwner->hwnd(), &tvi);
+
+	BOOL ret = TreeView_GetItem(children._pOwner->hwnd(), &tvi);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"TreeView_GetItem failed to get icon."};
+	#endif
+
 	return tvi.iImage;
 }
 
@@ -1486,7 +1614,13 @@ const TreeView::Item& TreeView::Item::set_icon_index(int iconIndex) const {
 		.hItem = children._hItem,
 		.iImage = iconIndex,
 	};
-	TreeView_SetItem(children._pOwner->hwnd(), &tvi);
+
+	BOOL ret = TreeView_SetItem(children._pOwner->hwnd(), &tvi);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"TreeView_SetItem failed to set icon."};
+	#endif
+
 	return *this;
 }
 
@@ -1520,7 +1654,12 @@ std::wstring TreeView::Item::text() const {
 		.cchTextMax = static_cast<int>(buf.size()),
 	};
 
-	TreeView_GetItem(children._pOwner->hwnd(), &tvi);
+	BOOL ret = TreeView_GetItem(children._pOwner->hwnd(), &tvi);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"TreeView_GetItem failed to get text."};
+	#endif
+
 	str::trim_nulls(buf);
 	return buf;
 }
@@ -1531,7 +1670,13 @@ const TreeView::Item& TreeView::Item::set_text(WStrView newText) const {
 		.hItem = children._hItem,
 		.pszText = const_cast<LPWSTR>(newText.c_str()),
 	};
-	TreeView_SetItem(children._pOwner->hwnd(), &tvi);
+
+	BOOL ret = TreeView_SetItem(children._pOwner->hwnd(), &tvi);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"TreeView_SetItem failed to set text."};
+	#endif
+
 	return *this;
 }
 
@@ -1540,7 +1685,13 @@ LPARAM TreeView::Item::raw_data() const {
 		.mask = TVIF_PARAM,
 		.hItem = children._hItem,
 	};
-	TreeView_GetItem(children._pOwner->hwnd(), &tvi);
+
+	BOOL ret = TreeView_GetItem(children._pOwner->hwnd(), &tvi);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"TreeView_SetItem failed to get LPARAM."};
+	#endif
+
 	return tvi.lParam;
 }
 
@@ -1550,7 +1701,13 @@ const TreeView::Item& TreeView::Item::set_raw_data(LPARAM data) const {
 		.hItem = children._hItem,
 		.lParam = data,
 	};
-	TreeView_SetItem(children._pOwner->hwnd(), &tvi);
+
+	BOOL ret = TreeView_SetItem(children._pOwner->hwnd(), &tvi);
+	#ifdef _DEBUG
+	if (!ret)
+		throw std::runtime_error{"TreeView_SetItem failed to set LPARAM."};
+	#endif
+
 	return *this;
 }
 
@@ -1608,7 +1765,11 @@ TreeView::TreeView(IWindowParent &owner, WORD ctrlId, Lay layout)
 }
 
 const TreeView& TreeView::set_extended_style(bool doSet, DWORD exStyle) const {
-	TreeView_SetExtendedStyle(hwnd(), doSet ? exStyle : 0, exStyle);
+	HRESULT hr = TreeView_SetExtendedStyle(hwnd(), doSet ? exStyle : 0, exStyle);
+	#ifdef _DEBUG
+	if (FAILED(hr))
+		throw std::system_error(GetLastError(), std::system_category(), "TreeView_SetExtendedStyle failed");
+	#endif
 	return *this;
 }
 

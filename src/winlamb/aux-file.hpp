@@ -221,7 +221,7 @@ namespace wl {
 		HANDLE _hFile = nullptr;
 	};
 
-	/// @brief Manages a memory-mapped file.
+	/// @brief Manages a [memory-mapped file].
 	///
 	/// If you need to modify the file size, use `File` instead.
 	///
@@ -232,6 +232,8 @@ namespace wl {
 	/// std::span<BYTE> myView = myFile.view();
 	/// std::wstring text = wl::str::parse(myView);
 	/// ```
+	///
+	/// [memory-mapped file]: https://learn.microsoft.com/en-us/windows/win32/memory/file-mapping
 	class FileMapped final {
 	public:
 		/** @brief Requested access to open a file. */
