@@ -2824,17 +2824,25 @@ namespace wl {
 			/** Makes sure the item is visible. */
 			const Item& ensure_visible() const;
 
+			/** Returns true if the item is currently expanded. */
+			[[nodiscard]] bool is_expanded() const;
+
+			/** Expands or collapses the item. */
+			const Item& expand(bool doExpand) const;
+
 			/** Returns the zero-based index of the `ImageList` icon associated to the item. */
 			[[nodiscard]] int icon_index() const;
 
 			/** Sets the zero-based index of the `ImageList` icon associated to the item. */
 			const Item& set_icon_index(int iconIndex) const;
 
-			/** Returns true if the item is currently expanded. */
-			[[nodiscard]] bool is_expanded() const;
-
-			/** Expands or collapses the item. */
-			const Item& expand(bool doExpand) const;
+			/// Returns the zero-based index of the item within its siblings.
+			///
+			/// This method calls [`TreeView_GetPrevSibling`] up to the desired
+			/// item, so if there are too many, it can be potentially slow.
+			///
+			/// [`TreeView_GetPrevSibling`]: https://learn.microsoft.com/en-us/windows/win32/api/commctrl/nf-commctrl-treeview_getprevsibling
+			[[nodiscard]] size_t index() const;
 
 			/// Retrieves the next sibling.
 			///

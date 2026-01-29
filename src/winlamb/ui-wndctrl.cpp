@@ -1624,6 +1624,17 @@ const TreeView::Item& TreeView::Item::set_icon_index(int iconIndex) const {
 	return *this;
 }
 
+size_t TreeView::Item::index() const {
+	HTREEITEM hItem = children._hItem;
+	size_t i = 0;
+	for (;;) {
+		hItem = TreeView_GetPrevSibling(children._pOwner->hwnd(), hItem);
+		if (!hItem) break;
+		++i;
+	}
+	return i;
+}
+
 TreeView::Item TreeView::Item::next_sibling() const {
 	HTREEITEM hItem = TreeView_GetNextSibling(children._pOwner->hwnd(), children._hItem);
 	return Item{*children._pOwner, hItem};
