@@ -210,6 +210,20 @@ namespace wl::events {
 		friend wl::StatusBar;
 	};
 
+	/** Native `SysLink` events. */
+	class SysLinkEvents final : private wl::NoCopyNoMove {
+	private:
+		SysLinkEvents(_wl_internal::WndBase &parentWndBase, WORD ctrlId)
+			: _ctrlEvents{parentWndBase, ctrlId} { }
+
+	public:
+		void nm_click(std::function<void(NMLINK&)> &&cb);
+
+	private:
+		_wl_internal::NativeCtrlEvents _ctrlEvents;
+		friend wl::SysLink;
+	};
+
 	/** Native `Tab` events. */
 	class TabEvents final : private wl::NoCopyNoMove {
 	private:
@@ -899,6 +913,63 @@ namespace wl {
 		std::vector<IconLoad> icons{};
 		/** Fixed-width and flexible parts to be added. */
 		std::vector<SbPart> parts{};
+	};
+
+	/// Options to create a `SysLink` programmatically.
+	///
+	/// The fields are declared in alphabetical order to make it easy to work
+	/// with [designated initializers], which require the fields to be set
+	/// the same order they appear in the struct.
+	///
+	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	struct SysLinkOpts final {
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		WORD ctrlId = 0;
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		Lay layout = Lay::hold_hold;
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::SysLinkOpts myOpts{
+		///     .pos = wl::dpi::pt(10, 10),
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		POINT pos{};
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::SysLinkOpts myOpts{
+		///     .size = wl::dpi::sz(88, 26),
+		/// };
+		/// ```
+		///
+		/// If not defined, the control will resize to automatically fit its initial text.
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SIZE size{};
+		/// The [window] and [Static style] passed to [`CreateWindowEx`].
+		///
+		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [Static style]: https://learn.microsoft.com/en-us/windows/win32/controls/static-control-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | LWS_TRANSPARENT;
+		/// The [window extended style] passed to [`CreateWindowEx`].
+		///
+		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DWORD styleEx = WS_EX_LEFT;
+		/// Control text passed to [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		std::wstring text{};
 	};
 
 	/// Options to create a `Tab` programmatically.
@@ -2462,6 +2533,96 @@ namespace wl {
 		std::vector<SbPart> _parts;
 		std::vector<int> _rightEdges{}; // buffer to speed up resize calls
 		_wl_internal::HIconStore _iconStore16{{16, 16}};
+	};
+
+	/// @brief Native [syslink] control.
+	///
+	/// Example of creating a window with a static programmatically, .h and .cpp files:
+	///
+	/// ```cpp
+	/// class MyMain final {
+	/// public:
+	///     MyMain();
+	///     wl::WindowMain wnd{wl::MainOpts{
+	///         .title = L"My main window",
+	///     }};
+	///     wl::SysLink lbl{wnd, wl::SysLinkOpts{
+	///         .pos = wl::dpi::pt(10, 10),
+	///         .text = L"Link <a href=\"https://google.com\">here</a>",
+	///     }};
+	/// };
+	/// ```
+	///
+	/// ```cpp
+	/// RUN_MAIN(MyMain, wnd)
+	///
+	/// MyMain::MyMain() {
+	///     lnk.on().nm_click([this](NMLINK &p) -> void {
+	///         wnd.set_title(L"Link clicked");
+	///     });
+	/// }
+	/// ```
+	///
+	/// [syslink]: https://learn.microsoft.com/en-us/windows/win32/controls/syslink-control-entry
+	class SysLink final : public IWindowChild {
+	public:
+		/// Constructs the static, which will be created programmatically with [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SysLink(IWindowParent &owner, SysLinkOpts creationOpts);
+
+		/// Constructs the syslink, which will be loaded from the dialog resource.
+		///
+		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		SysLink(IWindowParent &owner, WORD ctrlId, Lay layout);
+
+		/** Returns the wrapped window handle. */
+		[[nodiscard]] constexpr HWND hwnd() const override { return _ctrl._hWnd; }
+
+		/** Returns the control ID. */
+		[[nodiscard]] constexpr WORD ctrl_id() const override { return _events._ctrlEvents._ctrlId; }
+
+		/// Allows message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// lnk.on().nm_click([](NMLINK &p) -> void {
+		///     // ...
+		/// });
+		/// ```
+		[[nodiscard]] constexpr events::SysLinkEvents& on() { return _wl_internal::valid_event(hwnd(), _events); }
+
+		/// [Subclasses] the control allowing message events to be added.
+		///
+		/// The events must be added before the control is created on the screen.
+		///
+		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		///
+		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
+		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+
+		/// Calls [`GetWindowText`] to return the control text.
+		///
+		/// [`GetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowtextw
+		[[nodiscard]] std::wstring text() const { return _wl_internal::wnd_text(hwnd()); }
+
+		/// Calls [`SetWindowText`] to set the control text.
+		///
+		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
+		const SysLink& set_text(WStrView newText) const;
+
+		/// Calls [`SetWindowText`] to set the text, then resizes the control to fit the text exactly.
+		///
+		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
+		const SysLink& set_text_resize(WStrView newText) const;
+
+	private:
+		static std::wstring remove_html_anchor(WStrView text);
+		_wl_internal::NativeCtrlBase _ctrl;
+		events::SysLinkEvents _events;
 	};
 
 	/// @brief Native [tab] control.

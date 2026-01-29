@@ -164,6 +164,10 @@ RawMain::RawMain() {
 		wnd.set_title(s);
 	});
 
+	lnk.on().nm_click([this](NMLINK &p) -> void {
+		wnd.set_title(L"Link");
+	});
+
 	tv.on().tvn_sel_changed([this](NMTREEVIEW&) -> void {
 		wl::TreeView::Item sel = tv.items.selected();
 		wnd.set_title(sel.hitem() ? sel.text() : L"No tree sel");

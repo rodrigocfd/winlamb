@@ -106,6 +106,12 @@ public:
 			.text = L"Turd",
 		},
 	}};
+	wl::SysLink lnk{wnd, {
+		wl::SysLinkOpts{
+			.pos = wl::dpi::pt(420, 65),
+			.text = L"Link <a href=\"https://google.com\">here</a>",
+		},
+	}};
 	wl::TreeView tv{wnd, wl::TreeViewOpts{
 		.icons = {
 			wl::IconLoad{.ext = L"docx"},

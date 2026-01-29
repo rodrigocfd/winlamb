@@ -137,6 +137,8 @@ EVENT_NFY_ARG_RET(StatusBarEvents, nm_r_click, NM_RCLICK, NMMOUSE, bool)
 EVENT_NFY_ARG_RET(StatusBarEvents, nm_r_dbl_clk, NM_RDBLCLK, NMMOUSE, bool)
 EVENT_NFY_ARG(StatusBarEvents, sbn_simple_mode_change, SBN_SIMPLEMODECHANGE, NMMOUSE)
 
+EVENT_NFY_ARG(SysLinkEvents, nm_click, NM_CLICK, NMLINK)
+
 EVENT_NFY_ARG_RET(TrackbarEvents, trbn_thumb_pos_changing, TRBN_THUMBPOSCHANGING, NMTRBTHUMBPOSCHANGING, bool)
 void TrackbarEvents::wm_h_scroll(std::function<void(wm::HScroll)> &&cb) {
 	_ctrlEvents._parent._userEvents.wm(WM_HSCROLL, [this, cb = std::move(cb)](wl::wm::Msg p) -> LRESULT {
@@ -1287,6 +1289,68 @@ void StatusBar::resize_to_fit_parent(wm::Size p) {
 			cxTotal -= (cxVariable / totalWeight) * _parts[i].flex;
 	}
 	SendMessageW(hwnd(), SB_SETPARTS, _rightEdges.size(), reinterpret_cast<LPARAM>(_rightEdges.data()));
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+SysLink::SysLink(IWindowParent &owner, SysLinkOpts creationOpts)
+	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
+{
+	_ctrl._parent._preEvents.wm_create_or_init_dialog(
+		[this, pOwner = &owner, opts = std::move(creationOpts)]() mutable -> void {
+			if (!opts.size.cx && !opts.size.cy)
+				opts.size = calc_text_bound_box(str::remove_accel_ampersands(remove_html_anchor(opts.text)));
+
+			_ctrl.create_wnd(ctrl_id(), opts.styleEx, WC_LINK, std::move(opts.text),
+				opts.style, opts.pos, opts.size);
+			apply_ui_font(hwnd());
+			_ctrl._parent._layout.add(hwnd(), opts.layout);
+		});
+}
+
+SysLink::SysLink(IWindowParent &owner, WORD ctrlId, Lay layout)
+	: _ctrl{owner.base()}, _events{owner.base(), ctrlId}
+{
+	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, layout]() -> void {
+		_ctrl.assign_dlg(ctrl_id());
+		_ctrl._parent._layout.add(hwnd(), layout);
+	});
+}
+
+const SysLink& SysLink::set_text(WStrView newText) const {
+	set_wnd_text(hwnd(), newText);
+	return *this;
+}
+
+const SysLink& SysLink::set_text_resize(WStrView newText) const {
+	set_text(newText);
+	SIZE bounds = calc_text_bound_box(str::remove_accel_ampersands(remove_html_anchor(newText)));
+	SetWindowPos(hwnd(), nullptr, 0, 0, bounds.cx, bounds.cy, SWP_NOZORDER | SWP_NOMOVE);
+	return *this;
+}
+
+std::wstring SysLink::remove_html_anchor(WStrView text) {
+	size_t textLen = text.length();
+	std::wstring out;
+	out.reserve(textLen);
+
+	bool withinAnchor = false;
+	for (size_t i = 0; i < textLen; ++i) {
+		if (withinAnchor) {
+			if (text[i] == L'>') {
+				withinAnchor = false;
+				continue;
+			}
+		}
+		if (text[i] == L'<') {
+			withinAnchor = true;
+			continue;
+		}
+		if (!withinAnchor)
+			out.push_back(text[i]);
+	}
+
+	return out;
 }
 
 ////////////////////////////////////////////////////////////////////////////////

@@ -39,6 +39,7 @@ namespace wl {
 	class RadioGroup;
 	class Static;
 	class StatusBar;
+	class SysLink;
 	class Tab;
 	class Trackbar;
 	class TreeView;
@@ -110,6 +111,7 @@ namespace wl {
 		friend RadioButton;
 		friend Static;
 		friend StatusBar;
+		friend SysLink;
 		friend Tab;
 		friend Trackbar;
 		friend TreeView;
