@@ -62,7 +62,7 @@ void DlgMain::on_drop_files(const std::vector<std::wstring> files) {
 
 void DlgMain::on_lst_files_item_changed(NMLISTVIEW &p) {
 	wnd.set_title(!lstFiles.items.selected_count()
-		? L"NO SEL" : lstFiles.items[p.iItem].text());
+		? L"NO SEL" : lstFiles.items[p.iItem].text_of(0));
 }
 
 void DlgMain::on_about() {

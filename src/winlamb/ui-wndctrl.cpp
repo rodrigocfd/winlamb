@@ -445,7 +445,7 @@ std::vector<std::wstring> ListView::Column::item_texts() const {
 	std::vector<std::wstring> texts;
 	texts.reserve(count);
 	for (UINT i = 0; i < count; ++i)
-		texts.emplace_back(_owner.items[i].text(_index));
+		texts.emplace_back(_owner.items[i].text_of(_index));
 	return texts;
 }
 
@@ -457,7 +457,7 @@ std::vector<std::wstring> ListView::Column::selected_item_texts() const {
 	for (;;) {
 		idx = ListView_GetNextItem(_owner.hwnd(), idx, LVNI_SELECTED);
 		if (idx == -1) break;
-		texts.emplace_back(_owner.items[idx].text(_index));
+		texts.emplace_back(_owner.items[idx].text_of(_index));
 	}
 	return texts;
 }
@@ -688,7 +688,7 @@ const ListView::Item& ListView::Item::select(bool doSelect) const {
 	return *this;
 }
 
-std::wstring ListView::Item::text(UINT columnIndex) const {
+std::wstring ListView::Item::text_of(UINT columnIndex) const {
 	UINT curBufSz = str::SSO_LEN;
 	std::wstring buf(curBufSz, L'\0');
 
@@ -714,7 +714,7 @@ std::wstring ListView::Item::text(UINT columnIndex) const {
 	}
 }
 
-const ListView::Item& ListView::Item::set_text(WStrView newText, UINT columnIndex) const {
+const ListView::Item& ListView::Item::set_text_of(UINT columnIndex, WStrView newText) const {
 	ListView_SetItemText(_owner.hwnd(), _index, columnIndex, const_cast<LPWSTR>(newText.c_str()));
 	return *this;
 }
@@ -779,7 +779,7 @@ ListView::Item ListView::ItemCollection::add(WStrView text,
 
 	for (auto colText = otherColumnsTexts.begin(); colText != otherColumnsTexts.end(); ++colText) {
 		size_t idx = std::distance(otherColumnsTexts.begin(), colText);
-		newItem.set_text(*colText, static_cast<UINT>(idx) + 1);
+		newItem.set_text_of(static_cast<UINT>(idx) + 1, *colText);
 	}
 
 	return newItem; // return newly added item

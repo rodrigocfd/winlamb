@@ -1905,10 +1905,10 @@ namespace wl {
 			const Item& select(bool doSelect) const;
 
 			/** Retrieves the text under a column for the item. */
-			[[nodiscard]] std::wstring text(UINT columnIndex = 0) const;
+			[[nodiscard]] std::wstring text_of(UINT columnIndex) const;
 
 			/** Sets the text under a column for the item. */
-			const Item& set_text(WStrView newText, UINT columnIndex = 0) const;
+			const Item& set_text_of(UINT columnIndex, WStrView newText) const;
 
 			/// Calls [`ListView_MapIndexToID`] to retrieve the unique ID of the item.
 			///
