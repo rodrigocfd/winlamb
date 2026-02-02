@@ -719,6 +719,20 @@ const ListView::Item& ListView::Item::set_text_of(UINT columnIndex, WStrView new
 	return *this;
 }
 
+const ListView::Item& ListView::Item::set_texts(std::initializer_list<WStrView> texts) const {
+	size_t nCols = _owner.cols.count();
+	size_t nToUpdate = std::min(nCols, texts.size());
+	size_t i = 0;
+
+	for (auto &&text : texts) {
+		if (i >= nToUpdate) break;
+		set_text_of(static_cast<UINT>(i), text);
+		++i;
+	}
+
+	return *this;
+}
+
 UINT ListView::Item::unique_id() const {
 	return ListView_MapIndexToID(_owner.hwnd(), _index);
 }

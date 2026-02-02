@@ -1833,7 +1833,10 @@ namespace wl {
 			constexpr explicit ColumnCollection(const ListView &owner) : _owner{owner} { }
 
 		public:
-			/** Returns the column at the given index. */
+			/// Returns the column at the given index.
+			///
+			/// Note that no bounds checking is performed. This method will simply
+			/// return a `Column` holding the provided index.
 			[[nodiscard]] constexpr Column operator[](int index) const { return Column{_owner, index}; }
 
 			/// Adds a new column with the given width.
@@ -1853,13 +1856,20 @@ namespace wl {
 			friend ListView;
 		};
 
-		/** @brief A single item of the `ListView`. */
+		/// @brief A single item of the `ListView`.
+		///
+		/// This is a lightweight wrapper which performs no validation. The item
+		/// may have the index `-1`, which represents an invalid item.
 		class Item final {
 		public:
 			/** Constructs an item for the given `ListView` and zero-based index. */
 			constexpr Item(const ListView &owner, int itemIndex) : _owner{owner}, _index{itemIndex} { }
 
-			/** Returns the zero-based index of the item. */
+			/// Returns the zero-based index of the item.
+			///
+			/// Note that, if the position of the item changes in the list, the
+			/// index will also change. If you need to uniquely identify the item,
+			/// regardless of its position, use `unique_id`.
 			[[nodiscard]] constexpr int index() const { return _index; }
 
 			/** Returns the data associated with the item. */
@@ -1907,8 +1917,23 @@ namespace wl {
 			/** Retrieves the text under a column for the item. */
 			[[nodiscard]] std::wstring text_of(UINT columnIndex) const;
 
-			/** Sets the text under a column for the item. */
+			/// Sets the text under a column for the item.
+			///
+			/// Example:
+			///
+			/// ```cpp
+			/// lv.items[0].set_text_of(0, L"New text");
+			/// ```
 			const Item& set_text_of(UINT columnIndex, WStrView newText) const;
+
+			/// Sets all the texts under all columns, at once.
+			///
+			/// Example:
+			///
+			/// ```cpp
+			/// lv.items[0].set_texts({L"First col", L"Second col"});
+			/// ```
+			const Item& set_texts(std::initializer_list<WStrView> texts) const;
 
 			/// Calls [`ListView_MapIndexToID`] to retrieve the unique ID of the item.
 			///
@@ -1933,7 +1958,10 @@ namespace wl {
 			constexpr explicit ItemCollection(const ListView &owner) : _owner{owner} { }
 
 		public:
-			/** Returns the item at the given index. */
+			/// Returns the item at the given index.
+			///
+			/// Note that no bounds checking is performed. This method will simply
+			/// return an `Item` holding the provided index.
 			[[nodiscard]] constexpr Item operator[](int index) const { return Item{_owner, index}; }
 
 			/// Adds a new item, defining the text for the first column.
@@ -1948,7 +1976,16 @@ namespace wl {
 			/// ```
 			Item add(WStrView text, std::initializer_list<WStrView> otherColumnsTexts = {}, int iconIndex = -1) const;
 
-			/** Returns the item count. */
+			/// Returns the item count.
+			///
+			/// Example iterating over all items:
+			///
+			/// ```cpp
+			/// for (int i = 0; i < lv.items.count(); ++i) {
+			///     wl::ListView::Item curItem = lv.items[i];
+			///     // ...
+			/// }
+			/// ```
 			[[nodiscard]] size_t count() const;
 
 			/** Deletes all items. */
@@ -1989,7 +2026,7 @@ namespace wl {
 			///
 			/// ```cpp
 			/// lv.items.sort([](wl::ListView::Item a, wl::ListView::Item b) -> int {
-			///     return wl::str::cmp_i(a.text(2), b.text(2));
+			///     return wl::str::cmp_i(a.text_of(2), b.text_of(2));
 			/// });
 			/// ```
 			///
@@ -2950,7 +2987,8 @@ namespace wl {
 
 		/// @brief A single item of the `TreeView`.
 		///
-		/// An item may be invalid by having a `nullptr` handle.
+		/// This is a lightweight wrapper which performs no validation. The item
+		/// may have the handle `nullptr`, which represents an invalid item.
 		class Item final {
 		public:
 			/** Copy-constructor. */
@@ -3052,7 +3090,10 @@ namespace wl {
 			constexpr explicit ItemCollection(const TreeView &owner) : _owner{owner} { }
 
 		public:
-			/** Returns the item with the given handle. */
+			/// Returns the item with the given handle.
+			///
+			/// Note that no checking is performed. This method will simply return
+			/// an `Item` holding the provided handle.
 			[[nodiscard]] constexpr Item by_hitem(HTREEITEM hItem) const { return {_owner, hItem}; }
 
 			/** Retrieves the total number of items. */
