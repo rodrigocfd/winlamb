@@ -175,3 +175,139 @@ FileMapped& FileMapped::open(WStrView filePath, Access access) {
 	_access = access;
 	return *this;
 }
+
+////////////////////////////////////////////////////////////////////////////////
+
+bool IniFile::Section::has_val(WStrView key) const {
+	return get(key).has_value();
+}
+
+std::optional<std::reference_wrapper<const std::wstring>> IniFile::Section::get(WStrView key) const {
+	for (auto &&keyVal : keysVals) {
+		if (str::eq(keyVal.key, key))
+			return std::cref(keyVal.val);
+	}
+	return std::nullopt;
+}
+
+void IniFile::Section::set(WStrView key, WStrView val) {
+	for (auto &&keyVal : keysVals) {
+		if (str::eq(keyVal.key, key)) {
+			keyVal.val = val.c_str();
+			return;
+		}
+	}
+	keysVals.emplace_back(key.c_str(), val.c_str()); // create new
+}
+
+//------------------------------------------------------------------------------
+
+void IniFile::load(WStrView filePath) {
+	FileMapped fileMap{filePath, FileMapped::Access::existing_read_only};
+	std::wstring contents = str::parse(fileMap.view());
+	fileMap.close();
+
+	std::vector<std::wstring> lines = str::split_lines(contents);
+	Section curSection{};
+	for (auto &&line : lines) {
+		str::trim(line);
+		if (line.empty() || line[0] == L'#' || line[0] == L';')
+			continue; // skip blank and comment
+
+		if (line[0] == L'[' && line.back() == L']') { // [section] ?
+			if (!curSection.name.empty())
+				sections.emplace_back(std::move(curSection));
+			curSection.name = line.substr(1, line.length() - 2); // begin new section
+		} else if (!curSection.name.empty()) {
+			std::vector<std::wstring> keyVal = str::split_n(line, L"=", 2);
+			curSection.keysVals.emplace_back(std::move(keyVal[0]), std::move(keyVal[1])); // new entry
+		}
+	}
+
+	if (!curSection.name.empty()) // for the last section
+		sections.emplace_back(std::move(curSection));
+
+	iniPath = filePath.c_str(); // store path
+}
+
+void IniFile::save(const wchar_t *lineBreak) const {
+	if (iniPath.empty())
+		throw std::invalid_argument{"INI path not defined."};
+
+	size_t szLineBreak = lstrlenW(lineBreak);
+	size_t sz = 0;
+
+	for (auto &&sec : sections) { // 1st pass counts size
+		sz += sec.name.length() + szLineBreak;
+		for (auto &&kv : sec.keysVals)
+			sz += kv.key.length() + 1 + kv.val.length() + szLineBreak;
+		sz += szLineBreak;
+	}
+
+	std::wstring outBuf{};
+	outBuf.reserve(sz);
+
+	for (auto &&sec : sections) { // 2nd pass copies to buffer
+		outBuf += L'[';
+		outBuf += sec.name;
+		outBuf += L']';
+		outBuf += lineBreak;
+
+		for (auto &&kv : sec.keysVals) {
+			outBuf += kv.key;
+			outBuf += L'=';
+			outBuf += kv.val;
+			outBuf += lineBreak;
+		}
+
+		outBuf += lineBreak;
+	}
+
+	std::vector<BYTE> outBlob = str::to_utf8_blob(outBuf);
+	File fout{iniPath, File::Access::open_or_create_rw};
+	fout.truncate();
+	fout.write(outBlob);
+}
+
+bool IniFile::has_section(WStrView sectionName) const {
+	return get_section(sectionName).has_value();
+}
+
+bool IniFile::has_val(WStrView sectionName, WStrView key) const {
+	return get_val(sectionName, key).has_value();
+}
+
+std::optional<std::reference_wrapper<const IniFile::Section>> IniFile::get_section(WStrView sectionName) const {
+	for (auto &&sec : sections) {
+		if (str::eq(sec.name, sectionName))
+			return std::cref(sec);
+	}
+	return std::nullopt;
+}
+
+std::optional<std::reference_wrapper<IniFile::Section>> IniFile::get_section(WStrView sectionName) {
+	for (auto &&sec : sections) {
+		if (str::eq(sec.name, sectionName))
+			return std::ref(sec);
+	}
+	return std::nullopt;
+}
+
+std::optional<std::reference_wrapper<const std::wstring>> IniFile::get_val(WStrView sectionName, WStrView key) const {
+	for (auto &&sec : sections) {
+		if (str::eq(sec.name, sectionName))
+			return sec.get(key);
+	}
+	return std::nullopt;
+}
+
+void IniFile::set_val(WStrView sectionName, WStrView key, WStrView val) {
+	for (auto &&sec : sections) {
+		if (str::eq(sec.name, sectionName))
+			sec.set(key, val);
+	}
+
+	sections.emplace_back(); // create new
+	sections.back().name = sectionName.c_str();
+	sections.back().set(key, val);
+}

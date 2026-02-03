@@ -332,4 +332,88 @@ namespace wl {
 		size_t _sz = 0;
 	};
 
+	/// @brief Manages an INI file.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// wl::IniFile ini{L"C:\\Temp\\foo.ini"};
+	/// ini.set(L"MySection", L"MyKey", L"foo");
+	/// ini.save();
+	/// ```
+	class IniFile final {
+	public:
+		/** Stores the key/value pair of an entry. */
+		struct KeyVal final {
+			/** Key name of the entry. */
+			std::wstring key{};
+
+			/** Value of the entry. */
+			std::wstring val{};
+		};
+
+		/** Stores a section of the INI file. */
+		struct Section final {
+			/** Name of the section. */
+			std::wstring name{};
+
+			/** All key/value pairs of the section. */
+			std::vector<KeyVal> keysVals{};
+
+			/** Returns `true` if the given `KeyVal` exists. */
+			[[nodiscard]] bool has_val(WStrView key) const;
+
+			/** Retrieves the `KeyVal` with the given `key`. */
+			[[nodiscard]] std::optional<std::reference_wrapper<const std::wstring>>
+				get(WStrView key) const;
+
+			/** Directly sets the `KeyVal` value. If `key` doesn't exist, creates it. */
+			void set(WStrView key, WStrView val);
+		};
+
+		/** Sections of the INI file. */
+		std::vector<Section> sections{};
+
+		/** File path of this INI file. Used when you call `save`. */
+		std::wstring iniPath{};
+
+		/** Default constructor. */
+		constexpr IniFile() = default;
+
+		/// Constructor.
+		///
+		/// Loads the INI file at `filePath`.
+		explicit IniFile(WStrView filePath) { load(filePath); }
+
+		/** Loads the INI file at `filePath`. */
+		void load(WStrView filePath);
+
+		/// Saves the INI file to `iniPath`.
+		///
+		/// If you want to save the INI in a different file, simply change the
+		/// `iniPath` value.
+		///
+		/// Throws an exception if `iniPath` is empty.
+		void save(const wchar_t *lineBreak = L"\r\n") const;
+
+		/** Returns `true` if the given `Section` exists. */
+		[[nodiscard]] bool has_section(WStrView sectionName) const;
+
+		/** Returns `true` if the given `KeyVal` exists. */
+		[[nodiscard]] bool has_val(WStrView sectionName, WStrView key) const;
+
+		/** Returns the given `Section`. */
+		[[nodiscard]] std::optional<std::reference_wrapper<const Section>> get_section(WStrView sectionName) const;
+
+		/** Returns the given `Section`. */
+		[[nodiscard]] std::optional<std::reference_wrapper<Section>> get_section(WStrView sectionName);
+
+		/** Returns the `KeyVal` at the given `section` with the given `key`. */
+		[[nodiscard]] std::optional<std::reference_wrapper<const std::wstring>>
+			get_val(WStrView sectionName, WStrView key) const;
+
+		/// Directly sets the `KeyVal` value. If `section` and/or `key` don't
+		/// exist, creates them.
+		void set_val(WStrView sectionName, WStrView key, WStrView val);
+	};
 }
