@@ -256,7 +256,11 @@ void wl::str::remove_diacritics(std::wstring &s) {
 }
 
 std::vector<std::wstring> wl::str::split(WStrView s, WStrView delimiter) {
-	if (s.empty()) return {};
+	return split_n(s, delimiter, std::numeric_limits<size_t>::max());
+}
+
+std::vector<std::wstring> wl::str::split_n(WStrView s, WStrView delimiter, size_t maxSubstrs) {
+	if (s.empty() || !maxSubstrs) return {};
 
 	size_t lenDelim = delimiter.length();
 	if (!lenDelim)
@@ -264,31 +268,30 @@ std::vector<std::wstring> wl::str::split(WStrView s, WStrView delimiter) {
 
 	std::wstring_view sv{s.c_str()};
 
-	size_t count = 1, base = 0, head = 0;
-	for (;;) { // 1st pass counts the occurrences to prealloc; benchmarks proved that this is about 2.7x faster
-		head = sv.find(delimiter.c_str(), head);
-		if (head == std::wstring::npos) break;
+	size_t count = 1, iHead = 0;
+	while (count < maxSubstrs) { // 1st pass counts the occurrences to prealloc; benchmarks proved it's about 2.7x faster
+		iHead = sv.find(delimiter.c_str(), iHead);
+		if (iHead == std::wstring::npos) break; // not found
 		++count;
-		head += lenDelim;
-		base = head;
+		iHead += lenDelim; // now points to 1st char after delimiter
 	}
 
-	std::vector<std::wstring> ret;
-	ret.reserve(count); // prealloc the number of substrings
+	std::vector<std::wstring> subs{};
+	subs.reserve(count); // prealloc the number of substrings
 
-	base = head = 0;
-	for (;;) { // 2nd pass will append the substrings
-		head = sv.find(delimiter.c_str(), head);
-		if (head == std::wstring::npos) break;
-		ret.emplace_back(); // append empty string to vector
-		ret.back().insert(0, sv, base, head - base); // insert chars into last appended string
-		head += lenDelim;
-		base = head;
+	size_t iBase = iHead = 0;
+	for (size_t i = 0; i < count - 1; ++i) { // 2nd pass will extract and append the substrings
+		iHead = sv.find(delimiter.c_str(), iHead);
+		if (iHead == std::wstring::npos) break; // not found
+		subs.emplace_back(); // append empty string to vector
+		subs.back().insert(0, sv, iBase, iHead - iBase); // insert chars into last appended string
+		iHead += lenDelim; // now points to 1st char after delimiter
+		iBase = iHead;
 	}
 
-	ret.emplace_back();
-	ret.back().insert(0, sv, base, s.length() - base); // append the rest
-	return ret;
+	subs.emplace_back();
+	subs.back().insert(0, sv, iBase, s.length() - iBase); // append the rest
+	return subs;
 }
 
 std::vector<std::wstring> wl::str::split_lines(WStrView s) {

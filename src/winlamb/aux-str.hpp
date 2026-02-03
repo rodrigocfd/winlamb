@@ -146,10 +146,17 @@ namespace wl::str {
 	/** Removes the diacritics from `s`, in-place. */
 	void remove_diacritics(std::wstring &s);
 
-	/// Returns a [`std::vector`] with substrings of `s`, delimited by `delimiter`.
+	/// Returns a [`std::vector`] with substrings of `s`, delimited by
+	/// `delimiter`.
 	///
 	/// [`std::vector`]: https://en.cppreference.com/w/cpp/container/vector.html
 	[[nodiscard]] std::vector<std::wstring> split(WStrView s, WStrView delimiter);
+
+	/// Returns a [`std::vector`] with at most `maxSubstrs` substrings of `s`,
+	/// delimited by `delimiter`.
+	///
+	/// [`std::vector`]: https://en.cppreference.com/w/cpp/container/vector.html
+	[[nodiscard]] std::vector<std::wstring> split_n(WStrView s, WStrView delimiter, size_t maxSubstrs);
 
 	/// Guesses the linebreak with `guess_line_break` and returns a [`std::vector`] with each line of `s` as a string.
 	///
