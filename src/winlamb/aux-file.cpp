@@ -179,15 +179,15 @@ FileMapped& FileMapped::open(WStrView filePath, Access access) {
 ////////////////////////////////////////////////////////////////////////////////
 
 bool IniFile::Section::has_val(WStrView key) const {
-	return get(key).has_value();
+	return get_val(key) != nullptr;
 }
 
-std::optional<std::reference_wrapper<const std::wstring>> IniFile::Section::get(WStrView key) const {
+const std::wstring* IniFile::Section::get_val(WStrView key) const {
 	for (auto &&keyVal : keysVals) {
 		if (str::eq(keyVal.key, key))
-			return std::cref(keyVal.val);
+			return &keyVal.val;
 	}
-	return std::nullopt;
+	return nullptr;
 }
 
 void IniFile::Section::set(WStrView key, WStrView val) {
@@ -270,35 +270,35 @@ void IniFile::save(const wchar_t *lineBreak) const {
 }
 
 bool IniFile::has_section(WStrView sectionName) const {
-	return get_section(sectionName).has_value();
+	return get_section(sectionName) != nullptr;
 }
 
 bool IniFile::has_val(WStrView sectionName, WStrView key) const {
-	return get_val(sectionName, key).has_value();
+	return get_val(sectionName, key) != nullptr;
 }
 
-std::optional<std::reference_wrapper<const IniFile::Section>> IniFile::get_section(WStrView sectionName) const {
+const IniFile::Section* IniFile::get_section(WStrView sectionName) const {
 	for (auto &&sec : sections) {
 		if (str::eq(sec.name, sectionName))
-			return std::cref(sec);
+			return &sec;
 	}
-	return std::nullopt;
+	return nullptr;
 }
 
-std::optional<std::reference_wrapper<IniFile::Section>> IniFile::get_section(WStrView sectionName) {
+IniFile::Section* IniFile::get_section(WStrView sectionName) {
 	for (auto &&sec : sections) {
 		if (str::eq(sec.name, sectionName))
-			return std::ref(sec);
+			return &sec;
 	}
-	return std::nullopt;
+	return nullptr;
 }
 
-std::optional<std::reference_wrapper<const std::wstring>> IniFile::get_val(WStrView sectionName, WStrView key) const {
+const std::wstring* IniFile::get_val(WStrView sectionName, WStrView key) const {
 	for (auto &&sec : sections) {
 		if (str::eq(sec.name, sectionName))
-			return sec.get(key);
+			return sec.get_val(key);
 	}
-	return std::nullopt;
+	return nullptr;
 }
 
 void IniFile::set_val(WStrView sectionName, WStrView key, WStrView val) {

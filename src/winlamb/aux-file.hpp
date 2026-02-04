@@ -363,9 +363,8 @@ namespace wl {
 			/** Returns `true` if the given `KeyVal` exists. */
 			[[nodiscard]] bool has_val(WStrView key) const;
 
-			/** Retrieves the `KeyVal` with the given `key`. */
-			[[nodiscard]] std::optional<std::reference_wrapper<const std::wstring>>
-				get(WStrView key) const;
+			/** Retrieves the `KeyVal` with the given `key`, or `nullptr` if not present. */
+			[[nodiscard]] const std::wstring* get_val(WStrView key) const;
 
 			/** Directly sets the `KeyVal` value. If `key` doesn't exist, creates it. */
 			void set(WStrView key, WStrView val);
@@ -402,15 +401,14 @@ namespace wl {
 		/** Returns `true` if the given `KeyVal` exists. */
 		[[nodiscard]] bool has_val(WStrView sectionName, WStrView key) const;
 
-		/** Returns the given `Section`. */
-		[[nodiscard]] std::optional<std::reference_wrapper<const Section>> get_section(WStrView sectionName) const;
+		/** Returns the given `Section`, or `nullptr` if not present. */
+		[[nodiscard]] const Section* get_section(WStrView sectionName) const;
 
-		/** Returns the given `Section`. */
-		[[nodiscard]] std::optional<std::reference_wrapper<Section>> get_section(WStrView sectionName);
+		/** Returns the given `Section`, or `nullptr` if not present. */
+		[[nodiscard]] Section* get_section(WStrView sectionName);
 
-		/** Returns the `KeyVal` at the given `section` with the given `key`. */
-		[[nodiscard]] std::optional<std::reference_wrapper<const std::wstring>>
-			get_val(WStrView sectionName, WStrView key) const;
+		/** Returns the `KeyVal` at the given `section` with the given `key`, or `nullptr if not present.` */
+		[[nodiscard]] const std::wstring* get_val(WStrView sectionName, WStrView key) const;
 
 		/// Directly sets the `KeyVal` value. If `section` and/or `key` don't
 		/// exist, creates them.
