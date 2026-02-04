@@ -47,3 +47,9 @@
 		}
 	]
 }
+/** Keyboard shortcuts for keybindings.json:
+[
+	{ "key": "f7", "command": "workbench.action.tasks.runTask", "args": "MSBuild debug" },
+	{ "key": "f8", "command": "workbench.action.tasks.runTask", "args": "MSBuild clean" },
+]
+*/
