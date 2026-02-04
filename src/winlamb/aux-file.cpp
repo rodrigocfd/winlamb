@@ -2,6 +2,86 @@
 #include "aux-file.hpp"
 using namespace wl;
 
+Time::Time() {
+	GetSystemTimeAsFileTime(&_ft);
+}
+
+Time::Time(const SYSTEMTIME &st) {
+	BOOL ok = SystemTimeToFileTime(&st, &_ft);
+	if (!ok) [[unlikely]] {
+		throw std::invalid_argument{"Invalid SYSTEMTIME."};
+	}
+}
+
+FILETIME Time::to_filetime_utc() const {
+	FILETIME ft{};
+	to_filetime_utc(ft);
+	return ft;
+}
+
+FILETIME Time::to_filetime_local() const {
+	FILETIME ft{};
+	to_filetime_local(ft);
+	return ft;
+}
+
+void Time::to_filetime_local(FILETIME &ftLocal) const {
+	BOOL ok = FileTimeToLocalFileTime(&_ft, &ftLocal);
+	#ifdef _DEBUG
+	if (!ok)
+		throw std::system_error(GetLastError(), std::system_category(), "FileTimeToLocalFileTime failed");
+	#endif
+}
+
+SYSTEMTIME Time::to_systemtime_utc() const {
+	SYSTEMTIME st{};
+	to_systemtime_utc(st);
+	return st;
+}
+
+void Time::to_systemtime_utc(SYSTEMTIME &stUtc) const {
+	BOOL ok = FileTimeToSystemTime(&_ft, &stUtc);
+	#ifdef _DEBUG
+	if (!ok)
+		throw std::system_error(GetLastError(), std::system_category(), "FileTimeToSystemTime failed");
+	#endif
+}
+
+SYSTEMTIME Time::to_systemtime_local() const {
+	SYSTEMTIME st{};
+	to_systemtime_local(st);
+	return st;
+}
+
+void Time::to_systemtime_local(SYSTEMTIME &stLocal) const {
+	SYSTEMTIME stUtc = to_systemtime_utc();
+	BOOL ok = SystemTimeToTzSpecificLocalTime(nullptr, &stUtc, &stLocal);
+	#ifdef _DEBUG
+	if (!ok)
+		throw std::system_error(GetLastError(), std::system_category(), "SystemTimeToTzSpecificLocalTime failed");
+	#endif
+}
+
+std::wstring Time::to_str_local_ymd() const {
+	SYSTEMTIME st = to_systemtime_local();
+	return str::fmt(L"%04d-%02d-%02d",
+		st.wYear, st.wMonth, st.wDay);
+}
+
+std::wstring Time::to_str_local_ymd_hm() const {
+	SYSTEMTIME st = to_systemtime_local();
+	return str::fmt(L"%04d-%02d-%02d %02d:%02d",
+		st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute);
+}
+
+std::wstring Time::to_str_local_ymd_hms() const {
+	SYSTEMTIME st = to_systemtime_local();
+	return str::fmt(L"%04d-%02d-%02d %02d:%02d:%02d",
+		st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 File& File::operator=(File &&other) noexcept {
 	close();
 	std::swap(_hFile, other._hFile);
@@ -94,23 +174,34 @@ const File& File::read_buf(std::vector<BYTE> &buf) const {
 	return *this;
 }
 
-File::Times File::times() const {
-	FILETIME ftCreation{}, ftLastAccess{}, ftLastWrite{};
-	if (!GetFileTime(_hFile, &ftCreation, &ftLastAccess, &ftLastWrite)) [[unlikely]] {
+Time File::time_creation() const {
+	FILETIME ft{};
+	BOOL ok = GetFileTime(_hFile, &ft, nullptr, nullptr);
+	#ifdef _DEBUG
+	if (!ok)
 		throw std::system_error(GetLastError(), std::system_category(), "GetFileTime failed");
-	}
+	#endif
+	return Time{ft};
+}
 
-	SYSTEMTIME stCreationUtc{}, stLastAccessUtc{}, stLastWriteUtc{};
-	FileTimeToSystemTime(&ftCreation, &stCreationUtc);
-	FileTimeToSystemTime(&ftLastAccess, &stLastAccessUtc);
-	FileTimeToSystemTime(&ftLastWrite, &stLastWriteUtc);
+Time File::time_last_access() const {
+	FILETIME ft{};
+	BOOL ok = GetFileTime(_hFile, nullptr, &ft, nullptr);
+	#ifdef _DEBUG
+	if (!ok)
+		throw std::system_error(GetLastError(), std::system_category(), "GetFileTime failed");
+	#endif
+	return Time{ft};
+}
 
-	Times ret;
-	SystemTimeToTzSpecificLocalTime(nullptr, &stCreationUtc, &ret.creation);
-	SystemTimeToTzSpecificLocalTime(nullptr, &stLastAccessUtc, &ret.lastAccess);
-	SystemTimeToTzSpecificLocalTime(nullptr, &stLastWriteUtc, &ret.lastWrite);
-
-	return ret;
+Time File::time_last_write() const {
+	FILETIME ft{};
+	BOOL ok = GetFileTime(_hFile, nullptr, nullptr, &ft);
+	#ifdef _DEBUG
+	if (!ok)
+		throw std::system_error(GetLastError(), std::system_category(), "GetFileTime failed");
+	#endif
+	return Time{ft};
 }
 
 const File& File::truncate() const {

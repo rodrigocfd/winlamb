@@ -3,6 +3,131 @@
 
 namespace wl {
 
+	/// @brief Wraps a [`FILETIME`] struct, providing `FILETIME` and
+	/// [`SYSTEMTIME`] operations.
+	///
+	/// Usually stored as UTC time.
+	///
+	/// [`FILETIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime
+	/// [`SYSTEMTIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
+	class Time final {
+	public:
+		/// Default constructor.
+		///
+		/// Stores the current time as UTC.
+		Time();
+
+		/// Constructor.
+		///
+		/// Assumes `ft` as UTC time.
+		constexpr explicit Time(FILETIME ft) : _ft{ft} { }
+
+		/// Constructor.
+		///
+		/// Assumes `st` as UTC time.
+		explicit Time(const SYSTEMTIME &st);
+
+		/** Comparison operator. */
+		[[nodiscard]] constexpr std::strong_ordering operator<=>(const Time &other) const {
+			if (nano100() > other.nano100()) return std::strong_ordering::greater;
+			if (nano100() < other.nano100()) return std::strong_ordering::less;
+			return std::strong_ordering::equal;
+		}
+
+		/** Comparison operator. */
+		[[nodiscard]] constexpr bool operator==(const Time &other) const {
+			return _ft.dwHighDateTime == other._ft.dwHighDateTime && _ft.dwLowDateTime == other._ft.dwLowDateTime;
+		}
+
+		/** Comparison operator. */
+		[[nodiscard]] constexpr bool operator>(const Time &other) const {
+			return operator<=>(other) == std::strong_ordering::greater;
+		}
+
+		/** Comparison operator. */
+		[[nodiscard]] constexpr bool operator<(const Time &other) const {
+			return operator<=>(other) == std::strong_ordering::less;
+		}
+
+		/// Returns the 64-bit value representing the number of 100-nanosecond
+		/// intervals since January 1, 1601 (UTC).
+		///
+		/// This is the native representation of the `FILETIME` struct.
+		[[nodiscard]] constexpr ULONGLONG nano100() const {
+			return (static_cast<ULONGLONG>(_ft.dwHighDateTime) << 32) | (_ft.dwLowDateTime & 0xffff'ffff);
+		}
+
+		/// Sets the 64-bit value representing the number of 100-nanosecond
+		/// intervals since January 1, 1601 (UTC).
+		///
+		/// This is the native representation of the `FILETIME` struct.
+		constexpr void set_nano100(ULONGLONG nanoseconds) {
+			_ft.dwLowDateTime = static_cast<DWORD>(nanoseconds & 0xffff'ffff);
+			_ft.dwHighDateTime = static_cast<DWORD>(nanoseconds >> 32);
+		}
+
+		/** Adds or subtracts the given milliseconds to the stored `FILETIME`. */
+		constexpr void add_ms(ULONGLONG milliseconds) { set_nano100(nano100() + milliseconds * 10'000); }
+
+		/** Adds or subtracts the given seconds to the stored `FILETIME`. */
+		constexpr void add_secs(ULONGLONG seconds) { add_ms(seconds * 1000); }
+
+		/** Adds or subtracts the given minutes to the stored `FILETIME`. */
+		constexpr void add_mins(ULONGLONG minutes) { add_secs(minutes * 60); }
+
+		/** Adds or subtracts the given hours to the stored `FILETIME`. */
+		constexpr void add_hours(ULONGLONG hours) { add_mins(hours * 60); }
+
+		/** Adds or subtracts the given days to the stored `FILETIME`. */
+		constexpr void add_days(ULONGLONG days) { add_hours(days * 24); }
+
+		/** Adds or subtracts the given weeks to the stored `FILETIME`. */
+		constexpr void add_weeks(ULONGLONG weeks) { add_days(weeks * 7); }
+
+		/// Returns the difference to `other` time, in milliseconds.
+		///
+		/// Note that, if `other` is more recent, the difference will be negative.
+		[[nodiscard]] constexpr LONGLONG diff_ms(const Time &other) const {
+			return (static_cast<LONGLONG>(nano100()) - static_cast<LONGLONG>(other.nano100())) / 10'000;
+		}
+
+		/** Returns the stored time as `FILETIME`, UTC. */
+		[[nodiscard]] FILETIME to_filetime_utc() const;
+
+		/** Returns the stored time as `FILETIME`, UTC. */
+		constexpr void to_filetime_utc(FILETIME &ftUtc) const { ftUtc = _ft; }
+
+		/** Returns the stored time as `FILETIME`, local. */
+		[[nodiscard]] FILETIME to_filetime_local() const;
+
+		/** Returns the stored time as `FILETIME`, local. */
+		void to_filetime_local(FILETIME &ftLocal) const;
+
+		/** Returns the stored time as `SYSTEMTIME`, UTC. */
+		[[nodiscard]] SYSTEMTIME to_systemtime_utc() const;
+
+		/** Returns the stored time as `SYSTEMTIME`, UTC. */
+		void to_systemtime_utc(SYSTEMTIME &stUtc) const;
+
+		/** Returns the stored time as `SYSTEMTIME`, local. */
+		[[nodiscard]] SYSTEMTIME to_systemtime_local() const;
+
+		/** Returns the stored time as `SYSTEMTIME`, local. */
+		void to_systemtime_local(SYSTEMTIME &stLocal) const;
+
+		/** Returns the stored local date formatted as `YYYY-MM-DD`. */
+		[[nodiscard]] std::wstring to_str_local_ymd() const;
+
+		/** Returns the stored local date formatted as `YYYY-MM-DD hh:mm`. */
+		[[nodiscard]] std::wstring to_str_local_ymd_hm() const;
+
+		/** Returns the stored local date formatted as `YYYY-MM-DD hh:mm:ss`. */
+		[[nodiscard]] std::wstring to_str_local_ymd_hms() const;
+
+	private:
+		FILETIME _ft;
+	};
+
 	/// @brief Manages a file `HANDLE`.
 	///
 	/// If you only need reading access, consider using `FileMapped`, which tends to be faster.
@@ -26,11 +151,6 @@ namespace wl {
 			open_or_create_rw,
 			/** Creates the file as read-write, fails if the file already exists. */
 			create_rw,
-		};
-
-		/** @brief Creation, last access and last write file times. */
-		struct Times final {
-			SYSTEMTIME creation{}, lastAccess{}, lastWrite{};
 		};
 
 		/// Destructor.
@@ -199,10 +319,20 @@ namespace wl {
 		template<std::input_iterator It, std::sentinel_for<It> End>
 		const File& write(It first, End last) const { return write_from_ptr(&*first, std::distance(first, last)); }
 
-		/// Calls [`GetFileTime`] and returns creation, last access and last write times.
+		/// Calls [`GetFileTime`] and returns creation time.
 		///
 		/// [`GetFileTime`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletime
-		[[nodiscard]] Times times() const;
+		[[nodiscard]] Time time_creation() const;
+
+		/// Calls [`GetFileTime`] and returns last access time.
+		///
+		/// [`GetFileTime`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletime
+		[[nodiscard]] Time time_last_access() const;
+
+		/// Calls [`GetFileTime`] and returns last write time.
+		///
+		/// [`GetFileTime`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletime
+		[[nodiscard]] Time time_last_write() const;
 
 		/// Calls [`SetEndOfFile`] to set the file size to zero, erasing all its contents.
 		///

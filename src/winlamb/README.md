@@ -69,6 +69,7 @@ A few utility entities are included for convenience:
 | `wl::FileMapped` | Manages a [memory-mapped file](https://learn.microsoft.com/en-us/windows/win32/memory/file-mapping). |
 | `wl::IniFile` | Manages an INI file. |
 | `wl::NoCopyNoMove` | A base class which makes derived classes non-copyable an non-movable. |
+| `wl::Time` | Wraps a [`FILETIME`](https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime) struct, providing `FILETIME` and [`SYSTEMTIME`](https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime) operations. |
 | `wl::WStrView` | Wraps a pointer to a null-terminated string. |
 | `wl::dpi` | Adjusts pixel values according to the current system [DPI](https://learn.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows). |
 | `wl::path` | Filepath utilities. |
