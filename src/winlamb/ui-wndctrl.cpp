@@ -399,9 +399,9 @@ SYSTEMTIME DateTimePicker::value() const {
 }
 
 const DateTimePicker& DateTimePicker::set_value(const SYSTEMTIME &st) const {
-	BOOL ret = DateTime_SetSystemtime(hwnd(), GDT_VALID, &st);
+	BOOL ok = DateTime_SetSystemtime(hwnd(), GDT_VALID, &st);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"DateTime_SetSystemtime failed to set value."};
 	#endif
 	return *this;
@@ -470,9 +470,9 @@ int ListView::Column::justif() const {
 	#endif
 
 	HDITEMW hdi{.mask = HDI_FORMAT};
-	BOOL ret = Header_GetItem(hHeader, _index, &hdi);
+	BOOL ok = Header_GetItem(hHeader, _index, &hdi);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"Header_GetItem failed to get justification."};
 	#endif
 
@@ -487,17 +487,17 @@ const ListView::Column& ListView::Column::set_justif(WORD hdf) const {
 	#endif
 
 	HDITEMW hdi{.mask = HDI_FORMAT};
-	BOOL ret = Header_GetItem(hHeader, _index, &hdi); // first, retrieve current
+	BOOL ok = Header_GetItem(hHeader, _index, &hdi); // first, retrieve current
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"Header_GetItem failed to get justification."};
 	#endif
 
 	hdi.fmt &= ~(HDF_CENTER | HDF_LEFT | HDF_RIGHT); // clear all three
 	hdi.fmt |= (hdf & (HDF_LEFT | HDF_CENTER | HDF_RIGHT)); // sanitize
-	ret = Header_SetItem(hHeader, _index, &hdi);
+	ok = Header_SetItem(hHeader, _index, &hdi);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"Header_SetItem failed to set justification."};
 	#endif
 
@@ -512,9 +512,9 @@ WORD ListView::Column::sort_arrow() const {
 	#endif
 
 	HDITEMW hdi{.mask = HDI_FORMAT};
-	BOOL ret = Header_GetItem(hHeader, _index, &hdi);
+	BOOL ok = Header_GetItem(hHeader, _index, &hdi);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"Header_GetItem failed to get sort arrow."};
 	#endif
 
@@ -532,9 +532,9 @@ const ListView::Column& ListView::Column::set_sort_arrow(WORD hdf) const {
 
 	for (UINT i = 0; i < numCols; ++i) {
 		HDITEMW hdi{.mask = HDI_FORMAT};
-		BOOL ret = Header_GetItem(hHeader, i, &hdi); // first, retrieve current
+		BOOL ok = Header_GetItem(hHeader, i, &hdi); // first, retrieve current
 		#ifdef _DEBUG
-		if (!ret)
+		if (!ok)
 			throw std::runtime_error{"Header_GetItem failed to get sort arrow."};
 		#endif
 
@@ -542,9 +542,9 @@ const ListView::Column& ListView::Column::set_sort_arrow(WORD hdf) const {
 		if (i == _index) // only the targeted column will have the flag set
 			hdi.fmt |= (hdf & (HDF_SORTDOWN | HDF_SORTUP)); // sanitize
 
-		ret = Header_SetItem(hHeader, i, &hdi);
+		ok = Header_SetItem(hHeader, i, &hdi);
 		#ifdef _DEBUG
-		if (!ret)
+		if (!ok)
 			throw std::runtime_error{"Header_SetItem failed to set sort arrow."};
 		#endif
 	}
@@ -641,9 +641,9 @@ int ListView::Item::icon_index() const {
 		.iItem = _index,
 	};
 
-	BOOL ret = ListView_GetItem(_owner.hwnd(), &lvi);
+	BOOL ok = ListView_GetItem(_owner.hwnd(), &lvi);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"ListView_GetItem failed to get LPARAM."};
 	#endif
 
@@ -665,9 +665,9 @@ const ListView::Item& ListView::Item::set_icon_index(int iconIndex) const {
 		.iImage = iconIndex,
 	};
 
-	BOOL ret = ListView_SetItem(_owner.hwnd(), &lvi);
+	BOOL ok = ListView_SetItem(_owner.hwnd(), &lvi);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"ListView_SetItem failed to set icon."};
 	#endif
 
@@ -747,9 +747,9 @@ LPARAM ListView::Item::raw_data() const {
 		.iItem = _index,
 	};
 
-	BOOL ret = ListView_GetItem(_owner.hwnd(), &lvi);
+	BOOL ok = ListView_GetItem(_owner.hwnd(), &lvi);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"ListView_GetItem failed to get LPARAM."};
 	#endif
 
@@ -763,9 +763,9 @@ const ListView::Item& ListView::Item::set_raw_data(LPARAM data) const {
 		.lParam = data,
 	};
 
-	BOOL ret = ListView_SetItem(_owner.hwnd(), &lvi);
+	BOOL ok = ListView_SetItem(_owner.hwnd(), &lvi);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"ListView_SetItem failed to set LPARAM."};
 	#endif
 
@@ -865,14 +865,14 @@ void ListView::ItemCollection::sort(std::function<int(Item, Item)> cb) const {
 		.cb = std::move(cb),
 	};
 
-	BOOL ret = ListView_SortItemsEx(_owner.hwnd(), [](LPARAM idxA, LPARAM idxB, LPARAM lp) -> int { // receives indexes
+	BOOL ok = ListView_SortItemsEx(_owner.hwnd(), [](LPARAM idxA, LPARAM idxB, LPARAM lp) -> int { // receives indexes
 		Info* pNfo = reinterpret_cast<Info*>(lp);
 		return pNfo->cb(
 			pNfo->owner.items[static_cast<int>(idxA)],
 			pNfo->owner.items[static_cast<int>(idxB)]);
 	}, &nfo);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"ListView_SortItemsEx failed."};
 	#endif
 }
@@ -1383,9 +1383,9 @@ std::wstring Tab::Item::text() const {
 		.cchTextMax = static_cast<int>(buf.size()),
 	};
 
-	BOOL ret = TabCtrl_GetItem(_owner.hwnd(), _index, &tci);
+	BOOL ok = TabCtrl_GetItem(_owner.hwnd(), _index, &tci);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"TabCtrl_GetItem failed to get text."};
 	#endif
 
@@ -1399,9 +1399,9 @@ const Tab::Item& Tab::Item::set_text(WStrView newText) const {
 		.pszText = const_cast<LPWSTR>(newText.c_str()),
 	};
 
-	BOOL ret = TabCtrl_SetItem(_owner.hwnd(), _index, &tci);
+	BOOL ok = TabCtrl_SetItem(_owner.hwnd(), _index, &tci);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"TabCtrl_SetItem failed to set text."};
 	#endif
 
@@ -1671,9 +1671,9 @@ int TreeView::Item::icon_index() const {
 		.hItem = children._hItem,
 	};
 
-	BOOL ret = TreeView_GetItem(children._pOwner->hwnd(), &tvi);
+	BOOL ok = TreeView_GetItem(children._pOwner->hwnd(), &tvi);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"TreeView_GetItem failed to get icon."};
 	#endif
 
@@ -1693,9 +1693,9 @@ const TreeView::Item& TreeView::Item::set_icon_index(int iconIndex) const {
 		.iImage = iconIndex,
 	};
 
-	BOOL ret = TreeView_SetItem(children._pOwner->hwnd(), &tvi);
+	BOOL ok = TreeView_SetItem(children._pOwner->hwnd(), &tvi);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"TreeView_SetItem failed to set icon."};
 	#endif
 
@@ -1743,9 +1743,9 @@ std::wstring TreeView::Item::text() const {
 		.cchTextMax = static_cast<int>(buf.size()),
 	};
 
-	BOOL ret = TreeView_GetItem(children._pOwner->hwnd(), &tvi);
+	BOOL ok = TreeView_GetItem(children._pOwner->hwnd(), &tvi);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"TreeView_GetItem failed to get text."};
 	#endif
 
@@ -1760,9 +1760,9 @@ const TreeView::Item& TreeView::Item::set_text(WStrView newText) const {
 		.pszText = const_cast<LPWSTR>(newText.c_str()),
 	};
 
-	BOOL ret = TreeView_SetItem(children._pOwner->hwnd(), &tvi);
+	BOOL ok = TreeView_SetItem(children._pOwner->hwnd(), &tvi);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"TreeView_SetItem failed to set text."};
 	#endif
 
@@ -1775,9 +1775,9 @@ LPARAM TreeView::Item::raw_data() const {
 		.hItem = children._hItem,
 	};
 
-	BOOL ret = TreeView_GetItem(children._pOwner->hwnd(), &tvi);
+	BOOL ok = TreeView_GetItem(children._pOwner->hwnd(), &tvi);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"TreeView_SetItem failed to get LPARAM."};
 	#endif
 
@@ -1791,9 +1791,9 @@ const TreeView::Item& TreeView::Item::set_raw_data(LPARAM data) const {
 		.lParam = data,
 	};
 
-	BOOL ret = TreeView_SetItem(children._pOwner->hwnd(), &tvi);
+	BOOL ok = TreeView_SetItem(children._pOwner->hwnd(), &tvi);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"TreeView_SetItem failed to set LPARAM."};
 	#endif
 

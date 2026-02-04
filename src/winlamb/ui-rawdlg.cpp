@@ -156,9 +156,9 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 		.right = _opts.size.cx,
 		.bottom = _opts.size.cy,
 	};
-	BOOL ret = AdjustWindowRectEx(&rcWnd, _opts.style, _opts.hMenu != nullptr, _opts.styleEx);
+	BOOL ok = AdjustWindowRectEx(&rcWnd, _opts.style, _opts.hMenu != nullptr, _opts.styleEx);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::system_error(GetLastError(), std::system_category(), "AdjustWindowRectEx failed");
 	#endif
 	OffsetRect(&rcWnd, -rcWnd.left, -rcWnd.top);
@@ -173,9 +173,9 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 		nullptr, _opts.hMenu, hInst);
 
 	ShowWindow(_rawBase._wndBase._hWnd, cmdShow);
-	ret = UpdateWindow(_rawBase._wndBase._hWnd);
+	ok = UpdateWindow(_rawBase._wndBase._hWnd);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"UpdateWindow failed."};
 	#endif
 
@@ -213,9 +213,9 @@ void RawModal::show() {
 		.right = _opts.size.cx,
 		.bottom = _opts.size.cy,
 	};
-	BOOL ret = AdjustWindowRectEx(&rcWnd, _opts.style, FALSE, _opts.styleEx);
+	BOOL ok = AdjustWindowRectEx(&rcWnd, _opts.style, FALSE, _opts.styleEx);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::system_error(GetLastError(), std::system_category(), "AdjustWindowRectEx failed");
 	#endif
 	OffsetRect(&rcWnd, -rcWnd.left, -rcWnd.top);

@@ -115,9 +115,9 @@ SIZE _wl_internal::calc_text_bound_box(WStrView text) {
 	desktop.hFontPrev = reinterpret_cast<HFONT>(SelectObject(desktop.hdcCloned, GuiApp::hUiFont));
 
 	SIZE bounds{};
-	BOOL ret = GetTextExtentPoint32W(desktop.hdcCloned, wtext.c_str(), static_cast<int>(wtext.length()), &bounds);
+	BOOL ok = GetTextExtentPoint32W(desktop.hdcCloned, wtext.c_str(), static_cast<int>(wtext.length()), &bounds);
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::runtime_error{"Calc box failed to \"" + str::to_ansi(wtext) + "\"."};
 	#endif
 

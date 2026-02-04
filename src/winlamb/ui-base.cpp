@@ -229,18 +229,18 @@ void Layout::add(HWND hCtrl, wl::Lay lay) {
 
 	if (_ctrls.empty()) { // first control being added?
 		RECT rcParent{};
-		BOOL ret = GetClientRect(hParent, &rcParent);
+		BOOL ok = GetClientRect(hParent, &rcParent);
 		#ifdef _DEBUG
-		if (!ret)
+		if (!ok)
 			throw std::system_error(GetLastError(), std::system_category(), "GetClientRect failed");
 		#endif
 		_szOrig = {.cx = rcParent.right, .cy = rcParent.bottom}; // save original parent client area
 	}
 
 	RECT rcCtrl{};
-	BOOL ret = GetWindowRect(hCtrl, &rcCtrl); // relative to screen
+	BOOL ok = GetWindowRect(hCtrl, &rcCtrl); // relative to screen
 	#ifdef _DEBUG
-	if (!ret)
+	if (!ok)
 		throw std::system_error(GetLastError(), std::system_category(), "GetWindowRect failed");
 	#endif
 	screen_to_client_rc(hParent, &rcCtrl); // now relative to parent
@@ -326,7 +326,6 @@ WndBase::ProcResult WndBase::process_msgs(UINT msg, WPARAM wp, LPARAM lp) {
 
 int WndBase::main_loop(HACCEL hAccel, bool processDlgMsgs) {
 	MSG msg{};
-	BOOL ret = FALSE;
 	for (;;) {
 		if (BOOL ret = GetMessageW(&msg, nullptr, 0, 0); ret == -1) [[unlikely]] {
 			throw std::system_error(GetLastError(), std::system_category(), "Main loop: GetMessage failed");
@@ -426,9 +425,9 @@ void NativeCtrlBase::assign_dlg(WORD ctrlId) {
 void NativeCtrlBase::install_subclass() {
 	static UINT_PTR subclassId = 0;
 	if (_subclassEvents.has_message()) {
-		BOOL ret = SetWindowSubclass(_hWnd, subclass_proc, ++subclassId, reinterpret_cast<DWORD_PTR>(this));
+		BOOL ok = SetWindowSubclass(_hWnd, subclass_proc, ++subclassId, reinterpret_cast<DWORD_PTR>(this));
 		#ifdef _DEBUG
-		if (!ret)
+		if (!ok)
 			throw std::runtime_error{"SetWindowSubclass failed."};
 		#endif
 	}
@@ -445,9 +444,9 @@ LRESULT CALLBACK NativeCtrlBase::subclass_proc(HWND hWnd, UINT msg, WPARAM wp, L
 
 	if (msg == WM_NCDESTROY) { // always check
 		// https://devblogs.microsoft.com/oldnewthing/20031111-00/?p=41883
-		BOOL ret = RemoveWindowSubclass(hWnd, subclass_proc, uIdSubclass);
+		BOOL ok = RemoveWindowSubclass(hWnd, subclass_proc, uIdSubclass);
 		#ifdef _DEBUG
-		if (!ret)
+		if (!ok)
 			throw std::runtime_error{"RemoveWindowSubclass failed."};
 		#endif
 		if (pSelf)
