@@ -420,7 +420,8 @@ namespace wl {
 		/// };
 		/// ```
 		///
-		/// If not defined, the control will resize to automatically fit its initial text.
+		/// If not defined, the control will resize to automatically fit its
+		/// initial text.
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		SIZE size{};
@@ -688,7 +689,8 @@ namespace wl {
 		SIZE size = {.cx = 120, .cy = 120};
 		/// The [window] and [ListView style] passed to [`CreateWindowEx`].
 		///
-		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be set.
+		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be
+		/// set.
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 		/// [ListView style]: https://learn.microsoft.com/en-us/windows/win32/controls/list-view-window-styles
@@ -699,7 +701,8 @@ namespace wl {
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DWORD styleEx = WS_EX_LEFT | WS_EX_CLIENTEDGE;
-		/// The [ListView extended styles] applied right after the control is created.
+		/// The [ListView extended styles] applied right after the control is
+		/// created.
 		///
 		/// [ListView extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/extended-list-view-styles
 		DWORD styleExListView = LVS_EX_FULLROWSELECT;
@@ -788,7 +791,8 @@ namespace wl {
 		/// };
 		/// ```
 		///
-		/// If not defined, the control will resize to automatically fit its initial text.
+		/// If not defined, the control will resize to automatically fit its
+		/// initial text.
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		SIZE size{};
@@ -845,7 +849,8 @@ namespace wl {
 		/// };
 		/// ```
 		///
-		/// If not defined, the control will resize to automatically fit its initial text.
+		/// If not defined, the control will resize to automatically fit its
+		/// initial text.
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		SIZE size{};
@@ -874,7 +879,8 @@ namespace wl {
 	///
 	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
 	struct SbPart final {
-		/// Resizing weight for a flexible part, which expands to fill the remaining space.
+		/// Resizing weight for a flexible part, which expands to fill the
+		/// remaining space.
 		///
 		/// If `width` is specified, this field is ignored.
 		int flex = 0;
@@ -882,7 +888,8 @@ namespace wl {
 		int iconIndex = -1;
 		/** Text to be rendered. */
 		std::wstring text{};
-		/// Width in pixels. If defined, this part will have a fixed width and `flex` field will be ignored.
+		/// Width in pixels. If defined, this part will have a fixed width and
+		/// `flex` field will be ignored.
 		///
 		/// Prefer using DPI-aware values:
 		///
@@ -951,7 +958,8 @@ namespace wl {
 		/// };
 		/// ```
 		///
-		/// If not defined, the control will resize to automatically fit its initial text.
+		/// If not defined, the control will resize to automatically fit its
+		/// initial text.
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		SIZE size{};
@@ -1014,7 +1022,8 @@ namespace wl {
 		SIZE size = {.cx = 120, .cy = 120};
 		/// The [window] and [Tab style] passed to [`CreateWindowEx`].
 		///
-		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be set.
+		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be
+		/// set.
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 		/// [Tab style]: https://learn.microsoft.com/en-us/windows/win32/controls/tree-view-control-window-styles
@@ -1137,7 +1146,8 @@ namespace wl {
 		SIZE size = {.cx = 120, .cy = 120};
 		/// The [window] and [TreeView style] passed to [`CreateWindowEx`].
 		///
-		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be set.
+		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be
+		/// set.
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 		/// [TreeView style]: https://learn.microsoft.com/en-us/windows/win32/controls/tree-view-control-window-styles
@@ -1160,7 +1170,8 @@ namespace wl {
 
 	/// @brief Native [button] control.
 	///
-	/// Example of creating a window with a button programmatically, .h and .cpp files:
+	/// Example of creating a window with a button programmatically, .h and .cpp
+	/// files:
 	///
 	/// ```cpp
 	/// class MyMain final {
@@ -1186,7 +1197,8 @@ namespace wl {
 	/// }
 	/// ```
 	///
-	/// Example of creating a window with a button from a dialog resource, .h and .cpp files:
+	/// Example of creating a window with a button from a dialog resource, .h and
+	/// .cpp files:
 	///
 	/// ```cpp
 	/// #define ICO_MAIN  101
@@ -1214,14 +1226,16 @@ namespace wl {
 	/// [button]: https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#push-buttons
 	class Button final : public IWindowChild {
 	public:
-		/// Constructs the button, which will be created programmatically with [`CreateWindowEx`].
+		/// Constructs the button, which will be created programmatically with
+		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		Button(IWindowParent &owner, ButtonOpts creationOpts);
 
 		/// Constructs the button, which will be loaded from the dialog resource.
 		///
-		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		/// The `ctrlId` parameter must identify the control in the dialog
+		/// resource.
 		Button(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Returns the wrapped window handle. */
@@ -1247,7 +1261,8 @@ namespace wl {
 		///
 		/// The events must be added before the control is created on the screen.
 		///
-		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		/// Note that subclassing is a potentially slow technique, prefer using
+		/// ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
@@ -1274,7 +1289,8 @@ namespace wl {
 
 	/// @brief Native [check box] control.
 	///
-	/// Example of creating a window with a check box programmatically, .h and .cpp files:
+	/// Example of creating a window with a check box programmatically, .h and
+	/// .cpp files:
 	///
 	/// ```cpp
 	/// class MyMain final {
@@ -1304,14 +1320,17 @@ namespace wl {
 	/// [check box]: https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#check-boxes
 	class CheckBox final : public IWindowChild {
 	public:
-		/// Constructs the check box, which will be created programmatically with [`CreateWindowEx`].
+		/// Constructs the check box, which will be created programmatically with
+		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		CheckBox(IWindowParent &owner, CheckBoxOpts opts);
 
-		/// Constructs the check box, which will be loaded from the dialog resource.
+		/// Constructs the check box, which will be loaded from the dialog
+		/// resource.
 		///
-		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		/// The `ctrlId` parameter must identify the control in the dialog
+		/// resource.
 		CheckBox(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Returns the wrapped window handle. */
@@ -1337,17 +1356,20 @@ namespace wl {
 		///
 		/// The events must be added before the control is created on the screen.
 		///
-		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		/// Note that subclassing is a potentially slow technique, prefer using
+		/// ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
-		/// Sends [`BM_GETCHECK`] and returns true if current state flag is `BST_CHECKED`.
+		/// Sends [`BM_GETCHECK`] and returns true if current state flag is
+		/// `BST_CHECKED`.
 		///
 		/// [`BM_GETCHECK`]: https://learn.microsoft.com/en-us/windows/win32/controls/bm-getcheck
 		[[nodiscard]] bool is_checked() const { return state() == BST_CHECKED; }
 
-		/// Sends [`BM_SETCHECK`] to set the current state flag to `BST_CHECKED` or `BST_UNCHECKED`.
+		/// Sends [`BM_SETCHECK`] to set the current state flag to `BST_CHECKED`
+		/// or `BST_UNCHECKED`.
 		///
 		/// [`BM_SETCHECK`]: https://learn.microsoft.com/en-us/windows/win32/controls/bm-setcheck
 		const CheckBox& set_check(bool doCheck) const { set_state(doCheck ? BST_CHECKED : BST_UNCHECKED); }
@@ -1382,7 +1404,8 @@ namespace wl {
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
 		const CheckBox& set_text(WStrView newText) const;
 
-		/// Calls [`SetWindowText`] to set the button text, then resizes the check box to fit the text exactly.
+		/// Calls [`SetWindowText`] to set the button text, then resizes the check
+		/// box to fit the text exactly.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
 		const CheckBox& set_text_resize(WStrView newText) const;
@@ -1394,7 +1417,8 @@ namespace wl {
 
 	/// @brief Native [combo box] control (dropdown).
 	///
-	/// Example of creating a window with a combo box programmatically, .h and .cpp files:
+	/// Example of creating a window with a combo box programmatically, .h and
+	/// .cpp files:
 	///
 	/// ```cpp
 	/// class MyMain final {
@@ -1464,14 +1488,17 @@ namespace wl {
 			friend ComboBox;
 		};
 
-		/// Constructs the combo box, which will be created programmatically with [`CreateWindowEx`].
+		/// Constructs the combo box, which will be created programmatically with
+		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		ComboBox(IWindowParent &owner, ComboBoxOpts creationOpts);
 
-		/// Constructs the combo box, which will be loaded from the dialog resource.
+		/// Constructs the combo box, which will be loaded from the dialog
+		/// resource.
 		///
-		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		/// The `ctrlId` parameter must identify the control in the dialog
+		/// resource.
 		ComboBox(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Item methods. */
@@ -1500,7 +1527,8 @@ namespace wl {
 		///
 		/// The events must be added before the control is created on the screen.
 		///
-		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		/// Note that subclassing is a potentially slow technique, prefer using
+		/// ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
@@ -1512,7 +1540,8 @@ namespace wl {
 
 	/// @brief Native [date and time picker] control.
 	///
-	/// Example of creating a window with a date and time picker programmatically, .h and .cpp files:
+	/// Example of creating a window with a date and time picker programmatically,
+	/// .h and .cpp files:
 	///
 	/// ```cpp
 	/// class MyMain final {
@@ -1541,12 +1570,14 @@ namespace wl {
 	/// [date and time picker]: https://learn.microsoft.com/en-us/windows/win32/controls/date-and-time-picker-controls
 	class DateTimePicker final : public IWindowChild {
 	public:
-		/// Constructs the date and time picker, which will be created programmatically with [`CreateWindowEx`].
+		/// Constructs the date and time picker, which will be created
+		/// programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		DateTimePicker(IWindowParent &owner, DateTimePickerOpts creationOpts);
 
-		/// Constructs the date and time picker, which will be loaded from the dialog resource.
+		/// Constructs the date and time picker, which will be loaded from the
+		/// dialog resource.
 		///
 		/// The `ctrlId` parameter must identify the control in the dialog resource.
 		DateTimePicker(IWindowParent &owner, WORD ctrlId, Lay layout);
@@ -1574,7 +1605,8 @@ namespace wl {
 		///
 		/// The events must be added before the control is created on the screen.
 		///
-		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		/// Note that subclassing is a potentially slow technique, prefer using
+		/// ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
@@ -1596,7 +1628,8 @@ namespace wl {
 
 	/// @brief Native [edit] control (textbox).
 	///
-	/// Example of creating a window with an edit programmatically, .h and .cpp files:
+	/// Example of creating a window with an edit programmatically, .h and .cpp
+	/// files:
 	///
 	/// ```cpp
 	/// class MyMain final {
@@ -1622,7 +1655,8 @@ namespace wl {
 	/// }
 	/// ```
 	///
-	/// Example of creating a window with an edit from a dialog resource, .h and .cpp files:
+	/// Example of creating a window with an edit from a dialog resource, .h and
+	/// .cpp files:
 	///
 	/// ```cpp
 	/// #define ICO_MAIN  101
@@ -1651,14 +1685,16 @@ namespace wl {
 	/// [edit]: https://learn.microsoft.com/en-us/windows/win32/controls/about-edit-controls
 	class Edit final : public IWindowChild {
 	public:
-		/// Constructs the edit, which will be created programmatically with [`CreateWindowEx`].
+		/// Constructs the edit, which will be created programmatically with
+		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		Edit(IWindowParent &owner, EditOpts creationOpts);
 
 		/// Constructs the edit, which will be loaded from the dialog resource.
 		///
-		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		/// The `ctrlId` parameter must identify the control in the dialog
+		/// resource.
 		Edit(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Returns the wrapped window handle. */
@@ -1684,7 +1720,8 @@ namespace wl {
 		///
 		/// The events must be added before the control is created on the screen.
 		///
-		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		/// Note that subclassing is a potentially slow technique, prefer using
+		/// ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
@@ -1706,7 +1743,8 @@ namespace wl {
 
 	/// @brief Native [list view] control.
 	///
-	/// Example of creating a window with a list view programmatically, .h and .cpp files:
+	/// Example of creating a window with a list view programmatically, .h and
+	/// .cpp files:
 	///
 	/// ```cpp
 	/// class MyMain final {
@@ -1741,7 +1779,8 @@ namespace wl {
 	/// }
 	/// ```
 	///
-	/// Example of creating a window with a list view from a dialog resource, .h and .cpp files:
+	/// Example of creating a window with a list view from a dialog resource, .h
+	/// and .cpp files:
 	///
 	/// ```cpp
 	/// #define ICO_MAIN  101
@@ -1935,9 +1974,11 @@ namespace wl {
 			/// ```
 			const Item& set_texts(std::initializer_list<WStrView> texts) const;
 
-			/// Calls [`ListView_MapIndexToID`] to retrieve the unique ID of the item.
+			/// Calls [`ListView_MapIndexToID`] to retrieve the unique ID of the
+			/// item.
 			///
-			/// Differently from the item index, this ID is guaranteed to remain the same for the whole lifetime of the list view.
+			/// Differently from the item index, this ID is guaranteed to remain
+			/// the same for the whole lifetime of the list view.
 			///
 			/// [`ListView_MapIndexToID`]: https://learn.microsoft.com/en-us/windows/win32/api/commctrl/nf-commctrl-listview_mapindextoid
 			[[nodiscard]] UINT unique_id() const;
@@ -1967,7 +2008,8 @@ namespace wl {
 			/// Adds a new item, defining the text for the first column.
 			/// Optionally, you can provide texts for the subsequent columns.
 			///
-			/// The optional `iconIndex` refers to the zero-based index of an icon previusly added to one of the image lists.
+			/// The optional `iconIndex` refers to the zero-based index of an icon
+			/// previusly added to one of the image lists.
 			///
 			/// Example:
 			///
@@ -1997,14 +2039,17 @@ namespace wl {
 			/** Returns the focused item, if any. */
 			[[nodiscard]] std::optional<Item> focused() const;
 
-			/// Calls [`ListView_MapIDToIndex`] to return the item with the given unique ID.
+			/// Calls [`ListView_MapIDToIndex`] to return the item with the given
+			/// unique ID.
 			///
-			/// Differently from the item index, this ID is guaranteed to remain the same for the whole lifetime of the list view.
+			/// Differently from the item index, this ID is guaranteed to remain
+			/// the same for the whole lifetime of the list view.
 			///
 			/// [`ListView_MapIDToIndex`]: https://learn.microsoft.com/en-us/windows/win32/api/commctrl/nf-commctrl-listview_mapidtoindex
 			[[nodiscard]] std::optional<Item> get_by_unique_id(UINT uid) const;
 
-			/// Calls [`ListView_HitTestEx`] to return the item at the given position, relative to the list view's client area, if any.
+			/// Calls [`ListView_HitTestEx`] to return the item at the given
+			/// position, relative to the list view's client area, if any.
 			///
 			/// [`ListView_HitTestEx`]: https://learn.microsoft.com/en-us/windows/win32/api/commctrl/nf-commctrl-listview_hittestex
 			[[nodiscard]] std::optional<Item> hit_test(POINT pt) const;
@@ -2020,7 +2065,8 @@ namespace wl {
 			/** Returns the selected item count. */
 			[[nodiscard]] size_t selected_count() const;
 
-			/// Calls [`ListView_SortItemsEx`] to sort the items according to the callback.
+			/// Calls [`ListView_SortItemsEx`] to sort the items according to the
+			/// callback.
 			///
 			/// Example sorting the items by the text of the 3rd column:
 			///
@@ -2033,7 +2079,8 @@ namespace wl {
 			/// [`ListView_SortItemsEx`]: https://learn.microsoft.com/en-us/windows/win32/api/commctrl/nf-commctrl-listview_sortitemsex
 			void sort(std::function<int(Item, Item)> cb) const;
 
-			/// Calls [`ListView_GetTopIndex`] to return the topmost visible item, if any.
+			/// Calls [`ListView_GetTopIndex`] to return the topmost visible item,
+			/// if any.
 			///
 			/// [`ListView_GetTopIndex`]: https://learn.microsoft.com/en-us/windows/win32/api/commctrl/nf-commctrl-listview_gettopindex
 			[[nodiscard]] std::optional<Item> topmost_visible() const;
@@ -2043,14 +2090,17 @@ namespace wl {
 			friend ListView;
 		};
 
-		/// Constructs the list view, which will be created programmatically with [`CreateWindowEx`].
+		/// Constructs the list view, which will be created programmatically with
+		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		ListView(IWindowParent &owner, ListViewOpts creationOpts);
 
-		/// Constructs the list view, which will be loaded from the dialog resource.
+		/// Constructs the list view, which will be loaded from the dialog
+		/// resource.
 		///
-		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		/// The `ctrlId` parameter must identify the control in the dialog
+		/// resource.
 		ListView(IWindowParent &owner, WORD ctrlId, Lay layout, WORD contextMenuId = 0);
 
 		/** Column methods. */
@@ -2082,7 +2132,8 @@ namespace wl {
 		///
 		/// The events must be added before the control is created on the screen.
 		///
-		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		/// Note that subclassing is a potentially slow technique, prefer using
+		/// ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
@@ -2125,14 +2176,17 @@ namespace wl {
 	/// [month calendar]: https://learn.microsoft.com/en-us/windows/win32/controls/month-calendar-controls
 	class MonthCalendar final : public IWindowChild {
 	public:
-		/// Constructs the month calendar, which will be created programmatically with [`CreateWindowEx`].
+		/// Constructs the month calendar, which will be created programmatically
+		/// with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		MonthCalendar(IWindowParent &owner, MonthCalendarOpts creationOpts);
 
-		/// Constructs the month calendar, which will be loaded from the dialog resource.
+		/// Constructs the month calendar, which will be loaded from the dialog
+		/// resource.
 		///
-		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		/// The `ctrlId` parameter must identify the control in the dialog
+		/// resource.
 		MonthCalendar(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Returns the wrapped window handle. */
@@ -2158,7 +2212,8 @@ namespace wl {
 		///
 		/// The events must be added before the control is created on the screen.
 		///
-		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		/// Note that subclassing is a potentially slow technique, prefer using
+		/// ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
@@ -2180,19 +2235,23 @@ namespace wl {
 
 	/// @brief Native [radio button] control.
 	///
-	/// Instead of creating the radio buttons directly, prefer using a `RadioGroup`.
+	/// Instead of creating the radio buttons directly, prefer using a
+	/// `RadioGroup`.
 	///
 	/// [radio button]: https://learn.microsoft.com/en-us/windows/win32/controls/button-types-and-styles#radio-buttons
 	class RadioButton final : public IWindowChild {
 	public:
-		/// Constructs the radio button, which will be created programmatically with [`CreateWindowEx`].
+		/// Constructs the radio button, which will be created programmatically
+		/// with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		RadioButton(IWindowParent &owner, RadioButtonOpts creationOpts);
 
-		/// Constructs the radio button, which will be loaded from the dialog resource.
+		/// Constructs the radio button, which will be loaded from the dialog
+		/// resource.
 		///
-		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		/// The `ctrlId` parameter must identify the control in the dialog
+		/// resource.
 		RadioButton(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Returns the wrapped window handle. */
@@ -2218,7 +2277,8 @@ namespace wl {
 		///
 		/// The events must be added before the control is created on the screen.
 		///
-		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		/// Note that subclassing is a potentially slow technique, prefer using
+		/// ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
@@ -2243,7 +2303,8 @@ namespace wl {
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
 		const RadioButton& set_text(WStrView newText) const;
 
-		/// Calls [`SetWindowText`] to set the button text, then resizes the check box to fit the text exactly.
+		/// Calls [`SetWindowText`] to set the button text, then resizes the check
+		/// box to fit the text exactly.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
 		const RadioButton& set_text_resize(WStrView newText) const;
@@ -2256,7 +2317,8 @@ namespace wl {
 
 	/// @brief Manages a group of `RadioButton` controls.
 	///
-	/// Example of creating a window with 3 radio buttons programmatically, .h and .cpp files:
+	/// Example of creating a window with 3 radio buttons programmatically, .h
+	/// and .cpp files:
 	///
 	/// ```cpp
 	/// class MyMain final {
@@ -2314,13 +2376,14 @@ namespace wl {
 			friend RadioGroup;
 		};
 
-		/// Constructs the grouped radio buttons, which will be created programmatically with [`CreateWindowEx`].
+		/// Constructs the grouped radio buttons, which will be created
+		/// programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		RadioGroup(IWindowParent &owner, std::initializer_list<RadioButtonOpts> creationOpts);
 
-		/// Constructs the radio group using each provided ID to programmatically create
-		/// a radio button which will be loaded from the dialog resource.
+		/// Constructs the radio group using each provided ID to programmatically
+		/// create a radio button which will be loaded from the dialog resource.
 		///
 		/// The layout will be applied to all radio buttons.
 		RadioGroup(IWindowParent &owner, Lay layout, std::initializer_list<WORD> ctrlIds);
@@ -2349,7 +2412,8 @@ namespace wl {
 
 	/// @brief Native [static] control (label).
 	///
-	/// Example of creating a window with a static programmatically, .h and .cpp files:
+	/// Example of creating a window with a static programmatically, .h and .cpp
+	/// files:
 	///
 	/// ```cpp
 	/// class MyMain final {
@@ -2378,14 +2442,16 @@ namespace wl {
 	/// [static]: https://learn.microsoft.com/en-us/windows/win32/controls/about-static-controls
 	class Static final : public IWindowChild {
 	public:
-		/// Constructs the static, which will be created programmatically with [`CreateWindowEx`].
+		/// Constructs the static, which will be created programmatically with
+		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		Static(IWindowParent &owner, StaticOpts creationOpts);
 
 		/// Constructs the static, which will be loaded from the dialog resource.
 		///
-		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		/// The `ctrlId` parameter must identify the control in the dialog
+		/// resource.
 		Static(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Returns the wrapped window handle. */
@@ -2411,7 +2477,8 @@ namespace wl {
 		///
 		/// The events must be added before the control is created on the screen.
 		///
-		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		/// Note that subclassing is a potentially slow technique, prefer using
+		/// ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
@@ -2426,7 +2493,8 @@ namespace wl {
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
 		const Static& set_text(WStrView newText) const;
 
-		/// Calls [`SetWindowText`] to set the text, then resizes the control to fit the text exactly.
+		/// Calls [`SetWindowText`] to set the text, then resizes the control to
+		/// fit the text exactly.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
 		const Static& set_text_resize(WStrView newText) const;
@@ -2526,7 +2594,8 @@ namespace wl {
 			friend StatusBar;
 		};
 
-		/// Constructs the status bar, which will be created programmatically with [`CreateWindowEx`].
+		/// Constructs the status bar, which will be created programmatically with
+		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		StatusBar(IWindowParent &owner, StatusBarOpts creationOpts);
@@ -2558,7 +2627,8 @@ namespace wl {
 		///
 		/// The events must be added before the control is created on the screen.
 		///
-		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		/// Note that subclassing is a potentially slow technique, prefer using
+		/// ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
@@ -2574,7 +2644,8 @@ namespace wl {
 
 	/// @brief Native [syslink] control.
 	///
-	/// Example of creating a window with a static programmatically, .h and .cpp files:
+	/// Example of creating a window with a static programmatically, .h and .cpp
+	/// files:
 	///
 	/// ```cpp
 	/// class MyMain final {
@@ -2610,7 +2681,8 @@ namespace wl {
 
 		/// Constructs the syslink, which will be loaded from the dialog resource.
 		///
-		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		/// The `ctrlId` parameter must identify the control in the dialog
+		/// resource.
 		SysLink(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Returns the wrapped window handle. */
@@ -2636,7 +2708,8 @@ namespace wl {
 		///
 		/// The events must be added before the control is created on the screen.
 		///
-		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		/// Note that subclassing is a potentially slow technique, prefer using
+		/// ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
@@ -2651,7 +2724,8 @@ namespace wl {
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
 		const SysLink& set_text(WStrView newText) const;
 
-		/// Calls [`SetWindowText`] to set the text, then resizes the control to fit the text exactly.
+		/// Calls [`SetWindowText`] to set the text, then resizes the control to
+		/// fit the text exactly.
 		///
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
 		const SysLink& set_text_resize(WStrView newText) const;
@@ -2751,14 +2825,16 @@ namespace wl {
 			friend Tab;
 		};
 
-		/// Constructs the tab, which will be created programmatically with [`CreateWindowEx`].
+		/// Constructs the tab, which will be created programmatically with
+		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		Tab(IWindowParent &owner, TabOpts creationOpts);
 
 		/// Constructs the tab, which will be loaded from the dialog resource.
 		///
-		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		/// The `ctrlId` parameter must identify the control in the dialog
+		/// resource.
 		///
 		/// The `childrenDlgIds` are the IDs of the dialog resources of each
 		/// children to be added, and it should have the same number of elements
@@ -2784,7 +2860,8 @@ namespace wl {
 		///
 		/// The events must be added before the control is created on the screen.
 		///
-		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		/// Note that subclassing is a potentially slow technique, prefer using
+		/// ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
@@ -2805,7 +2882,8 @@ namespace wl {
 
 	/// @brief Native [trackbar] control.
 	///
-	/// Example of creating a window with a trackbar programmatically, .h and .cpp files:
+	/// Example of creating a window with a trackbar programmatically, .h and
+	/// .cpp files:
 	///
 	/// ```cpp
 	/// class MyMain final {
@@ -2836,14 +2914,17 @@ namespace wl {
 	/// [trackbar]: https://learn.microsoft.com/en-us/windows/win32/controls/trackbar-controls
 	class Trackbar final : public IWindowChild {
 	public:
-		/// Constructs the tree view, which will be created programmatically with [`CreateWindowEx`].
+		/// Constructs the tree view, which will be created programmatically with
+		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		Trackbar(IWindowParent &owner, TrackbarOpts creationOpts);
 
-		/// Constructs the tree view, which will be loaded from the dialog resource.
+		/// Constructs the tree view, which will be loaded from the dialog
+		/// resource.
 		///
-		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		/// The `ctrlId` parameter must identify the control in the dialog
+		/// resource.
 		Trackbar(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Returns the wrapped window handle. */
@@ -2869,7 +2950,8 @@ namespace wl {
 		///
 		/// The events must be added before the control is created on the screen.
 		///
-		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		/// Note that subclassing is a potentially slow technique, prefer using
+		/// ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
@@ -2902,7 +2984,8 @@ namespace wl {
 
 	/// @brief Native [tree view] control.
 	///
-	/// Example of creating a window with a tree view programmatically, .h and .cpp files:
+	/// Example of creating a window with a tree view programmatically, .h and
+	/// .cpp files:
 	///
 	/// ```cpp
 	/// class MyMain final {
@@ -3119,14 +3202,17 @@ namespace wl {
 			friend TreeView;
 		};
 
-		/// Constructs the tree view, which will be created programmatically with [`CreateWindowEx`].
+		/// Constructs the tree view, which will be created programmatically with
+		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		TreeView(IWindowParent &owner, TreeViewOpts creationOpts);
 
-		/// Constructs the tree view, which will be loaded from the dialog resource.
+		/// Constructs the tree view, which will be loaded from the dialog
+		/// resource.
 		///
-		/// The `ctrlId` parameter must identify the control in the dialog resource.
+		/// The `ctrlId` parameter must identify the control in the dialog
+		/// resource.
 		TreeView(IWindowParent &owner, WORD ctrlId, Lay layout);
 
 		/** Root item methods. */
@@ -3158,7 +3244,8 @@ namespace wl {
 		///
 		/// The events must be added before the control is created on the screen.
 		///
-		/// Note that subclassing is a potentially slow technique, prefer using ordinary events.
+		/// Note that subclassing is a potentially slow technique, prefer using
+		/// ordinary events.
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }

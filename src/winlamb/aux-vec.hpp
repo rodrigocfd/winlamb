@@ -116,7 +116,8 @@ namespace wl::vec {
 		dest.insert(dest.end(), elems.begin(), elems.end());
 	}
 
-	/// Returns true if `v` and `q` have the same length, and all elements are equal.
+	/// Returns true if `v` and `q` have the same length, and all elements are
+	/// equal.
 	///
 	/// Example:
 	///
@@ -140,7 +141,8 @@ namespace wl::vec {
 		return true;
 	}
 
-	/// Returns true if `v` and `sequence` have the same length, and all elements are equal.
+	/// Returns true if `v` and `sequence` have the same length, and all elements
+	/// are equal.
 	///
 	/// Example:
 	///
@@ -312,7 +314,8 @@ namespace wl::vec {
 		return (foundIt == v.rend()) ? std::nullopt : std::make_optional(std::distance(foundIt, std::prev(v.rend())));
 	}
 
-	/// Returns the index of the first element where the entire `sequence` starts, if any.
+	/// Returns the index of the first element where the entire `sequence`
+	/// starts, if any.
 	///
 	/// Example:
 	///
@@ -343,7 +346,8 @@ namespace wl::vec {
 		return std::nullopt;
 	}
 
-	/// Returns the index of the first element where the entire `sequence` starts, if any.
+	/// Returns the index of the first element where the entire `sequence`
+	/// starts, if any.
 	///
 	/// Example:
 	///
@@ -381,7 +385,8 @@ namespace wl::vec {
 		v.erase(std::remove_if(v.begin(), v.end(), pred), v.end());
 	}
 
-	/// Returns spans over the `v`, splitted by `delimiter`, including empty spans.
+	/// Returns spans over the `v`, splitted by `delimiter`, including empty
+	/// spans.
 	///
 	/// Example:
 	///
@@ -439,7 +444,8 @@ namespace wl::vec {
 		return ret;
 	}
 
-	/// Returns a new vector populated with the results of calling `cb` on each element of `v`.
+	/// Returns a new vector populated with the results of calling `cb` on each
+	/// element of `v`.
 	///
 	/// Example:
 	///

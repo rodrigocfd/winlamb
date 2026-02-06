@@ -6,8 +6,8 @@ namespace wl {
 	/// Options to create a `WindowMain` programmatically.
 	///
 	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// in the same order they appear in the struct.
+	/// with [designated initializers], which require the fields to be set in the
+	/// same order they appear in the struct.
 	///
 	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
 	struct MainOpts final {
@@ -39,10 +39,13 @@ namespace wl {
 		HMENU hMenu = nullptr;
 		/** Optional window icon resource ID. */
 		WORD iconId = 0;
-		/// In most applications, the window loop calls [`IsDialogMessage`] so child control messages will properly work.
-		/// However, this has the side-effect of inhibiting [`WM_CHAR`] messages from being sent, which is bad for applications like text editors.
+		/// In most applications, the window loop calls [`IsDialogMessage`] so
+		/// child control messages will properly work. However, this has the
+		/// side-effect of inhibiting [`WM_CHAR`] messages from being sent, which
+		/// is bad for applications like text editors.
 		///
-		/// So if your application has no child controls and needs to process `WM_CHAR` messages, pass `false` to suppress `IsDialogMessage` call.
+		/// So if your application has no child controls and needs to process
+		/// `WM_CHAR` messages, pass `false` to suppress `IsDialogMessage` call.
 		///
 		/// [`IsDialogMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-isdialogmessagew
 		/// [`WM_CHAR`]: https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-char
@@ -86,8 +89,8 @@ namespace wl {
 	/// Options to create a `WindowModal` programmatically.
 	///
 	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// in the same order they appear in the struct.
+	/// with [designated initializers], which require the fields to be set in the
+	/// same order they appear in the struct.
 	///
 	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
 	struct ModalOpts final {
@@ -111,10 +114,13 @@ namespace wl {
 		HCURSOR hCursor = nullptr;
 		/** Optional window icon resource ID. */
 		WORD iconId = 0;
-		/// In most applications, the window loop calls [`IsDialogMessage`] so child control messages will properly work.
-		/// However, this has the side-effect of inhibiting [`WM_CHAR`] messages from being sent, which is bad for applications like text editors.
+		/// In most applications, the window loop calls [`IsDialogMessage`] so
+		/// child control messages will properly work. However, this has the
+		/// side-effect of inhibiting [`WM_CHAR`] messages from being sent, which
+		/// is bad for applications like text editors.
 		///
-		/// So if your application has no child controls and needs to process `WM_CHAR` messages, pass `false` to suppress `IsDialogMessage` call.
+		/// So if your application has no child controls and needs to process
+		/// `WM_CHAR` messages, pass `false` to suppress `IsDialogMessage` call.
 		///
 		/// [`IsDialogMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-isdialogmessagew
 		/// [`WM_CHAR`]: https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-char
@@ -158,8 +164,8 @@ namespace wl {
 	/// Options to create a `WindowControl` programmatically.
 	///
 	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// in the same order they appear in the struct.
+	/// with [designated initializers], which require the fields to be set in the
+	/// same order they appear in the struct.
 	///
 	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
 	struct ControlOpts final {

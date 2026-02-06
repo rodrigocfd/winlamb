@@ -21,12 +21,14 @@ namespace wl::path {
 	/// ```
 	void dir_list(WStrView dirPath, std::function<void(const std::wstring &p)> &&cb);
 
-	/// Returns a newly allocated vector with each file and folder within `dirPath`.
+	/// Returns a newly allocated vector with each file and folder within
+	/// `dirPath`.
 	///
 	/// Does not search the folders recursively.
 	[[nodiscard]] std::vector<std::wstring> dir_list(WStrView dirPath);
 
-	/// Invokes `cb` for each file within `dirPath`, searching the folders recursively.
+	/// Invokes `cb` for each file within `dirPath`, searching the folders
+	/// recursively.
 	///
 	/// Example:
 	///
@@ -37,7 +39,8 @@ namespace wl::path {
 	/// ```
 	void dir_walk(WStrView dirPath, std::function<void(const std::wstring &p)> &&cb);
 
-	/** Returns a newly allocated vector with each file within `dirPath`, searching folders recursively. */
+	/// Returns a newly allocated vector with each file within `dirPath`,
+	/// searching folders recursively.
 	[[nodiscard]] std::vector<std::wstring> dir_walk(WStrView dirPath);
 
 	/// Returns the path of the current executable.

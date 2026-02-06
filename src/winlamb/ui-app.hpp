@@ -85,22 +85,26 @@ namespace wl::dpi {
 	/** Returns the value adjusted according to the current vertical system DPI. */
 	int y(int yVal);
 
-	/// Returns a [`POINT`] with values adjusted according to the current horizontal and vertical system DPI.
+	/// Returns a [`POINT`] with values adjusted according to the current
+	/// horizontal and vertical system DPI.
 	///
 	/// [`POINT`]: https://learn.microsoft.com/en-us/windows/win32/api/windef/ns-windef-point
 	POINT pt(int xVal, int yVal);
 
-	/// Returns a [`POINT`] with values adjusted according to the current horizontal and vertical system DPI.
+	/// Returns a [`POINT`] with values adjusted according to the current
+	/// horizontal and vertical system DPI.
 	///
 	/// [`POINT`]: https://learn.microsoft.com/en-us/windows/win32/api/windef/ns-windef-point
 	POINT pt(POINT value);
 
-	/// Returns a [`SIZE`] with values adjusted according to the current horizontal and vertical system DPI.
+	/// Returns a [`SIZE`] with values adjusted according to the current
+	/// horizontal and vertical system DPI.
 	///
 	/// [`SIZE`]: https://learn.microsoft.com/en-us/windows/win32/api/windef/ns-windef-size
 	SIZE sz(int xVal, int yVal);
 
-	/// Returns a [`SIZE`] with values adjusted according to the current horizontal and vertical system DPI.
+	/// Returns a [`SIZE`] with values adjusted according to the current
+	/// horizontal and vertical system DPI.
 	///
 	/// [`SIZE`]: https://learn.microsoft.com/en-us/windows/win32/api/windef/ns-windef-size
 	SIZE sz(SIZE value);
@@ -111,7 +115,8 @@ namespace wl::dpi {
 
 namespace wl {
 
-	/// @brief A base class which makes derived classes non-copyable an non-movable.
+	/// @brief A base class which makes derived classes non-copyable an
+	/// non-movable.
 	///
 	/// ```cpp
 	/// class Person final : private wl::NoCopyNoMove {
@@ -129,8 +134,8 @@ namespace wl {
 
 	/// @brief Pure abstract class; implemented by icon stores.
 	///
-	/// Controls which make use of icons will have a method which expose this abstract class,
-	/// so icons can be added in various ways.
+	/// Controls which make use of icons will have a method which expose this
+	/// abstract class, so icons can be added in various ways.
 	class IStoreIcon {
 	public:
 		/** Adds the `HICON` to the store, taking ownership of it. */
@@ -142,7 +147,9 @@ namespace wl {
 		virtual void add_resource(WORD iconId) = 0;
 
 		/// Calls [`SHGetFileInfo`] to load icons from the shell.
-		/// These are the icons used by Windows Explorer to represent the given file extensions, like "mp3".
+		///
+		/// These are the icons used by Windows Explorer to represent the given
+		/// file extensions, like "mp3".
 		///
 		/// [`SHGetFileInfo`]: https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shgetfileinfow
 		virtual void add_shell_ext(WStrView fileExt) = 0;

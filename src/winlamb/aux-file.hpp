@@ -6,15 +6,19 @@ namespace wl {
 	/// @brief Wraps a [`FILETIME`] struct, providing `FILETIME` and
 	/// [`SYSTEMTIME`] operations.
 	///
-	/// Usually stored as UTC time.
+	/// Stored internally as [UTC time].
 	///
 	/// [`FILETIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime
 	/// [`SYSTEMTIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
+	/// [UTC time]: https://en.wikipedia.org/wiki/Coordinated_Universal_Time
 	class Time final {
 	public:
 		/// Default constructor.
 		///
-		/// Stores the current time as UTC.
+		/// Calls [`GetSystemTimeAsFileTime`] and stores the current system time
+		/// as UTC.
+		///
+		/// [`GetSystemTimeAsFileTime`]: https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemtimeasfiletime
 		Time();
 
 		/// Constructor.
@@ -130,7 +134,8 @@ namespace wl {
 
 	/// @brief Manages a file `HANDLE`.
 	///
-	/// If you only need reading access, consider using `FileMapped`, which tends to be faster.
+	/// If you only need reading access, consider using `FileMapped`, which tends
+	/// to be faster.
 	///
 	/// Example:
 	///
@@ -175,7 +180,8 @@ namespace wl {
 		/// Ideally, you should never need this.
 		constexpr explicit File(HANDLE hFile) : _hFile{hFile} { }
 
-		/// Calls [`CreateFile`] immediately to open the file pointed by `filePath`, according to the given `access`.
+		/// Calls [`CreateFile`] immediately to open the file pointed by
+		/// `filePath`, according to the given `access`.
 		///
 		/// Example:
 		///
@@ -188,7 +194,8 @@ namespace wl {
 
 		/// Move-assignment operator.
 		///
-		/// Calls [`CloseHandle`] on the current file handle and takes ownership of `other`, so no leaks happen.
+		/// Calls [`CloseHandle`] on the current file handle and takes ownership
+		/// of `other`, so no leaks happen.
 		///
 		/// [`CloseHandle`]: https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
 		File& operator=(File &&other) noexcept;
@@ -196,9 +203,11 @@ namespace wl {
 		/** Returns the wrapped file handle. */
 		[[nodiscard]] constexpr HANDLE hfile() const { return _hFile; }
 
-		/// Returns the wrapped `HANDLE`, setting the current `HANDLE` to `nullptr`, so that `close` won't be called.
+		/// Returns the wrapped `HANDLE`, setting the current `HANDLE` to
+		/// `nullptr`, so that `close` won't be called.
 		///
-		/// It's your responsability to close the returned `HANDLE`, or a resource leak will occur.
+		/// It's your responsability to close the returned `HANDLE`, or a resource
+		/// leak will occur.
 		///
 		/// Example:
 		///
@@ -217,7 +226,8 @@ namespace wl {
 		/// [`CloseHandle`]: https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
 		void close() noexcept;
 
-		/// Calls [`CreateFile`] to open the file pointed by `filePath`, according to the given `access`.
+		/// Calls [`CreateFile`] to open the file pointed by `filePath`, according
+		/// to the given `access`.
 		///
 		/// Example:
 		///
@@ -244,7 +254,8 @@ namespace wl {
 		/// [`SetFilePointerEx`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-setfilepointerex
 		const File& set_ptr_offset(size_t offset) const;
 
-		/// Calls [`ReadFile`] and returns a [`std::vector`] with the file contents, up to `numBytes`.
+		/// Calls [`ReadFile`] and returns a [`std::vector`] with the file
+		/// contents, up to `numBytes`.
 		///
 		/// Example:
 		///
@@ -257,7 +268,8 @@ namespace wl {
 		/// [`std::vector`]: https://en.cppreference.com/w/cpp/container/vector.html
 		[[nodiscard]] std::vector<BYTE> read(size_t numBytes) const;
 
-		/// Calls [`SetFilePointerEx`] to rewind the current file pointer, then [`ReadFile`] to return a [`std::vector`] with the entire file.
+		/// Calls [`SetFilePointerEx`] to rewind the current file pointer, then
+		/// [`ReadFile`] to return a [`std::vector`] with the entire file.
 		///
 		/// Example:
 		///
@@ -271,7 +283,8 @@ namespace wl {
 		/// [`std::vector`]: https://en.cppreference.com/w/cpp/container/vector.html
 		[[nodiscard]] std::vector<BYTE> read_all() const;
 
-		/// Calls [`ReadFile`] and copies the file contents into `buf`, up to `buf.size()`.
+		/// Calls [`ReadFile`] and copies the file contents into `buf`, up to
+		/// `buf.size()`.
 		///
 		/// Example:
 		///
@@ -334,7 +347,8 @@ namespace wl {
 		/// [`GetFileTime`]: https://learn.microsoft.com/en-us/windows/win32/api/fileapi/nf-fileapi-getfiletime
 		[[nodiscard]] Time time_last_write() const;
 
-		/// Calls [`SetEndOfFile`] to set the file size to zero, erasing all its contents.
+		/// Calls [`SetEndOfFile`] to set the file size to zero, erasing all its
+		/// contents.
 		///
 		/// Example:
 		///
@@ -393,7 +407,8 @@ namespace wl {
 		/// Takes ownership of `other`, so no leaks happen.
 		FileMapped(FileMapped &&other) noexcept { operator=(std::forward<FileMapped>(other)); }
 
-		/// Calls [`CreateFile`], [`CreateFileMapping`] and [`MapViewOfFile`] immediately.
+		/// Calls [`CreateFile`], [`CreateFileMapping`] and [`MapViewOfFile`]
+		/// immediately.
 		///
 		/// Example:
 		///
@@ -408,7 +423,8 @@ namespace wl {
 
 		/// Move-assignment operator.
 		///
-		/// Calls [`UnmapViewOfFile`] and [`CloseHandle`] on the current file handle and takes ownership of `other`, so no leaks happen.
+		/// Calls [`UnmapViewOfFile`] and [`CloseHandle`] on the current file
+		/// handle and takes ownership of `other`, so no leaks happen.
 		///
 		/// [`UnmapViewOfFile`]: https://learn.microsoft.com/en-us/windows/win32/api/memoryapi/nf-memoryapi-unmapviewoffile
 		/// [`CloseHandle`]: https://learn.microsoft.com/en-us/windows/win32/api/handleapi/nf-handleapi-closehandle
@@ -537,7 +553,8 @@ namespace wl {
 		/** Returns the given `Section`, or `nullptr` if not present. */
 		[[nodiscard]] Section* get_section(WStrView sectionName);
 
-		/** Returns the `KeyVal` at the given `section` with the given `key`, or `nullptr if not present.` */
+		/// Returns the `KeyVal` at the given `section` with the given `key`, or
+		/// `nullptr if not present.`
 		[[nodiscard]] const std::wstring* get_val(WStrView sectionName, WStrView key) const;
 
 		/// Directly sets the `KeyVal` value. If `section` and/or `key` don't

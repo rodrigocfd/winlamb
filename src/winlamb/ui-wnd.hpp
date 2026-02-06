@@ -67,10 +67,12 @@ namespace wl {
 		/// The events must be added before the window is created on the screen.
 		[[nodiscard]] virtual events::WindowEvents& on() = 0;
 
-		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in the UI thread.
-		/// After `cb` finishes, returns back to the calling thread.
+		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in
+		/// the UI thread. After `cb` finishes, returns back to the calling
+		/// thread.
 		///
-		/// Useful if you are processing something in a parallel thread, then need to update the UI.
+		/// Useful if you are processing something in a parallel thread, then need
+		/// to update the UI.
 		///
 		/// Example using [`std::thread`] to launch a thread:
 		///
@@ -169,7 +171,8 @@ namespace wl {
 	/// }
 	/// ```
 	///
-	/// Instead of writing lambdas directly inside your class constructor, you can alternatively [`std::bind`] methods:
+	/// Instead of writing lambdas directly inside your class constructor, you
+	/// can alternatively [`std::bind`] methods:
 	///
 	/// ```cpp
 	/// class MyMain final {
@@ -203,7 +206,8 @@ namespace wl {
 		explicit WindowMain(MainOpts creationOpts)
 			: _rawOrDlg{.raw = std::make_optional<_wl_internal::RawMain>(creationOpts)} { }
 
-		/// Constructs the main window, which will be loaded from a dialog resource with [`CreateDialogParam`].
+		/// Constructs the main window, which will be loaded from a dialog
+		/// resource with [`CreateDialogParam`].
 		///
 		/// Example:
 		///
@@ -225,10 +229,12 @@ namespace wl {
 			return _wl_internal::valid_event(hwnd(), _rawOrDlg.base()._userEvents);
 		};
 
-		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in the UI thread.
-		/// After `cb` finishes, returns back to the calling thread.
+		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in
+		/// the UI thread. After `cb` finishes, returns back to the calling
+		/// thread.
 		///
-		/// Useful if you are processing something in a parallel thread, then need to update the UI.
+		/// Useful if you are processing something in a parallel thread, then need
+		/// to update the UI.
 		///
 		/// Example using [`std::thread`] to launch a thread:
 		///
@@ -264,9 +270,11 @@ namespace wl {
 		/// [`SetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setwindowtextw
 		const WindowMain& set_title(WStrView newTitle) const;
 
-		/// Runs the main window, blocking the UI thread until the window is closed.
+		/// Runs the main window, blocking the UI thread until the window is
+		/// closed.
 		///
-		/// Prefer using the `RUN_MAIN` macro instead of calling this method directly.
+		/// Prefer using the `RUN_MAIN` macro instead of calling this method
+		/// directly.
 		int run(HINSTANCE hInst, int cmdShow);
 
 	private:
@@ -278,7 +286,8 @@ namespace wl {
 	/** @brief Modal window. */
 	class WindowModal final : public IWindowParent {
 	public:
-		/// Constructs the modal window, which will be created programmatically with [`CreateWindowEx`].
+		/// Constructs the modal window, which will be created programmatically
+		/// with [`CreateWindowEx`].
 		///
 		/// Example:
 		///
@@ -298,7 +307,8 @@ namespace wl {
 		WindowModal(const IWindowParent &parent, ModalOpts creationOpts)
 			: _rawOrDlg{.raw = std::make_optional<_wl_internal::RawModal>(parent.base(), creationOpts)} { }
 
-		/// Constructs the modal window, which will be loaded from a dialog resource with [`DialogBoxParam`].
+		/// Constructs the modal window, which will be loaded from a dialog
+		/// resource with [`DialogBoxParam`].
 		///
 		/// The `dlgId` parameter must identify a dialog resource.
 		///
@@ -325,10 +335,12 @@ namespace wl {
 			return _wl_internal::valid_event(hwnd(), _rawOrDlg.base()._userEvents);
 		};
 
-		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in the UI thread.
-		/// After `cb` finishes, returns back to the calling thread.
+		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in
+		/// the UI thread. After `cb` finishes, returns back to the calling
+		/// thread.
 		///
-		/// Useful if you are processing something in a parallel thread, then need to update the UI.
+		/// Useful if you are processing something in a parallel thread, then need
+		/// to update the UI.
 		///
 		/// Example using [`std::thread`] to launch a thread:
 		///
@@ -404,12 +416,14 @@ namespace wl {
 	/// ```
 	class WindowControl final : public IWindowParent, public IWindowChild {
 	public:
-		/// Constructs the custom control window, which will be created programmatically with [`CreateWindowEx`].
+		/// Constructs the custom control window, which will be created
+		/// programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
 		WindowControl(IWindowParent &parent, ControlOpts creationOpts);
 
-		/// Constructs the custom control window, which will be loaded from a dialog resource with [`CreateDialogParam`].
+		/// Constructs the custom control window, which will be loaded from a
+		/// dialog resource with [`CreateDialogParam`].
 		///
 		/// The `dlgId` parameter must identify a dialog resource.
 		///
@@ -430,10 +444,12 @@ namespace wl {
 			return _wl_internal::valid_event(hwnd(), _rawOrDlg.base()._userEvents);
 		};
 
-		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in the UI thread.
-		/// After `cb` finishes, returns back to the calling thread.
+		/// Calls [`SendMessage`] to block the current thread, then runs `cb` in
+		/// the UI thread. After `cb` finishes, returns back to the calling
+		/// thread.
 		///
-		/// Useful if you are processing something in a parallel thread, then need to update the UI.
+		/// Useful if you are processing something in a parallel thread, then need
+		/// to update the UI.
 		///
 		/// Example using [`std::thread`] to launch a thread:
 		///
@@ -466,9 +482,11 @@ namespace wl {
 		_wl_internal::RawOrDlg<_wl_internal::RawControl, _wl_internal::DlgControl> _rawOrDlg{};
 	};
 
-	/// @brief Implements [`IDropTarget`] COM interface, allowing file drag & drop on the window.
+	/// @brief Implements [`IDropTarget`] COM interface, allowing file drag &
+	/// drop on the window.
 	///
-	/// Calls [`RegisterDragDrop`] and [`RevokeDragDrop`], and extracts the dropped files automatically.
+	/// Calls [`RegisterDragDrop`] and [`RevokeDragDrop`], and extracts the
+	/// dropped files automatically.
 	///
 	/// Example, .h and .cpp files:
 	///
@@ -511,7 +529,8 @@ namespace wl {
 
 		/// Defines a callback to be called when files are dropped on the window.
 		///
-		/// Receives a [`std::vector`] with the full path of each file being dropped.
+		/// Receives a [`std::vector`] with the full path of each file being
+		/// dropped.
 		///
 		/// [`std::vector`]: https://en.cppreference.com/w/cpp/container/vector.html
 		void on_drop(std::function<void(const std::vector<std::wstring>&)> cb) { _cb = std::make_optional(cb); }

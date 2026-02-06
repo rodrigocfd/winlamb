@@ -276,7 +276,8 @@ namespace wl::events {
 	public:
 		/// Adds a callback to an ordinary WM message.
 		///
-		/// This is a general method for custom messages, always prefer using the specific message methods.
+		/// This is a general method for custom messages, always prefer using the
+		/// specific message methods.
 		///
 		/// Example:
 		///
@@ -290,7 +291,8 @@ namespace wl::events {
 
 		/// Handles the [`WM_CREATE`] message.
 		///
-		/// Note that this message is sent only to windows created programmatically, not to dialog windows.
+		/// Note that this message is sent only to windows create
+		/// programmatically, not to dialog windows.
 		///
 		/// Example:
 		///
@@ -306,7 +308,8 @@ namespace wl::events {
 
 		/// Handles the [`WM_INITDIALOG`] message.
 		///
-		/// Note that this message is sent only to dialog windows, not to windows created programmatically.
+		/// Note that this message is sent only to dialog windows, not to windows
+		/// created programmatically.
 		///
 		/// Example:
 		///
@@ -320,7 +323,8 @@ namespace wl::events {
 		/// [`WM_INITDIALOG`]: https://learn.microsoft.com/en-us/windows/win32/dlgbox/wm-initdialog
 		void wm_init_dialog(std::function<bool(wl::wm::InitDialog)> &&cb);
 
-		/// Adds a callback to a [`WM_COMMAND`] message, to an specific notification code.
+		/// Adds a callback to a [`WM_COMMAND`] message, to an specific
+		/// notification code.
 		///
 		/// Example:
 		///
@@ -333,7 +337,8 @@ namespace wl::events {
 		/// [`WM_COMMAND`]: https://learn.microsoft.com/en-us/windows/win32/menurc/wm-command
 		void wm_command(WORD cmdId, WORD notifCode, std::function<void()> &&cb);
 
-		/// Adds a callback to a [`WM_COMMAND`] message, for notifications from both accelerator and menu events.
+		/// Adds a callback to a [`WM_COMMAND`] message, for notifications from
+		/// both accelerator and menu events.
 		///
 		/// This is the most common case.
 		///
@@ -348,9 +353,11 @@ namespace wl::events {
 		/// [`WM_COMMAND`]: https://learn.microsoft.com/en-us/windows/win32/menurc/wm-command
 		void wm_command(WORD cmdId, std::function<void()> &&cb);
 
-		/// Adds a callback to a [`WM_NOTIFY`] message, to specific control ID and notification code.
+		/// Adds a callback to a [`WM_NOTIFY`] message, to specific control ID and
+		/// notification code.
 		///
-		/// This is a general method for custom notifications, always prefer using the specific control notification metods.
+		/// This is a general method for custom notifications, always prefer using
+		/// the specific control notification metods.
 		///
 		/// Example:
 		///
@@ -429,7 +436,8 @@ namespace wl::events {
 
 namespace wl {
 
-	/** @brief Specifies the horizontal and vertical behavior for a control when the parent window is resized. */
+	/// @brief Specifies the horizontal and vertical behavior for a control when
+	/// the parent window is resized.
 	enum class Lay : BYTE {
 		/** When parent is resized, nothing happens. */
 		hold_hold,
@@ -471,7 +479,8 @@ namespace wl {
 
 namespace _wl_internal {
 
-	/** Rearranges position and size of each control when the parent resizes, according to `Lay` flags. */
+	/// Rearranges position and size of each control when the parent resizes,
+	/// according to `Lay` flags.
 	class Layout final {
 	public:
 		struct Ctrl final {

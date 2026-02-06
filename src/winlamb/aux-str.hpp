@@ -37,7 +37,8 @@ namespace wl {
 		/** Returns `true` if the wrapped pointer is `nullptr`, of if the string is empty. */
 		[[nodiscard]] bool empty() const { return !_p || !length(); }
 
-		/// Calls [`lstrlen`], returning the number of characters in the string, without counting the terminating null.
+		/// Calls [`lstrlen`], returning the number of characters in the string,
+		/// without counting the terminating null.
 		///
 		/// [`lstrlen`]: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-lstrlenw
 		[[nodiscard]] size_t length() const;
@@ -61,7 +62,8 @@ namespace wl::str {
 	/// [`lstrcmp`]: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-lstrcmpw
 	[[nodiscard]] int cmp(WStrView a, WStrView b);
 
-	/// Calls [`lstrcmpi`] to compare the strings lexographically, case-insensitive.
+	/// Calls [`lstrcmpi`] to compare the strings lexographically,
+	/// case-insensitive.
 	///
 	/// [`lstrcmpi`]: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-lstrcmpiw
 	[[nodiscard]] int cmp_i(WStrView a, WStrView b);
@@ -69,7 +71,8 @@ namespace wl::str {
 	/** Returns true if `s` contains `what`, starting from offset `off`. */
 	[[nodiscard]] bool contains(WStrView s, WStrView what, size_t off = 0);
 
-	/// Calls [`std::vswprintf`] to format the string, then passes it to [`OutputDebugString`].
+	/// Calls [`std::vswprintf`] to format the string, then passes it to
+	/// [`OutputDebugString`].
 	///
 	/// Example:
 	///
@@ -116,7 +119,8 @@ namespace wl::str {
 	/** Converts `numBytes` into a string with the highest unit, up to exabytes., with two decimal places. */
 	[[nodiscard]] std::wstring fmt_bytes(size_t numBytes);
 
-	/// Calls [`FormatMessage`] to retrieve the description of a native Win32 error code.
+	/// Calls [`FormatMessage`] to retrieve the description of a native Win32
+	/// error code.
 	///
 	/// [`FormatMessage`]: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-formatmessagew
 	[[nodiscard]] std::wstring fmt_error(DWORD errorCode);
@@ -140,7 +144,8 @@ namespace wl::str {
 	/** Guesses the `Encoding` and parses `src` into a `wstring`. */
 	[[nodiscard]] std::wstring parse(std::span<BYTE> src);
 
-	/** Returns a new string removing extra ampersands of keyboard accelerators: `"&He && she"` becomes `"He & she"`. */
+	/// Returns a new string removing extra ampersands of keyboard accelerators:
+	/// `"&He && she"` becomes `"He & she"`.
 	std::wstring remove_accel_ampersands(WStrView s);
 
 	/** Removes the diacritics from `s`, in-place. */
@@ -158,7 +163,8 @@ namespace wl::str {
 	/// [`std::vector`]: https://en.cppreference.com/w/cpp/container/vector.html
 	[[nodiscard]] std::vector<std::wstring> split_n(WStrView s, WStrView delimiter, size_t maxSubstrs);
 
-	/// Guesses the linebreak with `guess_line_break` and returns a [`std::vector`] with each line of `s` as a string.
+	/// Guesses the linebreak with `guess_line_break` and returns a
+	/// [`std::vector`] with each line of `s` as a string.
 	///
 	/// [`std::vector`]: https://en.cppreference.com/w/cpp/container/vector.html
 	[[nodiscard]] std::vector<std::wstring> split_lines(WStrView s);
@@ -178,7 +184,8 @@ namespace wl::str {
 	/** Returns a new string, converted to uppercase. */
 	[[nodiscard]] std::wstring to_upper(WStrView s);
 
-	/// Converts `s` into a [`std::vector`] of UTF-8 bytes by calling [`WideCharToMultiByte`].
+	/// Converts `s` into a [`std::vector`] of UTF-8 bytes by calling
+	/// [`WideCharToMultiByte`].
 	///
 	/// [`std::vector`]: https://en.cppreference.com/w/cpp/container/vector.html
 	/// [`WideCharToMultiByte`]: https://learn.microsoft.com/en-us/windows/win32/api/stringapiset/nf-stringapiset-widechartomultibyte
@@ -187,15 +194,16 @@ namespace wl::str {
 	/** Converts `string` to `wstring`. The inverse is done by `to_ansi`. */
 	[[nodiscard]] std::wstring to_wide(WStrView s);
 
-	/// Calls [`std::iswspace`] to remove all spaces from beginning and end of the string.
+	/// Calls [`std::iswspace`] to remove all spaces from beginning and end of
+	/// the string.
 	///
 	/// Also calls `trim_nulls`.
 	///
 	/// [`std::iswspace`]: https://en.cppreference.com/w/cpp/string/wide/iswspace.html
 	void trim(std::wstring &s);
 
-	/// Calls [`lstrlen`] and resizes `s`, so that the return of `size()` will match
-	/// the actual string length, not counting any terminating nulls.
+	/// Calls [`lstrlen`] and resizes `s`, so that the return of `size()` will
+	/// match the actual string length, not counting any terminating nulls.
 	///
 	/// [`lstrlen`]: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-lstrlenw
 	void trim_nulls(std::wstring &s);
@@ -214,7 +222,8 @@ namespace wl {
 
 		/// Static method; guesses the encoding of the given binary blob.
 		///
-		/// You usually don't need to call this method directly, since `wl::str::parse` already calls it.
+		/// You usually don't need to call this method directly, since
+		/// `wl::str::parse` already calls it.
 		[[nodiscard]] static Encoding guess(std::span<BYTE> src);
 	};
 
