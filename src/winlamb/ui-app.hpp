@@ -1,11 +1,11 @@
 #pragma once
-#include "aux-str.hpp"
+#include "aux-wrap.hpp"
 #include <CommCtrl.h>
 
 namespace _wl_internal {
 
 	/** Initializes the GUI environment. */
-	struct GuiApp final {
+	struct GuiApp final : private wl::NoCopyNoMove {
 		~GuiApp();
 		GuiApp();
 
@@ -34,7 +34,7 @@ namespace _wl_internal {
 
 	/** An array of non-movable objects. */
 	template<typename T>
-	class NonMovableArray final {
+	class NonMovableArray final : private wl::NoCopyNoMove {
 	public:
 		~NonMovableArray() {
 			for (size_t i = 0; i < _sz; ++i) _ptr[i].~T();
@@ -114,23 +114,6 @@ namespace wl::dpi {
 ////////////////////////////////////////////////////////////////////////////////
 
 namespace wl {
-
-	/// @brief A base class which makes derived classes non-copyable an
-	/// non-movable.
-	///
-	/// ```cpp
-	/// class Person final : private wl::NoCopyNoMove {
-	///     std::wstring name{};
-	/// };
-	/// ```
-	class NoCopyNoMove {
-	public:
-		constexpr NoCopyNoMove() = default;
-		NoCopyNoMove(const NoCopyNoMove&) = delete;
-		NoCopyNoMove(NoCopyNoMove&&) = delete;
-		NoCopyNoMove& operator=(const NoCopyNoMove&&) = delete;
-		NoCopyNoMove& operator=(NoCopyNoMove&&) = delete;
-	};
 
 	/// @brief Pure abstract class; implemented by icon stores.
 	///

@@ -9,7 +9,7 @@
 namespace id3v2 {
 
 	/** Each MP3 file has one tag. */
-	class Tag final : wl::NoCopyNoMove {
+	class Tag final : private wl::NoCopyNoMove {
 	public:
 		explicit Tag(wl::WStrView mp3File);
 		explicit Tag(std::span<BYTE> src) { parse(src); }
