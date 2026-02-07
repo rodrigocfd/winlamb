@@ -62,6 +62,7 @@ A few utility entities are included for convenience:
 
 | Utility | Description |
 | -- | -- |
+| `wl::Command` | Calls [`CreateProcess`](https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessw) and runs a command line, capturing stdout and stderr. |
 | `wl::ComPtr` | Templated [COM](https://learn.microsoft.com/en-us/windows/win32/com/component-object-model--com--portal) smart pointer. |
 | `wl::DropFiles` | Implements [`IDropTarget`](https://learn.microsoft.com/en-us/windows/win32/api/oleidl/nn-oleidl-idroptarget) COM interface, allowing file drag & drop on the window. |
 | `wl::Encoding` | Character encoding information. |

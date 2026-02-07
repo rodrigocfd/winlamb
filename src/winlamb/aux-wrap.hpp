@@ -20,6 +20,80 @@ namespace wl {
 		NoCopyNoMove& operator=(NoCopyNoMove&&) = delete;
 	};
 
+	/// @brief Calls [`CreateProcess`] and runs a command line, capturing stdout
+	/// and stderr.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// wl::Command myCmd{};
+	/// myCmd.run(L"cmd.exe /c dir C:\\Temp");
+	/// std::wstring output = myCmd.std_out();
+	/// ```
+	///
+	/// One-liner example:
+	///
+	/// ```cpp
+	/// std::wstring output = wl::Command{}
+	///     .run(L"cmd.exe /c dir C:\\Temp")
+	///     .std_out();
+	/// ```
+	///
+	/// [`CreateProcess`]: https://learn.microsoft.com/en-us/windows/win32/api/processthreadsapi/nf-processthreadsapi-createprocessw
+	class Command final : private NoCopyNoMove {
+	private:
+		/** RAII wrapper for a HANDLE. */
+		class PHandle final {
+		public:
+			~PHandle() { close(); }
+			void close();
+			[[nodiscard]] std::wstring read(HANDLE hProcess, std::vector<BYTE> &byteBuf) const;
+			[[nodiscard]] constexpr HANDLE handle() { return _h; }
+			[[nodiscard]] constexpr HANDLE* ptr() { return &_h; }
+		private:
+			HANDLE _h = nullptr;
+		};
+
+		/** RAII wrapper for PROCESS_INFORMATION. */
+		struct PInfo final {
+			~PInfo();
+			PROCESS_INFORMATION pi{};
+		};
+
+	public:
+		/// Sets the environment variables for the process.
+		///
+		/// Example:
+		///
+		/// ```cpp
+		/// wl::Command myCmd{};
+		/// myCmd.set_env({
+		///     {L"FOO", L"bar"},
+		///     {L"NAME", L"joe"},
+		/// });
+		/// ```
+		Command& set_env(std::initializer_list<std::pair<WStrView, WStrView>> envVars);
+
+		/// Runs the command line immediately, blocking the current thread until
+		/// it finishes.
+		Command& run(WStrView cmdLine);
+
+		/** Returns the stdout contents. */
+		[[nodiscard]] constexpr const std::wstring& std_out() const { return _txtStdout; }
+
+		/** Returns the stderr contents. */
+		[[nodiscard]] constexpr const std::wstring& std_err() const { return _txtStderr; }
+
+		/** Returns the exit code. */
+		[[nodiscard]] constexpr DWORD exit_code() const { return _exitCode; }
+
+	private:
+		std::vector<wchar_t> _env{};
+		std::wstring _txtStdout{};
+		std::wstring _txtStderr{};
+		DWORD _exitCode = 0;
+	};
+
 	/// @brief Wraps a [`FILETIME`] struct, providing `FILETIME` and
 	/// [`SYSTEMTIME`] operations.
 	///

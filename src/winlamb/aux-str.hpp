@@ -22,6 +22,22 @@ namespace wl {
 	/// [`std::wstring_view`]: https://en.cppreference.com/w/cpp/string/basic_string_view.html
 	class WStrView final {
 	public:
+		/** @brief Iterator. */
+		class Iterator final {
+		public:
+			constexpr explicit Iterator(const wchar_t *p) : _p{p} { }
+			constexpr const wchar_t& operator*() const { return *_p; }
+			constexpr bool operator!=(const Iterator &other) const { return _p != other._p; }
+
+			constexpr Iterator& operator++() {
+				++_p;
+				return *this;
+			}
+
+		private:
+			const wchar_t *_p;
+		};
+
 		/** Constructs `WStrView` by wrapping the `const wchar_t` pointer. */
 		constexpr WStrView(const wchar_t *p) : _p{p} { }
 
@@ -42,6 +58,12 @@ namespace wl {
 		///
 		/// [`lstrlen`]: https://learn.microsoft.com/en-us/windows/win32/api/winbase/nf-winbase-lstrlenw
 		[[nodiscard]] size_t length() const;
+
+		/** Returns an iterator to the first character. */
+		[[nodiscard]] constexpr Iterator begin() const { return Iterator{_p}; }
+
+		/** Returns an iterator past the last character. */
+		[[nodiscard]] Iterator end() const { return Iterator{_p + length()}; }
 
 	private:
 		const wchar_t *_p;

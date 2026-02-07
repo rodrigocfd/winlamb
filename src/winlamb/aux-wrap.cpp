@@ -2,6 +2,160 @@
 #include "aux-wrap.hpp"
 using namespace wl;
 
+void Command::PHandle::close() {
+	if (_h) {
+		CloseHandle(_h);
+		_h = nullptr;
+	}
+}
+
+std::wstring Command::PHandle::read(HANDLE hProcess, std::vector<BYTE> &byteBuf) const {
+	size_t offset = 0;
+	byteBuf.clear();
+
+	for (;;) {
+		DWORD bytesAvailable = 0;
+		BOOL ok = PeekNamedPipe(_h, nullptr, 0, nullptr, &bytesAvailable, nullptr);
+		if (!ok) {
+			DWORD err = GetLastError();
+			if (err == ERROR_BROKEN_PIPE) [[likely]] {
+				break;
+			} else [[unlikely]] {
+				throw std::system_error(err, std::system_category(), "PeekNamedPipe failed");
+			}
+		}
+
+		if (bytesAvailable) {
+			DWORD bytesRead = 0;
+			byteBuf.resize(byteBuf.size() + bytesAvailable);
+			ok = ReadFile(_h, byteBuf.data() + offset, bytesAvailable, &bytesRead, nullptr); // append to buf
+			if (!ok) {
+				DWORD err = GetLastError();
+				if (err == ERROR_BROKEN_PIPE) [[likely]] {
+					break;
+				} else [[unlikely]] {
+					throw std::system_error(err, std::system_category(), "ReadFile failed");
+				}
+			}
+			offset += bytesRead;
+		} else {
+			DWORD wait = WaitForSingleObject(hProcess, 0); // no data available now, check process state
+			if (wait == WAIT_OBJECT_0)
+				break; // process exited, no data left
+		}
+	}
+
+	return str::parse(byteBuf);
+}
+
+//------------------------------------------------------------------------------
+
+Command::PInfo::~PInfo() {
+	if (pi.hThread) {
+		CloseHandle(pi.hThread);
+		pi.hThread = nullptr;
+	}
+	if (pi.hProcess) {
+		CloseHandle(pi.hProcess);
+		pi.hProcess = nullptr;
+	}
+}
+
+//------------------------------------------------------------------------------
+
+Command& Command::set_env(std::initializer_list<std::pair<WStrView, WStrView>> envVars) {
+	size_t sz = 0;
+	for (auto &&envVar : envVars) // 1st pass to count size
+		sz += envVar.first.length() + envVar.second.length() + 2; // plus equal and null
+
+	_env.clear();
+	_env.reserve(sz + 1); // double terminating null
+
+	for (auto &&envVar : envVars) { // 2nd pass to copy chars
+		for (auto &&ch : envVar.first) _env.push_back(ch);
+		_env.push_back(L'=');
+
+		for (auto &&ch : envVar.second) _env.push_back(ch);
+		_env.push_back(L'\0');
+	}
+	_env.push_back(L'\0'); // double terminating null
+
+	return *this;
+}
+
+Command& Command::run(WStrView cmdLine) {
+	_txtStdout.clear();
+	_txtStderr.clear();
+	_exitCode = 0;
+
+	SECURITY_ATTRIBUTES sa{
+		.nLength = sizeof(SECURITY_ATTRIBUTES),
+		.bInheritHandle = TRUE,
+	};
+	PHandle hStdoutRead{}, hStdoutWrite{},
+		hStderrRead{}, hStderrWrite{};
+
+	BOOL ok = CreatePipe(hStdoutRead.ptr(), hStdoutWrite.ptr(), &sa, 0);
+	#ifdef _DEBUG
+	if (!ok)
+		throw std::system_error(GetLastError(), std::system_category(), "CreatePipe stdout failed");
+	#endif
+	ok = CreatePipe(hStderrRead.ptr(), hStderrWrite.ptr(), &sa, 0);
+	#ifdef _DEBUG
+	if (!ok)
+		throw std::system_error(GetLastError(), std::system_category(), "CreatePipe stderr failed");
+	#endif
+
+	ok = SetHandleInformation(hStdoutRead.handle(), HANDLE_FLAG_INHERIT, 0); // prevent inherit
+	#ifdef _DEBUG
+	if (!ok)
+		throw std::system_error(GetLastError(), std::system_category(), "SetHandleInformation stdout failed");
+	#endif
+	ok = SetHandleInformation(hStderrRead.handle(), HANDLE_FLAG_INHERIT, 0);
+	#ifdef _DEBUG
+	if (!ok)
+		throw std::system_error(GetLastError(), std::system_category(), "SetHandleInformation stderr failed");
+	#endif
+
+	STARTUPINFOW si{
+		.cb = sizeof(STARTUPINFOW),
+		.dwFlags = STARTF_USESTDHANDLES,
+		.hStdInput = GetStdHandle(STD_INPUT_HANDLE),
+		.hStdOutput = hStdoutWrite.handle(),
+		.hStdError = hStderrWrite.handle(),
+	};
+	PInfo pi{};
+
+	std::wstring cmdLineBuf{cmdLine.c_str()}; // CreateProcess() requires writable buffer
+
+	ok = CreateProcessW(nullptr, cmdLineBuf.data(), nullptr, nullptr, TRUE,
+		CREATE_NO_WINDOW | CREATE_UNICODE_ENVIRONMENT,
+		(_env.empty() ? nullptr : _env.data()),
+		nullptr, &si, &pi.pi);
+
+	hStdoutWrite.close(); // not needed anymore
+	hStderrWrite.close();
+
+	if (!ok) [[unlikely]] {
+		throw std::system_error(GetLastError(), std::system_category(), "CreateProcess failed");
+	}
+
+	std::vector<BYTE> readByteBuf{}; // same buffer is used for both stdout and stderr
+	_txtStdout = hStdoutRead.read(pi.pi.hProcess, readByteBuf);
+	_txtStderr = hStderrRead.read(pi.pi.hProcess, readByteBuf);
+
+	WaitForSingleObject(pi.pi.hProcess, INFINITE);
+	ok = GetExitCodeProcess(pi.pi.hProcess, &_exitCode);
+	#ifdef _DEBUG
+	if (!ok)
+		throw std::system_error(GetLastError(), std::system_category(), "GetExitCodeProcess failed");
+	#endif
+
+	return *this;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 Time::Time() {
 	GetSystemTimeAsFileTime(&_ft);
 }
