@@ -1192,7 +1192,7 @@ namespace wl {
 	///
 	/// MyMain::MyMain() {
 	///     btn.on().bn_clicked([this]() -> void {
-	///         MessageBoxW(wnd.hwnd(), L"Button clicked", L"Hello", MB_ICONINFORMATION);
+	///         wl::msg_box::info(wnd, L"Button clicked.");
 	///     });
 	/// }
 	/// ```
@@ -1218,7 +1218,7 @@ namespace wl {
 	///
 	/// MyMain::MyMain() {
 	///     btn.on().bn_clicked([this]() -> void {
-	///         MessageBoxW(wnd.hwnd(), L"Button clicked", L"Hello", MB_ICONINFORMATION);
+	///         wl::msg_box::info(wnd, L"Button clicked.");
 	///     });
 	/// }
 	/// ```
@@ -2350,7 +2350,7 @@ namespace wl {
 	///
 	/// MyMain::MyMain() {
 	///     rads.on().bn_clicked([this](int i) -> void {
-	///         MessageBoxW(wnd.hwnd(), L"Radio selected", rads.radios[i].text().c_str(), MB_ICONINFORMATION);
+	///         wl::msg_box::info(wnd, L"Radio selected", rads.radios[i].text());
 	///     });
 	/// }
 	/// ```
@@ -2539,7 +2539,7 @@ namespace wl {
 	///
 	/// MyMain::MyMain() {
 	///     sb.on().nm_click([this](NMMOUSE &p) -> bool {
-	///         MessageBoxW(wnd.hwnd(), L"Status bar clicked", L"Click", MB_ICONINFORMATION);
+	///         wl::msg_box::info(wnd, L"Status bar clicked.");
 	///         return true;
 	///     });
 	/// }
@@ -2765,7 +2765,7 @@ namespace wl {
 	///
 	/// MyMain::MyMain() {
 	///     btn.on().bn_clicked([this]() -> void {
-	///         MessageBoxW(wnd.hwnd(), L"Button clicked", L"Hello", MB_ICONINFORMATION);
+	///         wl::msg_box::info(wnd, L"Button clicked.");
 	///     });
 	/// }
 	/// ```

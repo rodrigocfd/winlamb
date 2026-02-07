@@ -543,3 +543,64 @@ namespace wl {
 	};
 
 }
+
+/// @brief Displays various system dialog boxes with [`TaskDialogIndirect`].
+///
+/// Example:
+///
+/// ```cpp
+/// wl::msg_box::info(wnd, L"Hello"); // simplest usage
+///
+/// bool ok = wl::msg_box::ask( // OK/Cancel prompt
+///     wnd,
+///     L"My title",
+///     L"My caption",
+///     L"My text",
+///     L"&OK", // you can have a custom text for the OK button
+/// );
+/// if (ok) {
+///     // user clicked OK
+/// }
+/// ```
+///
+/// [`TaskDialogIndirect`]: https://learn.microsoft.com/en-us/windows/win32/api/commctrl/nf-commctrl-taskdialogindirect
+namespace wl::msg_box {
+
+	/** @brief Displays an information dialog box. */
+	void info(const IWindowParent &parent, WStrView body);
+
+	/** @brief Displays an information dialog box. */
+	void info(const IWindowParent &parent, WStrView title, WStrView body);
+
+	/** @brief Displays an information dialog box. */
+	void info(const IWindowParent &parent, WStrView title, WStrView caption, WStrView body);
+
+	/** @brief Displays a warning dialog box. */
+	void warn(const IWindowParent &parent, WStrView body);
+
+	/** @brief Displays a warning dialog box. */
+	void warn(const IWindowParent &parent, WStrView title, WStrView body);
+
+	/** @brief Displays a warning dialog box. */
+	void warn(const IWindowParent &parent, WStrView title, WStrView caption, WStrView body);
+
+	/** @brief Displays an error dialog box. */
+	void err(const IWindowParent &parent, WStrView body);
+
+	/** @brief Displays an error dialog box. */
+	void err(const IWindowParent &parent, WStrView title, WStrView body);
+
+	/** @brief Displays an error dialog box. */
+	void err(const IWindowParent &parent, WStrView title, WStrView caption, WStrView body);
+
+	/** @brief Displays a warning dialog box asking for OK/Cancel user confirmation. */
+	[[nodiscard]] bool ask(const IWindowParent &parent, WStrView body);
+
+	/** @brief Displays a warning dialog box asking for OK/Cancel user confirmation. */
+	[[nodiscard]] bool ask(const IWindowParent &parent, WStrView title, WStrView body);
+
+	/** @brief Displays a warning dialog box asking for OK/Cancel user confirmation. */
+	[[nodiscard]] bool ask(const IWindowParent &parent, WStrView title, WStrView caption, WStrView body,
+		WStrView okText = L"&OK");
+
+}

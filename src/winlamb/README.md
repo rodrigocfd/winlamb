@@ -73,6 +73,7 @@ A few utility entities are included for convenience:
 | `wl::Time` | Wraps a [`FILETIME`](https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-filetime) struct, providing `FILETIME` and [`SYSTEMTIME`](https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime) operations. |
 | `wl::WStrView` | Wraps a pointer to a null-terminated string. |
 | `wl::dpi` | Adjusts pixel values according to the current system [DPI](https://learn.microsoft.com/en-us/windows/win32/hidpi/high-dpi-desktop-application-development-on-windows). |
+| `wl::msg_box` | Displays various system dialog boxes with [`TaskDialogIndirect`](https://learn.microsoft.com/en-us/windows/win32/api/commctrl/nf-commctrl-taskdialogindirect). |
 | `wl::path` | Filepath utilities. |
 | `wl::str` | [UTF-16](https://learn.microsoft.com/en-us/windows/win32/intl/unicode-in-the-windows-api) wide string utilities. |
 | `wl::vec` | Utilities for [`vector`](https://en.cppreference.com/w/cpp/container/vector.html), [`span`](https://en.cppreference.com/w/cpp/container/span.html) and [`array`](https://en.cppreference.com/w/cpp/container/array.html). |
@@ -115,7 +116,7 @@ MyMain::MyMain() {
     });
 
     btn.on().bn_clicked([this]() -> void { // WM_COMMAND event for BN_CLICKED
-       MessageBoxW(wnd.hwnd(), L"Button clicked", L"Hello", MB_ICONINFORMATION);
+        wl::msg_box::info(wnd, L"Button clicked.");
     });
 }
 ```

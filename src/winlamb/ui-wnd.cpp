@@ -1,3 +1,4 @@
+#include <system_error>
 #include "ui-wnd.hpp"
 #include <Uxtheme.h>
 #include <vsstyle.h>
@@ -181,4 +182,86 @@ std::vector<std::wstring> DropFiles::get_dropped(HANDLE hDrop) const {
 
 	//DragFinish(hDrop); // will crash ReleaseStgMedium()
 	return paths;
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+static bool msg_box_build(const IWindowParent &parent, WStrView title, WStrView caption, WStrView body,
+	LPWSTR icon, bool isAsk, WStrView okText)
+{
+	TASKDIALOG_BUTTON customBtns[] = {
+		{.nButtonID = IDOK, .pszButtonText = okText.c_str()},
+		{.nButtonID = IDCANCEL, .pszButtonText = L"&Cancel"},
+	};
+	UINT numBtns = isAsk ? 2 : 1;
+
+	TASKDIALOGCONFIG tdc{
+		.cbSize = sizeof(TASKDIALOGCONFIG),
+		.hwndParent = parent.hwnd(),
+		.dwFlags = TDF_ALLOW_DIALOG_CANCELLATION | TDF_POSITION_RELATIVE_TO_WINDOW,
+		.pszWindowTitle = title.c_str(),
+		.pszMainIcon = icon,
+		.pszMainInstruction = caption.c_str(),
+		.pszContent = body.c_str(),
+		.cButtons = numBtns,
+		.pButtons = customBtns,
+	};
+
+	int pnButton = 0, pnRadioButton = 0;
+	BOOL pfChecked = FALSE;
+	HRESULT hr = TaskDialogIndirect(&tdc, &pnButton, &pnRadioButton, &pfChecked);
+	#ifdef _DEBUG
+	if (FAILED(hr))
+		throw std::system_error(hr, std::system_category(), "TaskDialogIndirect failed");
+	#endif
+
+	return pnButton == IDOK;
+}
+
+void wl::msg_box::info(const IWindowParent &parent, WStrView body) {
+	msg_box_build(parent, wnd_text(parent.hwnd()), nullptr, body, TD_INFORMATION_ICON, false, L"&OK");
+}
+
+void wl::msg_box::info(const IWindowParent &parent, WStrView title, WStrView body) {
+	msg_box_build(parent, title, nullptr, body, TD_INFORMATION_ICON, false, L"&OK");
+}
+
+void wl::msg_box::info(const IWindowParent &parent, WStrView title, WStrView caption, WStrView body) {
+	msg_box_build(parent, title, caption, body, TD_INFORMATION_ICON, false, L"&OK");
+}
+
+void wl::msg_box::warn(const IWindowParent &parent, WStrView body) {
+	msg_box_build(parent, wnd_text(parent.hwnd()), nullptr, body, TD_WARNING_ICON, false, L"&OK");
+}
+
+void wl::msg_box::warn(const IWindowParent &parent, WStrView title, WStrView body) {
+	msg_box_build(parent, title, nullptr, body, TD_WARNING_ICON, false, L"&OK");
+}
+
+void wl::msg_box::warn(const IWindowParent &parent, WStrView title, WStrView caption, WStrView body) {
+	msg_box_build(parent, title, caption, body, TD_WARNING_ICON, false, L"&OK");
+}
+
+void wl::msg_box::err(const IWindowParent &parent, WStrView body) {
+	msg_box_build(parent, wnd_text(parent.hwnd()), nullptr, body, TD_ERROR_ICON, false, L"&OK");
+}
+
+void wl::msg_box::err(const IWindowParent &parent, WStrView title, WStrView body) {
+	msg_box_build(parent, title, nullptr, body, TD_ERROR_ICON, false, L"&OK");
+}
+
+void wl::msg_box::err(const IWindowParent &parent, WStrView title, WStrView caption, WStrView body) {
+	msg_box_build(parent, title, caption, body, TD_ERROR_ICON, false, L"&OK");
+}
+
+bool wl::msg_box::ask(const IWindowParent &parent, WStrView body) {
+	return msg_box_build(parent, wnd_text(parent.hwnd()), nullptr, body, TD_WARNING_ICON, true, L"&OK");
+}
+
+bool wl::msg_box::ask(const IWindowParent &parent, WStrView title, WStrView body) {
+	return msg_box_build(parent, title, nullptr, body, TD_WARNING_ICON, true, L"&OK");
+}
+
+bool wl::msg_box::ask(const IWindowParent &parent, WStrView title, WStrView caption, WStrView body, WStrView okText) {
+	return msg_box_build(parent, title, caption, body, TD_WARNING_ICON, true, okText);
 }
