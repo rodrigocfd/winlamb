@@ -80,34 +80,34 @@ namespace _wl_internal {
 namespace wl::dpi {
 
 	/** Returns the value adjusted according to the current horizontal system DPI. */
-	int x(int xVal);
+	[[nodiscard]] int x(int xVal);
 
 	/** Returns the value adjusted according to the current vertical system DPI. */
-	int y(int yVal);
+	[[nodiscard]] int y(int yVal);
 
 	/// Returns a [`POINT`] with values adjusted according to the current
 	/// horizontal and vertical system DPI.
 	///
 	/// [`POINT`]: https://learn.microsoft.com/en-us/windows/win32/api/windef/ns-windef-point
-	POINT pt(int xVal, int yVal);
+	[[nodiscard]] POINT pt(int xVal, int yVal);
 
 	/// Returns a [`POINT`] with values adjusted according to the current
 	/// horizontal and vertical system DPI.
 	///
 	/// [`POINT`]: https://learn.microsoft.com/en-us/windows/win32/api/windef/ns-windef-point
-	POINT pt(POINT value);
+	[[nodiscard]] POINT pt(POINT value);
 
 	/// Returns a [`SIZE`] with values adjusted according to the current
 	/// horizontal and vertical system DPI.
 	///
 	/// [`SIZE`]: https://learn.microsoft.com/en-us/windows/win32/api/windef/ns-windef-size
-	SIZE sz(int xVal, int yVal);
+	[[nodiscard]] SIZE sz(int xVal, int yVal);
 
 	/// Returns a [`SIZE`] with values adjusted according to the current
 	/// horizontal and vertical system DPI.
 	///
 	/// [`SIZE`]: https://learn.microsoft.com/en-us/windows/win32/api/windef/ns-windef-size
-	SIZE sz(SIZE value);
+	[[nodiscard]] SIZE sz(SIZE value);
 
 }
 
