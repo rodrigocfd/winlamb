@@ -355,9 +355,10 @@ std::vector<BYTE> wl::str::to_utf8_blob(WStrView s, bool writeBom) {
 	return buf;
 }
 
-std::wstring wl::str::to_wide(WStrView s) {
-	std::wstring wide(s.length(), L'\0');
-	for (size_t i = 0; i < s.length(); ++i) {
+std::wstring wl::str::to_wide(const char *s) {
+	int sLen = lstrlenA(s);
+	std::wstring wide(sLen, L'\0');
+	for (size_t i = 0; i < sLen; ++i) {
 		wide[i] = s[i]; // brute-force conversion
 	}
 	return wide;

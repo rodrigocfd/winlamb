@@ -214,7 +214,7 @@ namespace wl::str {
 	[[nodiscard]] std::vector<BYTE> to_utf8_blob(WStrView s, bool writeBom = false);
 
 	/** Converts `string` to `wstring`. The inverse is done by `to_ansi`. */
-	[[nodiscard]] std::wstring to_wide(WStrView s);
+	[[nodiscard]] std::wstring to_wide(const char *s);
 
 	/// Calls [`std::iswspace`] to remove all spaces from beginning and end of
 	/// the string.
