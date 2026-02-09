@@ -162,7 +162,7 @@ std::wstring wl::str::join(std::span<std::wstring> all, WStrView separator) {
 	return buf;
 }
 
-static std::wstring parse_ansi(std::span<BYTE> src) {
+static std::wstring parse_ansi(std::span<const BYTE> src) {
 	std::wstring ret;
 	if (!src.empty()) {
 		ret.resize(src.size());
@@ -177,7 +177,7 @@ static std::wstring parse_ansi(std::span<BYTE> src) {
 	return ret; // data didn't have a terminating null
 }
 
-static std::wstring parse_encoded(std::span<BYTE> src, UINT codePage) {
+static std::wstring parse_encoded(std::span<const BYTE> src, UINT codePage) {
 	std::wstring ret;
 	if (!src.empty()) {
 		int neededLen = MultiByteToWideChar(codePage, 0,
@@ -190,8 +190,8 @@ static std::wstring parse_encoded(std::span<BYTE> src, UINT codePage) {
 	return ret;
 }
 
-static std::wstring parse_utf16(std::span<BYTE> src, bool isLE) {
-	std::span<WORD> wsrc{reinterpret_cast<WORD*>(src.data()), src.size() / 2}; // will discard an odd byte
+static std::wstring parse_utf16(std::span<const BYTE> src, bool isLE) {
+	std::span<const WORD> wsrc{reinterpret_cast<const WORD*>(src.data()), src.size() / 2}; // will discard an odd byte
 	std::wstring ret;
 	ret.reserve(wsrc.size());
 	for (WCHAR ch : wsrc)
@@ -199,7 +199,7 @@ static std::wstring parse_utf16(std::span<BYTE> src, bool isLE) {
 	return ret;
 }
 
-std::wstring wl::str::parse(std::span<BYTE> src) {
+std::wstring wl::str::parse(std::span<const BYTE> src) {
 	if (src.empty()) return {};
 
 	Encoding encInfo = Encoding::guess(src);
@@ -406,8 +406,8 @@ void wl::str::trim(std::wstring &s) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-static constexpr bool guess_utf8(std::span<BYTE> src) {
-	std::span<BYTE>::iterator p = src.begin(); // https://stackoverflow.com/a/1031773/6923555
+static constexpr bool guess_utf8(std::span<const BYTE> src) {
+	std::span<const BYTE>::iterator p = src.begin(); // https://stackoverflow.com/a/1031773/6923555
 	while (p != src.end() && *p) {
 		if ( // ASCII
 			// use p[0] <= 0x7f to allow ASCII control characters
@@ -472,7 +472,7 @@ static constexpr bool guess_utf8(std::span<BYTE> src) {
 	return true; // all the conditions accepted through the whole byte source
 }
 
-Encoding Encoding::guess(std::span<BYTE> src) {
+Encoding Encoding::guess(std::span<const BYTE> src) {
 	auto match = [&](std::span<BYTE> bom) constexpr -> bool {
 		return (src.size() >= bom.size())
 			&& std::equal(src.begin(), src.begin() + bom.size(), bom.begin(), bom.end());

@@ -164,7 +164,7 @@ namespace wl::str {
 	[[nodiscard]] std::wstring join(std::span<std::wstring> all, WStrView separator = L"");
 
 	/** Guesses the `Encoding` and parses `src` into a `wstring`. */
-	[[nodiscard]] std::wstring parse(std::span<BYTE> src);
+	[[nodiscard]] std::wstring parse(std::span<const BYTE> src);
 
 	/// Returns a new string removing extra ampersands of keyboard accelerators:
 	/// `"&He && she"` becomes `"He & she"`.
@@ -246,7 +246,7 @@ namespace wl {
 		///
 		/// You usually don't need to call this method directly, since
 		/// `wl::str::parse` already calls it.
-		[[nodiscard]] static Encoding guess(std::span<BYTE> src);
+		[[nodiscard]] static Encoding guess(std::span<const BYTE> src);
 	};
 
 }
