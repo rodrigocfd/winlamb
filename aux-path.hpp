@@ -43,10 +43,10 @@ namespace wl::path {
 	/// searching folders recursively.
 	[[nodiscard]] std::vector<std::wstring> dir_walk(WStrView dirPath);
 
-	/// Returns the path of the current executable.
+	/// Returns the full path of the current executable.
 	///
 	/// In debug mode, goes up another level, returning the root project path.
-	[[nodiscard]] std::wstring exe_dir();
+	[[nodiscard]] std::wstring exe_path();
 
 	/** Returns true if the folder or file `p` exists. */
 	[[nodiscard]] bool exists(WStrView p);
