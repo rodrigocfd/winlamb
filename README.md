@@ -87,7 +87,7 @@ The whole code, .h and .cpp files:
 ```cpp
 // -- MyMain.h declaration file --
 
-#include <winlamb/lib.h>
+#include <winlamb/winlamb.hpp>
 
 class MyMain final {
 public:
@@ -123,7 +123,7 @@ MyMain::MyMain() {
 
 ## Documentation
 
-WinLamb headers contain comment blocks which can be turned into documentation with [Doxygen](https://www.doxygen.nl/). The file [doxyfile.ini](doxyfile.ini) will configure the output, and [doxystyle.css](doxystyle.css) will customize the styles.
+WinLamb headers contain comment blocks which can be turned into documentation with [Doxygen](https://www.doxygen.nl). The file [doxyfile.ini](doxyfile.ini) will configure the output, and [doxystyle.css](doxystyle.css) will customize the styles.
 
 To generate the docs, run:
 
