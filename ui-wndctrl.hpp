@@ -1372,7 +1372,7 @@ namespace wl {
 		/// or `BST_UNCHECKED`.
 		///
 		/// [`BM_SETCHECK`]: https://learn.microsoft.com/en-us/windows/win32/controls/bm-setcheck
-		const CheckBox& set_check(bool doCheck) const { set_state(doCheck ? BST_CHECKED : BST_UNCHECKED); }
+		const CheckBox& set_check(bool doCheck) const { return set_state(doCheck ? BST_CHECKED : BST_UNCHECKED); }
 
 		/// Sends [`BM_GETCHECK`] to retrieve the current `BST` state flag.
 		///

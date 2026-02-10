@@ -27,12 +27,14 @@ namespace wl {
 		public:
 			constexpr explicit Iterator(const wchar_t *p) : _p{p} { }
 			constexpr const wchar_t& operator*() const { return *_p; }
+			constexpr bool operator==(const Iterator &other) const { return _p == other._p; }
 			constexpr bool operator!=(const Iterator &other) const { return _p != other._p; }
-
-			constexpr Iterator& operator++() {
-				++_p;
-				return *this;
-			}
+			constexpr Iterator& operator++() { ++_p; return *this; }
+			constexpr Iterator& operator--() { --_p; return *this; }
+			constexpr Iterator operator++(int){ Iterator tmp{_p}; ++_p; return tmp; }
+			constexpr Iterator operator--(int){ Iterator tmp{_p}; --_p; return tmp; }
+			constexpr Iterator operator+(size_t n) { Iterator tmp{_p}; tmp._p += n; return tmp; }
+			constexpr Iterator operator-(size_t n) { Iterator tmp{_p}; tmp._p -= n; return tmp; }
 
 		private:
 			const wchar_t *_p;
