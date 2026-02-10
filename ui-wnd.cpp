@@ -1,8 +1,11 @@
+#include <algorithm>
 #include <system_error>
 #include "ui-wnd.hpp"
+#include "aux-com.hpp"
 #include <Uxtheme.h>
 #include <vsstyle.h>
 #include <shellapi.h>
+#include <ShlObj_core.h>
 using namespace _wl_internal;
 using namespace wl;
 
@@ -264,4 +267,98 @@ bool wl::msg_box::ask(const IWindowParent &parent, WStrView title, WStrView body
 
 bool wl::msg_box::ask(const IWindowParent &parent, WStrView title, WStrView caption, WStrView body, WStrView okText) {
 	return msg_box_build(parent, title, caption, body, TD_WARNING_ICON, true, okText);
+}
+
+[[nodiscard]] static std::wstring shellitem_dn(const ComPtr<IShellItem> &shi) {
+	wchar_t *pRecv = nullptr;
+	shi->GetDisplayName(SIGDN_FILESYSPATH, &pRecv);
+	std::wstring recv{pRecv};
+	CoTaskMemFree(pRecv);
+	return recv;
+}
+
+static void fd_set_opts(IFileDialog *pFd, FILEOPENDIALOGOPTIONS opts) {
+	FILEOPENDIALOGOPTIONS defOpts;
+	pFd->GetOptions(&defOpts);
+	pFd->SetOptions(defOpts | FOS_FORCEFILESYSTEM | FOS_FILEMUSTEXIST | opts);
+}
+
+static void fd_set_types(IFileDialog *pFd, std::initializer_list<std::pair<WStrView, WStrView>> fileTypes) {
+	std::vector<COMDLG_FILTERSPEC> rawTypes;
+	rawTypes.reserve(fileTypes.size());
+	for (auto &&fileType : fileTypes)
+		rawTypes.emplace_back(fileType.first.c_str(), fileType.second.c_str());
+	pFd->SetFileTypes(static_cast<UINT>(rawTypes.size()), rawTypes.data());
+	pFd->SetFileTypeIndex(1); // 1-based
+}
+
+[[nodiscard]] static bool fd_open(IFileDialog *pFd, const IWindowParent &parent) {
+	HRESULT hr = pFd->Show(parent.hwnd());
+	if (hr == HRESULT_FROM_WIN32(ERROR_CANCELLED)) {
+		return false;
+	} else if (SUCCEEDED(hr)) {
+		return true;
+	} else {
+		throw std::system_error(hr, std::system_category(), "IModalWindow::Show failed");
+	}
+}
+
+[[nodiscard]] static std::wstring fd_get_file(IFileDialog *pFd) {
+	ComPtr<IShellItem> shi{};
+	pFd->GetResult(shi.pptr());
+	return shellitem_dn(shi);
+}
+
+std::optional<std::wstring> wl::msg_box::open_file(const IWindowParent &parent,
+	std::initializer_list<std::pair<WStrView, WStrView>> fileTypes)
+{
+	ComPtr<IFileOpenDialog> ifod{};
+	ifod.co_create_instance(CLSID_FileOpenDialog);
+	fd_set_types(ifod.ptr(), fileTypes);
+	return fd_open(ifod.ptr(), parent) ? std::make_optional(fd_get_file(ifod.ptr())) : std::nullopt;
+}
+
+std::vector<std::wstring> wl::msg_box::open_files(const IWindowParent &parent,
+	std::initializer_list<std::pair<WStrView, WStrView>> fileTypes)
+{
+	ComPtr<IFileOpenDialog> ifod{};
+	ifod.co_create_instance(CLSID_FileOpenDialog);
+	fd_set_opts(ifod.ptr(), FOS_ALLOWMULTISELECT);
+	fd_set_types(ifod.ptr(), fileTypes);
+	if (fd_open(ifod.ptr(), parent)) {
+		ComPtr<IShellItemArray> sharr{};
+		ifod->GetResults(sharr.pptr());
+
+		DWORD count = 0;
+		sharr->GetCount(&count);
+		std::vector<std::wstring> strs{};
+		strs.reserve(count);
+
+		for (DWORD i = 0; i < count; ++i) {
+			ComPtr<IShellItem> shi{};
+			sharr->GetItemAt(i, shi.pptr());
+			strs.emplace_back(shellitem_dn(shi));
+		}
+		std::sort(strs.begin(), strs.end(), [](const auto &a, const auto &b) -> bool {
+			return str::cmp_i(a, b) < 1;
+		});
+		return strs;
+	}
+	return {}; // user cancelled
+}
+
+std::optional<std::wstring> wl::msg_box::open_folder(const IWindowParent &parent) {
+	ComPtr<IFileOpenDialog> ifod{};
+	ifod.co_create_instance(CLSID_FileOpenDialog);
+	fd_set_opts(ifod.ptr(), FOS_PICKFOLDERS);
+	return fd_open(ifod.ptr(), parent) ? std::make_optional(fd_get_file(ifod.ptr())) : std::nullopt;
+}
+
+std::optional<std::wstring> wl::msg_box::save_file(const IWindowParent &parent,
+	std::initializer_list<std::pair<WStrView, WStrView>> fileTypes)
+{
+	ComPtr<IFileSaveDialog> ifsd{};
+	ifsd.co_create_instance(CLSID_FileSaveDialog);
+	fd_set_types(ifsd.ptr(), fileTypes);
+	return fd_open(ifsd.ptr(), parent) ? std::make_optional(fd_get_file(ifsd.ptr())) : std::nullopt;
 }

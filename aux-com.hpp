@@ -120,9 +120,10 @@ namespace wl {
 		///
 		/// ```cpp
 		/// wl::ComPtr<IShellItem> item{};
-		/// SHCreateItemFromParsingName(L"C:\\Temp\\foo.txt", nullptr, IID_IShellItem, item.pptr());
+		/// SHCreateItemFromParsingName(L"C:\\Temp\\foo.txt", nullptr, IID_IShellItem, item.pptr<void>());
 		/// ```
-		[[nodiscard]] constexpr void** pptr() { return reinterpret_cast<void**>(&_p); }
+		template<typename Q = T>
+		[[nodiscard]] constexpr Q** pptr() { return reinterpret_cast<Q**>(&_p); }
 
 		/// Returns the wrapped COM pointer, setting the current pointer to
 		/// `nullptr`, so that `release` won't be called.

@@ -603,4 +603,57 @@ namespace wl::msg_box {
 	[[nodiscard]] bool ask(const IWindowParent &parent, WStrView title, WStrView caption, WStrView body,
 		WStrView okText = L"&OK");
 
+	/// @brief Displays the open file dialog box, allowing the user to choose 1 file.
+	///
+	/// If the user cancels, returns `std::nullopt`.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::optional<std::wstring> f = wl::msg_box::open_file(wnd, {
+	///     {L"Text file", L"*.txt"},
+	///     {L"All files", L"*.*"},
+	/// });
+	/// ```
+	[[nodiscard]] std::optional<std::wstring> open_file(const IWindowParent &parent,
+		std::initializer_list<std::pair<WStrView, WStrView>> fileTypes);
+
+	/// @brief Displays the open file dialog box, allowing the user to choose multiple files.
+	///
+	/// If the user cancels, returns an empty `std::vector`.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::vector<std::wstring> f = wl::msg_box::open_files(wnd, {
+	///     {L"Text file", L"*.txt"},
+	///     {L"All files", L"*.*"},
+	/// });
+	/// ```
+	[[nodiscard]] std::vector<std::wstring> open_files(const IWindowParent &parent,
+		std::initializer_list<std::pair<WStrView, WStrView>> fileTypes);
+
+	/// @brief Displays the open folder dialog box.
+	///
+	/// If the user cancels, returns `std::nullopt`.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::optional<std::wstring> f = wl::msg_box::open_folder(wnd);
+	/// ```
+	[[nodiscard]] std::optional<std::wstring> open_folder(const IWindowParent &parent);
+
+	/// @brief Displays the save file dialog box.
+	///
+	/// If the user cancels, returns `std::nullopt`.
+	///
+	/// Example:
+	///
+	/// ```cpp
+	/// std::optional<std::wstring> f = wl::msg_box::save_file(wnd);
+	/// ```
+	[[nodiscard]] std::optional<std::wstring> save_file(const IWindowParent &parent,
+		std::initializer_list<std::pair<WStrView, WStrView>> fileTypes);
+
 }
