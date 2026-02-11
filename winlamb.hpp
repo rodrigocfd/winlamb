@@ -8,7 +8,6 @@
 namespace wl { }
 
 #include "aux-com.hpp"
-#include "aux-path.hpp"
 #include "aux-str.hpp"
 #include "aux-vec.hpp"
 #include "aux-wrap.hpp"
