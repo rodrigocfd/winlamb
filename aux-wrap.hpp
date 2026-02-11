@@ -696,10 +696,16 @@ namespace wl::path {
 	/// searching folders recursively.
 	[[nodiscard]] std::vector<std::wstring> dir_walk(WStrView dirPath);
 
-	/// Returns the full path of the current executable.
+	/// Returns the full path of the current executable, without a trailing
+	/// backslash.
 	///
 	/// In debug mode, goes up another level, returning the root project path.
-	[[nodiscard]] std::wstring exe_path();
+	///
+	/// Note that this function returns just the path, without the .exe name. If
+	/// you also need the .exe name, just call [`GetModuleFileNameW`].
+	///
+	/// [`GetModuleFileNameW`]: https://learn.microsoft.com/en-us/windows/win32/api/libloaderapi/nf-libloaderapi-getmodulefilenamew
+	[[nodiscard]] std::wstring exe_dir();
 
 	/** Returns true if the folder or file `p` exists. */
 	[[nodiscard]] bool exists(WStrView p);

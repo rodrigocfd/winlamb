@@ -18,6 +18,7 @@ namespace _wl_internal {
 	[[nodiscard]] HINSTANCE wnd_hinst(HWND hWnd);
 	[[nodiscard]] std::wstring wnd_text(HWND hWnd);
 	void set_wnd_text(HWND hWnd, wl::WStrView text);
+	void focus(HWND hCtrl);
 	void screen_to_client_rc(HWND hWnd, RECT *pRc);
 	[[nodiscard]] SIZE calc_text_bound_box(wl::WStrView text);
 	[[nodiscard]] SIZE calc_text_bound_box_with_check(wl::WStrView text);

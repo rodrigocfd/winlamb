@@ -1267,6 +1267,13 @@ namespace wl {
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
+		/// Focus the control by posting a [`WM_NEXTDLGCTL`] message, which
+		/// is better than calling [`SetFocus`].
+		///
+		/// [`WM_NEXTDLGCTL`]: https://learn.microsoft.com/en-us/windows/win32/dlgbox/wm-nextdlgctl
+		/// [`SetFocus`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setfocus
+		const Button& focus() const { _wl_internal::focus(hwnd()); return *this; }
+
 		/// Calls [`GetWindowText`] to return the control text.
 		///
 		/// [`GetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowtextw
@@ -1373,6 +1380,13 @@ namespace wl {
 		///
 		/// [`BM_SETCHECK`]: https://learn.microsoft.com/en-us/windows/win32/controls/bm-setcheck
 		const CheckBox& set_check(bool doCheck) const { return set_state(doCheck ? BST_CHECKED : BST_UNCHECKED); }
+
+		/// Focus the control by posting a [`WM_NEXTDLGCTL`] message, which
+		/// is better than calling [`SetFocus`].
+		///
+		/// [`WM_NEXTDLGCTL`]: https://learn.microsoft.com/en-us/windows/win32/dlgbox/wm-nextdlgctl
+		/// [`SetFocus`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setfocus
+		const CheckBox& focus() const { _wl_internal::focus(hwnd()); return *this; }
 
 		/// Sends [`BM_GETCHECK`] to retrieve the current `BST` state flag.
 		///
@@ -1533,6 +1547,13 @@ namespace wl {
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
+		/// Focus the control by posting a [`WM_NEXTDLGCTL`] message, which
+		/// is better than calling [`SetFocus`].
+		///
+		/// [`WM_NEXTDLGCTL`]: https://learn.microsoft.com/en-us/windows/win32/dlgbox/wm-nextdlgctl
+		/// [`SetFocus`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setfocus
+		const ComboBox& focus() const { _wl_internal::focus(hwnd()); return *this; }
+
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::ComboBoxEvents _events;
@@ -1610,6 +1631,13 @@ namespace wl {
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+
+		/// Focus the control by posting a [`WM_NEXTDLGCTL`] message, which
+		/// is better than calling [`SetFocus`].
+		///
+		/// [`WM_NEXTDLGCTL`]: https://learn.microsoft.com/en-us/windows/win32/dlgbox/wm-nextdlgctl
+		/// [`SetFocus`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setfocus
+		const DateTimePicker& focus() const { _wl_internal::focus(hwnd()); return *this; }
 
 		/// Returns the current [`SYSTEMTIME`].
 		///
@@ -1725,6 +1753,13 @@ namespace wl {
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+
+		/// Focus the control by posting a [`WM_NEXTDLGCTL`] message, which
+		/// is better than calling [`SetFocus`].
+		///
+		/// [`WM_NEXTDLGCTL`]: https://learn.microsoft.com/en-us/windows/win32/dlgbox/wm-nextdlgctl
+		/// [`SetFocus`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setfocus
+		const Edit& focus() const { _wl_internal::focus(hwnd()); return *this; }
 
 		/// Calls [`GetWindowText`] to return the control text.
 		///
@@ -2149,6 +2184,13 @@ namespace wl {
 		/// [extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/extended-list-view-styles
 		const ListView& set_extended_style(bool doSet, DWORD exStyle) const;
 
+		/// Focus the control by posting a [`WM_NEXTDLGCTL`] message, which
+		/// is better than calling [`SetFocus`].
+		///
+		/// [`WM_NEXTDLGCTL`]: https://learn.microsoft.com/en-us/windows/win32/dlgbox/wm-nextdlgctl
+		/// [`SetFocus`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setfocus
+		const ListView& focus() const { _wl_internal::focus(hwnd()); return *this; }
+
 		/// Retrieves the 16x16 `IStoreIcon`.
 		///
 		/// Allows icons to be added to the control's image list.
@@ -2218,6 +2260,13 @@ namespace wl {
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
+		/// Focus the control by posting a [`WM_NEXTDLGCTL`] message, which
+		/// is better than calling [`SetFocus`].
+		///
+		/// [`WM_NEXTDLGCTL`]: https://learn.microsoft.com/en-us/windows/win32/dlgbox/wm-nextdlgctl
+		/// [`SetFocus`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setfocus
+		const MonthCalendar& focus() const { _wl_internal::focus(hwnd()); return *this; }
+
 		/// Returns the current [`SYSTEMTIME`].
 		///
 		/// [`SYSTEMTIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
@@ -2282,6 +2331,13 @@ namespace wl {
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+
+		/// Focus the control by posting a [`WM_NEXTDLGCTL`] message, which
+		/// is better than calling [`SetFocus`].
+		///
+		/// [`WM_NEXTDLGCTL`]: https://learn.microsoft.com/en-us/windows/win32/dlgbox/wm-nextdlgctl
+		/// [`SetFocus`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setfocus
+		const RadioButton& focus() const { _wl_internal::focus(hwnd()); return *this; }
 
 		/// Returns true if the radio button is currently selected.
 		///
@@ -2714,6 +2770,13 @@ namespace wl {
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
 
+		/// Focus the control by posting a [`WM_NEXTDLGCTL`] message, which
+		/// is better than calling [`SetFocus`].
+		///
+		/// [`WM_NEXTDLGCTL`]: https://learn.microsoft.com/en-us/windows/win32/dlgbox/wm-nextdlgctl
+		/// [`SetFocus`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setfocus
+		const SysLink& focus() const { _wl_internal::focus(hwnd()); return *this; }
+
 		/// Calls [`GetWindowText`] to return the control text.
 		///
 		/// [`GetWindowText`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getwindowtextw
@@ -2871,6 +2934,13 @@ namespace wl {
 		/// [extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/tree-view-control-window-extended-styles
 		const Tab& set_extended_style(bool doSet, DWORD exStyle) const;
 
+		/// Focus the control by posting a [`WM_NEXTDLGCTL`] message, which
+		/// is better than calling [`SetFocus`].
+		///
+		/// [`WM_NEXTDLGCTL`]: https://learn.microsoft.com/en-us/windows/win32/dlgbox/wm-nextdlgctl
+		/// [`SetFocus`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setfocus
+		const Tab& focus() const { _wl_internal::focus(hwnd()); return *this; }
+
 	private:
 		void create_tab(WStrView title) const;
 		void display_cur_tab() const;
@@ -2955,6 +3025,13 @@ namespace wl {
 		///
 		/// [Subclasses]: https://learn.microsoft.com/en-us/windows/win32/controls/subclassing-overview
 		[[nodiscard]] constexpr events::WindowEvents& subclass_on() { return _wl_internal::valid_event(hwnd(), _ctrl._subclassEvents); }
+
+		/// Focus the control by posting a [`WM_NEXTDLGCTL`] message, which
+		/// is better than calling [`SetFocus`].
+		///
+		/// [`WM_NEXTDLGCTL`]: https://learn.microsoft.com/en-us/windows/win32/dlgbox/wm-nextdlgctl
+		/// [`SetFocus`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setfocus
+		const Trackbar& focus() const { _wl_internal::focus(hwnd()); return *this; }
 
 		/** Retrieves the current page size. */
 		[[nodiscard]] int page_size() const;
@@ -3260,6 +3337,13 @@ namespace wl {
 		///
 		/// [extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/tree-view-control-window-extended-styles
 		const TreeView& set_extended_style(bool doSet, DWORD exStyle) const;
+
+		/// Focus the control by posting a [`WM_NEXTDLGCTL`] message, which
+		/// is better than calling [`SetFocus`].
+		///
+		/// [`WM_NEXTDLGCTL`]: https://learn.microsoft.com/en-us/windows/win32/dlgbox/wm-nextdlgctl
+		/// [`SetFocus`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setfocus
+		const TreeView& focus() const { _wl_internal::focus(hwnd()); return *this; }
 
 		/// Retrieves the 16x16 `IStoreIcon`.
 		///

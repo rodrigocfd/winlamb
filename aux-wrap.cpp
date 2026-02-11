@@ -642,7 +642,7 @@ std::vector<std::wstring> wl::path::dir_walk(WStrView dirPath) {
 	return ret;
 }
 
-std::wstring wl::path::exe_path() {
+std::wstring wl::path::exe_dir() {
 	wchar_t buf[MAX_PATH] = {L'\0'};
 	GetModuleFileNameW(nullptr, buf, ARRAYSIZE(buf));
 	std::wstring p = dir_from(buf);

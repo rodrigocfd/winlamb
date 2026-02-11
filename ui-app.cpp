@@ -81,6 +81,10 @@ void _wl_internal::set_wnd_text(HWND hWnd, WStrView text) {
 	}
 }
 
+void _wl_internal::focus(HWND hCtrl) {
+	PostMessageW(GetParent(hCtrl), WM_NEXTDLGCTL, reinterpret_cast<LPARAM>(hCtrl), MAKELONG(TRUE, 0));
+}
+
 void _wl_internal::screen_to_client_rc(HWND hWnd, RECT *pRc) {
 	ScreenToClient(hWnd, reinterpret_cast<POINT*>(pRc));
 	ScreenToClient(hWnd, reinterpret_cast<POINT*>(&pRc->right));

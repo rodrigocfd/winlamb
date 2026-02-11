@@ -85,7 +85,7 @@ void RawBase::focus_first_child() const {
 		// https://stackoverflow.com/a/2835220/6923555
 		HWND hWndFirstChild = GetWindow(_wndBase._hWnd, GW_CHILD);
 		if (hWndFirstChild) // the window may be chidless
-			SetFocus(hWndFirstChild);
+			_wl_internal::focus(hWndFirstChild);
 	}
 }
 
@@ -132,7 +132,7 @@ RawMain::RawMain(MainOpts creationOpts)
 					_hWndChildPrevFocus = hWndFocus; // save previously focused control
 				}
 			} else if (_hWndChildPrevFocus) {
-				SetFocus(_hWndChildPrevFocus); // put focus back
+				_wl_internal::focus(_hWndChildPrevFocus); // put focus back
 			}
 		}
 	});
@@ -194,7 +194,7 @@ RawModal::RawModal(const WndBase &parentWndBase, ModalOpts creationOpts)
 	_rawBase._wndBase._userEvents.wm_close([this]() -> void {
 		EnableWindow(_parent._hWnd, TRUE); // re-enable parent
 		if (_hWndChildPrevFocusParent)
-			SetFocus(_hWndChildPrevFocusParent); // could be on WM_DESTROY as well
+			_wl_internal::focus(_hWndChildPrevFocusParent); // could be on WM_DESTROY as well
 		DestroyWindow(_rawBase._wndBase._hWnd); // then destroy modal
 	});
 }

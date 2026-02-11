@@ -1016,7 +1016,7 @@ void ListView::show_context_menu(bool followCursor, bool hasCtrl, bool hasShift)
 		} else if (!hasCtrl && !hasShift) {
 			itemOver.value().select(true).focus(); // if note yet
 		}
-		SetFocus(hwnd()); // because a right-click won't set the focus by itself
+		focus(); // because a right-click won't set the focus by itself
 	} else { // usually fired by the context meny key
 		std::optional<Item> itemFocused = items.focused();
 		if (itemFocused.has_value() && itemFocused.value().is_visible()) {
