@@ -23,7 +23,9 @@ GuiApp::GuiApp() {
 	if (IsWindows8OrGreater()) [[likely]] {
 		HANDLE hProcess = GetCurrentProcess();
 		BOOL bVal = FALSE;
-		if (!SetUserObjectInformationW(hProcess, UOI_TIMERPROC_EXCEPTION_SUPPRESSION, &bVal, sizeof(BOOL))) [[unlikely]] {
+		BOOL ok = SetUserObjectInformationW(hProcess, UOI_TIMERPROC_EXCEPTION_SUPPRESSION, &bVal, sizeof(BOOL));
+		#ifdef _DEBUG
+		if (!ok) {
 			DWORD err = GetLastError();
 			if (err == ERROR_INVALID_PARAMETER) {
 				// Do nothing: Wine doesn't support SetUserObjectInformation for now.
@@ -32,6 +34,7 @@ GuiApp::GuiApp() {
 				throw std::system_error(err, std::system_category(), "SetUserObjectInformation failed");
 			}
 		}
+		#endif
 	}
 
 	HDC hdcScreen = GetDC(nullptr);
@@ -65,8 +68,9 @@ std::wstring _wl_internal::wnd_text(HWND hWnd) {
 		DWORD err = GetLastError();
 		if (err != ERROR_SUCCESS) [[unlikely]] {
 			throw std::system_error(err, std::system_category(), "GetWindowTextLength failed");
+		} else [[likely]] {
+			return std::wstring{}; // actual empty string
 		}
-		return std::wstring{}; // actual empty string
 	}
 
 	std::wstring buf(len + 1, L'\0'); // alloc receiving buffer
@@ -168,7 +172,7 @@ SIZE wl::dpi::sz(SIZE value) {
 	return sz(value.cx, value.cy);
 }
 
-////////////////////////////////////////////////////////////////////////////////
+//------------------------------------------------------------------------------
 
 [[nodiscard]] static HICON load_icon_res(WORD iconId, SIZE szIcon) {
 	HINSTANCE hInst = GetModuleHandleW(nullptr);
@@ -262,4 +266,74 @@ void HIconStore::add_resource(WORD iconId) {
 
 void HIconStore::add_shell_ext(wl::WStrView fileExt) {
 	_hIcons.push_back(load_icon_shell_ext(fileExt, _szIcon));
+}
+
+//------------------------------------------------------------------------------
+
+void Layout::add(HWND hCtrl, wl::Lay lay) {
+	if (lay == Lay::hold_hold)
+		return; // nothing to do, don't even bother adding the control
+
+	HWND hParent = GetParent(hCtrl);
+
+	if (_ctrls.empty()) { // first control being added?
+		RECT rcParent{};
+		BOOL ok = GetClientRect(hParent, &rcParent);
+		#ifdef _DEBUG
+		if (!ok)
+			throw std::system_error(GetLastError(), std::system_category(), "GetClientRect failed");
+		#endif
+		_szOrig = {.cx = rcParent.right, .cy = rcParent.bottom}; // save original parent client area
+	}
+
+	RECT rcCtrl{};
+	BOOL ok = GetWindowRect(hCtrl, &rcCtrl); // relative to screen
+	#ifdef _DEBUG
+	if (!ok)
+		throw std::system_error(GetLastError(), std::system_category(), "GetWindowRect failed");
+	#endif
+	screen_to_client_rc(hParent, &rcCtrl); // now relative to parent
+
+	_ctrls.emplace_back(hCtrl, lay, rcCtrl);
+}
+
+void Layout::rearrange(WPARAM wp, LPARAM lp) {
+	if (_ctrls.empty() || wp == SIZE_MINIMIZED)
+		return; // no need to resize if window is minimized
+
+	HDWP hdwp = BeginDeferWindowPos(static_cast<int>(_ctrls.size()));
+	#ifdef _DEBUG
+	if (!hdwp)
+		throw std::system_error(GetLastError(), std::system_category(), "BeginDeferWindowPos failed");
+	#endif
+
+	SIZE sz = {.cx = LOWORD(lp), .cy = HIWORD(lp)}; // of window client area
+
+	for (auto &&ctrl : _ctrls) {
+		WORD flags = SWP_NOZORDER;
+		switch (ctrl.lay) {
+		case Lay::move_move: // repos both horz and vert
+			flags |= SWP_NOSIZE;
+			break;
+		case Lay::resize_resize: // resize both horz and vert
+			flags |= SWP_NOMOVE;
+		}
+
+		DeferWindowPos(hdwp, ctrl.hCtrl, nullptr,
+			(ctrl.lay == Lay::move_hold || ctrl.lay == Lay::move_move || ctrl.lay == Lay::move_resize) // horz move
+				? sz.cx - _szOrig.cx + ctrl.rcOrig.left
+				: ctrl.rcOrig.left, // keep original horz pos
+			(ctrl.lay == Lay::hold_move || ctrl.lay == Lay::move_move || ctrl.lay == Lay::resize_move) // vert move
+				? sz.cy - _szOrig.cy + ctrl.rcOrig.top
+				: ctrl.rcOrig.top, // keep original vert pos
+			(ctrl.lay == Lay::resize_hold || ctrl.lay == Lay::resize_move || ctrl.lay == Lay::resize_resize) // horz resize
+				? sz.cx - _szOrig.cx + ctrl.rcOrig.right - ctrl.rcOrig.left
+				: ctrl.rcOrig.right - ctrl.rcOrig.left, // keep original width
+			(ctrl.lay == Lay::hold_resize || ctrl.lay == Lay::move_resize || ctrl.lay == Lay::resize_resize) // vert resize
+				? sz.cy - _szOrig.cy + ctrl.rcOrig.bottom - ctrl.rcOrig.top
+				: ctrl.rcOrig.bottom - ctrl.rcOrig.top, // keep original height
+			flags);
+	}
+
+	EndDeferWindowPos(hdwp);
 }

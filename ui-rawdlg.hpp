@@ -1,5 +1,38 @@
 #pragma once
-#include "ui-base.hpp"
+#include "ui-event.hpp"
+
+namespace _wl_internal {
+
+	/// Base to all raw and dialog windows.
+	/// Stores the pre, user and post window messages for container windows.
+	/// Exposes exception-safe multi-threading operations.
+	class WndBase final : private wl::NoCopyNoMove {
+	public:
+		constexpr explicit WndBase(bool isDlg)
+			: _preEvents{isDlg}, _userEvents{isDlg}, _postEvents{isDlg} { }
+
+		struct ThreadPack final {
+			std::function<void()> cb;
+		};
+		void ui_thread(std::function<void()> &&cb) const;
+
+		struct ProcResult final {
+			bool hasPre, hasPost;
+			std::optional<LRESULT> userRet;
+		};
+		ProcResult process_msgs(UINT msg, WPARAM wp, LPARAM lp);
+
+		int main_loop(HACCEL hAccel, bool processDlgMsgs);
+		void modal_loop(bool processDlgMsgs);
+
+		HWND _hWnd = nullptr; // _hWnd member is set in wndproc
+		Layout _layout{};
+		InternalEvents _preEvents;
+		wl::events::WindowEvents _userEvents;
+		InternalEvents _postEvents;
+	};
+
+}
 
 namespace wl {
 

@@ -499,9 +499,12 @@ Encoding Encoding::guess(std::span<const BYTE> src) {
 	BYTE bocu1[] = {0xfb, 0xee, 0x28};
 	if (match(bocu1)) return {Type::bocu1, ARRAYSIZE(bocu1)};
 
-	if (guess_utf8(src)) return {Type::utf8, 0}; // UTF-8 without BOM
+	if (guess_utf8(src))
+		return {Type::utf8, 0}; // UTF-8 without BOM
 
-	bool hasNonAnsiChar = std::any_of(src.begin(), src.end(), [](BYTE ch) -> bool { return ch > 0x7f; });
+	bool hasNonAnsiChar = std::any_of(src.begin(), src.end(), [](BYTE ch) -> bool {
+		return ch > 0x7f;
+	});
 	return hasNonAnsiChar
 		? Encoding{Type::win_1252, 0} // by exclusion, not assertive
 		: Encoding{Type::ansi, 0};

@@ -3,6 +3,25 @@
 
 namespace _wl_internal {
 
+	/// Base to all native controls.
+	/// Stores the subclass messages.
+	class NativeCtrlBase final : private wl::NoCopyNoMove {
+	public:
+		explicit NativeCtrlBase(WndBase &parentWndBase) : _parent{parentWndBase} { }
+
+		void create_wnd(WORD ctrlId, DWORD exStyle, const wchar_t *className,
+			std::wstring &&title, DWORD style, POINT pos, SIZE size);
+		void assign_dlg(WORD ctrlId);
+		void install_subclass();
+
+		static LRESULT CALLBACK subclass_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp,
+			UINT_PTR uIdSubclass, DWORD_PTR dwRefData);
+
+		HWND _hWnd = nullptr; // _hWnd member is set during control creation
+		WndBase &_parent;
+		wl::events::WindowEvents _subclassEvents{false};
+	};
+
 	/** Base to all native control events. */
 	class NativeCtrlEvents final : private wl::NoCopyNoMove {
 	public:

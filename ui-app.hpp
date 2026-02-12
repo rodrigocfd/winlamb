@@ -73,6 +73,8 @@ namespace _wl_internal {
 		return ret; \
 	}
 
+////////////////////////////////////////////////////////////////////////////////
+
 /// @brief Adjusts pixel values according to the current [system DPI].
 ///
 /// These functions should be used every time you use pixels on the screen.
@@ -112,8 +114,6 @@ namespace wl::dpi {
 
 }
 
-////////////////////////////////////////////////////////////////////////////////
-
 namespace wl {
 
 	/// @brief Pure abstract class; implemented by icon stores.
@@ -137,6 +137,45 @@ namespace wl {
 		///
 		/// [`SHGetFileInfo`]: https://learn.microsoft.com/en-us/windows/win32/api/shellapi/nf-shellapi-shgetfileinfow
 		virtual void add_shell_ext(WStrView fileExt) = 0;
+	};
+
+	/// @brief Specifies the horizontal and vertical behavior for a control when
+	/// the parent window is resized.
+	enum class Lay : BYTE {
+		/** When parent is resized, nothing happens. */
+		hold_hold,
+		/// When parent resizes:
+		/// - horizontal: nothing happens;
+		/// - vertical: control moves anchored at bottom.
+		hold_move,
+		/// When parent resizes:
+		/// - horizontal: nothing happens;
+		/// - vertical: control is resized together.
+		hold_resize,
+		/// When parent resizes:
+		/// - horizontal: control moves anchored at right;
+		/// - vertical: nothing happens.
+		move_hold,
+		/// When parent resizes:
+		/// - horizontal: control moves anchored at right;
+		/// - vertical: control moves anchored at bottom.
+		move_move,
+		/// When parent resizes:
+		/// - horizontal: control moves anchored at right;
+		/// - vertical: control is resized together.
+		move_resize,
+		/// When parent resizes:
+		/// - horizontal: control is resized together;
+		/// - vertical: nothing happens.
+		resize_hold,
+		/// When parent resizes:
+		/// - horizontal: control is resized together;
+		/// - vertical: control moves anchored at bottom.
+		resize_move,
+		/// When parent resizes:
+		/// - horizontal: control is resized together;
+		/// - vertical: control is resized together.
+		resize_resize,
 	};
 
 }
@@ -178,6 +217,23 @@ namespace _wl_internal {
 	private:
 		std::vector<HICON> _hIcons{};
 		SIZE _szIcon;
+	};
+
+	/// Rearranges position and size of each control when the parent resizes,
+	/// according to `Lay` flags.
+	class Layout final {
+	public:
+		struct Ctrl final {
+			HWND hCtrl;
+			wl::Lay lay;
+			RECT rcOrig;
+		};
+
+		void add(HWND hCtrl, wl::Lay layout);
+		void rearrange(WPARAM wp, LPARAM lp); // to be called internally within WM_SIZE
+
+		std::vector<Ctrl> _ctrls{};
+		SIZE _szOrig{}; // original parent client area
 	};
 
 }

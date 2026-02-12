@@ -12,7 +12,7 @@ namespace wl { }
 #include "aux-vec.hpp"
 #include "aux-wrap.hpp"
 #include "ui-app.hpp"
-#include "ui-base.hpp"
+#include "ui-event.hpp"
 #include "ui-rawdlg.hpp"
 #include "ui-wnd.hpp"
 #include "ui-wndctrl.hpp"

@@ -7,6 +7,80 @@ using namespace wl::events;
 
 constexpr bool operator==(const SIZE a, const SIZE b) { return a.cx == b.cx && a.cy == b.cy; }
 
+void NativeCtrlBase::create_wnd(WORD ctrlId, DWORD exStyle, const wchar_t *className,
+	std::wstring &&title, DWORD style, POINT pos, SIZE size)
+{
+	#ifdef _DEBUG
+	if (_hWnd)
+		throw std::logic_error{"Cannot create control twice."};
+	if (!_parent._hWnd)
+		throw std::logic_error{"Cannot create control before parent."};
+	#endif
+
+	_hWnd = CreateWindowExW(exStyle, className, title.c_str(), style,
+		pos.x, pos.y, size.cx, size.cy, _parent._hWnd,
+		reinterpret_cast<HMENU>(ctrlId), wnd_hinst(_parent._hWnd), nullptr);
+	#ifdef _DEBUG
+	if (!_hWnd)
+		throw std::system_error(GetLastError(), std::system_category(), "NativeCtrlBase: CreateWindowEx failed");
+	#endif
+
+	install_subclass();
+}
+
+void NativeCtrlBase::assign_dlg(WORD ctrlId) {
+	#ifdef _DEBUG
+	if (_hWnd)
+		throw std::logic_error{"Cannot assign control twice."};
+	if (!_parent._hWnd)
+		throw std::logic_error{"Cannot assign control before parent."};
+	#endif
+
+	_hWnd = GetDlgItem(_parent._hWnd, ctrlId);
+	#ifdef _DEBUG
+	if (!_hWnd)
+		throw std::system_error(GetLastError(), std::system_category(), "NativeCtrlBase: GetDlgItem failed");
+	#endif
+
+	install_subclass();
+}
+
+void NativeCtrlBase::install_subclass() {
+	static UINT_PTR subclassId = 0;
+	if (_subclassEvents.has_message()) {
+		BOOL ok = SetWindowSubclass(_hWnd, subclass_proc, ++subclassId, reinterpret_cast<DWORD_PTR>(this));
+		#ifdef _DEBUG
+		if (!ok)
+			throw std::runtime_error{"SetWindowSubclass failed."};
+		#endif
+	}
+}
+
+LRESULT CALLBACK NativeCtrlBase::subclass_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp,
+	UINT_PTR uIdSubclass, DWORD_PTR dwRefData)
+{
+	NativeCtrlBase *pSelf = reinterpret_cast<NativeCtrlBase*>(dwRefData);
+
+	std::optional<LRESULT> ret{};
+	if (pSelf)
+		ret = pSelf->_subclassEvents.process_last({msg, wp, lp});
+
+	if (msg == WM_NCDESTROY) { // always check
+		// https://devblogs.microsoft.com/oldnewthing/20031111-00/?p=41883
+		BOOL ok = RemoveWindowSubclass(hWnd, subclass_proc, uIdSubclass);
+		#ifdef _DEBUG
+		if (!ok)
+			throw std::runtime_error{"RemoveWindowSubclass failed."};
+		#endif
+		if (pSelf)
+			pSelf->_subclassEvents.clear();
+	}
+
+	return ret.has_value() ? ret.value() : DefSubclassProc(hWnd, msg, wp, lp);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
 #define EVENT_CMD(eventcls, method, cmd) \
 	void eventcls::method(std::function<void()> &&cb) { \
 		_ctrlEvents._parent._userEvents.wm_command(_ctrlEvents._ctrlId, cmd, std::move(cb)); \
@@ -608,6 +682,10 @@ ListView::Column ListView::ColumnCollection::add(WStrView text, UINT width) cons
 		.pszText = const_cast<LPWSTR>(text.c_str()),
 	};
 	int index = ListView_InsertColumn(_owner.hwnd(), 0xffff, &lvc); // insert as the last column
+	#ifdef _DEBUG
+	if (index == -1)
+		throw std::runtime_error{"ListView_InsertColumn failed."};
+	#endif
 	return {_owner, index}; // return newly added column
 }
 
