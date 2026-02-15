@@ -105,23 +105,31 @@ namespace wl {
 	/// [UTC time]: https://en.wikipedia.org/wiki/Coordinated_Universal_Time
 	class Time final {
 	public:
-		/// Default constructor.
-		///
-		/// Calls [`GetSystemTimeAsFileTime`] and stores the current system time
-		/// as UTC.
-		///
-		/// [`GetSystemTimeAsFileTime`]: https://learn.microsoft.com/en-us/windows/win32/api/sysinfoapi/nf-sysinfoapi-getsystemtimeasfiletime
-		Time();
+		/** @brief Constructs `Time` with the earliest possible value: January 1, 1601 (UTC). */
+		struct Zero final {};
+		/** @brief Constructs `Time` with the current time. */
+		struct Now final {};
+		/** @brief Constructs `Time` from a `FILETIME`, UTC. */
+		struct UtcFt final { FILETIME ft{}; };
+		/** @brief Constructs `Time` from a `SYSTEMTIME`, UTC. */
+		struct UtcSt final { SYSTEMTIME st{}; };
+		/** @brief Constructs `Time` from a `FILETIME`, local. */
+		struct LocalFt final { FILETIME ft{}; };
+		/** @brief Constructs `Time` from a `SYSTEMTIME`, local. */
+		struct LocalSt final { SYSTEMTIME st{}; };
 
-		/// Constructor.
-		///
-		/// Assumes `ft` as UTC time.
-		constexpr explicit Time(FILETIME ft) : _ft{ft} { }
-
-		/// Constructor.
-		///
-		/// Assumes `st` as UTC time.
-		explicit Time(const SYSTEMTIME &st);
+		/** Constructor. */
+		constexpr explicit Time(Zero) : Time{UtcFt{}} { }
+		/** Constructor. */
+		explicit Time(Now);
+		/** Constructor. */
+		constexpr explicit Time(UtcFt ft) : _ft{ft.ft} { }
+		/** Constructor. */
+		explicit Time(UtcSt st);
+		/** Constructor. */
+		explicit Time(LocalFt ft);
+		/** Constructor. */
+		explicit Time(LocalSt st);
 
 		/** Comparison operator. */
 		[[nodiscard]] constexpr std::strong_ordering operator<=>(const Time &other) const {
@@ -221,7 +229,7 @@ namespace wl {
 		[[nodiscard]] std::wstring to_str_local_ymd_hms() const;
 
 	private:
-		FILETIME _ft;
+		FILETIME _ft{};
 	};
 
 	/// @brief Manages a file `HANDLE`.

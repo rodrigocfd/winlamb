@@ -1,6 +1,7 @@
 #include <memory>
 #include <system_error>
 #include "ui-rawdlg.hpp"
+#include "ui-wnd.hpp"
 using namespace _wl_internal;
 using namespace wl;
 
@@ -223,8 +224,8 @@ LRESULT CALLBACK RawBase::raw_proc(HWND hWnd, UINT msg, WPARAM wp, LPARAM lp) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RawMain::RawMain(MainOpts creationOpts)
-	: _opts{creationOpts}
+RawMain::RawMain(WindowMainOpts creationOpts)
+	: _opts{std::move(creationOpts)}
 {
 	_rawBase._wndBase._preEvents.wm(WM_ACTIVATE, [this](wm::Activate p) -> void {
 		if (!p.is_minimized()) { // https://devblogs.microsoft.com/oldnewthing/20140521-00/?p=943
@@ -248,16 +249,16 @@ RawMain::RawMain(MainOpts creationOpts)
 }
 
 int RawMain::run(HINSTANCE hInst, int cmdShow) {
-	ATOM atom = _rawBase.register_class(hInst, std::move(_opts.className), _opts.classStyle,
-		_opts.iconId, _opts.hbrBackground, _opts.hCursor);
+	ATOM atom = _rawBase.register_class(hInst, std::move(_opts._className), _opts._classStyle,
+		_opts._iconId, _opts._hbrBackground, _opts._hCursor);
 
 	RECT rcWnd{
 		.left = 0,
 		.top = 0,
-		.right = _opts.size.cx,
-		.bottom = _opts.size.cy,
+		.right = _opts._size.cx == -1 ? dpi::x(500) : _opts._size.cx,
+		.bottom = _opts._size.cy == -1 ? dpi::y(300) : _opts._size.cy,
 	};
-	BOOL ok = AdjustWindowRectEx(&rcWnd, _opts.style, _opts.hMenu != nullptr, _opts.styleEx);
+	BOOL ok = AdjustWindowRectEx(&rcWnd, _opts._style, _opts._hMenu != nullptr, _opts._styleEx);
 	#ifdef _DEBUG
 	if (!ok)
 		throw std::system_error(GetLastError(), std::system_category(), "AdjustWindowRectEx failed");
@@ -269,9 +270,9 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 		.y = GetSystemMetrics(SM_CYSCREEN) / 2 - rcWnd.bottom / 2,
 	};
 
-	_rawBase.create_window(_opts.styleEx, atom, std::move(_opts.title), _opts.style,
+	_rawBase.create_window(_opts._styleEx, atom, std::move(_opts._title), _opts._style,
 		ptWndCenter, {.cx = rcWnd.right - rcWnd.left, .cy = rcWnd.bottom - rcWnd.top},
-		nullptr, _opts.hMenu, hInst);
+		nullptr, _opts._hMenu, hInst);
 
 	ShowWindow(_rawBase._wndBase._hWnd, cmdShow);
 	ok = UpdateWindow(_rawBase._wndBase._hWnd);
@@ -280,20 +281,20 @@ int RawMain::run(HINSTANCE hInst, int cmdShow) {
 		throw std::runtime_error{"UpdateWindow failed."};
 	#endif
 
-	return _rawBase._wndBase.main_loop(_opts.hAccelTable, _opts.processDlgMsgs);
+	return _rawBase._wndBase.main_loop(_opts._hAccelTable, _opts._processDlgMsgs);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RawModal::RawModal(const WndBase &parentWndBase, ModalOpts creationOpts)
-	: _parent{parentWndBase}, _opts{creationOpts}
+RawModal::RawModal(WindowModalOpts creationOpts)
+	: _opts{std::move(creationOpts)}
 {
 	_rawBase._wndBase._preEvents.wm(WM_SETFOCUS, [this](wm::SetFocus) -> void {
 		_rawBase.focus_first_child();
 	});
 
 	_rawBase._wndBase._userEvents.wm_close([this]() -> void {
-		EnableWindow(_parent._hWnd, TRUE); // re-enable parent
+		EnableWindow(_opts._parent.hwnd(), TRUE); // re-enable parent
 		if (_hWndChildPrevFocusParent)
 			_wl_internal::focus(_hWndChildPrevFocusParent); // could be on WM_DESTROY as well
 		DestroyWindow(_rawBase._wndBase._hWnd); // then destroy modal
@@ -301,20 +302,20 @@ RawModal::RawModal(const WndBase &parentWndBase, ModalOpts creationOpts)
 }
 
 void RawModal::show() {
-	HINSTANCE hInst = wnd_hinst(_parent._hWnd);
-	ATOM atom = _rawBase.register_class(hInst, std::move(_opts.className), _opts.classStyle,
-		_opts.iconId, _opts.hbrBackground, _opts.hCursor);
+	HINSTANCE hInst = wnd_hinst(_opts._parent.hwnd());
+	ATOM atom = _rawBase.register_class(hInst, std::move(_opts._className), _opts._classStyle,
+		_opts._iconId, _opts._hbrBackground, _opts._hCursor);
 
 	_hWndChildPrevFocusParent = GetFocus();
-	EnableWindow(_parent._hWnd, FALSE); // https://devblogs.microsoft.com/oldnewthing/20040227-00/?p=40463
+	EnableWindow(_opts._parent.hwnd(), FALSE); // https://devblogs.microsoft.com/oldnewthing/20040227-00/?p=40463
 
 	RECT rcWnd{
 		.left = 0,
 		.top = 0,
-		.right = _opts.size.cx,
-		.bottom = _opts.size.cy,
+		.right = _opts._size.cx == -1 ? dpi::x(400) : _opts._size.cx,
+		.bottom = _opts._size.cy == -1 ? dpi::y(200) : _opts._size.cy,
 	};
-	BOOL ok = AdjustWindowRectEx(&rcWnd, _opts.style, FALSE, _opts.styleEx);
+	BOOL ok = AdjustWindowRectEx(&rcWnd, _opts._style, FALSE, _opts._styleEx);
 	#ifdef _DEBUG
 	if (!ok)
 		throw std::system_error(GetLastError(), std::system_category(), "AdjustWindowRectEx failed");
@@ -322,31 +323,35 @@ void RawModal::show() {
 	OffsetRect(&rcWnd, -rcWnd.left, -rcWnd.top);
 
 	RECT rcParent{};
-	GetWindowRect(_parent._hWnd, &rcParent); // relative to screen
+	GetWindowRect(_opts._parent.hwnd(), &rcParent); // relative to screen
 
 	POINT ptWndCenter{
 		.x = rcParent.left + (rcParent.right - rcParent.left) / 2 - rcWnd.right / 2, // center on parent
 		.y = rcParent.top + (rcParent.bottom - rcParent.top) / 2 - rcWnd.bottom / 2,
 	};
 
-	_rawBase.create_window(_opts.styleEx, atom, std::move(_opts.title), _opts.style,
+	_rawBase.create_window(_opts._styleEx, atom, std::move(_opts._title), _opts._style,
 		ptWndCenter, {.cx = rcWnd.right - rcWnd.left, .cy = rcWnd.bottom - rcWnd.top},
 		nullptr, nullptr, hInst);
 
-	_rawBase._wndBase.modal_loop(_opts.processDlgMsgs);
+	_rawBase._wndBase.modal_loop(_opts._processDlgMsgs);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RawControl::RawControl(WndBase &parentWndBase, ControlOpts creationOpts) {
-	parentWndBase._preEvents.wm_create_or_init_dialog(
-		[this, pParent = &parentWndBase, opts = std::move(creationOpts)]() mutable -> void {
-			ATOM atom = _rawBase.register_class(wnd_hinst(pParent->_hWnd), std::move(opts.className),
-				opts.classStyle, 0, opts.hbrBackground, opts.hCursor);
-			_rawBase.create_window(opts.styleEx, atom, {}, opts.style,
-				opts.pos, opts.size, pParent->_hWnd, reinterpret_cast<HMENU>(valid_ctrl_id(opts.ctrlId)),
-				wnd_hinst(pParent->_hWnd));
-			pParent->_layout.add(_rawBase._wndBase._hWnd, opts.layout);
+RawControl::RawControl(WindowControlOpts creationOpts) {
+	creationOpts._owner.base()._preEvents.wm_create_or_init_dialog(
+		[this, opts = std::move(creationOpts)]() mutable -> void {
+			if (opts._size.cx == -1) opts._size.cx = dpi::x(100); // default size
+			if (opts._size.cy == -1) opts._size.cy = dpi::y(100);
+
+			ATOM atom = _rawBase.register_class(wnd_hinst(opts._owner.hwnd()), std::move(opts._className),
+				opts._classStyle, 0, opts._hbrBackground, opts._hCursor);
+			_rawBase.create_window(opts._styleEx, atom, {}, opts._style,
+				opts._pos, opts._size, opts._owner.hwnd(), reinterpret_cast<HMENU>(valid_ctrl_id(opts._ctrlId)),
+				wnd_hinst(opts._owner.hwnd()));
+
+			opts._owner.base()._layout.add(_rawBase._wndBase._hWnd, opts._layout);
 		});
 }
 
@@ -468,8 +473,8 @@ int DlgMain::run(HINSTANCE hInst, int cmdShow) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-DlgModal::DlgModal(const WndBase &parentWndBase, WORD dlgId)
-	: _parent{parentWndBase}, _dlgBase{dlgId}
+DlgModal::DlgModal(const IWindowParent &parent, WORD dlgId)
+	: _parent{parent}, _dlgBase{dlgId}
 {
 	_dlgBase._wndBase._userEvents.wm_close([this]() -> void {
 		EndDialog(_dlgBase._wndBase._hWnd, 0);
@@ -477,19 +482,19 @@ DlgModal::DlgModal(const WndBase &parentWndBase, WORD dlgId)
 }
 
 void DlgModal::show() {
-	_dlgBase.dialog_box_param(wnd_hinst(_parent._hWnd), _parent._hWnd);
+	_dlgBase.dialog_box_param(wnd_hinst(_parent.hwnd()), _parent.hwnd());
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-DlgControl::DlgControl(WndBase &parentWndBase, WORD dlgId, WORD ctrlId, POINT pos, Lay layout)
+DlgControl::DlgControl(IWindowParent &owner, WORD dlgId, WORD ctrlId, POINT pos, Lay layout)
 	: _dlgBase{dlgId}
 {
-	parentWndBase._preEvents.wm_create_or_init_dialog(
-		[this, pParent = &parentWndBase, ctrlId, pos, layout]() -> void {
-			_dlgBase.create_dialog_param(wnd_hinst(pParent->_hWnd), pParent->_hWnd);
+	owner.base()._preEvents.wm_create_or_init_dialog(
+		[this, pOwner = &owner, ctrlId, pos, layout]() -> void {
+			_dlgBase.create_dialog_param(wnd_hinst(pOwner->hwnd()), pOwner->hwnd());
 			SetWindowLongPtrW(_dlgBase._wndBase._hWnd, GWLP_ID, valid_ctrl_id(ctrlId)); // give the control its ID
 			SetWindowPos(_dlgBase._wndBase._hWnd, nullptr, pos.x, pos.y, 0, 0, SWP_NOZORDER | SWP_NOMOVE);
-			pParent->_layout.add(_dlgBase._wndBase._hWnd, layout);
+			pOwner->base()._layout.add(_dlgBase._wndBase._hWnd, layout);
 		});
 }

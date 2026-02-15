@@ -156,15 +156,36 @@ Command& Command::run(WStrView cmdLine) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Time::Time() {
+Time::Time(Time::Now) {
 	GetSystemTimeAsFileTime(&_ft);
 }
 
-Time::Time(const SYSTEMTIME &st) {
-	BOOL ok = SystemTimeToFileTime(&st, &_ft);
+Time::Time(Time::UtcSt st) {
+	BOOL ok = SystemTimeToFileTime(&st.st, &_ft);
 	if (!ok) [[unlikely]] {
-		throw std::invalid_argument{"Invalid SYSTEMTIME."};
+		throw std::system_error(GetLastError(), std::system_category(), "SystemTimeToFileTime failed");
 	}
+}
+
+Time::Time(Time::LocalFt ft) {
+	BOOL ok = FileTimeToLocalFileTime(&ft.ft, &_ft);
+	if (!ok) [[unlikely]] {
+		throw std::system_error(GetLastError(), std::system_category(), "FileTimeToLocalFileTime failed");
+	}
+}
+
+Time::Time(Time::LocalSt st) {
+	FILETIME ftLocal{};
+	BOOL ok = SystemTimeToFileTime(&st.st, &ftLocal);
+	if (!ok) [[unlikely]] {
+		throw std::system_error(GetLastError(), std::system_category(), "SystemTimeToFileTime failed");
+	}
+
+	ok = LocalFileTimeToFileTime(&ftLocal, &_ft);
+	#ifdef _DEBUG
+	if (!ok)
+		throw std::system_error(GetLastError(), std::system_category(), "LocalFileTimeToFileTime failed");
+	#endif
 }
 
 FILETIME Time::to_filetime_utc() const {
@@ -335,7 +356,7 @@ Time File::time_creation() const {
 	if (!ok)
 		throw std::system_error(GetLastError(), std::system_category(), "GetFileTime failed");
 	#endif
-	return Time{ft};
+	return Time{Time::UtcFt{ft}};
 }
 
 Time File::time_last_access() const {
@@ -345,7 +366,7 @@ Time File::time_last_access() const {
 	if (!ok)
 		throw std::system_error(GetLastError(), std::system_category(), "GetFileTime failed");
 	#endif
-	return Time{ft};
+	return Time{Time::UtcFt{ft}};
 }
 
 Time File::time_last_write() const {
@@ -355,7 +376,7 @@ Time File::time_last_write() const {
 	if (!ok)
 		throw std::system_error(GetLastError(), std::system_category(), "GetFileTime failed");
 	#endif
-	return Time{ft};
+	return Time{Time::UtcFt{ft}};
 }
 
 const File& File::truncate() const {

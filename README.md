@@ -92,15 +92,17 @@ The whole code, .h and .cpp files:
 class MyMain final {
 public:
     MyMain();
-    wl::WindowMain wnd{wl::MainOpts{ // manages our main window
-        .size = wl::dpi::sz(500, 300),
-        .style = wl::MainOpts{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
-        .title = L"My main window",
-    }};
-    wl::Button btn{wnd, wl::ButtonOpts{ // this button is a child control of our main window
-        .pos = wl::dpi::pt(10, 10),
-        .text = L"&Click me",
-    }};
+    wl::WindowMain wnd{ // manages our main window
+        wl::WindowMainOpts{}
+            .title(L"My main window")
+            .size(wl::dpi::sz(500, 300))
+            .resizable()
+    };
+    wl::Button btn{ // this button is a child control of our main window
+        wl::ButtonOpts{wnd}
+            .text(L"&Click me")
+            .pos(wl::dpi::pt(10, 10))
+    };
 };
 ```
 

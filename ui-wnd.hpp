@@ -26,9 +26,7 @@ namespace _wl_internal {
 
 namespace wl {
 
-	class WindowModal; // forward declaration
-	class WindowControl;
-	class Button;
+	class Button; // forward declaration
 	class CheckBox;
 	class ComboBox;
 	class DateTimePicker;
@@ -101,8 +99,8 @@ namespace wl {
 	private:
 		[[nodiscard]] virtual const _wl_internal::WndBase& base() const = 0;
 		[[nodiscard]] virtual _wl_internal::WndBase& base() = 0;
-		friend WindowModal;
-		friend WindowControl;
+		friend _wl_internal::RawControl;
+		friend _wl_internal::DlgControl;
 		friend Button;
 		friend CheckBox;
 		friend ComboBox;
@@ -128,11 +126,12 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{wl::MainOpts{
-	///         .size = wl::dpi::sz(500, 300),
-	///         .style = wl::MainOpts{}.style | WS_SIZEBOX | WS_MAXIMIZEBOX,
-	///         .title = L"My main window",
-	///     }};
+	///     wl::WindowMain wnd{
+	///         wl::WindowMainOpts{}
+	///             .title(L"My main window")
+	///             .size(wl::dpi::sz(500, 300))
+	///             .resizable()
+	///     };
 	/// };
 	/// ```
 	///
@@ -203,8 +202,8 @@ namespace wl {
 		/// Constructs the main window, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		explicit WindowMain(MainOpts creationOpts)
-			: _rawOrDlg{.raw = std::make_optional<_wl_internal::RawMain>(creationOpts)} { }
+		explicit WindowMain(WindowMainOpts creationOpts)
+			: _rawOrDlg{.raw = std::make_optional<_wl_internal::RawMain>(std::move(creationOpts))} { }
 
 		/// Constructs the main window, which will be loaded from a dialog
 		/// resource with [`CreateDialogParam`].
@@ -292,20 +291,17 @@ namespace wl {
 		/// Example:
 		///
 		/// ```cpp
-		/// void show_my_modal(const wl::IWindowParent &wnd) {
-		///
-		///     wl::WindowModal myModal{wnd, wl::ModalOpts{
-		///         .size = wl::dpi::sz(200, 200),
-		///         .title = L"My modal",
-		///     }};
-		///     myModal.show();
-		///
-		/// }
+		/// wl::WindowModal myModal{
+		///     wl::WindowModalOpts{wnd}
+		///         .title(L"My modal")
+		///         .size(wl::dpi::sz(200, 200))
+		/// };
+		/// myModal.show();
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		WindowModal(const IWindowParent &parent, ModalOpts creationOpts)
-			: _rawOrDlg{.raw = std::make_optional<_wl_internal::RawModal>(parent.base(), creationOpts)} { }
+		explicit WindowModal(WindowModalOpts creationOpts)
+			: _rawOrDlg{.raw = std::make_optional<_wl_internal::RawModal>(std::move(creationOpts))} { }
 
 		/// Constructs the modal window, which will be loaded from a dialog
 		/// resource with [`DialogBoxParam`].
@@ -323,7 +319,7 @@ namespace wl {
 		///
 		/// [`DialogBoxParam`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-dialogboxparamw
 		WindowModal(const IWindowParent &parent, WORD dlgId)
-			: _rawOrDlg{.dlg = std::make_optional<_wl_internal::DlgModal>(parent.base(), dlgId)} { }
+			: _rawOrDlg{.dlg = std::make_optional<_wl_internal::DlgModal>(parent, dlgId)} { }
 
 		/** Returns the window handle. */
 		[[nodiscard]] constexpr HWND hwnd() const override { return _rawOrDlg.base()._hWnd; };
@@ -399,12 +395,13 @@ namespace wl {
 	///
 	/// ```cpp
 	/// MyControl::MyControl(wl::IWindowParent &parent, POINT pos, SIZE sz)
-	///     : wnd{parent, wl::ControlOpts{
-	///         .layout = wl::Lay::hold_hold,
-	///         .pos = pos,
-	///         .size = sz,
-	///         .styleEx = wl::ControlOpts{}.styleEx | WS_EX_CLIENTEDGE,
-	///     }}
+	///     : wnd{
+	///         wl::WindowControlOpts{parent}
+	///             .pos(pos)
+	///             .size(sz)
+	///             .layout(wl::Lay::hold_hold)
+	///             .border()
+	///     }
 	/// {
 	///     wnd.on().wm_paint([this]() -> void {
 	///         PAINTSTRUCT ps{};
@@ -420,7 +417,7 @@ namespace wl {
 		/// programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		WindowControl(IWindowParent &parent, ControlOpts creationOpts);
+		explicit WindowControl(WindowControlOpts creationOpts);
 
 		/// Constructs the custom control window, which will be loaded from a
 		/// dialog resource with [`CreateDialogParam`].

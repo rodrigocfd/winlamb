@@ -32,6 +32,12 @@ namespace _wl_internal {
 		WORD _ctrlId;
 	};
 
+	/** An icon to be loaded either by its resource ID or file extension. */
+	struct IconToLoad final {
+		WORD id = 0;
+		std::wstring ext{};
+	};
+
 }
 
 namespace wl::events {
@@ -327,385 +333,510 @@ namespace wl::events {
 
 namespace wl {
 
-	/// Options to load an icon, either from resource or from the system.
-	///
-	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// in the same order they appear in the struct.
-	///
-	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
-	struct IconLoad final {
-		/// Resource identifier of the icon.
-		///
-		/// If specified, the `ext` field is ignored.
-		WORD id = 0;
-		/// File extension of the icon to be loaded from the system, like "txt".
-		///
-		/// The icon displayed is the same used by Windows Explorer when listing
-		/// the file with the given extension.
-		///
-		/// If `id` is specified, this field is ignored.
-		std::wstring ext{};
-	};
-
-	/// Options to create a `Button` programmatically.
-	///
-	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// in the same order they appear in the struct.
-	///
-	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	/** Options to create a `Button` programmatically. */
 	struct ButtonOpts final {
+		/** Constructor. */
+		constexpr explicit ButtonOpts(IWindowParent &owner) : _owner{owner} { }
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
+		ButtonOpts ctrl_id(WORD id) { _ctrlId = id; return std::move(*this); }
+		/// Control text passed to [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		ButtonOpts text(WStrView t) { _text = t.c_str(); return std::move(*this); }
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::ButtonOpts myOpts{
-		///     .pos = wl::dpi::pt(10, 10),
+		/// wl::Button{
+		///     wl::ButtonOpts{wnd}
+		///         .pos(wl::dpi::pt(10, 10))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
+		ButtonOpts pos(POINT p) { _pos = p; return std::move(*this); }
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::Button{
+		///     wl::ButtonOpts{wnd}
+		///         .pos(wl::dpi::x(10) wl::dpi::y(10))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		ButtonOpts pos(int x, int y) { return pos({x, y}); }
 		/// Control size passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::ButtonOpts myOpts{
-		///     .size = wl::dpi::sz(88, 26),
+		/// wl::Button{
+		///     wl::ButtonOpts{wnd}
+		///         .size(wl::dpi::sz(88, 26))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size = {.cx = 88, .cy = 26};
+		ButtonOpts size(SIZE p) { _size = p; return std::move(*this); }
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::Button{
+		///     wl::ButtonOpts{wnd}
+		///         .size(wl::dpi::x(88) wl::dpi::y(26))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		ButtonOpts size(int cx, int cy) { return size({cx, cy}); }
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		ButtonOpts layout(Lay l) { _layout = l; return std::move(*this); }
 		/// The [window] and [Button style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 		/// [Button style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | BS_PUSHBUTTON;
+		ButtonOpts style(DWORD s) { _style = s; return std::move(*this); }
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD styleEx = WS_EX_LEFT;
-		/// Control text passed to [`CreateWindowEx`].
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		std::wstring text{};
+		ButtonOpts style_ex(DWORD sx) { _styleEx = sx; return std::move(*this); }
+
+	private:
+		IWindowParent &_owner;
+		WORD _ctrlId = 0;
+		std::wstring _text{};
+		POINT _pos{};
+		SIZE _size{-1, -1};
+		Lay _layout = Lay::hold_hold;
+		DWORD _style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | BS_PUSHBUTTON;
+		DWORD _styleEx = WS_EX_LEFT;
+		friend Button;
 	};
 
-	/// Options to create a `CheckBox` programmatically.
-	///
-	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// the same order they appear in the struct.
-	///
-	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	/** Options to create a `CheckBox` programmatically. */
 	struct CheckBoxOpts final {
+		/** Constructor. */
+		constexpr explicit CheckBoxOpts(IWindowParent &owner) : _owner{owner} { }
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
+		CheckBoxOpts ctrl_id(WORD id) { _ctrlId = id; return std::move(*this); }
+		/// Control text passed to [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		CheckBoxOpts text(WStrView t) { _text = t.c_str(); return std::move(*this); }
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::CheckBoxOpts myOpts{
-		///     .pos = wl::dpi::pt(10, 10),
+		/// wl::CheckBox{
+		///     wl::CheckBoxOpts{wnd}
+		///         .pos(wl::dpi::pt(10, 10))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
-		/// Control size passed to [`CreateWindowEx`].
+		CheckBoxOpts pos(POINT p) { _pos = p; return std::move(*this); }
+		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::CheckBoxOpts myOpts{
-		///     .size = wl::dpi::sz(88, 26),
+		/// wl::CheckBox{
+		///     wl::CheckBoxOpts{wnd}
+		///         .pos(wl::dpi::x(10) wl::dpi::y(10))
 		/// };
 		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		CheckBoxOpts pos(int x, int y) { return pos({x, y}); }
+		/// Control size passed to [`CreateWindowEx`].
 		///
 		/// If not defined, the control will resize to automatically fit its
 		/// initial text.
 		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::CheckBox{
+		///     wl::CheckBoxOpts{wnd}
+		///         .size(wl::dpi::sz(88, 26))
+		/// };
+		/// ```
+		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size{};
-		/** Initial selection state. */
-		WORD state = BST_UNCHECKED;
+		CheckBoxOpts size(SIZE p) { _size = p; return std::move(*this); }
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// If not defined, the control will resize to automatically fit its
+		/// initial text.
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::CheckBox{
+		///     wl::CheckBoxOpts{wnd}
+		///         .size(wl::dpi::x(88) wl::dpi::y(26))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		CheckBoxOpts size(int cx, int cy) { return size({cx, cy}); }
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		CheckBoxOpts layout(Lay l) { _layout = l; return std::move(*this); }
 		/// The [window] and [CheckBox style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 		/// [CheckBox style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | BS_AUTOCHECKBOX;
+		CheckBoxOpts style(DWORD s) { _style = s; return std::move(*this); }
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD styleEx = WS_EX_LEFT;
-		/// Control text passed to [`CreateWindowEx`].
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		std::wstring text{};
+		CheckBoxOpts style_ex(DWORD sx) { _styleEx = sx; return std::move(*this); }
+		/** Initial state. */
+		CheckBoxOpts checked(bool c) { _checked = c; return std::move(*this); }
+
+	private:
+		IWindowParent &_owner;
+		WORD _ctrlId = 0;
+		std::wstring _text{};
+		POINT _pos{};
+		SIZE _size{-1, -1};
+		Lay _layout = Lay::hold_hold;
+		DWORD _style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | BS_AUTOCHECKBOX;
+		DWORD _styleEx = WS_EX_LEFT;
+		bool _checked = false;
+		friend CheckBox;
 	};
 
-	/// Options to create a `ComboBox` programmatically.
-	///
-	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// the same order they appear in the struct.
-	///
-	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	/** Options to create a `ComboBox` programmatically. */
 	struct ComboBoxOpts final {
+		/** Constructor. */
+		constexpr explicit ComboBoxOpts(IWindowParent &owner) : _owner{owner} { }
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
+		ComboBoxOpts ctrl_id(WORD id) { _ctrlId = id; return std::move(*this); }
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::ComboBoxOpts myOpts{
-		///     .pos = wl::dpi::pt(10, 10),
+		/// wl::ComboBox{
+		///     wl::ComboBoxOpts{wnd}
+		///         .pos(wl::dpi::pt(10, 10))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
+		ComboBoxOpts pos(POINT p) { _pos = p; return std::move(*this); }
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::ComboBox{
+		///     wl::ComboBoxOpts{wnd}
+		///         .pos(wl::dpi::x(10) wl::dpi::y(10))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		ComboBoxOpts pos(int x, int y) { return pos({x, y}); }
+		/// Control width passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::ComboBox{
+		///     wl::ComboBoxOpts{wnd}
+		///         .width(wl::dpi::x(100))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		ComboBoxOpts width(int cx) { _width = cx; return std::move(*this); }
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		ComboBoxOpts layout(Lay l) { _layout = l; return std::move(*this); }
 		/// The [window] and [ComboBox style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 		/// [ComboBox style]: https://learn.microsoft.com/en-us/windows/win32/controls/combo-box-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | CBS_DROPDOWNLIST;
+		ComboBoxOpts style(DWORD s) { _style = s; return std::move(*this); }
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD styleEx = WS_EX_LEFT;
-		/// Texts to be added.
-		///
-		/// Example:
-		///
-		/// ```cpp
-		/// wl::ComboBoxOpts myOpts{
-		///     .texts = {L"Hello", L"World"},
-		/// };
-		/// ```
-		std::vector<std::wstring> texts{};
-		/// Control size passed to [`CreateWindowEx`].
-		///
-		/// Prefer using DPI-aware values:
-		///
-		/// ```cpp
-		/// wl::ComboBoxOpts myOpts{
-		///     .width = wl::dpi::x(100),
-		/// };
-		/// ```
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		int width = 100;
+		ComboBoxOpts style_ex(DWORD sx) { _styleEx = sx; return std::move(*this); }
+		/** Texts to be added. */
+		ComboBoxOpts texts(std::vector<std::wstring> t) { _texts = std::move(t); return std::move(*this); }
+
+	private:
+		IWindowParent &_owner;
+		WORD _ctrlId = 0;
+		POINT _pos{};
+		int _width = -1;
+		Lay _layout = Lay::hold_hold;
+		DWORD _style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | CBS_DROPDOWNLIST;
+		DWORD _styleEx = WS_EX_LEFT;
+		std::vector<std::wstring> _texts{};
+		friend ComboBox;
 	};
 
-	/// Options to create a `DateTimePicker` programmatically.
-	///
-	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// the same order they appear in the struct.
-	///
-	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	/** Options to create a `DateTimePicker` programmatically. */
 	struct DateTimePickerOpts final {
+		/** Constructor. */
+		constexpr explicit DateTimePickerOpts(IWindowParent &owner) : _owner{owner} { }
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
+		DateTimePickerOpts ctrl_id(WORD id) { _ctrlId = id; return std::move(*this); }
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::DateTimePickerOpts myOpts{
-		///     .pos = wl::dpi::pt(10, 10),
+		/// wl::DateTimePicker{
+		///     wl::DateTimePickerOpts{wnd}
+		///         .pos(wl::dpi::pt(10, 10))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
+		DateTimePickerOpts pos(POINT p) { _pos = p; return std::move(*this); }
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::DateTimePicker{
+		///     wl::DateTimePickerOpts{wnd}
+		///         .pos(wl::dpi::x(10) wl::dpi::y(10))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DateTimePickerOpts pos(int x, int y) { return pos({x, y}); }
 		/// Control size passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::DateTimePickerOpts myOpts{
-		///     .size = wl::dpi::sz(230, 23),
+		/// wl::DateTimePicker{
+		///     wl::DateTimePickerOpts{wnd}
+		///         .size(wl::dpi::sz(230, 23))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size = {.cx = 230, .cy = 23};
+		DateTimePickerOpts size(SIZE p) { _size = p; return std::move(*this); }
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::DateTimePicker{
+		///     wl::DateTimePickerOpts{wnd}
+		///         .size(wl::dpi::x(230) wl::dpi::y(23))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		DateTimePickerOpts size(int cx, int cy) { return size({cx, cy}); }
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		DateTimePickerOpts layout(Lay l) { _layout = l; return std::move(*this); }
 		/// The [window] and [DateTimePicker style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 		/// [DateTimePicker style]: https://learn.microsoft.com/en-us/windows/win32/controls/date-and-time-picker-control-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | DTS_LONGDATEFORMAT;
+		DateTimePickerOpts style(DWORD s) { _style = s; return std::move(*this); }
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD styleEx = WS_EX_LEFT | WS_EX_CLIENTEDGE;
-		/// Initial [`SYSTEMTIME`].
-		///
-		/// [`SYSTEMTIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
-		SYSTEMTIME value{};
+		DateTimePickerOpts style_ex(DWORD sx) { _styleEx = sx; return std::move(*this); }
+		/** Initial value. */
+		DateTimePickerOpts value(Time t) { _value = t; return std::move(*this); }
+
+	private:
+		IWindowParent &_owner;
+		WORD _ctrlId = 0;
+		POINT _pos{};
+		SIZE _size{-1, -1};
+		Lay _layout = Lay::hold_hold;
+		DWORD _style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | DTS_LONGDATEFORMAT;
+		DWORD _styleEx = WS_EX_LEFT | WS_EX_CLIENTEDGE;
+		Time _value{Time::Zero{}};
+		friend DateTimePicker;
 	};
 
-	/// Options to create an `Edit` programmatically.
-	///
-	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// the same order they appear in the struct.
-	///
-	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	/** Options to create an `Edit` programmatically. */
 	struct EditOpts final {
+		/** Constructor. */
+		constexpr explicit EditOpts(IWindowParent &owner) : _owner{owner} { }
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
+		EditOpts ctrl_id(WORD id) { _ctrlId = id; return std::move(*this); }
+		/// Control text passed to [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		EditOpts text(WStrView t) { _text = t.c_str(); return std::move(*this); }
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::EditOpts myOpts{
-		///     .pos = wl::dpi::pt(10, 10),
+		/// wl::Edit{
+		///     wl::EditOpts{wnd}
+		///         .pos(wl::dpi::pt(10, 10))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
+		EditOpts pos(POINT p) { _pos = p; return std::move(*this); }
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::Edit{
+		///     wl::EditOpts{wnd}
+		///         .pos(wl::dpi::x(10) wl::dpi::y(10))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		EditOpts pos(int x, int y) { return pos({x, y}); }
 		/// Control size passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::EditOpts myOpts{
-		///     .size = wl::dpi::sz(100, 23),
+		/// wl::Edit{
+		///     wl::EditOpts{wnd}
+		///         .size(wl::dpi::sz(100, 23))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size = {.cx = 100, .cy = 23};
+		EditOpts size(SIZE p) { _size = p; return std::move(*this); }
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::Edit{
+		///     wl::EditOpts{wnd}
+		///         .size(wl::dpi::x(100) wl::dpi::y(23))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		EditOpts size(int cx, int cy) { return size({cx, cy}); }
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		EditOpts layout(Lay l) { _layout = l; return std::move(*this); }
 		/// The [window] and [Edit style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 		/// [Edit style]: https://learn.microsoft.com/en-us/windows/win32/controls/edit-control-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | ES_AUTOHSCROLL | ES_NOHIDESEL;
+		EditOpts style(DWORD s) { _style = s; return std::move(*this); }
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD styleEx = WS_EX_LEFT | WS_EX_CLIENTEDGE;
-		/// Control text passed to [`CreateWindowEx`].
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		std::wstring text{};
+		EditOpts style_ex(DWORD sx) { _styleEx = sx; return std::move(*this); }
+
+	private:
+		IWindowParent &_owner;
+		WORD _ctrlId = 0;
+		std::wstring _text{};
+		POINT _pos{};
+		SIZE _size{-1, -1};
+		Lay _layout = Lay::hold_hold;
+		DWORD _style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | ES_AUTOHSCROLL | ES_NOHIDESEL;
+		DWORD _styleEx = WS_EX_LEFT | WS_EX_CLIENTEDGE;
+		friend Edit;
 	};
 
-	/// Options to create a `ListView` programmatically.
-	///
-	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// the same order they appear in the struct.
-	///
-	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	/** Options to create a `ListView` programmatically. */
 	struct ListViewOpts final {
-		/** A column to be added to the `ListView`. */
-		struct Col final {
-			/** Column header text. */
-			std::wstring text{};
-			/** Column width. */
-			int width = 0;
-		};
-		/// Columns to be added, title and width.
-		///
-		/// Prefer using DPI-aware values:
-		///
-		/// ```cpp
-		/// wl::ListViewOpts myOpts{
-		///     .cols = {
-		///         {L"First", wl::dpi::x(100)},
-		///         {L"Second", wl::dpi::x(120)},
-		///     },
-		/// };
-		/// ```
-		std::vector<Col> cols{};
-		/// Context menu resource to be loaded as the context menu with [`LoadMenu`].
-		///
-		/// [`LoadMenu`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadmenuw
-		WORD contextMenuId = 0;
+		/** Constructor. */
+		constexpr explicit ListViewOpts(IWindowParent &owner) : _owner{owner} { }
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/// 16x16 icons to be loaded into the `ListView`.
-		///
-		/// They can be later referenced by index, following the same order they
-		/// are added.
-		std::vector<IconLoad> icons16{};
-		/// 32x32 icons to be loaded into the `ListView`.
-		///
-		/// They can be later referenced by index, following the same order they
-		/// are added.
-		std::vector<IconLoad> icons32{};
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
+		ListViewOpts ctrl_id(WORD id) { _ctrlId = id; return std::move(*this); }
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::ListViewOpts myOpts{
-		///     .pos = wl::dpi::pt(10, 10),
+		/// wl::ListView{
+		///     wl::ListViewOpts{wnd}
+		///         .pos(wl::dpi::pt(10, 10))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
+		ListViewOpts pos(POINT p) { _pos = p; return std::move(*this); }
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::ListView{
+		///     wl::ListViewOpts{wnd}
+		///         .pos(wl::dpi::x(10) wl::dpi::y(10))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		ListViewOpts pos(int x, int y) { return pos({x, y}); }
 		/// Control size passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::ListViewOpts myOpts{
-		///     .size = wl::dpi::sz(120, 120),
+		/// wl::ListView{
+		///     wl::ListViewOpts{wnd}
+		///         .size(wl::dpi::sz(120, 120))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size = {.cx = 120, .cy = 120};
+		ListViewOpts size(SIZE p) { _size = p; return std::move(*this); }
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::ListView{
+		///     wl::ListViewOpts{wnd}
+		///         .size(wl::dpi::x(120) wl::dpi::y(120))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		ListViewOpts size(int cx, int cy) { return size({cx, cy}); }
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		ListViewOpts layout(Lay l) { _layout = l; return std::move(*this); }
 		/// The [window] and [ListView style] passed to [`CreateWindowEx`].
 		///
 		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be
@@ -714,473 +845,845 @@ namespace wl {
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 		/// [ListView style]: https://learn.microsoft.com/en-us/windows/win32/controls/list-view-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS;
+		ListViewOpts style(DWORD s) { _style = s; return std::move(*this); }
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD styleEx = WS_EX_LEFT | WS_EX_CLIENTEDGE;
+		ListViewOpts style_ex(DWORD sx) { _styleEx = sx; return std::move(*this); }
 		/// The [ListView extended styles] applied right after the control is
 		/// created.
 		///
 		/// [ListView extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/extended-list-view-styles
-		DWORD styleExListView = LVS_EX_FULLROWSELECT;
+		ListViewOpts style_ex_lv(DWORD sxlv) { _styleExLv = sxlv; return std::move(*this); }
+		/// Columns to be added, title and width.
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::ListView{
+		///     wl::ListViewOpts{wnd}
+		///         .col(L"First", wl::dpi::x(100))
+		///         .col(L"Second", wl::dpi::x(120))
+		/// };
+		/// ```
+		ListViewOpts col(WStrView text, UINT width);
+		/// Loads the 16x16 icon of the given file extension into the `ListView`.
+		///
+		/// They can be later referenced by index, following the same order they
+		/// are added.
+		ListViewOpts icon16_ext(WStrView fileExt);
+		/// Loads the 16x16 icon of the given resource ID into the `ListView`.
+		///
+		/// They can be later referenced by index, following the same order they
+		/// are added.
+		ListViewOpts icon16_id(WORD id);
+		/// Loads the 32x32 icon of the given file extension into the `ListView`.
+		///
+		/// They can be later referenced by index, following the same order they
+		/// are added.
+		ListViewOpts icon32_ext(WStrView fileExt);
+		/// Loads the 32x32 icon of the given resource ID into the `ListView`.
+		///
+		/// They can be later referenced by index, following the same order they
+		/// are added.
+		ListViewOpts icon32_id(WORD id);
+		/// Context menu resource to be loaded as the context menu with [`LoadMenu`].
+		///
+		/// [`LoadMenu`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-loadmenuw
+		ListViewOpts context_menu_id(WORD id) { _contextMenuId = id; return std::move(*this); }
+
+	private:
+		struct Col final {
+			std::wstring text{};
+			UINT width = 0;
+		};
+
+		IWindowParent &_owner;
+		WORD _ctrlId = 0;
+		POINT _pos{};
+		SIZE _size{-1, -1};
+		Lay _layout = Lay::hold_hold;
+		DWORD _style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | LVS_REPORT | LVS_NOSORTHEADER | LVS_SHOWSELALWAYS;
+		DWORD _styleEx = WS_EX_LEFT | WS_EX_CLIENTEDGE;
+		DWORD _styleExLv = LVS_EX_FULLROWSELECT;
+		std::vector<Col> _cols{};
+		std::vector<_wl_internal::IconToLoad> _icons16{}, _icons32{};
+		WORD _contextMenuId = 0;
+		friend ListView;
 	};
 
-	/// Options to create a `MonthCalendar` programmatically.
-	///
-	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// the same order they appear in the struct.
-	///
-	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	/** Options to create a `MonthCalendar` programmatically. */
 	struct MonthCalendarOpts final {
+		/** Constructor. */
+		constexpr explicit MonthCalendarOpts(IWindowParent &owner) : _owner{owner} { }
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
+		MonthCalendarOpts ctrl_id(WORD id) { _ctrlId = id; return std::move(*this); }
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::MonthCalendarOpts myOpts{
-		///     .pos = wl::dpi::pt(10, 10),
+		/// wl::MonthCalendar{
+		///     wl::MonthCalendarOpts{wnd}
+		///         .pos(wl::dpi::pt(10, 10))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
+		MonthCalendarOpts pos(POINT p) { _pos = p; return std::move(*this); }
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::MonthCalendar{
+		///     wl::MonthCalendarOpts{wnd}
+		///         .pos(wl::dpi::x(10) wl::dpi::y(10))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		MonthCalendarOpts pos(int x, int y) { return pos({x, y}); }
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		MonthCalendarOpts layout(Lay l) { _layout = l; return std::move(*this); }
 		/// The [window] and [MonthCalendar style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 		/// [MonthCalendar style]: https://learn.microsoft.com/en-us/windows/win32/controls/month-calendar-control-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		MonthCalendarOpts style(DWORD s) { _style = s; return std::move(*this); }
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD styleEx = WS_EX_LEFT;
-		/// Initial [`SYSTEMTIME`].
-		///
-		/// [`SYSTEMTIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
-		SYSTEMTIME value{};
+		MonthCalendarOpts style_ex(DWORD sx) { _styleEx = sx; return std::move(*this); }
+		/** Initial value. */
+		MonthCalendarOpts value(Time t) { _value = t; return std::move(*this); }
+
+	private:
+		IWindowParent &_owner;
+		WORD _ctrlId = 0;
+		POINT _pos{};
+		Lay _layout = Lay::hold_hold;
+		DWORD _style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		DWORD _styleEx = WS_EX_LEFT;
+		Time _value{Time::Zero{}};
+		friend MonthCalendar;
 	};
 
-	/// Options to create a `RadioButton` programmatically.
-	///
-	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// the same order they appear in the struct.
-	///
-	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	struct RadioGroupOpts; // forward declaration
+
+	/** Options to create a `RadioButton` programmatically. */
 	struct RadioButtonOpts final {
+		/** Constructor. */
+		constexpr explicit RadioButtonOpts(IWindowParent &owner) : _owner{owner} { }
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
+		RadioButtonOpts ctrl_id(WORD id) { _ctrlId = id; return std::move(*this); }
+		/// Control text passed to [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		RadioButtonOpts text(WStrView t) { _text = t.c_str(); return std::move(*this); }
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::RadioButtonOpts myOpts{
-		///     .pos = wl::dpi::pt(10, 10),
+		/// wl::RadioButton{
+		///     wl::RadioButtonOpts{wnd}
+		///         .pos(wl::dpi::pt(88, 26))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
-		/// Initial state.
+		RadioButtonOpts pos(POINT p) { _pos = p; return std::move(*this); }
+		/// Control position passed to [`CreateWindowEx`].
 		///
-		/// Only one radio button can be selected at once in its group.
-		bool selected = false;
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::RadioButton{
+		///     wl::RadioButtonOpts{wnd}
+		///         .pos(wl::dpi::x(88) wl::dpi::y(26))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		RadioButtonOpts pos(int x, int y) { return pos({x, y}); }
 		/// Control size passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::RadioButtonOpts myOpts{
-		///     .size = wl::dpi::sz(88, 26),
+		/// wl::RadioButton{
+		///     wl::RadioButtonOpts{wnd}
+		///         .size(wl::dpi::sz(88, 26))
 		/// };
 		/// ```
 		///
-		/// If not defined, the control will resize to automatically fit its
-		/// initial text.
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		RadioButtonOpts size(SIZE p) { _size = p; return std::move(*this); }
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::RadioButton{
+		///     wl::RadioButtonOpts{wnd}
+		///         .size(wl::dpi::x(88) wl::dpi::y(26))
+		/// };
+		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size{};
+		RadioButtonOpts size(int cx, int cy) { return size({cx, cy}); }
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		RadioButtonOpts layout(Lay l) { _layout = l; return std::move(*this); }
 		/// The [window] and [RadioButton style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 		/// [RadioButton style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | BS_AUTORADIOBUTTON;
+		RadioButtonOpts style(DWORD s) { _style = s; return std::move(*this); }
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD styleEx = WS_EX_LEFT;
-		/// Control text passed to [`CreateWindowEx`].
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		std::wstring text{};
+		RadioButtonOpts style_ex(DWORD sx) { _styleEx = sx; return std::move(*this); }
+		/** `RadioButton` is initially selected. */
+		RadioButtonOpts select() { _selected = true; return std::move(*this); }
+
+	private:
+		IWindowParent &_owner;
+		WORD _ctrlId = 0;
+		std::wstring _text{};
+		POINT _pos{};
+		SIZE _size{-1, -1};
+		Lay _layout = Lay::hold_hold;
+		DWORD _style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | BS_AUTORADIOBUTTON;
+		DWORD _styleEx = WS_EX_LEFT;
+		bool _selected = false;
+		friend RadioButton;
+		friend RadioGroup;
+		friend RadioGroupOpts;
 	};
 
-	/// Options to create a `Static` programmatically.
-	///
-	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// the same order they appear in the struct.
-	///
-	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
-	struct StaticOpts final {
+	/** Options to create a `RadioGroup` programmatically. */
+	struct RadioGroupOpts final {
+		/** Constructor. */
+		constexpr explicit RadioGroupOpts(IWindowParent &owner) : _owner{owner} { }
+		/** Adds a new `RadioButton` to the group. */
+		RadioGroupOpts radio() { _opts.emplace_back(_owner); return std::move(*this); }
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
+		RadioGroupOpts ctrl_id(WORD id) { _opts.back()._ctrlId = id; return std::move(*this); }
+		/// Control text passed to [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		RadioGroupOpts text(WStrView t) { _opts.back()._text = t.c_str(); return std::move(*this); }
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::StaticOpts myOpts{
-		///     .pos = wl::dpi::pt(10, 10),
+		/// wl::RadioGroup{
+		///     wl::RadioGroupOpts{wnd}
+		///         .radio()
+		///         .pos(wl::dpi::pt(88, 26))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
+		RadioGroupOpts pos(POINT p) { _opts.back()._pos = p; return std::move(*this); }
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::RadioGroup{
+		///     wl::RadioGroupOpts{wnd}
+		///         .radio()
+		///         .pos(wl::dpi::x(88) wl::dpi::y(26))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		RadioGroupOpts pos(int x, int y) { return pos({x, y}); }
 		/// Control size passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::StaticOpts myOpts{
-		///     .size = wl::dpi::sz(88, 26),
+		/// wl::RadioGroup{
+		///     wl::RadioGroupOpts{wnd}
+		///         .radio()
+		///         .size(wl::dpi::sz(88, 26))
 		/// };
 		/// ```
 		///
-		/// If not defined, the control will resize to automatically fit its
-		/// initial text.
-		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size{};
-		/// The [window] and [Static style] passed to [`CreateWindowEx`].
-		///
-		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
-		/// [Static style]: https://learn.microsoft.com/en-us/windows/win32/controls/static-control-styles
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD style = WS_CHILD | WS_VISIBLE | SS_LEFT | SS_NOTIFY;
-		/// The [window extended style] passed to [`CreateWindowEx`].
-		///
-		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD styleEx = WS_EX_LEFT;
-		/// Control text passed to [`CreateWindowEx`].
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		std::wstring text{};
-	};
-
-	/// A fixed-width or flexible part to be added to a `StatusBar`.
-	///
-	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// the same order they appear in the struct.
-	///
-	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
-	struct SbPart final {
-		/// Resizing weight for a flexible part, which expands to fill the
-		/// remaining space.
-		///
-		/// If `width` is specified, this field is ignored.
-		int flex = 0;
-		/** Zero-based icon index. */
-		int iconIndex = -1;
-		/** Text to be rendered. */
-		std::wstring text{};
-		/// Width in pixels. If defined, this part will have a fixed width and
-		/// `flex` field will be ignored.
+		RadioGroupOpts size(SIZE p) { _opts.back()._size = p; return std::move(*this); }
+		/// Control size passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::SbPart myPart{
-		///     .width = wl::dpi::x(200),
+		/// wl::RadioGroup{
+		///     wl::RadioGroupOpts{wnd}
+		///         .radio()
+		///         .size(wl::dpi::x(88) wl::dpi::y(26))
 		/// };
 		/// ```
-		int width = 0;
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		RadioGroupOpts size(int cx, int cy) { return size({cx, cy}); }
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		RadioGroupOpts layout(Lay l) { _opts.back()._layout = l; return std::move(*this); }
+		/// The [window] and [RadioButton style] passed to [`CreateWindowEx`].
+		///
+		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [RadioButton style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		RadioGroupOpts style(DWORD s) { _opts.back()._style = s; return std::move(*this); }
+		/// The [window extended style] passed to [`CreateWindowEx`].
+		///
+		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		RadioGroupOpts style_ex(DWORD sx) { _opts.back()._styleEx = sx; return std::move(*this); }
+		/** `RadioButton` is initially selected. */
+		RadioGroupOpts select() { _opts.back()._selected = true; return std::move(*this); }
+
+	private:
+		IWindowParent &_owner;
+		std::vector<RadioButtonOpts> _opts{};
+		friend RadioGroup;
 	};
 
-	/// Options to create a `StatusBar` programmatically.
-	///
-	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// the same order they appear in the struct.
-	///
-	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
-	struct StatusBarOpts final {
+	/** Options to create a `Static` programmatically. */
+	struct StaticOpts final {
+		/** Constructor. */
+		constexpr explicit StaticOpts(IWindowParent &owner) : _owner{owner} { }
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/// Icons to be loaded into the `StatusBar`.
+		StaticOpts ctrl_id(WORD id) { _ctrlId = id; return std::move(*this); }
+		/// Control text passed to [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		StaticOpts text(WStrView t) { _text = t.c_str(); return std::move(*this); }
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::Static{
+		///     wl::StaticOpts{wnd}
+		///         .pos(wl::dpi::pt(10, 10))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		StaticOpts pos(POINT p) { _pos = p; return std::move(*this); }
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::Static{
+		///     wl::StaticOpts{wnd}
+		///         .pos(wl::dpi::x(10) wl::dpi::y(10))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		StaticOpts pos(int x, int y) { return pos({x, y}); }
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::Static{
+		///     wl::StaticOpts{wnd}
+		///         .size(wl::dpi::sz(88, 26))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		StaticOpts size(SIZE p) { _size = p; return std::move(*this); }
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::Static{
+		///     wl::StaticOpts{wnd}
+		///         .size(wl::dpi::x(88) wl::dpi::y(26))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		StaticOpts size(int cx, int cy) { return size({cx, cy}); }
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		StaticOpts layout(Lay l) { _layout = l; return std::move(*this); }
+		/// The [window] and [Button style] passed to [`CreateWindowEx`].
+		///
+		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
+		/// [Button style]: https://learn.microsoft.com/en-us/windows/win32/controls/button-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		StaticOpts style(DWORD s) { _style = s; return std::move(*this); }
+		/// The [window extended style] passed to [`CreateWindowEx`].
+		///
+		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		StaticOpts style_ex(DWORD sx) { _styleEx = sx; return std::move(*this); }
+
+	private:
+		private:
+		IWindowParent &_owner;
+		WORD _ctrlId = 0;
+		std::wstring _text{};
+		POINT _pos{};
+		SIZE _size{-1, -1};
+		Lay _layout = Lay::hold_hold;
+		DWORD _style = WS_CHILD | WS_VISIBLE | SS_LEFT | SS_NOTIFY;
+		DWORD _styleEx = WS_EX_LEFT;
+		friend Static;
+	};
+
+	/** Options to create a `StatusBar` programmatically. */
+	struct StatusBarOpts final {
+		/** Constructor. */
+		constexpr explicit StatusBarOpts(IWindowParent &owner) : _owner{owner} { }
+		/// Control ID.
+		///
+		/// Defaults to an auto-generated number.
+		StatusBarOpts ctrl_id(WORD id) { _ctrlId = id; return std::move(*this); }
+		/// Loads the icon of the given file extension into the `StatusBar`.
 		///
 		/// They can be later referenced by index, following the same order they
 		/// are added.
-		std::vector<IconLoad> icons{};
-		/** Fixed-width and flexible parts to be added. */
-		std::vector<SbPart> parts{};
+		StatusBarOpts icon_ext(WStrView fileExt);
+		/// Loads the icon of the given resource ID into the `StatusBar`.
+		///
+		/// They can be later referenced by index, following the same order they
+		/// are added.
+		StatusBarOpts icon_id(WORD id);
+		/// Adds a fixed-width part.
+		///
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::StatusBar{
+		///     wl::StatusBarOpts{wnd}
+		///         .fixed_part(wl::dpi::x(100), L"Hello")
+		/// };
+		/// ```
+		StatusBarOpts part_fixed(int px, WStrView initialText = L"", int iconIndex = -1);
+		/** Adds a variable-sized part, which will resize according to the remaining space. */
+		StatusBarOpts part_flex(int weight, WStrView initialText = L"", int iconIndex = -1);
+
+	private:
+		struct Part final {
+			int width = -1;
+			int flex = -1;
+			std::wstring text{};
+			int iconIndex = -1;
+		};
+
+		IWindowParent &_owner;
+		WORD _ctrlId = 0;
+		std::vector<_wl_internal::IconToLoad> _icons{};
+		std::vector<Part> _parts{};
+		friend StatusBar;
 	};
 
-	/// Options to create a `SysLink` programmatically.
-	///
-	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// the same order they appear in the struct.
-	///
-	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	/** Options to create a `SysLink` programmatically. */
 	struct SysLinkOpts final {
+		/** Constructor. */
+		constexpr explicit SysLinkOpts(IWindowParent &owner) : _owner{owner} { }
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
+		SysLinkOpts ctrl_id(WORD id) { _ctrlId = id; return std::move(*this); }
+		/// Control text passed to [`CreateWindowEx`].
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SysLinkOpts text(WStrView t) { _text = t.c_str(); return std::move(*this); }
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::SysLinkOpts myOpts{
-		///     .pos = wl::dpi::pt(10, 10),
+		/// wl::SysLink{
+		///     wl::SysLinkOpts{wnd}
+		///         .pos(wl::dpi::pt(10, 10))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
+		SysLinkOpts pos(POINT p) { _pos = p; return std::move(*this); }
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::SysLink{
+		///     wl::SysLinkOpts{wnd}
+		///         .pos(wl::dpi::x(10) wl::dpi::y(10))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SysLinkOpts pos(int x, int y) { return pos({x, y}); }
 		/// Control size passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::SysLinkOpts myOpts{
-		///     .size = wl::dpi::sz(88, 26),
+		/// wl::SysLink{
+		///     wl::SysLinkOpts{wnd}
+		///         .size(wl::dpi::sz(88, 26))
 		/// };
 		/// ```
 		///
-		/// If not defined, the control will resize to automatically fit its
-		/// initial text.
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		SysLinkOpts size(SIZE p) { _size = p; return std::move(*this); }
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::SysLink{
+		///     wl::SysLinkOpts{wnd}
+		///         .size(wl::dpi::x(88) wl::dpi::y(26))
+		/// };
+		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size{};
-		/// The [window] and [Static style] passed to [`CreateWindowEx`].
+		SysLinkOpts size(int cx, int cy) { return size({cx, cy}); }
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		SysLinkOpts layout(Lay l) { _layout = l; return std::move(*this); }
+		/// The [window] and [SysLink style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
-		/// [Static style]: https://learn.microsoft.com/en-us/windows/win32/controls/static-control-styles
+		/// [SysLink style]: https://learn.microsoft.com/en-us/windows/win32/controls/syslink-control-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | LWS_TRANSPARENT;
+		SysLinkOpts style(DWORD s) { _style = s; return std::move(*this); }
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD styleEx = WS_EX_LEFT;
-		/// Control text passed to [`CreateWindowEx`].
-		///
-		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		std::wstring text{};
+		SysLinkOpts style_ex(DWORD sx) { _styleEx = sx; return std::move(*this); }
+
+	private:
+		IWindowParent &_owner;
+		WORD _ctrlId = 0;
+		std::wstring _text{};
+		POINT _pos{};
+		SIZE _size{-1, -1};
+		Lay _layout = Lay::hold_hold;
+		DWORD _style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | LWS_TRANSPARENT;
+		DWORD _styleEx = WS_EX_LEFT;
+		friend SysLink;
 	};
 
-	/// Options to create a `Tab` programmatically.
-	///
-	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// the same order they appear in the struct.
-	///
-	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	/** Options to create a `Tab` programmatically. */
 	struct TabOpts final {
+		/** Constructor. */
+		constexpr explicit TabOpts(IWindowParent &owner) : _owner{owner} { }
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
+		TabOpts ctrl_id(WORD id) { _ctrlId = id; return std::move(*this); }
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::TabOpts myOpts{
-		///     .pos = wl::dpi::pt(10, 10),
+		/// wl::Tab{
+		///     wl::TabOpts{wnd}
+		///         .pos(wl::dpi::pt(10, 10))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
-		/** Zero-based index of initially selected tab item. */
-		size_t selected = 0;
+		TabOpts pos(POINT p) { _pos = p; return std::move(*this); }
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::Tab{
+		///     wl::TabOpts{wnd}
+		///         .pos(wl::dpi::x(10) wl::dpi::y(10))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		TabOpts pos(int x, int y) { return pos({x, y}); }
 		/// Control size passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::TabOpts myOpts{
-		///     .size = wl::dpi::sz(120, 120),
+		/// wl::Tab{
+		///     wl::TabOpts{wnd}
+		///         .size(wl::dpi::sz(120, 120))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size = {.cx = 120, .cy = 120};
-		/// The [window] and [Tab style] passed to [`CreateWindowEx`].
+		TabOpts size(SIZE p) { _size = p; return std::move(*this); }
+		/// Control size passed to [`CreateWindowEx`].
 		///
-		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be
-		/// set.
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::Tab{
+		///     wl::TabOpts{wnd}
+		///         .size(wl::dpi::x(120) wl::dpi::y(120))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		TabOpts size(int cx, int cy) { return size({cx, cy}); }
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		TabOpts layout(Lay l) { _layout = l; return std::move(*this); }
+		/// The [window] and [Tab style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 		/// [Tab style]: https://learn.microsoft.com/en-us/windows/win32/controls/tree-view-control-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		TabOpts style(DWORD s) { _style = s; return std::move(*this); }
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD styleEx = WS_EX_LEFT;
+		TabOpts style_ex(DWORD sx) { _styleEx = sx; return std::move(*this); }
 		/// The [Tab extended styles] applied right after the control is created.
 		///
 		/// [Tab extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/tab-control-extended-styles
-		DWORD styleExTab = 0;
+		TabOpts style_ex_tab(DWORD sxt) { _styleExTab = sxt; return std::move(*this); }
 		/** Titles of each tab item to be created. */
-		std::vector<std::wstring> titles{};
+		TabOpts titles(std::vector<std::wstring> t) { _titles = std::move(t); return std::move(*this); }
+		/** Zero-based index of initially selected tab item. */
+		TabOpts select(size_t i) { _sel = i; return std::move(*this); }
+
+	private:
+		IWindowParent &_owner;
+		WORD _ctrlId = 0;
+		POINT _pos{};
+		SIZE _size{-1, -1};
+		Lay _layout = Lay::hold_hold;
+		DWORD _style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE;
+		DWORD _styleEx = WS_EX_LEFT;
+		DWORD _styleExTab = 0;
+		std::vector<std::wstring> _titles{};
+		size_t _sel = 0;
+		friend Tab;
 	};
 
-	/// Options to create a `Trackbar` programmatically.
-	///
-	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// the same order they appear in the struct.
-	///
-	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	/** Options to create a `Trackbar` programmatically. */
 	struct TrackbarOpts final {
+		/** Constructor. */
+		constexpr explicit TrackbarOpts(IWindowParent &owner) : _owner{owner} { }
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
-		/** Page size. */
-		int pageSize = 0;
+		TrackbarOpts ctrl_id(WORD id) { _ctrlId = id; return std::move(*this); }
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::TrackbarOpts myOpts{
-		///     .pos = wl::dpi::pt(10, 10),
+		/// wl::Trackbar{
+		///     wl::TrackbarOpts{wnd}
+		///         .pos(wl::dpi::pt(10, 10))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
-		/// Minimum and maximum values for the selectable range.
+		TrackbarOpts pos(POINT p) { _pos = p; return std::move(*this); }
+		/// Control position passed to [`CreateWindowEx`].
 		///
-		/// Defaults to `{0, 100}`.
-		std::pair<int, int> range = {0, 100};
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::Trackbar{
+		///     wl::Trackbar{wnd}
+		///         .pos(wl::dpi::x(10) wl::dpi::y(10))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		TrackbarOpts pos(int x, int y) { return pos({x, y}); }
 		/// Control size passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::TrackbarOpts myOpts{
-		///     .size = wl::dpi::sz(175, 28),
+		/// wl::Trackbar{
+		///     wl::TrackbarOpts{wnd}
+		///         .size(wl::dpi::sz(175, 28))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size = {.cx = 175, .cy = 28};
+		TrackbarOpts size(SIZE p) { _size = p; return std::move(*this); }
+		/// Control size passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::Trackbar{
+		///     wl::TrackbarOpts{wnd}
+		///         .size(wl::dpi::x(175) wl::dpi::y(28))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		TrackbarOpts size(int cx, int cy) { return size({cx, cy}); }
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		TrackbarOpts layout(Lay l) { _layout = l; return std::move(*this); }
 		/// The [window] and [Trackbar style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 		/// [Trackbar style]: https://learn.microsoft.com/en-us/windows/win32/controls/trackbar-control-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | TBS_AUTOTICKS | TBS_HORZ;
+		TrackbarOpts style(DWORD s) { _style = s; return std::move(*this); }
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD styleEx = WS_EX_LEFT;
+		TrackbarOpts style_ex(DWORD sx) { _styleEx = sx; return std::move(*this); }
+		/// Minimum and maximum values for the selectable range.
+		///
+		/// Defaults to `0, 100`.
+		TrackbarOpts range(int min, int max) { _range = {min, max}; return std::move(*this); }
+		/** Page size. */
+		TrackbarOpts page_size(int p) { _page = p; return std::move(*this); }
 		/** Current selected position. */
-		int value = 0;
+		TrackbarOpts value(int v) { _value = v; return std::move(*this); }
+
+	private:
+		IWindowParent &_owner;
+		WORD _ctrlId = 0;
+		POINT _pos{};
+		SIZE _size{-1, -1};
+		Lay _layout = Lay::hold_hold;
+		DWORD _style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | TBS_AUTOTICKS | TBS_HORZ;
+		DWORD _styleEx = WS_EX_LEFT;
+		std::pair<int, int> _range{0, 100};
+		int _page = 0;
+		int _value = 0;
+		friend Trackbar;
 	};
 
-	/// Options to create a `TreeView` programmatically.
-	///
-	/// The fields are declared in alphabetical order to make it easy to work
-	/// with [designated initializers], which require the fields to be set
-	/// the same order they appear in the struct.
-	///
-	/// [designated initializers]: https://en.cppreference.com/w/cpp/language/aggregate_initialization.html#Designated_initializers
+	/** Options to create a `TreeView` programmatically. */
 	struct TreeViewOpts final {
+		/** Constructor. */
+		constexpr explicit TreeViewOpts(IWindowParent &owner) : _owner{owner} { }
 		/// Control ID.
 		///
 		/// Defaults to an auto-generated number.
-		WORD ctrlId = 0;
-		/// 16x16 icons to be loaded into the `TreeView`.
-		///
-		/// They can be later referenced by index, following the same order they
-		/// are added.
-		std::vector<IconLoad> icons{};
-		/** Horizontal and vertical behavior of the control when the parent window is resized. */
-		Lay layout = Lay::hold_hold;
+		TreeViewOpts ctrl_id(WORD id) { _ctrlId = id; return std::move(*this); }
 		/// Control position passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::TreeViewOpts myOpts{
-		///     .pos = wl::dpi::pt(10, 10),
+		/// wl::TreeView{
+		///     wl::TreeViewOpts{wnd}
+		///         .pos(wl::dpi::pt(10, 10))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		POINT pos{};
+		TreeViewOpts pos(POINT p) { _pos = p; return std::move(*this); }
+		/// Control position passed to [`CreateWindowEx`].
+		///
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::TreeView{
+		///     wl::TreeViewOpts{wnd}
+		///         .pos(wl::dpi::x(10) wl::dpi::y(10))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		TreeViewOpts pos(int x, int y) { return pos({x, y}); }
 		/// Control size passed to [`CreateWindowEx`].
 		///
 		/// Prefer using DPI-aware values:
 		///
 		/// ```cpp
-		/// wl::TreeViewOpts myOpts{
-		///     .size = wl::dpi::sz(120, 120),
+		/// wl::TreeView{
+		///     wl::TreeViewOpts{wnd}
+		///         .size(wl::dpi::sz(120, 120))
 		/// };
 		/// ```
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SIZE size = {.cx = 120, .cy = 120};
-		/// The [window] and [TreeView style] passed to [`CreateWindowEx`].
+		TreeViewOpts size(SIZE p) { _size = p; return std::move(*this); }
+		/// Control size passed to [`CreateWindowEx`].
 		///
-		/// Note that, for safety reasons, `LVS_SHAREIMAGELISTS` will always be
-		/// set.
+		/// Prefer using DPI-aware values:
+		///
+		/// ```cpp
+		/// wl::TreeView{
+		///     wl::TreeViewOpts{wnd}
+		///         .size(wl::dpi::x(120), wl::dpi::y(120))
+		/// };
+		/// ```
+		///
+		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
+		TreeViewOpts size(int cx, int cy) { return size({cx, cy}); }
+		/** Horizontal and vertical behavior of the control when the parent window is resized. */
+		TreeViewOpts layout(Lay l) { _layout = l; return std::move(*this); }
+		/// The [window] and [TreeView style] passed to [`CreateWindowEx`].
 		///
 		/// [window]: https://learn.microsoft.com/en-us/windows/win32/winmsg/window-styles
 		/// [TreeView style]: https://learn.microsoft.com/en-us/windows/win32/controls/tree-view-control-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_HASBUTTONS;
+		TreeViewOpts style(DWORD s) { _style = s; return std::move(*this); }
 		/// The [window extended style] passed to [`CreateWindowEx`].
 		///
 		/// [window extended style]: https://learn.microsoft.com/en-us/windows/win32/winmsg/extended-window-styles
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DWORD styleEx = WS_EX_LEFT | WS_EX_CLIENTEDGE;
-		/// The [TreeView extended styles] applied right after the control is created.
+		TreeViewOpts style_ex(DWORD sx) { _styleEx = sx; return std::move(*this); }
+		/// The [TreeView extended styles] applied right after the control is
+		/// created.
 		///
 		/// [TreeView extended styles]: https://learn.microsoft.com/en-us/windows/win32/controls/tree-view-control-window-extended-styles
-		DWORD styleExTreeView = 0;
+		TreeViewOpts style_ex_lv(DWORD sxlv) { _styleExTv = sxlv; return std::move(*this); }
+		/// Loads the 16x16 icon of the given file extension into the `TreeView`.
+		///
+		/// They can be later referenced by index, following the same order they
+		/// are added.
+		TreeViewOpts icon_ext(WStrView fileExt);
+		/// Loads the 16x16 icon of the given resource ID into the `TreeView`.
+		///
+		/// They can be later referenced by index, following the same order they
+		/// are added.
+		TreeViewOpts icon_id(WORD id);
+
+	private:
+		IWindowParent &_owner;
+		WORD _ctrlId = 0;
+		POINT _pos{};
+		SIZE _size{-1, -1};
+		Lay _layout = Lay::hold_hold;
+		DWORD _style = WS_CHILD | WS_GROUP | WS_TABSTOP | WS_VISIBLE | TVS_HASLINES | TVS_LINESATROOT | TVS_SHOWSELALWAYS | TVS_HASBUTTONS;
+		DWORD _styleEx = WS_EX_LEFT | WS_EX_CLIENTEDGE;
+		DWORD _styleExTv = 0;
+		std::vector<_wl_internal::IconToLoad> _icons16{};
+		friend TreeView;
 	};
 
 }
@@ -1196,13 +1699,15 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{wl::MainOpts{
-	///         .title = L"My main window",
-	///     }};
-	///     wl::Button btn{wnd, wl::ButtonOpts{
-	///         .pos = wl::dpi::pt(10, 10),
-	///         .text = L"&Click me",
-	///     }};
+	///     wl::WindowMain wnd{
+	///         wl::WindowMainOpts{}
+	///             .title(L"My main window")
+	///     };
+	///     wl::Button btn{
+	///         wl::ButtonOpts{wnd}
+	///             .text(L"&Click me")
+	///             .pos(wl::dpi::pt(10, 10))
+	///     };
 	/// };
 	/// ```
 	///
@@ -1249,7 +1754,7 @@ namespace wl {
 		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		Button(IWindowParent &owner, ButtonOpts creationOpts);
+		explicit Button(ButtonOpts creationOpts);
 
 		/// Constructs the button, which will be loaded from the dialog resource.
 		///
@@ -1322,13 +1827,16 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{wl::MainOpts{
-	///         .title = L"My main window",
-	///     }};
-	///     wl::CheckBox chk{wnd, wl::CheckBoxOpts{
-	///         .pos = wl::dpi::pt(10, 10);
-	///         .text = L"&Check me";
-	///     }};
+	///     wl::WindowMain wnd{
+	///         wl::WindowMainOpts{}
+	///             .title(L"My main window")
+	///     };
+	///     wl::CheckBox chk{
+	///         wl::CheckBoxOpts{wnd}
+	///             .text(L"&Check me")
+	///             .pos(wl::dpi::pt(10, 10))
+	///             .checked(true)
+	///     };
 	/// };
 	/// ```
 	///
@@ -1350,7 +1858,7 @@ namespace wl {
 		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		CheckBox(IWindowParent &owner, CheckBoxOpts opts);
+		explicit CheckBox(CheckBoxOpts creationOpts);
 
 		/// Constructs the check box, which will be loaded from the dialog
 		/// resource.
@@ -1457,13 +1965,15 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{wl::MainOpts{
-	///         .title = L"My main window",
-	///     }};
-	///     wl::ComboBox cmb{wnd, wl::ComboBoxOpts{
-	///         .pos = wl::dpi::pt(10, 10),
-	///         .texts = {L"Hello", L"World"},
-	///     }};
+	///     wl::WindowMain wnd{
+	///         wl::WindowMainOpts{}
+	///             .title(L"My main window")
+	///     };
+	///     wl::ComboBox cmb{
+	///         wl::ComboBoxOpts{wnd}
+	///             .texts({L"Hello", L"World"})
+	///             .pos(wl::dpi::pt(10, 10))
+	///     };
 	/// };
 	/// ```
 	///
@@ -1525,7 +2035,7 @@ namespace wl {
 		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		ComboBox(IWindowParent &owner, ComboBoxOpts creationOpts);
+		explicit ComboBox(ComboBoxOpts creationOpts);
 
 		/// Constructs the combo box, which will be loaded from the dialog
 		/// resource.
@@ -1587,12 +2097,14 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{wl::MainOpts{
-	///         .title = L"My main window",
-	///     }};
-	///     wl::DateTimePicker dtp{wnd, wl::DateTimePickerOpts{
-	///         .pos = wl::dpi::pt(10, 10),
-	///     }};
+	///     wl::WindowMain wnd{
+	///         wl::WindowMainOpts{}
+	///             .title(L"My main window")
+	///     };
+	///     wl::DateTimePicker dtp{
+	///         wl::DateTimePickerOpts{wnd}
+	///             .pos(wl::dpi::pt(10, 10))
+	///     };
 	/// };
 	/// ```
 	///
@@ -1601,8 +2113,8 @@ namespace wl {
 	///
 	/// MyMain::MyMain() {
 	///     dtp.on().dtn_date_time_change([this](NMDATETIMECHANGE &p) -> void {
-	///         std::wstring title = wl::str::fmt(L"%d-%d-%d", p.st.wYear, p.st.wMonth, p.st.wDay);
-	///         wnd.set_title(title);
+	///         wl::Time t{wl::Time::LocalSt{p.st}};
+	///         wnd.set_title(t.to_str_local_ymd());
 	///     });
 	/// }
 	/// ```
@@ -1614,7 +2126,7 @@ namespace wl {
 		/// programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		DateTimePicker(IWindowParent &owner, DateTimePickerOpts creationOpts);
+		explicit DateTimePicker(DateTimePickerOpts creationOpts);
 
 		/// Constructs the date and time picker, which will be loaded from the
 		/// dialog resource.
@@ -1658,15 +2170,11 @@ namespace wl {
 		/// [`SetFocus`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setfocus
 		const DateTimePicker& focus() const { _wl_internal::focus(hwnd()); return *this; }
 
-		/// Returns the current [`SYSTEMTIME`].
-		///
-		/// [`SYSTEMTIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
-		[[nodiscard]] SYSTEMTIME value() const;
+		/** Returns the current value. */
+		[[nodiscard]] Time value() const;
 
-		/// Sets the current [`SYSTEMTIME`].
-		///
-		/// [`SYSTEMTIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
-		const DateTimePicker& set_value(const SYSTEMTIME &st) const;
+		/** Sets the current value. */
+		const DateTimePicker& set_value(Time t) const;
 
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
@@ -1682,12 +2190,14 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{wl::MainOpts{
-	///         .title = L"My main window",
-	///     }};
-	///     wl::Edit txt{wnd, wl::EditOpts{
-	///         .pos = wl::dpi::pt(10, 10),
-	///     }};
+	///     wl::WindowMain wnd{
+	///         wl::WindowMainOpts{}
+	///             .title(L"My main window")
+	///     };
+	///     wl::Edit txt{
+	///         wl::EditOpts{wnd}
+	///             .pos(wl::dpi::pt(10, 10))
+	///     };
 	/// };
 	/// ```
 	///
@@ -1736,7 +2246,7 @@ namespace wl {
 		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		Edit(IWindowParent &owner, EditOpts creationOpts);
+		explicit Edit(EditOpts creationOpts);
 
 		/// Constructs the edit, which will be loaded from the dialog resource.
 		///
@@ -1804,16 +2314,18 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{wl::MainOpts{
-	///         .title = L"My main window",
-	///     }};
-	///     wl::ListView lv{wnd, wl::ListViewOpts{
-	///         .cols = {
-	///             {L"First", wl::dpi::x(200)},
-	///             {L"Second", wl::dpi::x(100)},
-	///         },
-	///         .pos = wl::dpi::pt(10, 10),
-	///         .size = wl::dpi::sz(400, 200),
+	///     wl::WindowMain wnd{
+	///         wl::WindowMainOpts{}
+	///             .title(L"My main window")
+	///     };
+	///     wl::ListView lv{
+	///         wl::ListViewOpts{wnd}
+	///             .pos(wl::dpi::pt(10, 80))
+	///             .size(wl::dpi::sz(400, 100))
+	///             .col(L"First", wl::dpi::x(200))
+	///             .col(L"Second", 1)
+	///             .icon16_ext(L"docx")
+	///             .icon16_ext(L"zip")
 	///     }};
 	/// };
 	/// ```
@@ -2148,7 +2660,7 @@ namespace wl {
 		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		ListView(IWindowParent &owner, ListViewOpts creationOpts);
+		explicit ListView(ListViewOpts creationOpts);
 
 		/// Constructs the list view, which will be loaded from the dialog
 		/// resource.
@@ -2241,7 +2753,7 @@ namespace wl {
 		/// with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		MonthCalendar(IWindowParent &owner, MonthCalendarOpts creationOpts);
+		explicit MonthCalendar(MonthCalendarOpts creationOpts);
 
 		/// Constructs the month calendar, which will be loaded from the dialog
 		/// resource.
@@ -2286,15 +2798,11 @@ namespace wl {
 		/// [`SetFocus`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-setfocus
 		const MonthCalendar& focus() const { _wl_internal::focus(hwnd()); return *this; }
 
-		/// Returns the current [`SYSTEMTIME`].
-		///
-		/// [`SYSTEMTIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
-		[[nodiscard]] SYSTEMTIME value() const;
+		/** Returns the current value. */
+		[[nodiscard]] Time value() const;
 
-		/// Sets the current [`SYSTEMTIME`].
-		///
-		/// [`SYSTEMTIME`]: https://learn.microsoft.com/en-us/windows/win32/api/minwinbase/ns-minwinbase-systemtime
-		const MonthCalendar& set_value(const SYSTEMTIME &st) const;
+		/** Sets the current value. */
+		const MonthCalendar& set_value(Time t) const;
 
 	private:
 		_wl_internal::NativeCtrlBase _ctrl;
@@ -2313,7 +2821,7 @@ namespace wl {
 		/// with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		RadioButton(IWindowParent &owner, RadioButtonOpts creationOpts);
+		explicit RadioButton(RadioButtonOpts creationOpts);
 
 		/// Constructs the radio button, which will be loaded from the dialog
 		/// resource.
@@ -2399,24 +2907,23 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{wl::MainOpts{
-	///         .title = L"My main window",
-	///     }};
-	///     wl::RadioGroup rads{wnd, {
-	///         wl::RadioButtonOpts{
-	///             .pos = wl::dpi::pt(420, 10),
-	///             .text = L"First",
-	///         },
-	///         wl::RadioButtonOpts{
-	///             .pos = wl::dpi::pt(420, 25),
-	///             .text = L"Second",
-	///         },
-	///         wl::RadioButtonOpts{
-	///             .pos = wl::dpi::pt(420, 40),
-	///             .selected = true,
-	///             .text = L"Turd",
-	///         },
-	///     }};
+	///     wl::WindowMain wnd{
+	///         wl::WindowMainOpts{}
+	///             .title(L"My main window")
+	///     };
+	///     wl::RadioGroup rads{
+	///         wl::RadioGroupOpts{wnd}
+	///             .radio()
+	///                 .text(L"First")
+	///                 .pos(wl::dpi::pt(420, 10))
+	///             .radio()
+	///                 .text(L"Second")
+	///                 .pos(wl::dpi::pt(420, 25))
+	///                 .select()
+	///             .radio()
+	///                 .text(L"Third")
+	///                 .pos(wl::dpi::pt(420, 40))
+	///     };
 	/// };
 	/// ```
 	///
@@ -2455,7 +2962,7 @@ namespace wl {
 		/// programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		RadioGroup(IWindowParent &owner, std::initializer_list<RadioButtonOpts> creationOpts);
+		explicit RadioGroup(RadioGroupOpts creationOpts);
 
 		/// Constructs the radio group using each provided ID to programmatically
 		/// create a radio button which will be loaded from the dialog resource.
@@ -2480,7 +2987,6 @@ namespace wl {
 		[[nodiscard]] constexpr events::RadioGroupEvents& on() { return _wl_internal::valid_event(_radios[0].hwnd(), _events); }
 
 	private:
-		IWindowParent &_owner;
 		_wl_internal::NonMovableArray<RadioButton> _radios;
 		events::RadioGroupEvents _events;
 	};
@@ -2494,13 +3000,15 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{wl::MainOpts{
-	///         .title = L"My main window",
-	///     }};
-	///     wl::Static lbl{wnd, wl::StaticOpts{
-	///         .pos = wl::dpi::pt(10, 10),
-	///         .text = L"Hello",
-	///     }};
+	///     wl::WindowMain wnd{
+	///         wl::WindowMainOpts{}
+	///             .title(L"My main window")
+	///     };
+	///     wl::Static lbl{
+	///         wl::StaticOpts{wnd}
+	///             .text(L"Hello")
+	///             .pos(wl::dpi::pt(10, 10))
+	///     };
 	/// };
 	/// ```
 	///
@@ -2521,7 +3029,7 @@ namespace wl {
 		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		Static(IWindowParent &owner, StaticOpts creationOpts);
+		explicit Static(StaticOpts creationOpts);
 
 		/// Constructs the static, which will be loaded from the dialog resource.
 		///
@@ -2587,25 +3095,17 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{wl::MainOpts{
-	///         .title = L"My main window",
-	///     }};
-	///     wl::StatusBar sb{wnd, {
-	///         .icons = {
-	///             wl::IconLoad{.ext = L"xlsx"},
-	///         },
-	///         .parts = {
-	///             wl::SbPart{
-	///                 .flex = 1,
-	///                 .text = L"Here",
-	///             },
-	///             wl::SbPart{
-	///                 .iconIndex = 0,
-	///                 .text = L"Hello",
-	///                 .width = wl::dpi::x(200),
-	///             },
-	///         },
-	///     }};
+	///     wl::WindowMain wnd{
+	///         wl::WindowMainOpts{}
+	///             .title(L"My main window")
+	///     };
+	///     wl::StatusBar sb{
+	///         wl::StatusBarOpts{wnd}
+	///             .icon_ext(L"xlsx")
+	///             .icon_ext(L"zip")
+	///             .part_flex(1, L"Here", 0)
+	///             .part_fixed(wl::dpi::x(200), L"Hello", 1)
+	///     };
 	/// };
 	/// ```
 	///
@@ -2673,7 +3173,7 @@ namespace wl {
 		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		StatusBar(IWindowParent &owner, StatusBarOpts creationOpts);
+		explicit StatusBar(StatusBarOpts creationOpts);
 
 		/** Part methods. */
 		PartCollection parts{*this};
@@ -2712,7 +3212,7 @@ namespace wl {
 		void resize_to_fit_parent(wm::Size p);
 		_wl_internal::NativeCtrlBase _ctrl;
 		events::StatusBarEvents _events;
-		std::vector<SbPart> _parts;
+		std::vector<StatusBarOpts::Part> _parts;
 		std::vector<int> _rightEdges{}; // buffer to speed up resize calls
 		_wl_internal::HIconStore _iconStore16{{16, 16}};
 	};
@@ -2726,13 +3226,15 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{wl::MainOpts{
-	///         .title = L"My main window",
-	///     }};
-	///     wl::SysLink lbl{wnd, wl::SysLinkOpts{
-	///         .pos = wl::dpi::pt(10, 10),
-	///         .text = L"Link <a href=\"https://google.com\">here</a>",
-	///     }};
+	///     wl::WindowMain wnd{
+	///         wl::WindowMainOpts{}
+	///             .title(L"My main window")
+	///     };
+	///     wl::SysLink lnk{
+	///         wl::SysLinkOpts{wnd}
+	///             .text(L"Link <a href=\"https://google.com\">here</a>")
+	///             .pos(wl::dpi::pt(10, 10))
+	///     };
 	/// };
 	/// ```
 	///
@@ -2752,7 +3254,7 @@ namespace wl {
 		/// Constructs the static, which will be created programmatically with [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		SysLink(IWindowParent &owner, SysLinkOpts creationOpts);
+		explicit SysLink(SysLinkOpts creationOpts);
 
 		/// Constructs the syslink, which will be loaded from the dialog resource.
 		///
@@ -2827,18 +3329,23 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{wl::MainOpts{
-	///         .title = L"My main window",
-	///     }};
-	///     wl::Tab tab{wnd, wl::TabOpts{
-	///         .pos = wl::dpi::pt(10, 10),
-	///         .size = wl::dpi::sz(300, 200),
-	///         .titles = {L"First tab", L"Second tab"},
-	///     }};
-	///     wl::Button btn{tab.items[0].child(), wl::ButtonOpts{
-	///         .pos = wl::dpi::pt(50, 40), // button position inside the 1st tab
-	///         .text = L"&Click",
-	///     }};
+	///     wl::WindowMain wnd{
+	///         wl::WindowMainOpts{}
+	///             .title(L"My main window")
+	///     };
+	///     wl::Tab tab{
+	///         wl::TabOpts{
+	///             .titles({L"First", L"Second"})
+	///             .select(1)
+	///             .pos(wl::dpi::pt(656, 10))
+	///             .size(wl::dpi::sz(220, 200))
+	///             .layout(wl::Lay::move_hold)
+	///     };
+	///     wl::Button btn{
+	///         wl::ButtonOpts{tab.items[0].child()}
+	///             .text(L"&Click")
+	///             .pos(wl::dpi::pt(50, 40)) // button position inside the 1st tab
+	///     };
 	/// };
 	/// ```
 	///
@@ -2911,7 +3418,7 @@ namespace wl {
 		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		Tab(IWindowParent &owner, TabOpts creationOpts);
+		explicit Tab(TabOpts creationOpts);
 
 		/// Constructs the tab, which will be loaded from the dialog resource.
 		///
@@ -2978,14 +3485,16 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{wl::MainOpts{
-	///         .title = L"My main window",
-	///     }};
-	///     wl::Trackbar tb{wnd, wl::TrackbarOpts{
-	///         .pos = wl::dpi::pt(10, 10),
-	///         .range = {0, 8},
-	///         .value = 6,
-	///     }};
+	///     wl::WindowMain wnd{
+	///         wl::WindowMainOpts{}
+	///             .title(L"My main window")
+	///     };
+	///     wl::Trackbar tb{
+	///         wl::TrackbarOpts{wnd}
+	///             .pos(wl::dpi::pt(10, 10))
+	///             .range(0, 8)
+	///             .value(6)
+	///     };
 	/// };
 	/// ```
 	///
@@ -3007,7 +3516,7 @@ namespace wl {
 		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		Trackbar(IWindowParent &owner, TrackbarOpts creationOpts);
+		explicit Trackbar(TrackbarOpts creationOpts);
 
 		/// Constructs the tree view, which will be loaded from the dialog
 		/// resource.
@@ -3087,16 +3596,16 @@ namespace wl {
 	/// class MyMain final {
 	/// public:
 	///     MyMain();
-	///     wl::WindowMain wnd{wl::MainOpts{
-	///         .title = L"My main window",
-	///     }};
-	///     wl::TreeView tv{wnd, wl::TreeViewOpts{
-	///         .icons = {
-	///             wl::IconLoad{.ext = L"docx"},
-	///         },
-	///         .pos = wl::dpi::pt(10, 190),
-	///         .size = wl::dpi::sz(250, 90),
-	///     }};
+	///     wl::WindowMain wnd{
+	///         wl::WindowMainOpts{}
+	///             .title(L"My main window")
+	///     };
+	///     wl::TreeView tv{
+	///         wl::TreeViewOpts{wnd}
+	///             .pos(wl::dpi::pt(10, 190))
+	///             .size(wl::dpi::sz(250, 90))
+	///             .icon_ext(L"docx")
+	///     };
 	/// };
 	/// ```
 	///
@@ -3302,7 +3811,7 @@ namespace wl {
 		/// [`CreateWindowEx`].
 		///
 		/// [`CreateWindowEx`]: https://learn.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowexw
-		TreeView(IWindowParent &owner, TreeViewOpts creationOpts);
+		explicit TreeView(TreeViewOpts creationOpts);
 
 		/// Constructs the tree view, which will be loaded from the dialog
 		/// resource.

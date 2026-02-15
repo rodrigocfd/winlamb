@@ -5,8 +5,6 @@ using namespace _wl_internal;
 using namespace wl;
 using namespace wl::events;
 
-constexpr bool operator==(const SIZE a, const SIZE b) { return a.cx == b.cx && a.cy == b.cy; }
-
 void NativeCtrlBase::create_wnd(WORD ctrlId, DWORD exStyle, const wchar_t *className,
 	std::wstring &&title, DWORD style, POINT pos, SIZE size)
 {
@@ -273,18 +271,76 @@ EVENT_NFY(TabEvents, nm_released_capture, NM_RELEASEDCAPTURE)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Button::Button(IWindowParent &owner, ButtonOpts creationOpts)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
+ListViewOpts ListViewOpts::col(WStrView text, UINT width) {
+	_cols.emplace_back(text.c_str(), width);
+	return std::move(*this);
+}
+
+ListViewOpts ListViewOpts::icon16_ext(WStrView fileExt) {
+	_icons16.emplace_back(0, fileExt.c_str());
+	return std::move(*this);
+}
+
+ListViewOpts ListViewOpts::icon16_id(WORD id) {
+	_icons16.emplace_back(id, std::wstring{});
+	return std::move(*this);
+}
+
+ListViewOpts ListViewOpts::icon32_ext(WStrView fileExt) {
+	_icons32.emplace_back(0, fileExt.c_str());
+	return std::move(*this);
+}
+
+ListViewOpts ListViewOpts::icon32_id(WORD id) {
+	_icons32.emplace_back(id, std::wstring{});
+	return std::move(*this);
+}
+
+StatusBarOpts StatusBarOpts::icon_ext(WStrView fileExt) {
+	_icons.emplace_back(0, fileExt.c_str());
+	return std::move(*this);
+}
+
+StatusBarOpts StatusBarOpts::icon_id(WORD id) {
+	_icons.emplace_back(id, std::wstring{});
+	return std::move(*this);
+}
+
+StatusBarOpts StatusBarOpts::part_fixed(int px, WStrView initialText, int iconIndex) {
+	_parts.emplace_back(px, -1, initialText.c_str(), iconIndex);
+	return std::move(*this);
+}
+
+StatusBarOpts StatusBarOpts::part_flex(int weight, WStrView initialText, int iconIndex) {
+	_parts.emplace_back(-1, weight, initialText.c_str(), iconIndex);
+	return std::move(*this);
+}
+
+TreeViewOpts TreeViewOpts::icon_ext(WStrView fileExt) {
+	_icons16.emplace_back(0, fileExt.c_str());
+	return std::move(*this);
+}
+
+TreeViewOpts TreeViewOpts::icon_id(WORD id) {
+	_icons16.emplace_back(id, std::wstring{});
+	return std::move(*this);
+}
+
+////////////////////////////////////////////////////////////////////////////////
+
+Button::Button(ButtonOpts creationOpts) :
+	_ctrl{creationOpts._owner.base()},
+	_events{creationOpts._owner.base(), valid_ctrl_id(creationOpts._ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
-		[this, pOwner = &owner, opts = std::move(creationOpts)]() mutable -> void {
-			if (opts.size == ButtonOpts{}.size)
-				opts.size = dpi::sz(opts.size); // special case: default size
+		[this, opts = std::move(creationOpts)]() mutable -> void {
+			if (opts._size.cx == -1) opts._size.cx = dpi::x(88); // default size
+			if (opts._size.cy == -1) opts._size.cy = dpi::y(26);
 
-			_ctrl.create_wnd(ctrl_id(), opts.styleEx, L"BUTTON", std::move(opts.text),
-				opts.style, opts.pos, opts.size);
+			_ctrl.create_wnd(ctrl_id(), opts._styleEx, L"BUTTON", std::move(opts._text),
+				opts._style, opts._pos, opts._size);
 			apply_ui_font(hwnd());
-			_ctrl._parent._layout.add(hwnd(), opts.layout);
+			_ctrl._parent._layout.add(hwnd(), opts._layout);
 		});
 }
 
@@ -309,19 +365,21 @@ const Button& Button::trigger_click() const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-CheckBox::CheckBox(IWindowParent &owner, CheckBoxOpts creationOpts)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
+CheckBox::CheckBox(CheckBoxOpts creationOpts) :
+	_ctrl{creationOpts._owner.base()},
+	_events{creationOpts._owner.base(), valid_ctrl_id(creationOpts._ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
-		[this, pOwner = &owner, opts = std::move(creationOpts)]() mutable -> void {
-			if (!opts.size.cx && !opts.size.cy)
-				opts.size = calc_text_bound_box_with_check(str::remove_accel_ampersands(opts.text));
+		[this, opts = std::move(creationOpts)]() mutable -> void {
+			if (opts._size.cx == -1 && opts._size.cy == -1)
+				opts._size = calc_text_bound_box_with_check(str::remove_accel_ampersands(opts._text)); // default size
 
-			_ctrl.create_wnd(ctrl_id(), opts.styleEx, L"BUTTON", std::move(opts.text),
-				opts.style, opts.pos, opts.size);
+			_ctrl.create_wnd(ctrl_id(), opts._styleEx, L"BUTTON", std::move(opts._text),
+				opts._style, opts._pos, opts._size);
 			apply_ui_font(hwnd());
-			_ctrl._parent._layout.add(hwnd(), opts.layout);
-			set_state(opts.state);
+			_ctrl._parent._layout.add(hwnd(), opts._layout);
+			if (opts._checked)
+				set_check(opts._checked);
 		});
 }
 
@@ -408,19 +466,19 @@ std::optional<std::wstring> ComboBox::ItemCollection::selected_text() const {
 
 //------------------------------------------------------------------------------
 
-ComboBox::ComboBox(IWindowParent &owner, ComboBoxOpts creationOpts)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
+ComboBox::ComboBox(ComboBoxOpts creationOpts) :
+	_ctrl{creationOpts._owner.base()},
+	_events{creationOpts._owner.base(), valid_ctrl_id(creationOpts._ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
-		[this, pOwner = &owner, opts = std::move(creationOpts)]() mutable -> void {
-			if (opts.width == ComboBoxOpts{}.width)
-				opts.width = dpi::x(opts.width); // special case: default width
+		[this, opts = std::move(creationOpts)]() mutable -> void {
+			if (opts._width == -1) opts._width = dpi::x(100); // default size
 
-			_ctrl.create_wnd(ctrl_id(), opts.styleEx, L"COMBOBOX", {},
-				opts.style, opts.pos, {.cx = opts.width});
+			_ctrl.create_wnd(ctrl_id(), opts._styleEx, L"COMBOBOX", {},
+				opts._style, opts._pos, {.cx = opts._width});
 			apply_ui_font(hwnd());
-			_ctrl._parent._layout.add(hwnd(), opts.layout);
-			for (auto &&s : opts.texts)
+			_ctrl._parent._layout.add(hwnd(), opts._layout);
+			for (auto &&s : opts._texts)
 				items.add(s);
 		});
 }
@@ -436,20 +494,21 @@ ComboBox::ComboBox(IWindowParent &owner, WORD ctrlId, Lay layout)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-DateTimePicker::DateTimePicker(IWindowParent &owner, DateTimePickerOpts creationOpts)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
+DateTimePicker::DateTimePicker(DateTimePickerOpts creationOpts) :
+	_ctrl{creationOpts._owner.base()},
+	_events{creationOpts._owner.base(), valid_ctrl_id(creationOpts._ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
-		[this, pOwner = &owner, opts = std::move(creationOpts)]() mutable -> void {
-			if (opts.size == DateTimePickerOpts{}.size)
-				opts.size = dpi::sz(opts.size); // special case: default size
+		[this, opts = std::move(creationOpts)]() mutable -> void {
+			if (opts._size.cx == -1) opts._size.cx = dpi::x(230); // default size
+			if (opts._size.cy == -1) opts._size.cy = dpi::y(23);
 
-			_ctrl.create_wnd(ctrl_id(), opts.styleEx, DATETIMEPICK_CLASSW, {},
-				opts.style, opts.pos, opts.size);
+			_ctrl.create_wnd(ctrl_id(), opts._styleEx, DATETIMEPICK_CLASSW, {},
+				opts._style, opts._pos, opts._size);
 			apply_ui_font(hwnd());
-			_ctrl._parent._layout.add(hwnd(), opts.layout);
-			if (opts.value.wYear)
-				set_value(opts.value);
+			_ctrl._parent._layout.add(hwnd(), opts._layout);
+			if (opts._value.nano100())
+				set_value(opts._value);
 		});
 }
 
@@ -462,17 +521,18 @@ DateTimePicker::DateTimePicker(IWindowParent &owner, WORD ctrlId, Lay layout)
 	});
 }
 
-SYSTEMTIME DateTimePicker::value() const {
+Time DateTimePicker::value() const {
 	SYSTEMTIME st{};
 	DWORD ret = DateTime_GetSystemtime(hwnd(), &st);
 	#ifdef _DEBUG
 	if (ret == GDT_VALID)
 		throw std::runtime_error{"DateTime_SetSystemtime failed to set value."};
 	#endif
-	return st;
+	return Time{Time::LocalSt{st}};
 }
 
-const DateTimePicker& DateTimePicker::set_value(const SYSTEMTIME &st) const {
+const DateTimePicker& DateTimePicker::set_value(Time t) const {
+	SYSTEMTIME st = t.to_systemtime_local();
 	BOOL ok = DateTime_SetSystemtime(hwnd(), GDT_VALID, &st);
 	#ifdef _DEBUG
 	if (!ok)
@@ -483,18 +543,19 @@ const DateTimePicker& DateTimePicker::set_value(const SYSTEMTIME &st) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Edit::Edit(IWindowParent &owner, EditOpts creationOpts)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
+Edit::Edit(EditOpts creationOpts) :
+	_ctrl{creationOpts._owner.base()},
+	_events{creationOpts._owner.base(), valid_ctrl_id(creationOpts._ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
-		[this, pOwner = &owner, opts = std::move(creationOpts)]() mutable -> void {
-			if (opts.size == EditOpts{}.size)
-				opts.size = dpi::sz(opts.size); // special case: default size
+		[this, opts = std::move(creationOpts)]() mutable -> void {
+			if (opts._size.cx == -1) opts._size.cx = dpi::x(100); // default size
+			if (opts._size.cy == -1) opts._size.cy = dpi::y(23);
 
-			_ctrl.create_wnd(ctrl_id(), opts.styleEx, L"EDIT", std::move(opts.text),
-				opts.style, opts.pos, opts.size);
+			_ctrl.create_wnd(ctrl_id(), opts._styleEx, L"EDIT", std::move(opts._text),
+				opts._style, opts._pos, opts._size);
 			apply_ui_font(hwnd());
-			_ctrl._parent._layout.add(hwnd(), opts.layout);
+			_ctrl._parent._layout.add(hwnd(), opts._layout);
 		});
 }
 
@@ -962,29 +1023,30 @@ std::optional<ListView::Item> ListView::ItemCollection::topmost_visible() const 
 
 //------------------------------------------------------------------------------
 
-ListView::ListView(IWindowParent &owner, ListViewOpts creationOpts)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
+ListView::ListView(ListViewOpts creationOpts) :
+	_ctrl{creationOpts._owner.base()},
+	_events{creationOpts._owner.base(), valid_ctrl_id(creationOpts._ctrlId)}
 {
-	load_context_menu(creationOpts.contextMenuId);
+	load_context_menu(creationOpts._contextMenuId);
 
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
-		[this, pOwner = &owner, opts = std::move(creationOpts)]() mutable -> void {
-			if (opts.size == ListViewOpts{}.size)
-				opts.size = dpi::sz(opts.size); // special case: default size
+		[this, opts = std::move(creationOpts)]() mutable -> void {
+			if (opts._size.cx == -1) opts._size.cx = dpi::x(120); // default size
+			if (opts._size.cy == -1) opts._size.cy = dpi::y(120);
 
-			_ctrl.create_wnd(ctrl_id(), opts.styleEx, WC_LISTVIEWW, {},
-				opts.style | LVS_SHAREIMAGELISTS, opts.pos, opts.size);
-			if (opts.styleExListView)
-				set_extended_style(true, opts.styleExListView);
-			_ctrl._parent._layout.add(hwnd(), opts.layout);
-			for (auto &&c : opts.cols)
+			_ctrl.create_wnd(ctrl_id(), opts._styleEx, WC_LISTVIEWW, {},
+				opts._style | LVS_SHAREIMAGELISTS, opts._pos, opts._size);
+			if (opts._styleExLv)
+				set_extended_style(true, opts._styleExLv);
+			_ctrl._parent._layout.add(hwnd(), opts._layout);
+			for (auto &&c : opts._cols)
 				cols.add(c.text, c.width);
 
-			for (auto &&ico : opts.icons16) {
+			for (auto &&ico : opts._icons16) {
 				if (ico.id) icons_16().add_resource(ico.id);
 				else        icons_16().add_shell_ext(ico.ext);
 			}
-			for (auto &&ico : opts.icons32) {
+			for (auto &&ico : opts._icons32) {
 				if (ico.id) icons_32().add_resource(ico.id);
 				else        icons_32().add_shell_ext(ico.ext);
 			}
@@ -1124,21 +1186,22 @@ void ListView::show_context_menu(bool followCursor, bool hasCtrl, bool hasShift)
 
 ////////////////////////////////////////////////////////////////////////////////
 
-MonthCalendar::MonthCalendar(IWindowParent &owner, wl::MonthCalendarOpts creationOpts)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
+MonthCalendar::MonthCalendar(MonthCalendarOpts creationOpts) :
+	_ctrl{creationOpts._owner.base()},
+	_events{creationOpts._owner.base(), valid_ctrl_id(creationOpts._ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
-		[this, pOwner = &owner, opts = std::move(creationOpts)]() -> void {
-			_ctrl.create_wnd(ctrl_id(), opts.styleEx, MONTHCAL_CLASSW, {}, opts.style, opts.pos, {});
+		[this, opts = std::move(creationOpts)]() -> void {
+			_ctrl.create_wnd(ctrl_id(), opts._styleEx, MONTHCAL_CLASSW, {}, opts._style, opts._pos, {});
 
 			RECT rcBounds{};
 			SendMessageW(hwnd(), MCM_GETMINREQRECT, 0, reinterpret_cast<LPARAM>(&rcBounds)); // request ideal size
 			SetWindowPos(hwnd(), nullptr, 0, 0, rcBounds.right, rcBounds.bottom, SWP_NOZORDER | SWP_NOMOVE);
 
-			if (opts.value.wYear && opts.value.wMonth)
-				set_value(opts.value);
+			if (opts._value.nano100())
+				set_value(opts._value);
 
-			_ctrl._parent._layout.add(hwnd(), opts.layout);
+			_ctrl._parent._layout.add(hwnd(), opts._layout);
 		});
 }
 
@@ -1151,40 +1214,43 @@ MonthCalendar::MonthCalendar(IWindowParent &owner, WORD ctrlId, Lay layout)
 	});
 }
 
-SYSTEMTIME MonthCalendar::value() const {
+Time MonthCalendar::value() const {
 	SYSTEMTIME st{};
 	LRESULT ret = SendMessageW(hwnd(), MCM_GETCURSEL, 0, reinterpret_cast<LPARAM>(&st));
 	#ifdef _DEBUG
-	if (!ret)
-		throw std::runtime_error{"MCM_GETCURSEL failed."};
+	if (ret == GDT_VALID)
+		throw std::runtime_error{"MCM_GETCURSEL failed to set value."};
 	#endif
-	return st;
+	return Time{Time::LocalSt{st}};
 }
 
-const MonthCalendar& MonthCalendar::set_value(const SYSTEMTIME &st) const {
-	LRESULT ret = SendMessageW(hwnd(), MCM_SETCURSEL, 0, reinterpret_cast<LPARAM>(&st));
+const MonthCalendar& MonthCalendar::set_value(Time t) const {
+	SYSTEMTIME st = t.to_systemtime_local();
+	LRESULT ok = SendMessageW(hwnd(), MCM_SETCURSEL, 0, reinterpret_cast<LPARAM>(&st));
 	#ifdef _DEBUG
-	if (!ret)
-		throw std::runtime_error{"MCM_SETCURSEL failed."};
+	if (!ok)
+		throw std::runtime_error{"MCM_SETCURSEL failed to set value."};
 	#endif
 	return *this;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RadioButton::RadioButton(IWindowParent &owner, RadioButtonOpts creationOpts)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
+RadioButton::RadioButton(RadioButtonOpts creationOpts) :
+	_ctrl{creationOpts._owner.base()},
+	_events{creationOpts._owner.base(), valid_ctrl_id(creationOpts._ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
-		[this, pOwner = &owner, opts = std::move(creationOpts)]() mutable -> void {
-			if (!opts.size.cx && !opts.size.cy)
-				opts.size = calc_text_bound_box_with_check(str::remove_accel_ampersands(opts.text));
+		[this, opts = std::move(creationOpts)]() mutable -> void {
+			if (opts._size.cx == -1 && opts._size.cy == -1)
+				opts._size = calc_text_bound_box_with_check(str::remove_accel_ampersands(opts._text));
 
-			_ctrl.create_wnd(ctrl_id(), opts.styleEx, L"BUTTON", std::move(opts.text),
-				opts.style, opts.pos, opts.size);
+			_ctrl.create_wnd(ctrl_id(), opts._styleEx, L"BUTTON", std::move(opts._text),
+				opts._style, opts._pos, opts._size);
 			apply_ui_font(hwnd());
-			_ctrl._parent._layout.add(hwnd(), opts.layout);
-			if (opts.selected) select();
+			_ctrl._parent._layout.add(hwnd(), opts._layout);
+			if (opts._selected)
+				select();
 		});
 }
 
@@ -1220,26 +1286,25 @@ const RadioButton& RadioButton::set_text_resize(WStrView newText) const {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-RadioGroup::RadioGroup(IWindowParent &owner, std::initializer_list<RadioButtonOpts> creationOpts)
-	: _owner{owner}, _radios{creationOpts.size()}, _events{*this}
+RadioGroup::RadioGroup(RadioGroupOpts creationOpts)
+	: _radios{creationOpts._opts.size()}, _events{*this}
 {
 	#ifdef _DEBUG
-	if (!creationOpts.size())
+	if (_radios.empty())
 		throw std::invalid_argument{"Cannot create a RadioGroup with zero radio controls."};
 	#endif
 
 	size_t i = 0;
-	for (auto &&opt : creationOpts) {
-		RadioButtonOpts fixedOpts{opt};
-		if (!i) fixedOpts.style |= WS_GROUP; // first radio of the group
-		else    fixedOpts.style &= ~WS_GROUP;
+	for (auto &&opt : creationOpts._opts) {
+		if (!i) opt._style |= WS_GROUP; // first radio of the group
+		else    opt._style &= ~WS_GROUP;
 
-		new (&_radios[i++]) RadioButton{owner, std::move(fixedOpts)}; // invoke constructor manually
+		new (&_radios[i++]) RadioButton{std::move(opt)}; // invoke constructor manually
 	}
 }
 
 RadioGroup::RadioGroup(IWindowParent &owner, Lay layout, std::initializer_list<WORD> ctrlIds)
-	: _owner{owner}, _radios{ctrlIds.size()}, _events{*this}
+	: _radios{ctrlIds.size()}, _events{*this}
 {
 	#ifdef _DEBUG
 	if (!ctrlIds.size())
@@ -1253,18 +1318,19 @@ RadioGroup::RadioGroup(IWindowParent &owner, Lay layout, std::initializer_list<W
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Static::Static(IWindowParent &owner, StaticOpts creationOpts)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
+Static::Static(StaticOpts creationOpts) :
+	_ctrl{creationOpts._owner.base()},
+	_events{creationOpts._owner.base(), valid_ctrl_id(creationOpts._ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
-		[this, pOwner = &owner, opts = std::move(creationOpts)]() mutable -> void {
-			if (!opts.size.cx && !opts.size.cy)
-				opts.size = calc_text_bound_box(str::remove_accel_ampersands(opts.text));
+		[this, opts = std::move(creationOpts)]() mutable -> void {
+			if (opts._size.cx == -1 && opts._size.cy == -1)
+				opts._size = calc_text_bound_box(str::remove_accel_ampersands(opts._text));
 
-			_ctrl.create_wnd(ctrl_id(), opts.styleEx, L"STATIC", std::move(opts.text),
-				opts.style, opts.pos, opts.size);
+			_ctrl.create_wnd(ctrl_id(), opts._styleEx, L"STATIC", std::move(opts._text),
+				opts._style, opts._pos, opts._size);
 			apply_ui_font(hwnd());
-			_ctrl._parent._layout.add(hwnd(), opts.layout);
+			_ctrl._parent._layout.add(hwnd(), opts._layout);
 		});
 }
 
@@ -1318,18 +1384,18 @@ const StatusBar::Part& StatusBar::Part::set_icon_index(int iconIndex) const {
 
 //------------------------------------------------------------------------------
 
-StatusBar::StatusBar(IWindowParent &owner, StatusBarOpts creationOpts) :
-	_ctrl{owner.base()},
-	_events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)},
-	_parts{std::move(creationOpts.parts)}
+StatusBar::StatusBar(StatusBarOpts creationOpts) :
+	_ctrl{creationOpts._owner.base()},
+	_events{creationOpts._owner.base(), valid_ctrl_id(creationOpts._ctrlId)},
+	_parts{std::move(creationOpts._parts)}
 {
 	_rightEdges.resize(_parts.size(), 0);
-	for (auto &&ico : creationOpts.icons) {
+	for (auto &&ico : creationOpts._icons) {
 		if (ico.id) _iconStore16.add_resource(ico.id);
 		else        _iconStore16.add_shell_ext(ico.ext);
 	}
 
-	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, pOwner = &owner]() -> void {
+	_ctrl._parent._preEvents.wm_create_or_init_dialog([this, pOwner = &creationOpts._owner]() -> void {
 		DWORD parentStyle = static_cast<DWORD>(GetWindowLongPtrW(pOwner->hwnd(), GWL_STYLE));
 		bool isParentResizable = (parentStyle & WS_MAXIMIZEBOX) || (parentStyle & WS_SIZEBOX);
 		DWORD style = WS_CHILD | WS_VISIBLE | SBARS_TOOLTIPS | (isParentResizable ? SBARS_SIZEGRIP : 0);
@@ -1385,18 +1451,19 @@ void StatusBar::resize_to_fit_parent(wm::Size p) {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-SysLink::SysLink(IWindowParent &owner, SysLinkOpts creationOpts)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
+SysLink::SysLink(SysLinkOpts creationOpts) :
+	_ctrl{creationOpts._owner.base()},
+	_events{creationOpts._owner.base(), valid_ctrl_id(creationOpts._ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
-		[this, pOwner = &owner, opts = std::move(creationOpts)]() mutable -> void {
-			if (!opts.size.cx && !opts.size.cy)
-				opts.size = calc_text_bound_box(str::remove_accel_ampersands(remove_html_anchor(opts.text)));
+		[this, opts = std::move(creationOpts)]() mutable -> void {
+			if (opts._size.cx == -1 && opts._size.cy == -1)
+				opts._size = calc_text_bound_box(str::remove_accel_ampersands(remove_html_anchor(opts._text)));
 
-			_ctrl.create_wnd(ctrl_id(), opts.styleEx, WC_LINK, std::move(opts.text),
-				opts.style, opts.pos, opts.size);
+			_ctrl.create_wnd(ctrl_id(), opts._styleEx, WC_LINK, std::move(opts._text),
+				opts._style, opts._pos, opts._size);
 			apply_ui_font(hwnd());
-			_ctrl._parent._layout.add(hwnd(), opts.layout);
+			_ctrl._parent._layout.add(hwnd(), opts._layout);
 		});
 }
 
@@ -1504,36 +1571,36 @@ std::optional<Tab::Item> Tab::ItemCollection::selected() const {
 
 //------------------------------------------------------------------------------
 
-Tab::Tab(IWindowParent &owner, TabOpts creationOpts) :
-	_ctrl{owner.base()},
-	_events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)},
-	_children{creationOpts.titles.size()}
+Tab::Tab(TabOpts creationOpts) :
+	_ctrl{creationOpts._owner.base()},
+	_events{creationOpts._owner.base(), valid_ctrl_id(creationOpts._ctrlId)},
+	_children{creationOpts._titles.size()}
 {
 	#ifdef _DEBUG
-	if (creationOpts.titles.empty())
+	if (creationOpts._titles.empty())
 		throw std::invalid_argument{"Cannot create a Tab with zero items."};
-	else if (creationOpts.titles.size() > 100) // arbitrary
+	else if (creationOpts._titles.size() > 100) // arbitrary
 		throw std::invalid_argument{"Cannot create a Tab with more than 100 items."};
 	#endif
 
-	for (size_t i = 0; i < creationOpts.titles.size(); ++i)
-		new (&_children[i]) WindowControl{owner, ControlOpts{}}; // invoke constructor manually
+	for (size_t i = 0; i < creationOpts._titles.size(); ++i)
+		new (&_children[i]) WindowControl{WindowControlOpts{creationOpts._owner}}; // invoke constructor manually
 
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
-		[this, pOwner = &owner, opts = std::move(creationOpts)]() mutable -> void {
-			if (opts.size == TabOpts{}.size)
-				opts.size = dpi::sz(opts.size); // special case: default size
+		[this, opts = std::move(creationOpts)]() mutable -> void {
+			if (opts._size.cx == -1 && opts._size.cy == -1)
+				opts._size = dpi::sz(120, 120); // default size
 
-			_ctrl.create_wnd(ctrl_id(), opts.styleEx, WC_TABCONTROLW, {},
-				opts.style, opts.pos, opts.size);
+			_ctrl.create_wnd(ctrl_id(), opts._styleEx, WC_TABCONTROLW, {},
+				opts._style, opts._pos, opts._size);
 			apply_ui_font(hwnd());
-			if (opts.styleExTab)
-				set_extended_style(true, opts.styleExTab);
-			_ctrl._parent._layout.add(hwnd(), opts.layout);
-			for (auto &&title : opts.titles)
+			if (opts._styleExTab)
+				set_extended_style(true, opts._styleExTab);
+			_ctrl._parent._layout.add(hwnd(), opts._layout);
+			for (auto &&title : opts._titles)
 				create_tab(title);
-			if (opts.selected)
-				items[static_cast<int>(opts.selected)].select();
+			if (opts._sel)
+				items[static_cast<int>(opts._sel)].select();
 			display_cur_tab();
 		});
 
@@ -1620,20 +1687,21 @@ void Tab::custom_events() {
 
 ////////////////////////////////////////////////////////////////////////////////
 
-Trackbar::Trackbar(IWindowParent &owner, TrackbarOpts creationOpts)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
+Trackbar::Trackbar(TrackbarOpts creationOpts) :
+	_ctrl{creationOpts._owner.base()},
+	_events{creationOpts._owner.base(), valid_ctrl_id(creationOpts._ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
-		[this, pOwner = &owner, opts = std::move(creationOpts)]() mutable -> void {
-			if (opts.size == TrackbarOpts{}.size)
-				opts.size = dpi::sz(opts.size); // special case: default size
+		[this, opts = std::move(creationOpts)]() mutable -> void {
+			if (opts._size.cx == -1 && opts._size.cy == -1)
+				opts._size = dpi::sz(175, 28); // default size
 
-			_ctrl.create_wnd(ctrl_id(), opts.styleEx, TRACKBAR_CLASSW, {},
-				opts.style, opts.pos, opts.size);
-			_ctrl._parent._layout.add(hwnd(), opts.layout);
-			if (opts.range != std::pair{0, 100}) set_range(opts.range);
-			if (opts.pageSize) set_page_size(opts.pageSize);
-			if (opts.value) set_pos(opts.value);
+			_ctrl.create_wnd(ctrl_id(), opts._styleEx, TRACKBAR_CLASSW, {},
+				opts._style, opts._pos, opts._size);
+			_ctrl._parent._layout.add(hwnd(), opts._layout);
+			if (opts._range != std::pair{0, 100}) set_range(opts._range);
+			if (opts._page) set_page_size(opts._page);
+			if (opts._value) set_pos(opts._value);
 		});
 }
 
@@ -1901,21 +1969,22 @@ TreeView::Item TreeView::ItemCollection::selected() const {
 
 //------------------------------------------------------------------------------
 
-TreeView::TreeView(IWindowParent &owner, TreeViewOpts creationOpts)
-	: _ctrl{owner.base()}, _events{owner.base(), valid_ctrl_id(creationOpts.ctrlId)}
+TreeView::TreeView(TreeViewOpts creationOpts) :
+	_ctrl{creationOpts._owner.base()},
+	_events{creationOpts._owner.base(), valid_ctrl_id(creationOpts._ctrlId)}
 {
 	_ctrl._parent._preEvents.wm_create_or_init_dialog(
-		[this, pOwner = &owner, opts = std::move(creationOpts)]() mutable -> void {
-			if (opts.size == TreeViewOpts{}.size)
-				opts.size = dpi::sz(opts.size); // special case: default size
+		[this, opts = std::move(creationOpts)]() mutable -> void {
+			if (opts._size.cx == -1 && opts._size.cy == -1)
+				opts._size = dpi::sz(120, 120); // default size
 
-			_ctrl.create_wnd(ctrl_id(), opts.styleEx, WC_TREEVIEWW, {},
-				opts.style, opts.pos, opts.size);
-			if (opts.styleExTreeView)
-				set_extended_style(true, opts.styleExTreeView);
-			_ctrl._parent._layout.add(hwnd(), opts.layout);
+			_ctrl.create_wnd(ctrl_id(), opts._styleEx, WC_TREEVIEWW, {},
+				opts._style, opts._pos, opts._size);
+			if (opts._styleExTv)
+				set_extended_style(true, opts._styleExTv);
+			_ctrl._parent._layout.add(hwnd(), opts._layout);
 
-			for (auto &&ico : opts.icons) {
+			for (auto &&ico : opts._icons16) {
 				if (ico.id) icons().add_resource(ico.id);
 				else        icons().add_shell_ext(ico.ext);
 			}
