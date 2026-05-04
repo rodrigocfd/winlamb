@@ -219,17 +219,19 @@ private:
 	}
 
 	void _receive_bytes(UINT nBytesToRead) {
-		DWORD readCount = 0; // not used
-		this->data.resize(this->data.size() + nBytesToRead); // make room
+		size_t beforeSize = this->data.size();
+		this->data.resize(beforeSize + nBytesToRead); // make room
 
+		DWORD readCount = 0;
 		if (!WinHttpReadData(this->_hRequest,
-			static_cast<void*>(&this->data[this->data.size() - nBytesToRead]), // append to buffer
+			static_cast<void*>(&this->data[beforeSize]), // append to buffer
 			nBytesToRead, &readCount) )
 		{
 			this->_abort_and_throw(GetLastError(), "WinHttpReadData failed");
 		}
 
-		this->_totalGot += nBytesToRead; // update total downloaded count
+		this->_totalGot += readCount; // update total downloaded count
+		this->data.resize(beforeSize + readCount); // resize buffer to whatever was read
 	}
 };
 
