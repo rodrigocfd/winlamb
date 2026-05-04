@@ -275,7 +275,7 @@ private:
 
 		// Call dataCallback with the bytes we just got
 		if (this->_dataCallback) {
-			this->_dataCallback(static_cast<void*>(&this->data[beforeSize]), readCount);
+			this->_dataCallback(pWriteTo, readCount);
 		}
 	}
 };
