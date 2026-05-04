@@ -7,6 +7,7 @@
 
 #pragma once
 #include <functional>
+#include <fstream>
 #include "internals/download_session.h"
 #include "internals/download_url.h"
 #include "insert_order_map.h"
@@ -28,6 +29,7 @@ private:
 	insert_order_map<std::wstring, std::wstring> _requestHeaders;
 	insert_order_map<std::wstring, std::wstring> _responseHeaders;
 	std::function<void()> _startCallback, _progressCallback;
+	std::ofstream* _stream = nullptr;
 
 public:
 	std::vector<BYTE> data;
@@ -49,6 +51,10 @@ public:
 			this->_hConnect = nullptr;
 		}
 		this->_contentLength = this->_totalGot = 0;
+		if (this->_stream != nullptr) {
+			delete this->_stream;
+			this->_stream = nullptr;
+		}
 		return *this;
 	}
 
@@ -71,6 +77,15 @@ public:
 	// Defines a lambda do be called each time a chunk of bytes is received.
 	download& on_progress(std::function<void()> callback) noexcept {
 		this->_progressCallback = std::move(callback);
+		return *this;
+	}
+
+	// Set a file to write to instead of the data buffer.
+	download& to_file(const std::wstring& path) {
+		if (this->_stream != nullptr) {
+			throw std::logic_error("A file stream is already configured.");
+		}
+		this->_stream = new std::ofstream(path, std::wofstream::out | std::wofstream::binary);
 		return *this;
 	}
 
@@ -219,19 +234,29 @@ private:
 	}
 
 	void _receive_bytes(UINT nBytesToRead) {
-		size_t beforeSize = this->data.size();
-		this->data.resize(beforeSize + nBytesToRead); // make room
+		void* pWriteTo = nullptr;
+		size_t beforeSize;
+		if (this->_stream != nullptr) {
+			this->data.resize(nBytesToRead); // make room
+			pWriteTo = static_cast<void*>(&this->data[0]);
+		} else {
+			beforeSize = this->data.size();
+			this->data.resize(beforeSize + nBytesToRead); // make room
+			pWriteTo = static_cast<void*>(&this->data[beforeSize]);
+		}
 
 		DWORD readCount = 0;
-		if (!WinHttpReadData(this->_hRequest,
-			static_cast<void*>(&this->data[beforeSize]), // append to buffer
-			nBytesToRead, &readCount) )
-		{
+		if (!WinHttpReadData(this->_hRequest, pWriteTo, nBytesToRead, &readCount)) {
 			this->_abort_and_throw(GetLastError(), "WinHttpReadData failed");
 		}
 
 		this->_totalGot += readCount; // update total downloaded count
-		this->data.resize(beforeSize + readCount); // resize buffer to whatever was read
+
+		if (this->_stream != nullptr) {
+			this->_stream->write((const char*)&this->data[0], readCount); // write to stream
+		} else {
+			this->data.resize(beforeSize + readCount); // resize buffer to whatever was read
+		}
 	}
 };
 
