@@ -23,6 +23,7 @@ public:
 private:
 	const session& _session;
 	HINTERNET      _hConnect = nullptr, _hRequest = nullptr;
+	DWORD          _statusCode = 0;
 	size_t         _contentLength = 0, _totalGot = 0;
 	std::wstring   _url, _verb, _referrer;
 	insert_order_map<std::wstring, std::wstring> _requestHeaders;
@@ -82,6 +83,7 @@ public:
 			throw std::invalid_argument("Blank URL.");
 		}
 
+		this->_statusCode = 0;
 		this->_contentLength = this->_totalGot = 0;
 		this->_init_handles();
 		this->_contact_server();
@@ -108,6 +110,7 @@ public:
 
 	const insert_order_map<std::wstring, std::wstring>& get_request_headers() const noexcept  { return this->_requestHeaders; }
 	const insert_order_map<std::wstring, std::wstring>& get_response_headers() const noexcept { return this->_responseHeaders; }
+	DWORD get_status_code() const noexcept       { return this->_statusCode; }
 	size_t get_content_length() const noexcept   { return this->_contentLength; }
 	size_t get_total_downloaded() const noexcept { return this->_totalGot; }
 
@@ -172,6 +175,11 @@ private:
 	}
 
 	void _parse_headers() {
+		// Retrieve the status code.
+		DWORD dwSize = sizeof(DWORD);
+		WinHttpQueryHeaders(this->_hRequest, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
+			WINHTTP_HEADER_NAME_BY_INDEX, &_statusCode, &dwSize, WINHTTP_NO_HEADER_INDEX);
+
 		// Retrieve the response header.
 		DWORD rehSize = 0;
 		WinHttpQueryHeaders(this->_hRequest, WINHTTP_QUERY_RAW_HEADERS_CRLF,
