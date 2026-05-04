@@ -100,13 +100,7 @@ public:
 
 	// Create the same exact font used by UI, like Tahoma or Segoe UI.
 	font& create_ui() {
-		NONCLIENTMETRICS ncm{};
-		ncm.cbSize = sizeof(ncm);
-		if (!IsWindowsVistaOrGreater()) {
-			ncm.cbSize -= sizeof(ncm.iBorderWidth);
-		}
-		SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0);
-		return this->create(ncm.lfMenuFont); // Tahoma/Segoe
+		return this->create(util::get_ui());
 	}
 
 public:
@@ -148,6 +142,17 @@ public:
 				}, reinterpret_cast<LPARAM>(&isInstalled));
 			ReleaseDC(nullptr, hdc);
 			return isInstalled;
+		}
+
+		// Gets the LOGFONT options used by UI, like Tahoma or Segoe UI.
+		static LOGFONT get_ui() {
+			NONCLIENTMETRICS ncm{};
+			ncm.cbSize = sizeof(ncm);
+			if (!IsWindowsVistaOrGreater()) {
+				ncm.cbSize -= sizeof(ncm.iBorderWidth);
+			}
+			SystemParametersInfoW(SPI_GETNONCLIENTMETRICS, ncm.cbSize, &ncm, 0);
+			return ncm.lfMenuFont;
 		}
 	};
 };
