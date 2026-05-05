@@ -30,7 +30,7 @@ private:
 	insert_order_map<std::wstring, std::wstring> _requestHeaders;
 	insert_order_map<std::wstring, std::wstring> _responseHeaders;
 	std::function<void()> _startCallback, _progressCallback;
-	std::function<void(void*, DWORD)> _dataCallback;
+	std::function<void(BYTE*, DWORD)> _dataCallback;
 	std::ofstream* _stream = nullptr;
 
 public:
@@ -83,7 +83,7 @@ public:
 	}
 
 	// Defines a lambda do be called each time a chunk of bytes is received.
-	download& on_data(std::function<void(void*, DWORD)> callback) noexcept {
+	download& on_data(std::function<void(BYTE*, DWORD)> callback) noexcept {
 		this->_dataCallback = std::move(callback);
 		return *this;
 	}
@@ -275,7 +275,7 @@ private:
 
 		// Call dataCallback with the bytes we just got
 		if (this->_dataCallback) {
-			this->_dataCallback(pWriteTo, readCount);
+			this->_dataCallback((BYTE*)pWriteTo, readCount);
 		}
 	}
 };
