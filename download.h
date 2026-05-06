@@ -268,14 +268,14 @@ private:
 		this->_totalGot += readCount; // update total downloaded count
 
 		if (this->_stream != nullptr) {
-			this->_stream->write((const char*)pWriteTo, readCount); // write to stream
+			this->_stream->write(static_cast<const char*>(pWriteTo), readCount); // write to stream
 		} else {
 			this->data.resize(beforeSize + readCount); // resize buffer to whatever was read
 		}
 
 		// Call dataCallback with the bytes we just got
 		if (this->_dataCallback) {
-			this->_dataCallback((BYTE*)pWriteTo, readCount);
+			this->_dataCallback(static_cast<BYTE*>(pWriteTo), readCount);
 		}
 	}
 };
