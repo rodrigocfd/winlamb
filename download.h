@@ -7,7 +7,6 @@
 
 #pragma once
 #include <functional>
-#include <fstream>
 #include "internals/download_session.h"
 #include "internals/download_url.h"
 #include "insert_order_map.h"
@@ -24,13 +23,11 @@ public:
 private:
 	const session& _session;
 	HINTERNET      _hConnect = nullptr, _hRequest = nullptr;
-	DWORD          _statusCode = 0;
 	size_t         _contentLength = 0, _totalGot = 0;
 	std::wstring   _url, _verb, _referrer;
 	insert_order_map<std::wstring, std::wstring> _requestHeaders;
 	insert_order_map<std::wstring, std::wstring> _responseHeaders;
 	std::function<void()> _startCallback, _progressCallback;
-	std::ofstream* _stream = nullptr;
 
 public:
 	std::vector<BYTE> data;
@@ -52,10 +49,6 @@ public:
 			this->_hConnect = nullptr;
 		}
 		this->_contentLength = this->_totalGot = 0;
-		if (this->_stream != nullptr) {
-			delete this->_stream;
-			this->_stream = nullptr;
-		}
 		return *this;
 	}
 
@@ -81,15 +74,6 @@ public:
 		return *this;
 	}
 
-	// Set a file to write to instead of the data buffer.
-	download& to_file(const std::wstring& path) {
-		if (this->_stream != nullptr) {
-			throw std::logic_error("A file stream is already configured.");
-		}
-		this->_stream = new std::ofstream(path, std::wofstream::out | std::wofstream::binary);
-		return *this;
-	}
-
 	// Effectively starts the download, returning only after it completes.
 	download& start() {
 		if (this->_hConnect) {
@@ -98,7 +82,6 @@ public:
 			throw std::invalid_argument("Blank URL.");
 		}
 
-		this->_statusCode = 0;
 		this->_contentLength = this->_totalGot = 0;
 		this->_init_handles();
 		this->_contact_server();
@@ -125,7 +108,6 @@ public:
 
 	const insert_order_map<std::wstring, std::wstring>& get_request_headers() const noexcept  { return this->_requestHeaders; }
 	const insert_order_map<std::wstring, std::wstring>& get_response_headers() const noexcept { return this->_responseHeaders; }
-	DWORD get_status_code() const noexcept       { return this->_statusCode; }
 	size_t get_content_length() const noexcept   { return this->_contentLength; }
 	size_t get_total_downloaded() const noexcept { return this->_totalGot; }
 
@@ -190,11 +172,6 @@ private:
 	}
 
 	void _parse_headers() {
-		// Retrieve the status code.
-		DWORD dwSize = sizeof(DWORD);
-		WinHttpQueryHeaders(this->_hRequest, WINHTTP_QUERY_STATUS_CODE | WINHTTP_QUERY_FLAG_NUMBER,
-			WINHTTP_HEADER_NAME_BY_INDEX, &_statusCode, &dwSize, WINHTTP_NO_HEADER_INDEX);
-
 		// Retrieve the response header.
 		DWORD rehSize = 0;
 		WinHttpQueryHeaders(this->_hRequest, WINHTTP_QUERY_RAW_HEADERS_CRLF,
@@ -242,29 +219,17 @@ private:
 	}
 
 	void _receive_bytes(UINT nBytesToRead) {
-		void* pWriteTo = nullptr;
-		size_t beforeSize;
-		if (this->_stream != nullptr) {
-			this->data.resize(nBytesToRead); // make room
-			pWriteTo = static_cast<void*>(&this->data[0]);
-		} else {
-			beforeSize = this->data.size();
-			this->data.resize(beforeSize + nBytesToRead); // make room
-			pWriteTo = static_cast<void*>(&this->data[beforeSize]);
-		}
+		DWORD readCount = 0; // not used
+		this->data.resize(this->data.size() + nBytesToRead); // make room
 
-		DWORD readCount = 0;
-		if (!WinHttpReadData(this->_hRequest, pWriteTo, nBytesToRead, &readCount)) {
+		if (!WinHttpReadData(this->_hRequest,
+			static_cast<void*>(&this->data[this->data.size() - nBytesToRead]), // append to buffer
+			nBytesToRead, &readCount) )
+		{
 			this->_abort_and_throw(GetLastError(), "WinHttpReadData failed");
 		}
 
-		this->_totalGot += readCount; // update total downloaded count
-
-		if (this->_stream != nullptr) {
-			this->_stream->write((const char*)pWriteTo, readCount); // write to stream
-		} else {
-			this->data.resize(beforeSize + readCount); // resize buffer to whatever was read
-		}
+		this->_totalGot += nBytesToRead; // update total downloaded count
 	}
 };
 
