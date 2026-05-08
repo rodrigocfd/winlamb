@@ -12,6 +12,7 @@
 #include "internals/download_url.h"
 #include "insert_order_map.h"
 #include "str.h"
+#include "file.h"
 
 namespace wl {
 
@@ -31,7 +32,8 @@ private:
 	insert_order_map<std::wstring, std::wstring> _responseHeaders;
 	std::function<void()> _startCallback, _progressCallback;
 	std::function<void(BYTE*, DWORD)> _dataCallback;
-	std::ofstream* _stream = nullptr;
+	file _toFile;
+	std::vector<BYTE> _toFileBuffer;
 
 public:
 	std::vector<BYTE> data;
@@ -53,10 +55,6 @@ public:
 			this->_hConnect = nullptr;
 		}
 		this->_contentLength = this->_totalGot = 0;
-		if (this->_stream != nullptr) {
-			delete this->_stream;
-			this->_stream = nullptr;
-		}
 		return *this;
 	}
 
@@ -90,10 +88,10 @@ public:
 
 	// Set a file to write to instead of the data buffer.
 	download& to_file(const std::wstring& path) {
-		if (this->_stream != nullptr) {
+		if (this->_toFile.hfile()) {
 			throw std::logic_error("A file stream is already configured.");
 		}
-		this->_stream = new std::ofstream(path, std::wofstream::out | std::wofstream::binary);
+		this->_toFile.open_or_create(path);
 		return *this;
 	}
 
@@ -251,9 +249,9 @@ private:
 	void _receive_bytes(UINT nBytesToRead) {
 		void* pWriteTo = nullptr;
 		size_t beforeSize;
-		if (this->_stream != nullptr) {
-			this->data.resize(nBytesToRead); // make room
-			pWriteTo = static_cast<void*>(&this->data[0]);
+		if (this->_toFile.hfile()) {
+			this->_toFileBuffer.resize(nBytesToRead); // make room
+			pWriteTo = static_cast<void*>(&this->_toFileBuffer[0]);
 		} else {
 			beforeSize = this->data.size();
 			this->data.resize(beforeSize + nBytesToRead); // make room
@@ -272,8 +270,8 @@ private:
 			this->_dataCallback(static_cast<BYTE*>(pWriteTo), readCount);
 		}
 
-		if (this->_stream != nullptr) {
-			this->_stream->write(static_cast<const char*>(pWriteTo), readCount); // write to stream
+		if (this->_toFile.hfile()) {
+			this->_toFile.write(static_cast<const BYTE*>(pWriteTo), readCount); // write to stream
 		} else {
 			this->data.resize(beforeSize + readCount); // resize buffer to whatever was read
 		}
