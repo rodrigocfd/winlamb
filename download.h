@@ -30,6 +30,7 @@ private:
 	insert_order_map<std::wstring, std::wstring> _requestHeaders;
 	insert_order_map<std::wstring, std::wstring> _responseHeaders;
 	std::function<void()> _startCallback, _progressCallback;
+	std::function<void(BYTE*, DWORD)> _dataCallback;
 	std::ofstream* _stream = nullptr;
 
 public:
@@ -78,6 +79,12 @@ public:
 	// Defines a lambda do be called each time a chunk of bytes is received.
 	download& on_progress(std::function<void()> callback) noexcept {
 		this->_progressCallback = std::move(callback);
+		return *this;
+	}
+
+	// Defines a lambda do be called each time a chunk of bytes is received.
+	download& on_data(std::function<void(BYTE*, DWORD)> callback) noexcept {
+		this->_dataCallback = std::move(callback);
 		return *this;
 	}
 
@@ -260,8 +267,13 @@ private:
 
 		this->_totalGot += readCount; // update total downloaded count
 
+		// Call dataCallback with the bytes we just got
+		if (this->_dataCallback) {
+			this->_dataCallback(static_cast<BYTE*>(pWriteTo), readCount);
+		}
+
 		if (this->_stream != nullptr) {
-			this->_stream->write((const char*)pWriteTo, readCount); // write to stream
+			this->_stream->write(static_cast<const char*>(pWriteTo), readCount); // write to stream
 		} else {
 			this->data.resize(beforeSize + readCount); // resize buffer to whatever was read
 		}
