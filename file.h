@@ -382,7 +382,7 @@ public:
 		static std::vector<std::wstring> list_dir(const std::wstring& pathAndPattern) {
 			std::vector<std::wstring> files;
 
-			WIN32_FIND_DATA wfd{};
+			WIN32_FIND_DATAW wfd{};
 			HANDLE hFind = FindFirstFileW(pathAndPattern.c_str(), &wfd);
 			if (hFind == INVALID_HANDLE_VALUE) {
 				DWORD err = GetLastError();
