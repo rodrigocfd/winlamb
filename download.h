@@ -7,7 +7,6 @@
 
 #pragma once
 #include <functional>
-#include <fstream>
 #include "internals/download_session.h"
 #include "internals/download_url.h"
 #include "insert_order_map.h"
