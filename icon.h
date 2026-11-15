@@ -62,6 +62,7 @@ public:
 			throw std::system_error(GetLastError(), std::system_category(),
 				"LoadImage failed when trying to load icon resource");
 		}
+		return *this;
 	}
 
 	icon& load_from_resource(int iconId, SIZE resolution, HWND hParent) {
